@@ -4,11 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Product } from "@/lib/data/products";
 import { useCart } from "@/components/providers/CartProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export function AddToCartButton({
   product,
   className = "mq-btn mq-btn-primary w-full",
-  label = "Add To Cart",
+  label,
   buyNow = false,
 }: {
   product: Product;
@@ -17,8 +18,10 @@ export function AddToCartButton({
   buyNow?: boolean;
 }) {
   const { addItem } = useCart();
+  const { t } = useLanguage();
   const router = useRouter();
   const [feedback, setFeedback] = useState<string | null>(null);
+  const buttonLabel = label ?? t("common.addToCart");
 
   const handleClick = () => {
     addItem(product);
@@ -26,13 +29,13 @@ export function AddToCartButton({
       router.push("/checkout");
       return;
     }
-    setFeedback("Added!");
+    setFeedback(t("cart.added"));
     setTimeout(() => setFeedback(null), 1500);
   };
 
   return (
     <button type="button" className={className} onClick={handleClick}>
-      {feedback ?? label}
+      {feedback ?? buttonLabel}
     </button>
   );
 }

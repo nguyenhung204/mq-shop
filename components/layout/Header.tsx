@@ -10,11 +10,14 @@ import { ProductCard, ProductCardMini } from "@/components/ui/ProductCard";
 import { ProductCarousel } from "@/components/ui/ProductCarousel";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { useCart } from "@/components/providers/CartProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { heroImages } from "@/lib/images";
 
 function NavBadge({ type }: { type: "sale" | "hot" | "new" }) {
+  const { t } = useLanguage();
   const map = { sale: "mq-badge-teal", hot: "mq-badge-pink", new: "mq-badge-cyan" };
-  return <span className={`mq-badge ${map[type]} ml-1.5`}>{type}</span>;
+  return <span className={`mq-badge ${map[type]} ml-1.5`}>{t(`badge.${type}`)}</span>;
 }
 
 export function Header() {
@@ -24,8 +27,18 @@ export function Header() {
   const menuRef = useRef<HTMLDivElement>(null);
   const { dark, toggle } = useTheme();
   const { itemCount } = useCart();
+  const { t } = useLanguage();
 
   const closeMega = useCallback(() => setActiveMega(null), []);
+
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.classList.add("mq-mobile-nav-open");
+    } else {
+      document.body.classList.remove("mq-mobile-nav-open");
+    }
+    return () => document.body.classList.remove("mq-mobile-nav-open");
+  }, [mobileOpen]);
 
   useEffect(() => {
     if (!activeMega) return;
@@ -81,7 +94,7 @@ export function Header() {
 
         <header className="relative z-50 bg-mq-surface border-b border-mq-border">
           <div
-            className="mq-container flex items-center justify-between gap-6"
+            className="mq-container flex items-center justify-between gap-3 sm:gap-6"
             style={{ height: "var(--mq-header-h)" }}
           >
           <Link href="/" className="shrink-0 border border-mq-text px-4 py-1.5" onClick={closeMega} onMouseEnter={closeMega}>
@@ -93,7 +106,7 @@ export function Header() {
           <nav className="hidden lg:flex items-center h-full">
             {mainNav.map((item) => (
               <div
-                key={item.label}
+                key={item.key}
                 className="relative h-full flex items-center"
                 onMouseEnter={() => setActiveMega(item.mega)}
               >
@@ -105,7 +118,7 @@ export function Header() {
                       : "text-mq-text hover:text-mq-text-secondary"
                   }`}
                 >
-                  {item.label}
+                  {t(`nav.${item.key}`)}
                   {item.badge && <NavBadge type={item.badge} />}
                 </Link>
               </div>
@@ -113,31 +126,32 @@ export function Header() {
           </nav>
 
           <div
-            className="flex items-center gap-4 md:gap-5"
+            className="flex items-center gap-1 sm:gap-4 md:gap-5 shrink-0"
             onMouseEnter={closeMega}
           >
-            <button type="button" className="text-mq-text hover:text-mq-gold transition-colors" aria-label="Search" onClick={closeMega}>
+            <button type="button" className="mq-icon-btn max-[400px]:hidden text-mq-text hover:text-mq-gold transition-colors" aria-label="Search" onClick={closeMega}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </button>
-            <Link href="/my-account" className="hidden sm:block text-mq-text hover:text-mq-gold transition-colors" aria-label="Account" onClick={closeMega}>
+            <Link href="/my-account" className="mq-icon-btn text-mq-text hover:text-mq-gold transition-colors" aria-label="Account" onClick={closeMega}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </Link>
-            <Link href="/wishlist" className="hidden sm:block relative text-mq-text hover:text-mq-gold transition-colors" aria-label="Wishlist" onClick={closeMega}>
+            <Link href="/wishlist" className="hidden sm:block mq-icon-btn relative text-mq-text hover:text-mq-gold transition-colors" aria-label="Wishlist" onClick={closeMega}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
             </Link>
-            <Link href="/cart" className="relative text-mq-text hover:text-mq-gold transition-colors" aria-label="Cart" onClick={closeMega}>
+            <Link href="/cart" className="mq-icon-btn relative text-mq-text hover:text-mq-gold transition-colors" aria-label="Cart" onClick={closeMega}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
               {itemCount > 0 && <span className="mq-count-badge">{itemCount}</span>}
             </Link>
-            <button type="button" onClick={toggle} className="mq-theme-toggle hidden md:flex" aria-label="Toggle theme">
+            <LanguageSwitcher className="hidden lg:block" />
+            <button type="button" onClick={toggle} className="mq-theme-toggle mq-icon-btn hidden lg:flex" aria-label="Toggle theme">
               {dark ? (
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -148,7 +162,7 @@ export function Header() {
                 </svg>
               )}
             </button>
-            <button type="button" className="lg:hidden text-mq-text" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Menu">
+            <button type="button" className="mq-icon-btn lg:hidden text-mq-text" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Menu">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                 {mobileOpen ? (
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -175,7 +189,7 @@ export function Header() {
                           className="text-sm font-semibold text-mq-text hover:text-mq-gold transition-colors mb-2 block"
                           onClick={closeMega}
                         >
-                          {cat.name}
+                          {t(`categories.${cat.slug}`)}
                         </Link>
                         <ul className="space-y-1">
                           {cat.subcategories?.map((sub) => (
@@ -194,7 +208,7 @@ export function Header() {
                     ))}
                   </div>
                   <div className="border-l border-mq-border pl-8 hidden lg:block">
-                    <h4 className="text-sm font-semibold text-mq-text mb-4">Best Selling</h4>
+                    <h4 className="text-sm font-semibold text-mq-text mb-4">{t("nav.bestSelling")}</h4>
                     <div className="space-y-1">
                       {bestSelling.map((p) => (
                         <ProductCardMini key={p.id} product={p} />
@@ -218,7 +232,7 @@ export function Header() {
                             : "text-mq-text-secondary border-transparent hover:text-mq-text"
                         }`}
                       >
-                        {cat.name}
+                        {t(`categories.${cat.slug}`)}
                       </button>
                     ))}
                   </div>
@@ -231,33 +245,33 @@ export function Header() {
               {activeMega === "shop" && (
                 <div className="grid grid-cols-4 gap-8">
                   <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-mq-text-muted mb-4">Product Types</h4>
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-mq-text-muted mb-4">{t("mega.productTypes")}</h4>
                     <ul className="space-y-2 text-sm text-mq-text-secondary">
-                      <li><Link href="/shop" className="hover:text-mq-gold">All Products</Link></li>
-                      <li><Link href="/shop?sort=new" className="hover:text-mq-gold">New Arrivals</Link></li>
-                      <li><Link href="/shop?sort=deals" className="hover:text-mq-gold">On Sale</Link></li>
+                      <li><Link href="/shop" className="hover:text-mq-gold">{t("mega.allProducts")}</Link></li>
+                      <li><Link href="/shop?sort=new" className="hover:text-mq-gold">{t("mega.newArrivals")}</Link></li>
+                      <li><Link href="/shop?sort=deals" className="hover:text-mq-gold">{t("mega.onSale")}</Link></li>
                     </ul>
                   </div>
                   <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-mq-text-muted mb-4">Pages</h4>
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-mq-text-muted mb-4">{t("mega.pages")}</h4>
                     <ul className="space-y-2 text-sm text-mq-text-secondary">
-                      <li><Link href="/cart" className="hover:text-mq-gold">Cart</Link></li>
-                      <li><Link href="/checkout" className="hover:text-mq-gold">Checkout</Link></li>
-                      <li><Link href="/wishlist" className="hover:text-mq-gold">Wishlist</Link></li>
+                      <li><Link href="/cart" className="hover:text-mq-gold">{t("nav.cart")}</Link></li>
+                      <li><Link href="/checkout" className="hover:text-mq-gold">{t("checkout.title")}</Link></li>
+                      <li><Link href="/wishlist" className="hover:text-mq-gold">{t("nav.wishlist")}</Link></li>
                     </ul>
                   </div>
                   <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-mq-text-muted mb-4">Features</h4>
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-mq-text-muted mb-4">{t("mega.features")}</h4>
                     <ul className="space-y-2 text-sm text-mq-text-secondary">
-                      <li><Link href="/shop" className="hover:text-mq-gold">Quick View</Link></li>
-                      <li><Link href="/shop?sort=popular" className="hover:text-mq-gold">Best Sellers</Link></li>
+                      <li><Link href="/shop" className="hover:text-mq-gold">{t("mega.quickView")}</Link></li>
+                      <li><Link href="/shop?sort=popular" className="hover:text-mq-gold">{t("mega.bestSellers")}</Link></li>
                     </ul>
                   </div>
                   <div className="relative h-48 overflow-hidden">
                     <Image src={heroImages.promo1} alt="MQ Collection" fill className="object-cover" sizes="300px" quality={70} />
                     <div className="absolute inset-0 bg-black/45 flex flex-col justify-end p-5">
-                      <p className="text-white text-base font-display">New Season</p>
-                      <Link href="/shop" className="mq-btn mq-btn-primary mt-2 w-fit text-xs">Shop Now</Link>
+                      <p className="text-white text-base font-display">{t("nav.newSeason")}</p>
+                      <Link href="/shop" className="mq-btn mq-btn-primary mt-2 w-fit text-xs">{t("nav.shopNow")}</Link>
                     </div>
                   </div>
                 </div>
@@ -271,7 +285,7 @@ export function Header() {
                 <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
                   {elementPages.map((page) => (
                     <Link key={page.href} href={page.href} className="text-sm text-mq-text-secondary hover:text-mq-gold py-2 border-b border-mq-border transition-colors">
-                      {page.label}
+                      {t(`nav.${page.key}`)}
                     </Link>
                   ))}
                 </div>
@@ -283,16 +297,78 @@ export function Header() {
       </div>
 
       {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-40 bg-mq-surface pt-[calc(var(--mq-topbar-h)+var(--mq-header-h))] overflow-y-auto">
-          <nav className="mq-container py-6 space-y-1">
-            {mainNav.map((item) => (
-              <Link key={item.label} href={item.href} className="block py-3 text-base font-medium border-b border-mq-border" onClick={() => setMobileOpen(false)}>
-                {item.label}
-                {item.badge && <NavBadge type={item.badge} />}
-              </Link>
-            ))}
-          </nav>
-        </div>
+        <>
+          <button
+            type="button"
+            className="lg:hidden fixed inset-0 z-40 bg-black/30"
+            aria-label="Close menu"
+            onClick={() => setMobileOpen(false)}
+          />
+          <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 top-[calc(var(--mq-topbar-h)+var(--mq-header-h))] bg-mq-surface overflow-y-auto border-t border-mq-border">
+            <nav className="mq-container py-6 pb-10">
+              <div className="space-y-1 mb-8">
+                {mainNav.map((item) => (
+                  <Link
+                    key={item.key}
+                    href={item.href}
+                    className="flex items-center py-3 text-base font-medium border-b border-mq-border"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {t(`nav.${item.key}`)}
+                    {item.badge && <NavBadge type={item.badge} />}
+                  </Link>
+                ))}
+              </div>
+
+              <div className="mb-8">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-mq-text-muted mb-3">
+                  {t("nav.categories")}
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {categories.map((cat) => (
+                    <Link
+                      key={cat.slug}
+                      href={`/shop?category=${cat.slug}`}
+                      className="text-sm text-mq-text-secondary hover:text-mq-gold py-2"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      {t(`categories.${cat.slug}`)}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3 pt-6 border-t border-mq-border">
+                <LanguageSwitcher />
+                <button type="button" onClick={toggle} className="mq-theme-toggle mq-icon-btn" aria-label="Toggle theme">
+                  {dark ? (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                  )}
+                </button>
+                <Link
+                  href="/my-account"
+                  className="text-sm text-mq-text-secondary hover:text-mq-gold"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {t("nav.account")}
+                </Link>
+                <Link
+                  href="/wishlist"
+                  className="text-sm text-mq-text-secondary hover:text-mq-gold"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {t("nav.wishlist")}
+                </Link>
+              </div>
+            </nav>
+          </div>
+        </>
       )}
     </>
   );

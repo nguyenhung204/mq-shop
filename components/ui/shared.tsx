@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Star } from "lucide-react";
 import { ReactNode } from "react";
 
+export { PageHero } from "./PageHero";
+
 export function Container({
   children,
   className = "",
@@ -51,41 +53,6 @@ export function SectionHeading({
           {action.label}
         </Link>
       )}
-    </div>
-  );
-}
-
-export function PageHero({
-  title,
-  breadcrumb,
-}: {
-  title: string;
-  breadcrumb?: { label: string; href?: string }[];
-}) {
-  return (
-    <div className="bg-mq-surface-subtle border-b border-mq-border py-10 md:py-14">
-      <Container>
-        {breadcrumb && (
-          <nav className="flex items-center gap-2 text-xs text-mq-text-muted mb-3 uppercase tracking-wider">
-            <Link href="/" className="hover:text-mq-text transition-colors">
-              Home
-            </Link>
-            {breadcrumb.map((item, i) => (
-              <span key={i} className="flex items-center gap-2">
-                <span>/</span>
-                {item.href ? (
-                  <Link href={item.href} className="hover:text-mq-text transition-colors">
-                    {item.label}
-                  </Link>
-                ) : (
-                  <span className="text-mq-text">{item.label}</span>
-                )}
-              </span>
-            ))}
-          </nav>
-        )}
-        <h1 className="text-3xl md:text-[40px] text-mq-text tracking-wide">{title}</h1>
-      </Container>
     </div>
   );
 }

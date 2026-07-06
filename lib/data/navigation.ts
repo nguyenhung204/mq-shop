@@ -1,81 +1,56 @@
 export const topBarLinks = [
-  { label: "About Us", href: "/about-us" },
-  { label: "Contact Us", href: "/contact-us" },
-  { label: "FAQs", href: "/faqs" },
-];
+  { key: "aboutUs", href: "/about-us" },
+  { key: "contactUs", href: "/contact-us" },
+  { key: "faqs", href: "/faqs" },
+] as const;
 
 export const mainNav = [
-  {
-    label: "Shop",
-    href: "/shop",
-    badge: null,
-    mega: "shop",
-  },
-  {
-    label: "Categories",
-    href: "/shop",
-    badge: "sale" as const,
-    mega: "categories",
-  },
-  {
-    label: "Products",
-    href: "/shop",
-    badge: "hot" as const,
-    mega: "products",
-  },
-  {
-    label: "Top Deals",
-    href: "/shop?sort=deals",
-    badge: null,
-    mega: "deals",
-  },
-  {
-    label: "Elements",
-    href: "#",
-    badge: null,
-    mega: "elements",
-  },
-];
+  { key: "shop", href: "/shop", badge: null, mega: "shop" },
+  { key: "categories", href: "/shop", badge: "sale" as const, mega: "categories" },
+  { key: "products", href: "/shop", badge: "hot" as const, mega: "products" },
+  { key: "topDeals", href: "/shop?sort=deals", badge: null, mega: "deals" },
+  { key: "elements", href: "#", badge: null, mega: "elements" },
+] as const;
 
 export const footerColumns = [
   {
-    title: "Get To Know Us",
+    titleKey: "getToKnowUs",
     links: [
-      { label: "About Us", href: "/about-us" },
-      { label: "Terms & Policy", href: "/privacy-policy" },
-      { label: "Careers", href: "/about-us" },
-      { label: "Contact Us", href: "/contact-us" },
+      { key: "aboutUs", href: "/about-us" },
+      { key: "termsPolicy", href: "/privacy-policy" },
+      { key: "careers", href: "/about-us" },
+      { key: "contactUs", href: "/contact-us" },
     ],
   },
   {
-    title: "Information",
+    titleKey: "information",
     links: [
-      { label: "Help Center", href: "/faqs" },
-      { label: "Feedback", href: "/contact-us" },
-      { label: "FAQs", href: "/faqs" },
-      { label: "Size Guide", href: "/faqs" },
-      { label: "Payments", href: "/faqs" },
+      { key: "helpCenter", href: "/faqs" },
+      { key: "feedback", href: "/contact-us" },
+      { key: "faqs", href: "/faqs" },
+      { key: "sizeGuide", href: "/faqs" },
+      { key: "payments", href: "/faqs" },
     ],
   },
   {
-    title: "Orders & Returns",
+    titleKey: "ordersReturns",
     links: [
-      { label: "Track Order", href: "/my-account" },
-      { label: "Delivery", href: "/faqs" },
-      { label: "Services", href: "/contact-us" },
-      { label: "Returns", href: "/faqs" },
-      { label: "Exchange", href: "/faqs" },
+      { key: "trackOrder", href: "/my-account" },
+      { key: "delivery", href: "/faqs" },
+      { key: "services", href: "/contact-us" },
+      { key: "returns", href: "/faqs" },
+      { key: "exchange", href: "/faqs" },
     ],
   },
-];
+] as const;
 
 export const elementPages = [
-  { label: "Accordion", href: "/accordion" },
-  { label: "Icon Box", href: "/icon-box" },
-  { label: "Portfolio", href: "/portfolio" },
-  { label: "FAQs", href: "/faqs" },
-  { label: "Gallery", href: "/gallery" },
-  { label: "Tabs", href: "/tabs" },
-  { label: "About Us", href: "/about-us" },
-  { label: "Contact Us", href: "/contact-us" },
-];
+  { key: "accordion", href: "/accordion" },
+  { key: "iconBox", href: "/icon-box" },
+  { key: "portfolio", href: "/portfolio" },
+  { key: "faqs", href: "/faqs" },
+  { key: "gallery", href: "/gallery" },
+  { key: "tabs", href: "/tabs" },
+  { key: "aboutUs", href: "/about-us" },
+  { key: "contactUs", href: "/contact-us" },
+] as const;

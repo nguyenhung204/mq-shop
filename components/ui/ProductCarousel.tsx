@@ -7,17 +7,20 @@ import { ProductCard } from "./ProductCard";
 
 export function ProductCarousel({
   products,
-  itemWidth = 240,
+  priorityCount = 0,
 }: {
   products: Product[];
-  itemWidth?: number;
+  priorityCount?: number;
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
 
   const scroll = (dir: -1 | 1) => {
     const el = trackRef.current;
-    if (!el) return;
-    el.scrollBy({ left: dir * (itemWidth + 20) * 2, behavior: "smooth" });
+    const first = el?.firstElementChild as HTMLElement | null;
+    if (!el || !first) return;
+    const itemWidth = first.offsetWidth;
+    const gap = 20;
+    el.scrollBy({ left: dir * (itemWidth + gap) * 2, behavior: "smooth" });
   };
 
   return (
@@ -25,7 +28,7 @@ export function ProductCarousel({
       <div className="flex justify-end mb-4 mq-carousel-nav">
         <button
           type="button"
-          className="mq-carousel-btn"
+          className="mq-carousel-btn mq-icon-btn"
           onClick={() => scroll(-1)}
           aria-label="Previous"
         >
@@ -33,7 +36,7 @@ export function ProductCarousel({
         </button>
         <button
           type="button"
-          className="mq-carousel-btn"
+          className="mq-carousel-btn mq-icon-btn"
           onClick={() => scroll(1)}
           aria-label="Next"
         >
@@ -41,9 +44,9 @@ export function ProductCarousel({
         </button>
       </div>
       <div ref={trackRef} className="mq-carousel-track">
-        {products.map((p) => (
-          <div key={p.id} style={{ width: itemWidth }}>
-            <ProductCard product={p} />
+        {products.map((p, i) => (
+          <div key={p.id} className="mq-carousel-item">
+            <ProductCard product={p} priority={i < priorityCount} />
           </div>
         ))}
       </div>

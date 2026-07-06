@@ -5,28 +5,25 @@ import Link from "next/link";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import { formatPrice } from "@/lib/data/products";
 import { useCart } from "@/components/providers/CartProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Container, PageHero } from "@/components/ui/shared";
 
 export function CartContent() {
+  const { t } = useLanguage();
   const { items, itemCount, subtotal, updateQuantity, removeItem, clearCart } =
     useCart();
 
   if (itemCount === 0) {
     return (
       <>
-        <PageHero title="Shopping Cart" breadcrumb={[{ label: "Cart" }]} />
+        <PageHero title={t("cart.title")} breadcrumb={[{ label: t("nav.cart") }]} />
         <Container className="py-16 md:py-24 text-center">
           <div className="max-w-md mx-auto">
-            <ShoppingBag
-              className="w-16 h-16 mx-auto text-mq-text-muted mb-6"
-              strokeWidth={1}
-            />
-            <h2 className="text-xl text-mq-text mb-3">Your cart is empty</h2>
-            <p className="text-mq-text-secondary mb-8">
-              Looks like you haven&apos;t added anything to your cart yet.
-            </p>
+            <ShoppingBag className="w-16 h-16 mx-auto text-mq-text-muted mb-6" strokeWidth={1} />
+            <h2 className="text-xl text-mq-text mb-3">{t("cart.emptyTitle")}</h2>
+            <p className="text-mq-text-secondary mb-8">{t("cart.emptyDesc")}</p>
             <Link href="/shop" className="mq-btn mq-btn-primary">
-              Return to shop
+              {t("cart.returnToShop")}
             </Link>
           </div>
         </Container>
@@ -36,40 +33,35 @@ export function CartContent() {
 
   const shipping = subtotal >= 75 ? 0 : 5.99;
   const total = subtotal + shipping;
+  const itemLabel = itemCount === 1 ? t("cart.item") : t("cart.items");
 
   return (
     <>
-      <PageHero title="Shopping Cart" breadcrumb={[{ label: "Cart" }]} />
+      <PageHero title={t("cart.title")} breadcrumb={[{ label: t("nav.cart") }]} />
       <Container className="py-10 md:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-10">
           <div>
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-mq-border">
               <p className="text-sm text-mq-text-muted">
-                {itemCount} item{itemCount !== 1 ? "s" : ""}
+                {itemCount} {itemLabel}
               </p>
               <button
                 type="button"
                 onClick={clearCart}
                 className="text-xs uppercase tracking-wider text-mq-text-muted hover:text-mq-text"
               >
-                Clear cart
+                {t("cart.clearCart")}
               </button>
             </div>
 
             <ul className="divide-y divide-mq-border">
               {items.map((item) => (
-                <li key={item.productId} className="flex gap-4 py-6">
+                <li key={item.productId} className="flex flex-wrap sm:flex-nowrap gap-4 py-6">
                   <Link
                     href={`/product/${item.slug}`}
                     className="relative w-24 h-24 shrink-0 mq-product-image-bg overflow-hidden"
                   >
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      fill
-                      className="object-contain p-2"
-                      sizes="96px"
-                    />
+                    <Image src={item.image} alt={item.name} fill className="object-contain p-2" sizes="96px" />
                   </Link>
                   <div className="flex-1 min-w-0">
                     <Link
@@ -78,30 +70,22 @@ export function CartContent() {
                     >
                       {item.name}
                     </Link>
-                    <p className="text-sm font-medium text-mq-text mt-1">
-                      {formatPrice(item.price)}
-                    </p>
+                    <p className="text-sm font-medium text-mq-text mt-1">{formatPrice(item.price)}</p>
                     <div className="flex items-center gap-3 mt-3">
                       <div className="flex items-center border border-mq-border">
                         <button
                           type="button"
                           className="w-8 h-8 flex items-center justify-center hover:bg-mq-surface-subtle"
-                          onClick={() =>
-                            updateQuantity(item.productId, item.quantity - 1)
-                          }
+                          onClick={() => updateQuantity(item.productId, item.quantity - 1)}
                           aria-label="Decrease quantity"
                         >
                           <Minus size={14} />
                         </button>
-                        <span className="w-8 text-center text-sm">
-                          {item.quantity}
-                        </span>
+                        <span className="w-8 text-center text-sm">{item.quantity}</span>
                         <button
                           type="button"
                           className="w-8 h-8 flex items-center justify-center hover:bg-mq-surface-subtle"
-                          onClick={() =>
-                            updateQuantity(item.productId, item.quantity + 1)
-                          }
+                          onClick={() => updateQuantity(item.productId, item.quantity + 1)}
                           aria-label="Increase quantity"
                         >
                           <Plus size={14} />
@@ -117,7 +101,7 @@ export function CartContent() {
                       </button>
                     </div>
                   </div>
-                  <p className="text-sm font-medium text-mq-text shrink-0">
+                  <p className="text-sm font-medium text-mq-text w-full sm:w-auto text-left sm:text-right sm:shrink-0 sm:self-start">
                     {formatPrice(item.price * item.quantity)}
                   </p>
                 </li>
@@ -126,39 +110,34 @@ export function CartContent() {
           </div>
 
           <aside className="border border-mq-border p-6 h-fit bg-mq-surface-subtle">
-            <h2 className="text-lg text-mq-text mb-6">Order Summary</h2>
+            <h2 className="text-lg text-mq-text mb-6">{t("cart.orderSummary")}</h2>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-mq-text-secondary">Subtotal</span>
+                <span className="text-mq-text-secondary">{t("cart.subtotal")}</span>
                 <span>{formatPrice(subtotal)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-mq-text-secondary">Shipping</span>
-                <span>
-                  {shipping === 0 ? "Free" : formatPrice(shipping)}
-                </span>
+                <span className="text-mq-text-secondary">{t("cart.shipping")}</span>
+                <span>{shipping === 0 ? t("cart.free") : formatPrice(shipping)}</span>
               </div>
               {subtotal < 75 && (
                 <p className="text-xs text-mq-text-muted">
-                  Add {formatPrice(75 - subtotal)} more for free shipping
+                  {t("cart.freeShippingHint", { amount: formatPrice(75 - subtotal) })}
                 </p>
               )}
               <div className="flex justify-between pt-3 border-t border-mq-border text-base font-medium">
-                <span>Total</span>
+                <span>{t("cart.total")}</span>
                 <span>{formatPrice(total)}</span>
               </div>
             </div>
-            <Link
-              href="/checkout"
-              className="mq-btn mq-btn-primary w-full mt-6 block text-center"
-            >
-              Proceed to Checkout
+            <Link href="/checkout" className="mq-btn mq-btn-primary w-full mt-6 block text-center">
+              {t("cart.proceedCheckout")}
             </Link>
             <Link
               href="/shop"
               className="block text-center text-xs uppercase tracking-wider text-mq-text-muted hover:text-mq-text mt-4"
             >
-              Continue shopping
+              {t("cart.continueShopping")}
             </Link>
           </aside>
         </div>

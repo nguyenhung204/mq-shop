@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { DM_Sans, Playfair_Display } from "next/font/google";
 import { CartProvider } from "@/components/providers/CartProvider";
+import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
-import { Footer } from "@/components/layout/Footer";
-import { Header } from "@/components/layout/Header";
-import { TopBar } from "@/components/layout/TopBar";
+import { AppShell } from "@/components/layout/AppShell";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -39,12 +38,11 @@ export default function RootLayout({
     <html lang="en" className={`${dmSans.variable} ${playfair.variable}`} suppressHydrationWarning>
       <body className="min-h-screen flex flex-col antialiased font-sans">
         <ThemeProvider>
-          <CartProvider>
-            <TopBar />
-            <Header />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </CartProvider>
+          <LanguageProvider>
+            <CartProvider>
+              <AppShell>{children}</AppShell>
+            </CartProvider>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

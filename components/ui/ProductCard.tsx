@@ -11,9 +11,11 @@ import { Stars } from "./shared";
 export function ProductCard({
   product,
   compact = false,
+  priority = false,
 }: {
   product: Product;
   compact?: boolean;
+  priority?: boolean;
 }) {
   const [hovered, setHovered] = useState(false);
 
@@ -29,6 +31,7 @@ export function ProductCard({
             src={product.image}
             alt={product.name}
             fill
+            priority={priority}
             className="object-contain p-4 transition-opacity duration-300 group-hover:opacity-90"
             sizes={compact ? "120px" : "(max-width:768px) 45vw, 240px"}
             quality={75}
@@ -42,7 +45,7 @@ export function ProductCard({
 
           {/* Hover action bar — top */}
           <div
-            className={`absolute top-0 left-0 right-0 flex items-center justify-center gap-1 bg-black/60 py-2 transition-opacity duration-200 ${hovered ? "opacity-100" : "opacity-0"}`}
+            className={`absolute top-0 left-0 right-0 flex items-center justify-center gap-1 bg-black/60 py-2 transition-opacity duration-200 max-md:opacity-100 ${hovered ? "opacity-100" : "opacity-0"}`}
           >
             <button
               type="button"
@@ -140,22 +143,24 @@ export function CategoryCard({
   name,
   slug,
   image,
+  priority = false,
 }: {
   name: string;
   slug: string;
   image: string;
+  priority?: boolean;
 }) {
   return (
     <Link
       href={`/shop?category=${slug}`}
-      className="group flex flex-col items-center gap-3 shrink-0"
-      style={{ width: 150 }}
+      className="group flex flex-col items-center gap-3 shrink-0 w-[min(150px,28vw)]"
     >
-      <div className="relative w-[130px] h-[130px] rounded-full overflow-hidden border border-mq-border mq-product-image-bg">
+      <div className="relative w-full max-w-[130px] aspect-square rounded-full overflow-hidden border border-mq-border mq-product-image-bg">
         <Image
           src={image}
           alt={name}
           fill
+          priority={priority}
           className="object-cover transition-transform duration-300 group-hover:scale-105"
           sizes="130px"
           quality={70}

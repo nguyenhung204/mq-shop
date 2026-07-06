@@ -71,6 +71,7 @@ body {
   font-size: 15px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -83,7 +84,7 @@ h1, h2, h3, h4, h5, h6 {
   width: 100%;
   max-width: var(--mq-container);
   margin-inline: auto;
-  padding-inline: 1rem;
+  padding-inline: clamp(1rem, 4vw, 2rem);
 }
 
 /* Buttons — never gold in dark mode */
@@ -246,6 +247,20 @@ h1, h2, h3, h4, h5, h6 {
   flex-shrink: 0;
 }
 
+.mq-carousel-item {
+  width: min(240px, calc(100vw - 3.5rem));
+  flex-shrink: 0;
+}
+
+.mq-icon-btn {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 .mq-carousel-nav {
   display: flex;
   gap: 4px;
@@ -304,7 +319,23 @@ h1, h2, h3, h4, h5, h6 {
   border-color: var(--mq-text-muted);
 }
 
+/* Language gate — full-screen first visit */
+.mq-lang-gate {
+  background: var(--mq-surface);
+}
+
+body:has(.mq-lang-gate),
+body:has(.mq-mobile-nav-open) {
+  overflow: hidden;
+}
+
 @media (max-width: 767px) {
   :root { --mq-header-h: 60px; }
   .mq-carousel-track { gap: 12px; }
+  .mq-section-title { font-size: clamp(1.5rem, 6vw, 2rem); }
+  .mq-btn { padding: 10px 20px; font-size: 13px; }
+}
+
+@media (max-width: 639px) {
+  .mq-carousel-item { width: min(220px, calc(100vw - 2.5rem)); }
 }
