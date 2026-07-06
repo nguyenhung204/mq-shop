@@ -150,7 +150,7 @@ export function Header() {
               </svg>
               {itemCount > 0 && <span className="mq-count-badge">{itemCount}</span>}
             </Link>
-            <LanguageSwitcher className="hidden lg:block" />
+            <LanguageSwitcher />
             <button type="button" onClick={toggle} className="mq-theme-toggle mq-icon-btn hidden lg:flex" aria-label="Toggle theme">
               {dark ? (
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
@@ -304,8 +304,8 @@ export function Header() {
             aria-label="Close menu"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 top-[calc(var(--mq-topbar-h)+var(--mq-header-h))] bg-mq-surface overflow-y-auto border-t border-mq-border">
-            <nav className="mq-container py-6 pb-10">
+          <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 top-[calc(var(--mq-topbar-h)+var(--mq-header-h))] bg-mq-surface border-t border-mq-border flex flex-col">
+            <nav className="flex-1 overflow-y-auto mq-container py-6">
               <div className="space-y-1 mb-8">
                 {mainNav.map((item) => (
                   <Link
@@ -320,7 +320,7 @@ export function Header() {
                 ))}
               </div>
 
-              <div className="mb-8">
+              <div>
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-mq-text-muted mb-3">
                   {t("nav.categories")}
                 </h3>
@@ -337,9 +337,11 @@ export function Header() {
                   ))}
                 </div>
               </div>
+            </nav>
 
-              <div className="flex flex-wrap items-center gap-3 pt-6 border-t border-mq-border">
-                <LanguageSwitcher />
+            <div className="shrink-0 mq-container py-4 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-mq-border bg-mq-surface">
+              <div className="flex items-center gap-1">
+                <LanguageSwitcher menuAlign="start" />
                 <button type="button" onClick={toggle} className="mq-theme-toggle mq-icon-btn" aria-label="Toggle theme">
                   {dark ? (
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
@@ -353,20 +355,26 @@ export function Header() {
                 </button>
                 <Link
                   href="/my-account"
-                  className="text-sm text-mq-text-secondary hover:text-mq-gold"
+                  className="mq-icon-btn text-mq-text hover:text-mq-gold transition-colors"
+                  aria-label={t("nav.account")}
                   onClick={() => setMobileOpen(false)}
                 >
-                  {t("nav.account")}
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
                 </Link>
                 <Link
                   href="/wishlist"
-                  className="text-sm text-mq-text-secondary hover:text-mq-gold"
+                  className="mq-icon-btn text-mq-text hover:text-mq-gold transition-colors"
+                  aria-label={t("nav.wishlist")}
                   onClick={() => setMobileOpen(false)}
                 >
-                  {t("nav.wishlist")}
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
                 </Link>
               </div>
-            </nav>
+            </div>
           </div>
         </>
       )}

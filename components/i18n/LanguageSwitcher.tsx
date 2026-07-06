@@ -5,7 +5,13 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { FlagIcon } from "@/components/i18n/FlagIcon";
 import { LOCALE_META, LOCALES, type Locale } from "@/lib/i18n/types";
 
-export function LanguageSwitcher({ className = "" }: { className?: string }) {
+export function LanguageSwitcher({
+  className = "",
+  menuAlign = "end",
+}: {
+  className?: string;
+  menuAlign?: "start" | "end";
+}) {
   const { locale, setLocale } = useLanguage();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -39,7 +45,11 @@ export function LanguageSwitcher({ className = "" }: { className?: string }) {
         <span className="hidden sm:inline">{current.code}</span>
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-2 min-w-[88px] bg-mq-surface border border-mq-border shadow-lg py-1 z-50">
+        <div
+          className={`absolute top-full mt-2 min-w-[88px] bg-mq-surface border border-mq-border shadow-lg py-1 z-[60] ${
+            menuAlign === "start" ? "left-0" : "right-0"
+          }`}
+        >
           {LOCALES.map((l) => {
             const meta = LOCALE_META[l];
             return (
