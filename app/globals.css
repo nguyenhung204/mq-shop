@@ -324,9 +324,14 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--mq-surface);
 }
 
-body:has(.mq-lang-gate),
-body:has(.mq-mobile-nav-open) {
+body:has(.mq-lang-gate) {
   overflow: hidden;
+}
+
+html.mq-mobile-nav-open,
+body.mq-mobile-nav-open {
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 @media (max-width: 767px) {

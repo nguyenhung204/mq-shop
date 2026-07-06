@@ -7,10 +7,12 @@ import { LOCALE_META, LOCALES, type Locale } from "@/lib/i18n/types";
 
 export function LanguageSwitcher({
   className = "",
-  menuAlign = "end",
+  menuAlign = "start",
+  menuPlacement = "below",
 }: {
   className?: string;
   menuAlign?: "start" | "end";
+  menuPlacement?: "above" | "below";
 }) {
   const { locale, setLocale } = useLanguage();
   const [open, setOpen] = useState(false);
@@ -46,9 +48,9 @@ export function LanguageSwitcher({
       </button>
       {open && (
         <div
-          className={`absolute top-full mt-2 min-w-[88px] bg-mq-surface border border-mq-border shadow-lg py-1 z-[60] ${
-            menuAlign === "start" ? "left-0" : "right-0"
-          }`}
+          className={`absolute min-w-[88px] bg-mq-surface border border-mq-border shadow-lg py-1 z-[60] ${
+            menuPlacement === "above" ? "bottom-full mb-2" : "top-full mt-2"
+          } ${menuAlign === "start" ? "left-0" : "right-0"}`}
         >
           {LOCALES.map((l) => {
             const meta = LOCALE_META[l];
