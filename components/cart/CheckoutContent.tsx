@@ -3,10 +3,16 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 import { formatPrice } from "@/lib/data/products";
 import { orderApi } from "@/lib/api";
 import { ApiError } from "@/lib/api/client";
-import type { PaymentMethod } from "@/lib/api/types";
+import {
+  checkoutSchema,
+  type CheckoutFormValues,
+} from "@/lib/validations/checkout";
 import { useCart } from "@/components/providers/CartProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -17,11 +23,19 @@ export function CheckoutContent() {
   const { isAuthenticated } = useAuth();
   const { items, itemCount, subtotal, clearCart } = useCart();
   const [placedId, setPlacedId] = useState<string | null>(null);
-  const [shippingAddress, setAddress] = useState("");
-  const [shippingCountry, setCountry] = useState("VN");
-  const [paymentMethod, setMethod] = useState<PaymentMethod>("COD");
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<CheckoutFormValues>({
+    resolver: zodResolver(checkoutSchema),
+    defaultValues: {
+      shippingAddress: "",
+      shippingCountry: "VN",
+      paymentMethod: "COD",
+    },
+  });
 
   if (!isAuthenticated) {
     return (
@@ -69,30 +83,24 @@ export function CheckoutContent() {
   const shipping = subtotal >= 75 ? 0 : 5.99;
   const total = subtotal + shipping;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    if (shippingAddress.length < 5 || shippingAddress.length > 500) {
-      setError("Shipping address must be 5–500 characters.");
-      return;
-    }
-    setBusy(true);
+  const onSubmit = async (values: CheckoutFormValues) => {
     try {
       const order = await orderApi.checkout({
-        paymentMethod,
-        shippingAddress,
-        shippingCountry: shippingCountry || undefined,
+        paymentMethod: values.paymentMethod,
+        shippingAddress: values.shippingAddress,
+        shippingCountry: values.shippingCountry || undefined,
       });
       clearCart();
       setPlacedId(order.id);
+      toast.success(t("checkout.orderPlaced"), {
+        description: `Order #${order.id.slice(0, 8)}`,
+      });
     } catch (err) {
-      setError(
+      const message =
         err instanceof ApiError
           ? err.message
-          : "Checkout failed. Ensure API is running and cart is synced (1 shop only).",
-      );
-    } finally {
-      setBusy(false);
+          : "Checkout failed. Ensure API is running and cart is synced (1 shop only).";
+      toast.error("Checkout failed", { description: message });
     }
   };
 
@@ -106,8 +114,7 @@ export function CheckoutContent() {
         ]}
       />
       <Container className="py-10 md:py-16">
-        {error && <div className="mq-alert mq-alert-error mb-6">{error}</div>}
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-10">
+        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-10">
           <div className="space-y-6">
             <fieldset className="border border-mq-border p-6 rounded-[var(--mq-radius-lg)] shadow-[var(--mq-shadow-sm)]">
               <legend className="text-sm font-semibold uppercase tracking-wider px-2">
@@ -115,24 +122,50 @@ export function CheckoutContent() {
               </legend>
               <div className="space-y-4 mt-4">
                 <div>
-                  <label className="block text-sm mb-1.5">{t("checkout.address")}</label>
+                  <label className="block text-sm mb-1.5" htmlFor="shippingAddress">
+                    {t("checkout.address")}
+                  </label>
                   <textarea
-                    required
+                    id="shippingAddress"
                     className="mq-textarea"
-                    value={shippingAddress}
-                    onChange={(e) => setAddress(e.target.value)}
+                    aria-invalid={Boolean(errors.shippingAddress)}
+                    {...register("shippingAddress")}
                   />
+                  {errors.shippingAddress && (
+                    <p className="text-xs text-mq-accent-orange mt-1.5">
+                      {errors.shippingAddress.message}
+                    </p>
+                  )}
                 </div>
                 <div>
-                  <label className="block text-sm mb-1.5">Country (ISO α-2)</label>
-                  <input className="mq-input" value={shippingCountry} onChange={(e) => setCountry(e.target.value.toUpperCase())} maxLength={2} />
-                </div>
-                <div>
-                  <label className="block text-sm mb-1.5">Payment method</label>
-                  <select
+                  <label className="block text-sm mb-1.5" htmlFor="shippingCountry">
+                    Country (ISO α-2)
+                  </label>
+                  <input
+                    id="shippingCountry"
                     className="mq-input"
-                    value={paymentMethod}
-                    onChange={(e) => setMethod(e.target.value as PaymentMethod)}
+                    maxLength={2}
+                    aria-invalid={Boolean(errors.shippingCountry)}
+                    {...register("shippingCountry", {
+                      onChange: (e) => {
+                        e.target.value = e.target.value.toUpperCase();
+                      },
+                    })}
+                  />
+                  {errors.shippingCountry && (
+                    <p className="text-xs text-mq-accent-orange mt-1.5">
+                      {errors.shippingCountry.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm mb-1.5" htmlFor="paymentMethod">
+                    Payment method
+                  </label>
+                  <select
+                    id="paymentMethod"
+                    className="mq-input"
+                    {...register("paymentMethod")}
                   >
                     <option value="COD">Cash on delivery (COD)</option>
                     <option value="BANK_TRANSFER">Bank transfer</option>
@@ -176,8 +209,8 @@ export function CheckoutContent() {
                 <span>{formatPrice(total)}</span>
               </div>
             </div>
-            <button type="submit" className="mq-btn mq-btn-primary w-full mt-6" disabled={busy}>
-              {busy ? "Placing…" : t("checkout.placeOrder")}
+            <button type="submit" className="mq-btn mq-btn-primary w-full mt-6" disabled={isSubmitting}>
+              {isSubmitting ? "Placing…" : t("checkout.placeOrder")}
             </button>
           </aside>
         </form>

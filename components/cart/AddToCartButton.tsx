@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Product } from "@/lib/data/products";
 import { useCart } from "@/components/providers/CartProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -20,22 +20,21 @@ export function AddToCartButton({
   const { addItem } = useCart();
   const { t } = useLanguage();
   const router = useRouter();
-  const [feedback, setFeedback] = useState<string | null>(null);
   const buttonLabel = label ?? t("common.addToCart");
 
   const handleClick = () => {
     addItem(product);
     if (buyNow) {
+      toast.success(t("cart.added"), { description: product.name });
       router.push("/checkout");
       return;
     }
-    setFeedback(t("cart.added"));
-    setTimeout(() => setFeedback(null), 1500);
+    toast.success(t("cart.added"), { description: product.name });
   };
 
   return (
     <button type="button" className={className} onClick={handleClick}>
-      {feedback ?? buttonLabel}
+      {buttonLabel}
     </button>
   );
 }

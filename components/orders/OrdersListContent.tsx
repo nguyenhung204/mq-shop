@@ -1,38 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { orderApi } from "@/lib/api";
-import type { ApiOrder } from "@/lib/api/types";
-import { asArray, formatMoney } from "@/lib/api/utils";
+import { useMyOrders } from "@/lib/queries/orders";
+import { formatMoney } from "@/lib/api/utils";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { Container, PageHero } from "@/components/ui/shared";
+import { OrderListSkeleton } from "@/components/ui/Skeleton";
 
 function OrdersInner() {
-  const [orders, setOrders] = useState<ApiOrder[]>([]);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    void (async () => {
-      try {
-        const data = await orderApi.myOrders();
-        setOrders(asArray(data));
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to load orders");
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+  const { data: orders = [], isLoading, isError, error } = useMyOrders();
 
   return (
     <>
       <PageHero title="My orders" breadcrumb={[{ label: "Orders" }]} />
       <Container className="py-10 md:py-14">
-        {loading && <p className="text-sm text-mq-text-muted">Loading…</p>}
-        {error && <div className="mq-alert mq-alert-error">{error}</div>}
-        {!loading && orders.length === 0 && !error && (
+        {isLoading && <OrderListSkeleton />}
+        {isError && (
+          <div className="mq-alert mq-alert-error">
+            {error instanceof Error ? error.message : "Failed to load orders"}
+          </div>
+        )}
+        {!isLoading && orders.length === 0 && !isError && (
           <div className="text-center py-12">
             <p className="text-mq-text-secondary mb-4">No orders yet.</p>
             <Link href="/shop" className="mq-btn mq-btn-primary">Shop now</Link>

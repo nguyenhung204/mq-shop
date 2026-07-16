@@ -1,52 +1,43 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { cmsApi } from "@/lib/api";
-import { asArray } from "@/lib/api/utils";
+import { useState } from "react";
+import { useDownloadMaterials, useMarketingMaterials } from "@/lib/queries/seller";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { SellerNav } from "@/components/seller/SellerNav";
 import { Container, PageHero } from "@/components/ui/shared";
+import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 
 function MaterialsInner() {
-  const [items, setItems] = useState<{ folderPath?: string; fileName?: string; fileUrl?: string }[]>([]);
+  const { data: items = [], isLoading, isError, error } = useMarketingMaterials();
+  const downloadMaterials = useDownloadMaterials();
   const [folder, setFolder] = useState("");
-  const [error, setError] = useState("");
   const [downloadInfo, setDownloadInfo] = useState("");
-
-  useEffect(() => {
-    void (async () => {
-      try {
-        setItems(asArray(await cmsApi.materials()) as typeof items);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed (need VIEW_MKT_MAT)");
-      }
-    })();
-  }, []);
 
   return (
     <>
       <PageHero title="Marketing materials" breadcrumb={[{ label: "Seller", href: "/seller" }, { label: "Materials" }]} />
       <Container className="py-10 space-y-4">
         <SellerNav />
-        {error && <div className="mq-alert mq-alert-error">{error}</div>}
+        {isError && (
+          <div className="mq-alert mq-alert-error">
+            {error instanceof Error ? error.message : "Failed (need VIEW_MKT_MAT)"}
+          </div>
+        )}
         {downloadInfo && <div className="mq-alert mq-alert-success">{downloadInfo}</div>}
         <div className="flex gap-2">
           <input className="mq-input" placeholder="Folder path" value={folder} onChange={(e) => setFolder(e.target.value)} />
           <button
             type="button"
             className="mq-btn mq-btn-outline"
-            onClick={async () => {
-              try {
-                const res = await cmsApi.downloadMaterials(folder);
-                setDownloadInfo(JSON.stringify(res));
-              } catch (e) {
-                setError(e instanceof Error ? e.message : "Download failed");
-              }
-            }}
+            disabled={downloadMaterials.isPending}
+            onClick={() =>
+              void downloadMaterials.mutateAsync(folder).then((res) => setDownloadInfo(JSON.stringify(res)))
+            }
           >
-            Download folder
+            {downloadMaterials.isPending ? "Loading…" : "Download folder"}
           </button>
         </div>
+        {isLoading && <AdminCardListSkeleton count={4} />}
         {items.map((m, i) => (
           <div key={i} className="mq-card p-4 text-sm flex justify-between gap-3">
             <span>{m.folderPath}/{m.fileName}</span>

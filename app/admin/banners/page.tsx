@@ -1,17 +1,20 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
-import { adminApi } from "@/lib/api";
-import { ApiError } from "@/lib/api/client";
-import type { ApiBanner } from "@/lib/api/types";
-import { asArray } from "@/lib/api/utils";
+import { FormEvent, useState } from "react";
+import {
+  useAdminBanners,
+  useCreateBanner,
+  useToggleBanner,
+} from "@/lib/queries/admin";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { Container, PageHero } from "@/components/ui/shared";
+import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 
 function BannersInner() {
-  const [items, setItems] = useState<ApiBanner[]>([]);
-  const [error, setError] = useState("");
+  const { data: items = [], isLoading, isError, error } = useAdminBanners();
+  const createBanner = useCreateBanner();
+  const toggleBanner = useToggleBanner();
   const [form, setForm] = useState({
     imageUrl: "",
     targetUrl: "/shop",
@@ -21,30 +24,13 @@ function BannersInner() {
     isActive: true,
   });
 
-  const load = async () => {
-    try {
-      setItems(asArray(await adminApi.banners()) as ApiBanner[]);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed");
-    }
-  };
-
-  useEffect(() => {
-    void load();
-  }, []);
-
   const create = async (e: FormEvent) => {
     e.preventDefault();
-    try {
-      await adminApi.createBanner({
-        ...form,
-        displayOrder: Number(form.displayOrder),
-      });
-      setForm({ ...form, imageUrl: "", title: "" });
-      await load();
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Create failed");
-    }
+    await createBanner.mutateAsync({
+      ...form,
+      displayOrder: Number(form.displayOrder),
+    });
+    setForm({ ...form, imageUrl: "", title: "" });
   };
 
   return (
@@ -52,8 +38,12 @@ function BannersInner() {
       <PageHero title="Banners" breadcrumb={[{ label: "Admin", href: "/admin" }, { label: "Banners" }]} />
       <Container className="py-10 space-y-6">
         <AdminNav />
-        {error && <div className="mq-alert mq-alert-error">{error}</div>}
-        <form className="mq-card p-5 grid sm:grid-cols-2 gap-3" onSubmit={create}>
+        {isError && (
+          <div className="mq-alert mq-alert-error">
+            {error instanceof Error ? error.message : "Failed"}
+          </div>
+        )}
+        <form className="mq-card p-5 grid sm:grid-cols-2 gap-3" onSubmit={(e) => void create(e)}>
           <input className="mq-input" placeholder="Image URL" value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} required />
           <input className="mq-input" placeholder="Target URL" value={form.targetUrl} onChange={(e) => setForm({ ...form, targetUrl: e.target.value })} required />
           <select className="mq-input" value={form.locale} onChange={(e) => setForm({ ...form, locale: e.target.value })}>
@@ -66,8 +56,11 @@ function BannersInner() {
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} /> Active
           </label>
-          <button className="mq-btn mq-btn-primary sm:col-span-2">Create banner</button>
+          <button className="mq-btn mq-btn-primary sm:col-span-2" disabled={createBanner.isPending}>
+            {createBanner.isPending ? "Creating…" : "Create banner"}
+          </button>
         </form>
+        {isLoading && <AdminCardListSkeleton />}
         {items.map((b) => (
           <div key={b.id} className="mq-card p-4 flex justify-between text-sm gap-3">
             <div>
@@ -77,7 +70,8 @@ function BannersInner() {
             <button
               type="button"
               className="mq-btn mq-btn-outline text-xs"
-              onClick={() => void adminApi.updateBanner(b.id, { isActive: !b.isActive }).then(load)}
+              disabled={toggleBanner.isPending}
+              onClick={() => void toggleBanner.mutateAsync({ id: b.id, isActive: !b.isActive })}
             >
               Toggle
             </button>

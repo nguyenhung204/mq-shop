@@ -1,20 +1,21 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
-import { shopApi } from "@/lib/api";
-import { ApiError } from "@/lib/api/client";
-import type { ApiShop } from "@/lib/api/types";
+import { FormEvent, useState } from "react";
+import { useApplyShop, useSellerShop } from "@/lib/queries/seller";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { SellerNav } from "@/components/seller/SellerNav";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Container, PageHero } from "@/components/ui/shared";
+import { ShopCardSkeleton } from "@/components/ui/Skeleton";
+import { useQueryClient } from "@tanstack/react-query";
+import { sellerKeys } from "@/lib/queries/seller";
 
 function ShopInner() {
   const { locale } = useLanguage();
   const lang = locale === "zh-TW" ? "zh-TW" : locale === "en" ? "en" : "vi";
-  const [shop, setShop] = useState<ApiShop | null>(null);
-  const [error, setError] = useState("");
-  const [ok, setOk] = useState("");
+  const queryClient = useQueryClient();
+  const { data: shop, isLoading, isError, error } = useSellerShop();
+  const applyShop = useApplyShop();
   const [form, setForm] = useState({
     name: "",
     taxCode: "",
@@ -23,30 +24,9 @@ function ShopInner() {
     legalDocumentUrl: "",
   });
 
-  const load = async () => {
-    try {
-      setShop(await shopApi.me());
-      setError("");
-    } catch (e) {
-      if (e instanceof ApiError && e.status === 404) setShop(null);
-      else setError(e instanceof Error ? e.message : "Failed to load shop");
-    }
-  };
-
-  useEffect(() => {
-    void load();
-  }, []);
-
   const apply = async (e: FormEvent) => {
     e.preventDefault();
-    setError("");
-    try {
-      const created = await shopApi.apply(form);
-      setShop(created);
-      setOk("Application submitted. Waiting for Admin approval.");
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Apply failed");
-    }
+    await applyShop.mutateAsync(form);
   };
 
   const reason =
@@ -59,9 +39,13 @@ function ShopInner() {
       <PageHero title="My shop" breadcrumb={[{ label: "Seller", href: "/seller" }, { label: "Shop" }]} />
       <Container className="py-10 max-w-xl">
         <SellerNav />
-        {error && <div className="mq-alert mq-alert-error mb-4">{error}</div>}
-        {ok && <div className="mq-alert mq-alert-success mb-4">{ok}</div>}
-        {shop ? (
+        {isError && shop !== null && (
+          <div className="mq-alert mq-alert-error mb-4">
+            {error instanceof Error ? error.message : "Failed to load shop"}
+          </div>
+        )}
+        {isLoading && <ShopCardSkeleton />}
+        {!isLoading && shop ? (
           <div className="mq-card p-6 space-y-3">
             <h2 className="text-xl">{shop.name}</h2>
             <span className="mq-badge mq-badge-cyan">{shop.status}</span>
@@ -71,18 +55,26 @@ function ShopInner() {
             {shop.status === "APPROVED" && (
               <p className="text-sm text-mq-text-muted">If you just got approved, sign out and sign in again to refresh SELLER role in JWT.</p>
             )}
-            <button type="button" className="mq-btn mq-btn-outline text-xs" onClick={() => void load()}>Refresh</button>
+            <button
+              type="button"
+              className="mq-btn mq-btn-outline text-xs"
+              onClick={() => void queryClient.invalidateQueries({ queryKey: sellerKeys.shop() })}
+            >
+              Refresh
+            </button>
           </div>
-        ) : (
-          <form className="mq-card p-6 space-y-3" onSubmit={apply}>
+        ) : !isLoading ? (
+          <form className="mq-card p-6 space-y-3" onSubmit={(e) => void apply(e)}>
             <input className="mq-input" placeholder="Shop name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
             <input className="mq-input" placeholder="Tax code (1–15 digits)" value={form.taxCode} onChange={(e) => setForm({ ...form, taxCode: e.target.value.replace(/\D/g, "").slice(0, 15) })} required />
             <input className="mq-input" placeholder="Country code" value={form.countryCode} onChange={(e) => setForm({ ...form, countryCode: e.target.value.toUpperCase() })} maxLength={2} required />
             <textarea className="mq-textarea" placeholder="Pickup address" value={form.pickupAddress} onChange={(e) => setForm({ ...form, pickupAddress: e.target.value })} required />
             <input className="mq-input" placeholder="Legal document URL" value={form.legalDocumentUrl} onChange={(e) => setForm({ ...form, legalDocumentUrl: e.target.value })} />
-            <button className="mq-btn mq-btn-primary w-full">Submit application</button>
+            <button className="mq-btn mq-btn-primary w-full" disabled={applyShop.isPending}>
+              {applyShop.isPending ? "Submitting…" : "Submit application"}
+            </button>
           </form>
-        )}
+        ) : null}
       </Container>
     </>
   );

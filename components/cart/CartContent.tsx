@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { formatPrice } from "@/lib/data/products";
 import { useCart } from "@/components/providers/CartProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -47,7 +48,10 @@ export function CartContent() {
               </p>
               <button
                 type="button"
-                onClick={clearCart}
+                onClick={() => {
+                  clearCart();
+                  toast.success(t("cart.clearCart"));
+                }}
                 className="text-xs uppercase tracking-wider text-mq-text-muted hover:text-mq-text"
               >
                 {t("cart.clearCart")}

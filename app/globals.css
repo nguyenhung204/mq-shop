@@ -523,3 +523,34 @@ body.mq-mobile-nav-open {
 @media (max-width: 639px) {
   .mq-carousel-item { width: min(220px, calc(100vw - 2.5rem)); }
 }
+
+.mq-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--mq-surface-subtle) 0%,
+    color-mix(in srgb, var(--mq-border) 60%, var(--mq-surface-subtle)) 50%,
+    var(--mq-surface-subtle) 100%
+  );
+  background-size: 200% 100%;
+  animation: mq-skeleton-shimmer 1.4s ease-in-out infinite;
+  border-radius: var(--mq-radius-sm);
+}
+
+@keyframes mq-skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mq-skeleton {
+    animation: none;
+    background: var(--mq-surface-subtle);
+  }
+}
+
+.mq-toast {
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
+  border-radius: var(--mq-radius) !important;
+  border: 1px solid var(--mq-border) !important;
+  box-shadow: var(--mq-shadow) !important;
+}

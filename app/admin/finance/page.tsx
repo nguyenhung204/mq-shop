@@ -1,138 +1,132 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { adminApi, financeApi } from "@/lib/api";
-import { ApiError } from "@/lib/api/client";
-import { asArray } from "@/lib/api/utils";
+import { useState } from "react";
+import {
+  useAdminFinance,
+  useApprovePayout,
+  useCompletePayout,
+  useCompleteWithdraw,
+  useCreatePayoutBatch,
+  useDailyRefundReport,
+  useRejectPayout,
+  useReviewGateway,
+  useWithdrawDecision,
+} from "@/lib/queries/admin";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { Container, PageHero } from "@/components/ui/shared";
-
-type Batch = { id: string; status?: string; netAmountUsd?: string | number };
-type Withdraw = { id: string; status?: string; amountPoints?: string | number };
-type Gateway = { id: string; gatewayName?: string; status?: string; createdBy?: string };
+import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 
 function FinanceInner() {
-  const [batches, setBatches] = useState<Batch[]>([]);
-  const [withdraws, setWithdraws] = useState<Withdraw[]>([]);
-  const [gateways, setGateways] = useState<Gateway[]>([]);
+  const { data, isLoading, isError, error } = useAdminFinance();
+  const createBatch = useCreatePayoutBatch();
+  const approvePayout = useApprovePayout();
+  const rejectPayout = useRejectPayout();
+  const completePayout = useCompletePayout();
+  const withdrawDecision = useWithdrawDecision();
+  const completeWithdraw = useCompleteWithdraw();
+  const reviewGateway = useReviewGateway();
+  const refundReport = useDailyRefundReport();
   const [report, setReport] = useState("");
-  const [error, setError] = useState("");
-  const [msg, setMsg] = useState("");
 
-  const load = async () => {
-    try {
-      const [b, w, g] = await Promise.all([
-        financeApi.payoutBatches(),
-        financeApi.withdrawRequests(),
-        financeApi.gateways(),
-      ]);
-      setBatches(asArray(b) as Batch[]);
-      setWithdraws(asArray(w) as Withdraw[]);
-      setGateways(asArray(g) as Gateway[]);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed");
-    }
-  };
-
-  useEffect(() => {
-    void load();
-  }, []);
+  const batches = data?.batches ?? [];
+  const withdraws = data?.withdraws ?? [];
+  const gateways = data?.gateways ?? [];
 
   return (
     <>
       <PageHero title="Finance" breadcrumb={[{ label: "Admin", href: "/admin" }, { label: "Finance" }]} />
       <Container className="py-10 space-y-8">
         <AdminNav />
-        {error && <div className="mq-alert mq-alert-error">{error}</div>}
-        {msg && <div className="mq-alert mq-alert-success">{msg}</div>}
+        {isError && (
+          <div className="mq-alert mq-alert-error">
+            {error instanceof Error ? error.message : "Failed"}
+          </div>
+        )}
         <p className="text-sm text-mq-text-muted">
           Mark completed = paid outside the system. No bank API.
         </p>
 
-        <section className="space-y-3">
-          <div className="flex flex-wrap gap-2 items-center">
-            <h2 className="text-lg">Payout batches</h2>
-            <button
-              type="button"
-              className="mq-btn mq-btn-outline text-xs"
-              onClick={() =>
-                void financeApi
-                  .createPayoutBatch({})
-                  .then(() => {
-                    setMsg("Batch create attempted");
-                    return load();
-                  })
-                  .catch((e) => setError(e instanceof ApiError ? e.message : "Error"))
-              }
-            >
-              Create batch
-            </button>
-          </div>
-          {batches.map((b) => (
-            <div key={b.id} className="mq-card p-4 flex flex-wrap justify-between gap-2 text-sm">
-              <span>{b.id.slice(0, 8)}… · {b.status} · {b.netAmountUsd}</span>
-              <div className="flex gap-2">
-                {b.status === "PENDING" && (
-                  <>
-                    <button type="button" className="mq-btn mq-btn-primary text-xs" onClick={() => void financeApi.approvePayout(b.id).then(load)}>Approve</button>
-                    <button type="button" className="mq-btn mq-btn-outline text-xs" onClick={() => void financeApi.rejectPayout(b.id, { reason: "Invalid" }).then(load)}>Reject</button>
-                  </>
-                )}
-                {b.status === "APPROVED" && (
-                  <button type="button" className="mq-btn mq-btn-primary text-xs" onClick={() => void financeApi.completePayout(b.id).then(load)}>Mark completed</button>
-                )}
-              </div>
-            </div>
-          ))}
-        </section>
+        {isLoading && <AdminCardListSkeleton count={6} />}
 
-        <section className="space-y-3">
-          <h2 className="text-lg">Wallet withdraw requests</h2>
-          {withdraws.map((w) => (
-            <div key={w.id} className="mq-card p-4 flex flex-wrap justify-between gap-2 text-sm">
-              <span>{w.amountPoints} pts · {w.status}</span>
-              <div className="flex gap-2">
-                {w.status === "PENDING" && (
-                  <>
-                    <button type="button" className="mq-btn mq-btn-primary text-xs" onClick={() => void financeApi.withdrawDecision(w.id, { decision: "APPROVED" }).then(load)}>Approve</button>
-                    <button type="button" className="mq-btn mq-btn-outline text-xs" onClick={() => void financeApi.withdrawDecision(w.id, { decision: "REJECTED", reason: "Invalid bank" }).then(load)}>Reject</button>
-                  </>
-                )}
-                {w.status === "APPROVED" && (
-                  <button type="button" className="mq-btn mq-btn-primary text-xs" onClick={() => void financeApi.completeWithdraw(w.id).then(load)}>Mark paid</button>
-                )}
+        {!isLoading && (
+          <>
+            <section className="space-y-3">
+              <div className="flex flex-wrap gap-2 items-center">
+                <h2 className="text-lg">Payout batches</h2>
+                <button
+                  type="button"
+                  className="mq-btn mq-btn-outline text-xs"
+                  disabled={createBatch.isPending}
+                  onClick={() => void createBatch.mutateAsync()}
+                >
+                  Create batch
+                </button>
               </div>
-            </div>
-          ))}
-        </section>
-
-        <section className="space-y-3">
-          <h2 className="text-lg">Payment gateways</h2>
-          {gateways.map((g) => (
-            <div key={g.id} className="mq-card p-4 flex justify-between text-sm">
-              <span>{g.gatewayName || g.id.slice(0, 8)} · {g.status}</span>
-              {g.status === "PENDING_REVIEW" && (
-                <div className="flex gap-2">
-                  <button type="button" className="mq-btn mq-btn-primary text-xs" onClick={() => void financeApi.reviewGateway(g.id, { decision: "APPROVED" }).then(load)}>Approve</button>
-                  <button type="button" className="mq-btn mq-btn-outline text-xs" onClick={() => void financeApi.reviewGateway(g.id, { decision: "REJECTED", reason: "Invalid" }).then(load)}>Reject</button>
+              {batches.map((b) => (
+                <div key={b.id} className="mq-card p-4 flex flex-wrap justify-between gap-2 text-sm">
+                  <span>{b.id.slice(0, 8)}… · {b.status} · {b.netAmountUsd}</span>
+                  <div className="flex gap-2">
+                    {b.status === "PENDING" && (
+                      <>
+                        <button type="button" className="mq-btn mq-btn-primary text-xs" disabled={approvePayout.isPending} onClick={() => void approvePayout.mutateAsync(b.id)}>Approve</button>
+                        <button type="button" className="mq-btn mq-btn-outline text-xs" disabled={rejectPayout.isPending} onClick={() => void rejectPayout.mutateAsync(b.id)}>Reject</button>
+                      </>
+                    )}
+                    {b.status === "APPROVED" && (
+                      <button type="button" className="mq-btn mq-btn-primary text-xs" disabled={completePayout.isPending} onClick={() => void completePayout.mutateAsync(b.id)}>Mark completed</button>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
-          ))}
-        </section>
+              ))}
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="text-lg">Wallet withdraw requests</h2>
+              {withdraws.map((w) => (
+                <div key={w.id} className="mq-card p-4 flex flex-wrap justify-between gap-2 text-sm">
+                  <span>{w.amountPoints} pts · {w.status}</span>
+                  <div className="flex gap-2">
+                    {w.status === "PENDING" && (
+                      <>
+                        <button type="button" className="mq-btn mq-btn-primary text-xs" disabled={withdrawDecision.isPending} onClick={() => void withdrawDecision.mutateAsync({ id: w.id, decision: "APPROVED" })}>Approve</button>
+                        <button type="button" className="mq-btn mq-btn-outline text-xs" disabled={withdrawDecision.isPending} onClick={() => void withdrawDecision.mutateAsync({ id: w.id, decision: "REJECTED", reason: "Invalid bank" })}>Reject</button>
+                      </>
+                    )}
+                    {w.status === "APPROVED" && (
+                      <button type="button" className="mq-btn mq-btn-primary text-xs" disabled={completeWithdraw.isPending} onClick={() => void completeWithdraw.mutateAsync(w.id)}>Mark paid</button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="text-lg">Payment gateways</h2>
+              {gateways.map((g) => (
+                <div key={g.id} className="mq-card p-4 flex justify-between text-sm">
+                  <span>{g.gatewayName || g.id.slice(0, 8)} · {g.status}</span>
+                  {g.status === "PENDING_REVIEW" && (
+                    <div className="flex gap-2">
+                      <button type="button" className="mq-btn mq-btn-primary text-xs" disabled={reviewGateway.isPending} onClick={() => void reviewGateway.mutateAsync({ id: g.id, decision: "APPROVED" })}>Approve</button>
+                      <button type="button" className="mq-btn mq-btn-outline text-xs" disabled={reviewGateway.isPending} onClick={() => void reviewGateway.mutateAsync({ id: g.id, decision: "REJECTED", reason: "Invalid" })}>Reject</button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </section>
+          </>
+        )}
 
         <button
           type="button"
           className="mq-btn mq-btn-outline"
+          disabled={refundReport.isPending}
           onClick={() =>
-            void adminApi
-              .dailyRefundReport()
-              .then((r) => setReport(JSON.stringify(r, null, 2)))
-              .catch((e) => setError(e instanceof ApiError ? e.message : "Error"))
+            void refundReport.mutateAsync().then((r) => setReport(JSON.stringify(r, null, 2)))
           }
         >
-          Load daily refund report
+          {refundReport.isPending ? "Loading…" : "Load daily refund report"}
         </button>
         {report && <pre className="mq-card p-4 text-xs overflow-auto">{report}</pre>}
       </Container>

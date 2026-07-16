@@ -2,50 +2,36 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
-import { orderApi } from "@/lib/api";
+import { FormEvent, useState } from "react";
+import { toast } from "sonner";
 import { ApiError } from "@/lib/api/client";
-import type { ApiOrder } from "@/lib/api/types";
 import { formatMoney } from "@/lib/api/utils";
+import { useCancelOrder, useOrder } from "@/lib/queries/orders";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { Container, PageHero } from "@/components/ui/shared";
+import { OrderDetailSkeleton } from "@/components/ui/Skeleton";
 
 function OrderDetailInner() {
   const { id } = useParams<{ id: string }>();
-  const [order, setOrder] = useState<ApiOrder | null>(null);
+  const { data: order, isLoading, isError, error } = useOrder(id);
+  const cancelOrder = useCancelOrder(id);
   const [reason, setReason] = useState("");
-  const [error, setError] = useState("");
-  const [msg, setMsg] = useState("");
-  const [loading, setLoading] = useState(true);
-
-  const load = async () => {
-    setLoading(true);
-    try {
-      setOrder(await orderApi.get(id));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
 
   const canCancel = order && ["PENDING", "CONFIRMED", "PROCESSING"].includes(order.status);
   const canRma = order?.status === "DELIVERED";
 
   const onCancel = async (e: FormEvent) => {
     e.preventDefault();
-    setError("");
     try {
-      await orderApi.cancel(id, { reason });
-      setMsg("Order cancelled. Refunds (if any) are recorded for finance — not auto-paid.");
-      await load();
+      await cancelOrder.mutateAsync(reason);
+      toast.success("Order cancelled", {
+        description: "Refunds (if any) are recorded for finance — not auto-paid.",
+      });
+      setReason("");
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Cancel failed");
+      toast.error("Cancel failed", {
+        description: err instanceof ApiError ? err.message : "Cancel failed",
+      });
     }
   };
 
@@ -56,9 +42,12 @@ function OrderDetailInner() {
         breadcrumb={[{ label: "Orders", href: "/orders" }, { label: id.slice(0, 8) }]}
       />
       <Container className="py-10 md:py-14 max-w-3xl mx-auto space-y-6">
-        {loading && <p className="text-sm text-mq-text-muted">Loading…</p>}
-        {error && <div className="mq-alert mq-alert-error">{error}</div>}
-        {msg && <div className="mq-alert mq-alert-success">{msg}</div>}
+        {isLoading && <OrderDetailSkeleton />}
+        {isError && (
+          <div className="mq-alert mq-alert-error">
+            {error instanceof Error ? error.message : "Failed to load"}
+          </div>
+        )}
         {order && (
           <div className="mq-card p-6 space-y-4">
             <div className="flex flex-wrap gap-2">
@@ -79,8 +68,20 @@ function OrderDetailInner() {
             {canCancel && (
               <form onSubmit={onCancel} className="space-y-3 pt-4 border-t border-mq-border">
                 <h3 className="text-sm font-medium">Cancel order</h3>
-                <input className="mq-input" placeholder="Reason" value={reason} onChange={(e) => setReason(e.target.value)} required />
-                <button className="mq-btn mq-btn-outline">Cancel order</button>
+                <input
+                  className="mq-input"
+                  placeholder="Reason"
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  required
+                />
+                <button
+                  type="submit"
+                  className="mq-btn mq-btn-outline"
+                  disabled={cancelOrder.isPending}
+                >
+                  {cancelOrder.isPending ? "Cancelling…" : "Cancel order"}
+                </button>
               </form>
             )}
             {canRma && (
