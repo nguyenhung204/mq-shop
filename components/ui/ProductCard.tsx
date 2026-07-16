@@ -26,26 +26,26 @@ export function ProductCard({
       onMouseLeave={() => setHovered(false)}
     >
       <Link href={`/product/${product.slug}`} className="block">
-        <div className="relative aspect-square mq-product-image-bg overflow-hidden mb-3">
+        <div className="relative aspect-square mq-product-image-bg mq-product-media mb-3">
           <Image
             src={product.image}
             alt={product.name}
             fill
             priority={priority}
-            className="object-contain p-4 transition-opacity duration-300 group-hover:opacity-90"
+            className="object-contain p-4 transition-transform duration-500 ease-out group-hover:scale-[1.04]"
             sizes={compact ? "120px" : "(max-width:768px) 45vw, 240px"}
             quality={75}
           />
 
           {product.salePercent && (
-            <span className="absolute top-0 left-0 mq-sale-badge">
+            <span className="absolute top-2.5 left-2.5 mq-sale-badge z-10">
               -{product.salePercent}%
             </span>
           )}
 
           {/* Hover action bar — top */}
           <div
-            className={`absolute top-0 left-0 right-0 flex items-center justify-center gap-1 bg-black/60 py-2 transition-opacity duration-200 max-md:opacity-100 ${hovered ? "opacity-100" : "opacity-0"}`}
+            className={`absolute top-2.5 right-2.5 flex items-center justify-center gap-1 rounded-[var(--mq-radius-sm)] bg-black/55 backdrop-blur-sm px-1.5 py-1.5 transition-all duration-300 max-md:opacity-100 ${hovered ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1"}`}
           >
             <button
               type="button"
@@ -112,12 +112,12 @@ export function ProductCardMini({ product }: { product: Product }) {
       href={`/product/${product.slug}`}
       className="flex items-center gap-3 group py-2"
     >
-      <div className="relative w-16 h-16 shrink-0 mq-product-image-bg overflow-hidden">
+      <div className="relative w-16 h-16 shrink-0 mq-product-image-bg overflow-hidden rounded-[var(--mq-radius-sm)]">
         <Image
           src={product.image}
           alt={product.name}
           fill
-          className="object-contain p-1"
+          className="object-contain p-1 transition-transform duration-300 group-hover:scale-105"
           sizes="64px"
           quality={60}
         />

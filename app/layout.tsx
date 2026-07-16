@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import { DM_Sans, Playfair_Display } from "next/font/google";
+import { AuthProvider } from "@/components/providers/AuthProvider";
 import { CartProvider } from "@/components/providers/CartProvider";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
+import { NotificationProvider } from "@/components/providers/NotificationProvider";
+import { QueryProvider } from "@/components/providers/QueryProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { AppShell } from "@/components/layout/AppShell";
+import { AppToaster } from "@/components/ui/AppToaster";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -37,13 +41,20 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${dmSans.variable} ${playfair.variable}`} suppressHydrationWarning>
       <body className="min-h-screen flex flex-col antialiased font-sans">
-        <ThemeProvider>
-          <LanguageProvider>
-            <CartProvider>
-              <AppShell>{children}</AppShell>
-            </CartProvider>
-          </LanguageProvider>
-        </ThemeProvider>
+        <QueryProvider>
+          <ThemeProvider>
+            <LanguageProvider>
+              <AuthProvider>
+                <NotificationProvider>
+                  <CartProvider>
+                    <AppShell>{children}</AppShell>
+                    <AppToaster />
+                  </CartProvider>
+                </NotificationProvider>
+              </AuthProvider>
+            </LanguageProvider>
+          </ThemeProvider>
+        </QueryProvider>
       </body>
     </html>
   );
