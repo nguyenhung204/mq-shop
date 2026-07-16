@@ -4,7 +4,9 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { categories, getCategoryBySlug } from "@/lib/data/categories";
-import { products } from "@/lib/data/products";
+import { products, type Product } from "@/lib/data/products";
+import { catalogApi } from "@/lib/api";
+import { mapApiProduct } from "@/lib/api/mapProduct";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { Container, PageHero } from "@/components/ui/shared";
@@ -45,11 +47,13 @@ function CategoryFilters({
 }
 
 export function ShopContent() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const searchParams = useSearchParams();
   const categorySlug = searchParams.get("category");
   const sort = searchParams.get("sort");
+  const q = searchParams.get("q") || "";
   const [filterOpen, setFilterOpen] = useState(false);
+  const [apiProducts, setApiProducts] = useState<Product[] | null>(null);
 
   const category = categorySlug ? getCategoryBySlug(categorySlug) : null;
 
@@ -62,10 +66,31 @@ export function ShopContent() {
     return () => document.body.classList.remove("mq-mobile-nav-open");
   }, [filterOpen]);
 
+  useEffect(() => {
+    const apiLocale = locale === "zh-TW" ? "zh_TW" : locale || "vi";
+    void catalogApi
+      .searchProducts({
+        q: q || undefined,
+        locale: apiLocale,
+        page: 1,
+        limit: 48,
+      })
+      .then((res) => {
+        const items = res.items || [];
+        if (items.length) {
+          setApiProducts(items.map((p) => mapApiProduct(p, locale || "vi")));
+        } else {
+          setApiProducts([]);
+        }
+      })
+      .catch(() => setApiProducts(null));
+  }, [locale, q]);
+
   const filtered = useMemo(() => {
+    const source = apiProducts && apiProducts.length > 0 ? apiProducts : products;
     let list = categorySlug
-      ? products.filter((p) => p.categorySlug === categorySlug)
-      : [...products];
+      ? source.filter((p) => p.categorySlug === categorySlug)
+      : [...source];
 
     if (sort === "deals") {
       list = list.filter((p) => p.salePercent);
@@ -80,12 +105,9 @@ export function ShopContent() {
     }
 
     return list;
-  }, [categorySlug, sort]);
+  }, [categorySlug, sort, apiProducts]);
 
-  const pageTitle = category
-    ? t(`categories.${category.slug}`)
-    : t("nav.shop");
-
+  const pageTitle = category ? t(`categories.${category.slug}`) : t("nav.shop");
   const closeFilter = () => setFilterOpen(false);
 
   return (
@@ -103,10 +125,11 @@ export function ShopContent() {
             </button>
             <span className="text-sm text-mq-text-muted">
               {filtered.length} {t("shop.products")}
+              {apiProducts === null ? " (local catalog)" : ""}
             </span>
           </div>
           <select
-            className="w-full sm:w-auto border border-mq-border bg-mq-surface px-4 py-2 text-sm text-mq-text outline-none"
+            className="mq-input w-full sm:w-auto"
             defaultValue={sort ?? ""}
             onChange={(e) => {
               const params = new URLSearchParams(searchParams.toString());
@@ -132,7 +155,7 @@ export function ShopContent() {
               aria-label="Close filter"
               onClick={closeFilter}
             />
-            <aside className="fixed inset-y-0 left-0 z-50 w-[min(300px,88vw)] md:hidden bg-mq-surface border-r border-mq-border p-6 overflow-y-auto">
+            <aside className="fixed inset-y-0 left-0 z-50 w-[min(300px,88vw)] md:hidden bg-mq-surface border-r border-mq-border p-6 overflow-y-auto rounded-r-[var(--mq-radius-lg)] shadow-[var(--mq-shadow-lg)]">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-sm font-semibold uppercase tracking-wider">
                   {t("nav.categories")}
@@ -153,7 +176,7 @@ export function ShopContent() {
 
         <div className="flex gap-8">
           {filterOpen && (
-            <aside className="hidden md:block w-[280px] shrink-0 border border-mq-border p-6 h-fit">
+            <aside className="hidden md:block w-[280px] shrink-0 border border-mq-border p-6 h-fit rounded-[var(--mq-radius-lg)] shadow-[var(--mq-shadow-sm)]">
               <h3 className="text-sm font-semibold uppercase tracking-wider mb-4">
                 {t("nav.categories")}
               </h3>

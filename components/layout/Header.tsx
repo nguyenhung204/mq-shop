@@ -12,6 +12,9 @@ import { useTheme } from "@/components/providers/ThemeProvider";
 import { useCart } from "@/components/providers/CartProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
+import { NotificationBell } from "@/components/layout/NotificationBell";
+import { RoleSwitcher } from "@/components/layout/RoleSwitcher";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { heroImages } from "@/lib/images";
 
 function NavBadge({ type }: { type: "sale" | "hot" | "new" }) {
@@ -28,6 +31,7 @@ export function Header() {
   const { dark, toggle } = useTheme();
   const { itemCount } = useCart();
   const { t } = useLanguage();
+  const { isAuthenticated } = useAuth();
 
   const closeMega = useCallback(() => setActiveMega(null), []);
 
@@ -113,11 +117,14 @@ export function Header() {
             className="mq-container flex items-center justify-between gap-3 sm:gap-6"
             style={{ height: "var(--mq-header-h)" }}
           >
-          <Link href="/" className="shrink-0 border border-mq-text px-4 py-1.5" onClick={closeMega} onMouseEnter={closeMega}>
+          <Link href="/" className="shrink-0 border border-mq-text px-4 py-1.5 rounded-[var(--mq-radius-sm)]" onClick={closeMega} onMouseEnter={closeMega}>
             <span className="text-xl font-medium tracking-[0.15em] text-mq-text uppercase">
               mq
             </span>
           </Link>
+          <div className="hidden xl:block">
+            <RoleSwitcher />
+          </div>
 
           <nav className="hidden lg:flex items-center h-full">
             {mainNav.map((item) => (
@@ -150,7 +157,8 @@ export function Header() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </button>
-            <Link href="/my-account" className="mq-icon-btn text-mq-text hover:text-mq-gold transition-colors" aria-label="Account" onClick={closeMega}>
+            <NotificationBell />
+            <Link href={isAuthenticated ? "/account" : "/my-account"} className="mq-icon-btn text-mq-text hover:text-mq-gold transition-colors" aria-label="Account" onClick={closeMega}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>

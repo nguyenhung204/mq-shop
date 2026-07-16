@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { DM_Sans, Playfair_Display } from "next/font/google";
+import { AuthProvider } from "@/components/providers/AuthProvider";
 import { CartProvider } from "@/components/providers/CartProvider";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
+import { NotificationProvider } from "@/components/providers/NotificationProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { AppShell } from "@/components/layout/AppShell";
 import "./globals.css";
@@ -39,9 +41,13 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col antialiased font-sans">
         <ThemeProvider>
           <LanguageProvider>
-            <CartProvider>
-              <AppShell>{children}</AppShell>
-            </CartProvider>
+            <AuthProvider>
+              <NotificationProvider>
+                <CartProvider>
+                  <AppShell>{children}</AppShell>
+                </CartProvider>
+              </NotificationProvider>
+            </AuthProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>

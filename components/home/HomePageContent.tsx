@@ -69,7 +69,7 @@ export function HomePageContent() {
               { title: t("home.timelessDesign"), image: heroImages.promo1 },
               { title: t("home.thoughtfulGifts"), image: heroImages.promo2 },
             ].map((banner) => (
-              <div key={banner.title} className="relative h-[280px] md:h-[380px] overflow-hidden group">
+              <div key={banner.title} className="relative h-[280px] md:h-[380px] overflow-hidden group rounded-[var(--mq-radius-lg)]">
                 <Image
                   src={banner.image}
                   alt={banner.title}

@@ -4,50 +4,82 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { catalogApi } from "@/lib/api";
+import type { ApiBanner } from "@/lib/api/types";
 import { heroImages } from "@/lib/images";
 import { Container } from "@/components/ui/shared";
 
-export function HeroSlider() {
-  const { t } = useLanguage();
-  const [slide, setSlide] = useState(0);
+type Slide = { title: string; subtitle: string; image: string; cta: string; href: string };
 
-  const slides = [
+export function HeroSlider() {
+  const { t, locale } = useLanguage();
+  const [slide, setSlide] = useState(0);
+  const [apiBanners, setApiBanners] = useState<ApiBanner[] | null>(null);
+
+  useEffect(() => {
+    if (!locale) return;
+    const apiLocale = locale === "zh-TW" ? "zh_TW" : locale;
+    void catalogApi
+      .banners(apiLocale)
+      .then((b) => setApiBanners(Array.isArray(b) ? b.filter((x) => x.isActive) : []))
+      .catch(() => setApiBanners([]));
+  }, [locale]);
+
+  const fallback: Slide[] = [
     {
       title: t("home.hero1Title"),
       subtitle: t("home.hero1Subtitle"),
       image: heroImages.slide1,
       cta: t("home.heroCta1"),
+      href: "/shop",
     },
     {
       title: t("home.hero2Title"),
       subtitle: t("home.hero2Subtitle"),
       image: heroImages.slide2,
       cta: t("home.heroCta2"),
+      href: "/shop",
     },
   ];
+
+  const slides: Slide[] =
+    apiBanners && apiBanners.length > 0
+      ? apiBanners.map((b) => ({
+          title: b.title,
+          subtitle: t("home.hero1Subtitle"),
+          image: b.imageUrl,
+          cta: t("home.heroCta1"),
+          href: b.targetUrl || "/shop",
+        }))
+      : fallback;
 
   useEffect(() => {
     const timer = setInterval(() => setSlide((s) => (s + 1) % slides.length), 7000);
     return () => clearInterval(timer);
   }, [slides.length]);
 
+  useEffect(() => {
+    setSlide(0);
+  }, [slides.length]);
+
   return (
     <section className="relative min-h-[380px] sm:min-h-[500px] md:min-h-[700px] lg:min-h-[815px] overflow-hidden">
       {slides.map((s, i) => (
         <div
-          key={i}
-          className={`absolute inset-0 transition-opacity duration-700 ${i === slide ? "opacity-100 z-10" : "opacity-0 z-0"}`}
+          key={`${s.image}-${i}`}
+          className={`absolute inset-0 transition-opacity duration-[900ms] ease-out ${i === slide ? "opacity-100 z-10" : "opacity-0 z-0"}`}
         >
           <Image
             src={s.image}
             alt={s.title}
             fill
-            className="object-cover"
+            className={`object-cover transition-transform duration-[9000ms] ease-out ${i === slide ? "scale-105" : "scale-100"}`}
             priority={i === 0}
             sizes="100vw"
             quality={80}
+            unoptimized={s.image.startsWith("http")}
           />
-          <div className="absolute inset-0 bg-black/40" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/35 to-black/20" />
           <div className="absolute inset-0 z-20 flex items-center">
             <Container>
               <span className="block text-[11px] font-medium uppercase tracking-[0.25em] text-white/70 mb-4">
@@ -59,7 +91,7 @@ export function HeroSlider() {
               <p className="mt-5 text-base md:text-lg text-white/75 max-w-md leading-relaxed">
                 {s.subtitle}
               </p>
-              <Link href="/shop" className="mq-btn mq-btn-primary mt-8 inline-flex bg-white text-black hover:bg-white/90">
+              <Link href={s.href} className="mq-btn mq-btn-primary mt-8 inline-flex bg-white text-black hover:bg-white/90 shadow-lg">
                 {s.cta}
               </Link>
             </Container>
