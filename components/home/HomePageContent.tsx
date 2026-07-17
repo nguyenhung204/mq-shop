@@ -79,7 +79,7 @@ export function HomePageContent() {
                   quality={75}
                 />
                 <div className="absolute inset-0 bg-black/35 flex flex-col justify-end p-8">
-                  <h3 className="text-2xl md:text-3xl text-white font-display tracking-wide">{banner.title}</h3>
+                  <h3 className="text-2xl md:text-3xl text-white font-display tracking-tight">{banner.title}</h3>
                   <Link href="/shop" className="mq-btn mq-btn-primary mt-4 w-fit text-xs bg-white text-black hover:bg-white/90">
                     {t("common.discoverNow")}
                   </Link>
@@ -124,7 +124,7 @@ export function HomePageContent() {
           <SectionHeading label={t("home.reviews")} title={t("home.whatClientsSay")} />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {testimonials.map((item) => (
-              <blockquote key={item.name} className="bg-mq-surface p-8 border border-mq-border">
+              <blockquote key={item.name} className="bg-mq-surface p-8 border border-mq-border rounded-[var(--mq-radius-lg)]">
                 <div className="flex gap-0.5 mb-4 text-mq-gold">
                   {Array.from({ length: item.rating }).map((_, i) => (
                     <Star key={i} size={14} fill="currentColor" strokeWidth={0} />
@@ -144,14 +144,14 @@ export function HomePageContent() {
       <section className="py-14 md:py-20">
         <Container>
           <SectionHeading label={t("home.compare")} title={t("home.seeTheDifference")} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 min-h-[280px] sm:min-h-0 sm:h-[360px] md:h-[480px] overflow-hidden">
-            <div className="relative min-h-[200px] sm:min-h-0 sm:h-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-h-[280px] sm:min-h-0 sm:h-[360px] md:h-[480px]">
+            <div className="relative min-h-[200px] sm:min-h-0 sm:h-full overflow-hidden rounded-[var(--mq-radius-lg)]">
               <Image src={miscImages.compareBefore} alt={t("common.standard")} fill className="object-cover" sizes="50vw" quality={75} />
-              <span className="absolute top-4 left-4 bg-black text-white text-[10px] px-3 py-1 uppercase tracking-widest">
+              <span className="absolute top-4 left-4 bg-black text-white text-[10px] px-3 py-1 uppercase tracking-widest rounded-[var(--mq-radius-sm)]">
                 {t("common.standard")}
               </span>
             </div>
-            <div className="relative min-h-[200px] sm:min-h-0 sm:h-full">
+            <div className="relative min-h-[200px] sm:min-h-0 sm:h-full overflow-hidden rounded-[var(--mq-radius-lg)]">
               <Image src={miscImages.compareAfter} alt={t("common.mqQuality")} fill className="object-cover" sizes="50vw" quality={75} />
               <span className="absolute top-4 right-4 mq-sale-badge uppercase tracking-widest">
                 {t("common.mqQuality")}

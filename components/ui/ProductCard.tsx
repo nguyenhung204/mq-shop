@@ -112,7 +112,7 @@ export function ProductCardMini({ product }: { product: Product }) {
       href={`/product/${product.slug}`}
       className="flex items-center gap-3 group py-2"
     >
-      <div className="relative w-16 h-16 shrink-0 mq-product-image-bg overflow-hidden rounded-[var(--mq-radius-sm)]">
+      <div className="relative w-16 h-16 shrink-0 mq-product-image-bg overflow-hidden rounded-[var(--mq-radius-media)]">
         <Image
           src={product.image}
           alt={product.name}
