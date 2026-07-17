@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Outfit, Plus_Jakarta_Sans } from "next/font/google";
+import { Figtree, Nunito_Sans } from "next/font/google";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { CartProvider } from "@/components/providers/CartProvider";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
@@ -10,15 +10,15 @@ import { AppShell } from "@/components/layout/AppShell";
 import { AppToaster } from "@/components/ui/AppToaster";
 import "./globals.css";
 
-const plusJakarta = Plus_Jakarta_Sans({
-  variable: "--font-plus-jakarta",
+const nunitoSans = Nunito_Sans({
+  variable: "--font-nunito-sans",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
-const outfit = Outfit({
-  variable: "--font-outfit",
+const figtree = Figtree({
+  variable: "--font-figtree",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
@@ -39,7 +39,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${plusJakarta.variable} ${outfit.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${nunitoSans.variable} ${figtree.variable}`} suppressHydrationWarning>
       <body className="min-h-screen flex flex-col antialiased font-sans">
         <QueryProvider>
           <ThemeProvider>

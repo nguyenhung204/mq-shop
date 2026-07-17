@@ -63,9 +63,9 @@ export function CartContent() {
                 <li key={item.productId} className="flex flex-wrap sm:flex-nowrap gap-4 py-6">
                   <Link
                     href={`/product/${item.slug}`}
-                    className="relative w-24 h-24 shrink-0 mq-product-image-bg overflow-hidden"
+                    className="relative w-24 h-[7.5rem] shrink-0 mq-product-image-bg mq-product-media"
                   >
-                    <Image src={item.image} alt={item.name} fill className="object-contain p-2" sizes="96px" />
+                    <Image src={item.image} alt={item.name} fill className="mq-product-media-img" sizes="96px" />
                   </Link>
                   <div className="flex-1 min-w-0">
                     <Link

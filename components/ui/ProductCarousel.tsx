@@ -19,7 +19,8 @@ export function ProductCarousel({
     const first = el?.firstElementChild as HTMLElement | null;
     if (!el || !first) return;
     const itemWidth = first.offsetWidth;
-    const gap = 20;
+    const styles = window.getComputedStyle(el);
+    const gap = Number.parseFloat(styles.columnGap || styles.gap || "24") || 24;
     el.scrollBy({ left: dir * (itemWidth + gap) * 2, behavior: "smooth" });
   };
 

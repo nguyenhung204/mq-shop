@@ -184,8 +184,8 @@ export function CheckoutContent() {
             <ul className="space-y-3 mb-4 max-h-48 overflow-y-auto">
               {items.map((item) => (
                 <li key={item.productId} className="flex gap-3 text-sm">
-                  <div className="relative w-12 h-12 shrink-0 mq-product-image-bg rounded-[var(--mq-radius-media)] overflow-hidden">
-                    <Image src={item.image} alt="" fill className="object-contain p-1" sizes="48px" />
+                  <div className="relative w-12 h-12 shrink-0 mq-product-image-bg mq-product-media">
+                    <Image src={item.image} alt="" fill className="mq-product-media-img" sizes="48px" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="line-clamp-1">{item.name}</p>

@@ -183,11 +183,9 @@ export function ShopContent() {
               <CategoryFilters categorySlug={categorySlug} />
             </aside>
           )}
-          <div className="flex-1 min-w-0 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10">
+          <div className="flex-1 min-w-0 mq-product-grid">
             {filtered.map((p, i) => (
-              <div key={p.id} className="w-full">
-                <ProductCard product={p} priority={i < 4} />
-              </div>
+              <ProductCard key={p.id} product={p} priority={i < 4} />
             ))}
           </div>
         </div>
