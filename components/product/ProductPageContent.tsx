@@ -40,7 +40,7 @@ export function ProductPageContent({
       />
       <Container className="py-10 md:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
-          <div className="relative aspect-[4/5] mq-product-image-bg mq-product-media">
+          <div data-mq-fly-source data-mq-product-gallery className="relative aspect-[4/5] mq-product-image-bg mq-product-media">
             <Image
               src={product.image}
               alt={product.name}

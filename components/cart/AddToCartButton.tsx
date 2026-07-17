@@ -1,8 +1,10 @@
 "use client";
 
+import type { MouseEvent } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Product } from "@/lib/data/products";
+import { useFlyToCart } from "@/components/cart/FlyToCartProvider";
 import { useCart } from "@/components/providers/CartProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
@@ -18,18 +20,19 @@ export function AddToCartButton({
   buyNow?: boolean;
 }) {
   const { addItem } = useCart();
+  const { flyToCart } = useFlyToCart();
   const { t } = useLanguage();
   const router = useRouter();
   const buttonLabel = label ?? t("common.addToCart");
 
-  const handleClick = () => {
+  const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
     addItem(product);
+    flyToCart(product.image, e.currentTarget);
+
     if (buyNow) {
       toast.success(t("cart.added"), { description: product.name });
       router.push("/checkout");
-      return;
     }
-    toast.success(t("cart.added"), { description: product.name });
   };
 
   return (

@@ -27,7 +27,7 @@ export function ProductCard({
       onMouseLeave={() => setHovered(false)}
     >
       <Link href={`/product/${product.slug}`} className="block flex-1">
-        <div className="relative aspect-[4/5] mq-product-image-bg mq-product-media mb-3.5">
+        <div data-mq-fly-source className="relative aspect-[4/5] mq-product-image-bg mq-product-media mb-3.5">
           <Image
             src={product.image}
             alt={product.name}

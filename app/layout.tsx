@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Figtree, Nunito_Sans } from "next/font/google";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { CartProvider } from "@/components/providers/CartProvider";
+import { FlyToCartProvider } from "@/components/cart/FlyToCartProvider";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import { NotificationProvider } from "@/components/providers/NotificationProvider";
 import { QueryProvider } from "@/components/providers/QueryProvider";
@@ -47,8 +48,10 @@ export default function RootLayout({
               <AuthProvider>
                 <NotificationProvider>
                   <CartProvider>
-                    <AppShell>{children}</AppShell>
-                    <AppToaster />
+                    <FlyToCartProvider>
+                      <AppShell>{children}</AppShell>
+                      <AppToaster />
+                    </FlyToCartProvider>
                   </CartProvider>
                 </NotificationProvider>
               </AuthProvider>
