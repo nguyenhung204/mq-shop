@@ -64,52 +64,55 @@ export function HeroSlider() {
 
   return (
     <section className="pt-3 md:pt-4 px-3 md:px-4">
-      <div className="relative min-h-[380px] sm:min-h-[500px] md:min-h-[640px] lg:min-h-[760px] overflow-hidden rounded-[var(--mq-radius-lg)]">
-        {slides.map((s, i) => (
-          <div
-            key={`${s.image}-${i}`}
-            className={`absolute inset-0 transition-opacity duration-[900ms] ease-out ${i === slide ? "opacity-100 z-10" : "opacity-0 z-0"}`}
-          >
-            <Image
-              src={s.image}
-              alt={s.title}
-              fill
-              className={`object-cover transition-transform duration-[9000ms] ease-out ${i === slide ? "scale-105" : "scale-100"}`}
-              priority={i === 0}
-              sizes="100vw"
-              quality={80}
-              unoptimized={s.image.startsWith("http")}
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/35 to-black/20" />
-            <div className="absolute inset-0 z-20 flex items-center">
-              <Container>
-                <span className="block text-[11px] font-medium uppercase tracking-[0.2em] text-white/70 mb-4">
-                  {t("common.mqCollection")}
-                </span>
-                <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl text-white max-w-3xl leading-[1.1] tracking-tight font-display">
-                  {s.title}
-                </h1>
-                <p className="mt-5 text-base md:text-lg text-white/75 max-w-md leading-relaxed">
-                  {s.subtitle}
-                </p>
-                <Link href={s.href} className="mq-btn mq-btn-primary mt-8 inline-flex bg-white text-black hover:bg-white/90 shadow-lg">
-                  {s.cta}
-                </Link>
-              </Container>
-            </div>
+      <div className="relative min-h-[420px] sm:min-h-[520px] md:min-h-[660px] lg:min-h-[760px] overflow-hidden rounded-[var(--mq-radius-lg)]">
+      {slides.map((s, i) => (
+        <div
+          key={`${s.image}-${i}`}
+          className={`absolute inset-0 transition-opacity duration-[900ms] ease-out ${i === slide ? "opacity-100 z-10" : "opacity-0 z-0"}`}
+        >
+          <Image
+            src={s.image}
+            alt={s.title}
+            fill
+            className={`object-cover transition-transform duration-[9000ms] ease-out ${i === slide ? "scale-105" : "scale-100"}`}
+            priority={i === 0}
+            sizes="100vw"
+            quality={80}
+            unoptimized={s.image.startsWith("http")}
+          />
+          <div className="absolute inset-0 bg-black/40" />
+          <div className="absolute inset-0 z-20 flex items-center justify-center text-center">
+            <Container>
+              <span className="block text-[11px] font-medium uppercase tracking-[0.22em] text-white/75 mb-4">
+                {t("common.mqCollection")}
+              </span>
+              <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl text-white max-w-4xl mx-auto leading-[1.1] tracking-tight font-display uppercase">
+                {s.title}
+              </h1>
+              <p className="mt-5 text-base md:text-lg text-white/80 max-w-xl mx-auto leading-relaxed">
+                {s.subtitle}
+              </p>
+              <Link
+                href={s.href}
+                className="mq-btn mq-btn-primary mt-8 inline-flex bg-white text-black border-black hover:bg-white/90"
+              >
+                {s.cta}
+              </Link>
+            </Container>
           </div>
-        ))}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex gap-2">
-          {slides.map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setSlide(i)}
-              className={`h-2.5 rounded-full transition-all ${i === slide ? "w-10 bg-white" : "w-5 bg-white/40"}`}
-              aria-label={`Slide ${i + 1}`}
-            />
-          ))}
         </div>
+      ))}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex gap-2">
+        {slides.map((_, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => setSlide(i)}
+            className={`h-1 rounded-full transition-all ${i === slide ? "w-10 bg-white" : "w-6 bg-white/40"}`}
+            aria-label={`Slide ${i + 1}`}
+          />
+        ))}
+      </div>
       </div>
     </section>
   );

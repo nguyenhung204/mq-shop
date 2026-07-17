@@ -64,12 +64,15 @@ export function HomePageContent() {
 
       <section className="py-8">
         <Container>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
               { title: t("home.timelessDesign"), image: heroImages.promo1 },
               { title: t("home.thoughtfulGifts"), image: heroImages.promo2 },
             ].map((banner) => (
-              <div key={banner.title} className="relative h-[280px] md:h-[380px] overflow-hidden group rounded-[var(--mq-radius-lg)]">
+              <div
+                key={banner.title}
+                className="relative h-[300px] md:h-[420px] overflow-hidden group rounded-[var(--mq-radius-lg)]"
+              >
                 <Image
                   src={banner.image}
                   alt={banner.title}
@@ -78,9 +81,14 @@ export function HomePageContent() {
                   sizes="(max-width:768px) 100vw, 50vw"
                   quality={75}
                 />
-                <div className="absolute inset-0 bg-black/35 flex flex-col justify-end p-8">
-                  <h3 className="text-2xl md:text-3xl text-white font-display tracking-tight">{banner.title}</h3>
-                  <Link href="/shop" className="mq-btn mq-btn-primary mt-4 w-fit text-xs bg-white text-black hover:bg-white/90">
+                <div className="absolute inset-0 bg-black/35 flex flex-col items-center justify-center text-center p-8">
+                  <h3 className="text-2xl md:text-3xl text-white font-display tracking-tight uppercase">
+                    {banner.title}
+                  </h3>
+                  <Link
+                    href="/shop"
+                    className="mq-btn mq-btn-primary mt-5 w-fit text-xs bg-white text-black border-black hover:bg-white/90"
+                  >
                     {t("common.discoverNow")}
                   </Link>
                 </div>

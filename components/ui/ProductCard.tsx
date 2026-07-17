@@ -27,14 +27,14 @@ export function ProductCard({
       onMouseLeave={() => setHovered(false)}
     >
       <Link href={`/product/${product.slug}`} className="block flex-1">
-        <div data-mq-fly-source className="relative aspect-[4/5] mq-product-image-bg mq-product-media mb-3.5">
+        <div data-mq-fly-source className="relative aspect-square mq-product-image-bg mq-product-media mb-3.5">
           <Image
             src={product.image}
             alt={product.name}
             fill
             priority={priority}
             className="mq-product-media-img"
-            sizes={compact ? "120px" : "(max-width:768px) 45vw, 260px"}
+            sizes={compact ? "120px" : "(max-width:768px) 48vw, 300px"}
             quality={82}
           />
 
