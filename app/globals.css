@@ -561,6 +561,8 @@ h1, h2, h3, h4, h5, h6 {
   scrollbar-width: none;
   -ms-overflow-style: none;
   padding: 4px 2px 12px;
+  justify-content: flex-start;
+  align-items: stretch;
 }
 
 .mq-carousel-track::-webkit-scrollbar {
@@ -573,8 +575,20 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .mq-carousel-item {
-  width: min(300px, calc(100vw - 3.25rem));
+  width: min(240px, calc((100vw - 4rem) / 2.2));
   flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .mq-carousel-item {
+    width: min(220px, calc((100% - 3.75rem) / 4));
+  }
+}
+
+@media (min-width: 1280px) {
+  .mq-carousel-item {
+    width: min(230px, calc((100% - 5rem) / 5));
+  }
 }
 
 .mq-icon-btn {
@@ -715,7 +729,7 @@ body.mq-mobile-nav-open {
 }
 
 @media (max-width: 639px) {
-  .mq-carousel-item { width: min(270px, calc(100vw - 2.75rem)); }
+  .mq-carousel-item { width: min(220px, calc(100vw - 3.5rem)); }
 }
 
 .mq-skeleton {

@@ -78,7 +78,7 @@ export function ProductCard({
           {product.salePercent ? <SaleCountdown seed={product.id} /> : null}
         </div>
 
-        <h3 className="text-[13px] leading-snug text-mq-text font-medium line-clamp-2 min-h-[2.5rem]">
+        <h3 className="text-[16px] leading-snug text-mq-text font-medium line-clamp-2 min-h-[2.75rem]">
           {product.name}
         </h3>
         <div className="mt-1.5">

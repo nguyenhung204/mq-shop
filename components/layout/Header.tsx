@@ -331,7 +331,7 @@ export function Header() {
                     ))}
                   </div>
                   <ProductCarousel
-                    products={products.filter((p) => p.categorySlug === activeCategory).slice(0, 5)}
+                    products={products.filter((p) => p.categorySlug === activeCategory)}
                   />
                 </div>
               )}
