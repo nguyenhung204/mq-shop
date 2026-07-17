@@ -84,7 +84,18 @@ function bumpCartTarget() {
   el.classList.remove("mq-cart-bump");
   void el.offsetWidth;
   el.classList.add("mq-cart-bump");
-  window.setTimeout(() => el.classList.remove("mq-cart-bump"), 520);
+  window.setTimeout(() => el.classList.remove("mq-cart-bump"), 420);
+}
+
+/** Shrink source rect to a calm thumbnail centered on the product image. */
+function softStartRect(from: Rect): Rect {
+  const size = Math.min(56, Math.max(40, Math.min(from.w, from.h) * 0.28));
+  return {
+    x: from.x + from.w / 2 - size / 2,
+    y: from.y + from.h / 2 - size / 2,
+    w: size,
+    h: size,
+  };
 }
 
 function FlyerItem({
@@ -100,42 +111,48 @@ function FlyerItem({
     const el = ref.current;
     if (!el) return;
 
-    const { from, to } = flyer;
+    const from = softStartRect(flyer.from);
+    const { to } = flyer;
     const dx = to.x - from.x;
     const dy = to.y - from.y;
-    const midX = dx * 0.4;
-    const midY = Math.min(dy * 0.35, dy) - 60;
-    const endScale = Math.min(to.w / from.w, to.h / from.h, 0.22);
+    const midX = dx * 0.45;
+    const midY = dy * 0.4 - 28;
+    const endScale = Math.min(to.w / from.w, to.h / from.h, 0.45);
 
     el.style.left = `${from.x}px`;
     el.style.top = `${from.y}px`;
     el.style.width = `${from.w}px`;
     el.style.height = `${from.h}px`;
     el.style.transformOrigin = "top left";
-    el.style.opacity = "1";
-    el.style.transform = "translate3d(0,0,0) scale(1) rotate(0deg)";
+    el.style.opacity = "0";
+    el.style.transform = "translate3d(0,0,0) scale(0.92)";
 
     const animation = el.animate(
       [
         {
-          transform: "translate3d(0,0,0) scale(1) rotate(0deg)",
-          opacity: 1,
+          transform: "translate3d(0,0,0) scale(0.92)",
+          opacity: 0,
           offset: 0,
         },
         {
-          transform: `translate3d(${midX}px, ${midY}px, 0) scale(0.78) rotate(-10deg)`,
-          opacity: 1,
-          offset: 0.42,
+          transform: "translate3d(0,0,0) scale(1)",
+          opacity: 0.88,
+          offset: 0.12,
         },
         {
-          transform: `translate3d(${dx}px, ${dy}px, 0) scale(${endScale}) rotate(14deg)`,
-          opacity: 0.15,
+          transform: `translate3d(${midX}px, ${midY}px, 0) scale(0.82)`,
+          opacity: 0.75,
+          offset: 0.55,
+        },
+        {
+          transform: `translate3d(${dx}px, ${dy}px, 0) scale(${endScale})`,
+          opacity: 0,
           offset: 1,
         },
       ],
       {
-        duration: 820,
-        easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+        duration: 1100,
+        easing: "cubic-bezier(0.33, 0.1, 0.25, 1)",
         fill: "forwards",
       },
     );
