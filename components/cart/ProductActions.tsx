@@ -1,23 +1,27 @@
 "use client";
 
+import type { MouseEvent } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Product } from "@/lib/data/products";
+import { useFlyToCart } from "@/components/cart/FlyToCartProvider";
 import { useCart } from "@/components/providers/CartProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export function ProductActions({ product }: { product: Product }) {
   const { addItem } = useCart();
+  const { flyToCart } = useFlyToCart();
   const { t } = useLanguage();
   const router = useRouter();
 
-  const handleAdd = () => {
+  const handleAdd = (e: MouseEvent<HTMLButtonElement>) => {
     addItem(product);
-    toast.success(t("cart.added"), { description: product.name });
+    flyToCart(product.image, e.currentTarget);
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = (e: MouseEvent<HTMLButtonElement>) => {
     addItem(product);
+    flyToCart(product.image, e.currentTarget);
     toast.success(t("cart.added"), { description: product.name });
     router.push("/checkout");
   };

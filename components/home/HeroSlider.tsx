@@ -63,7 +63,8 @@ export function HeroSlider() {
   }, [slides.length]);
 
   return (
-    <section className="relative min-h-[380px] sm:min-h-[500px] md:min-h-[700px] lg:min-h-[815px] overflow-hidden">
+    <section className="pt-3 md:pt-4 px-3 md:px-4">
+      <div className="relative min-h-[420px] sm:min-h-[520px] md:min-h-[660px] lg:min-h-[760px] overflow-hidden rounded-[var(--mq-radius-lg)]">
       {slides.map((s, i) => (
         <div
           key={`${s.image}-${i}`}
@@ -79,19 +80,22 @@ export function HeroSlider() {
             quality={80}
             unoptimized={s.image.startsWith("http")}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/35 to-black/20" />
-          <div className="absolute inset-0 z-20 flex items-center">
+          <div className="absolute inset-0 bg-black/40" />
+          <div className="absolute inset-0 z-20 flex items-center justify-center text-center">
             <Container>
-              <span className="block text-[11px] font-medium uppercase tracking-[0.25em] text-white/70 mb-4">
+              <span className="block text-[11px] font-medium uppercase tracking-[0.22em] text-white/75 mb-4">
                 {t("common.mqCollection")}
               </span>
-              <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl text-white max-w-3xl leading-[1.05] tracking-wide">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl text-white max-w-4xl mx-auto leading-[1.1] tracking-tight font-display uppercase">
                 {s.title}
               </h1>
-              <p className="mt-5 text-base md:text-lg text-white/75 max-w-md leading-relaxed">
+              <p className="mt-5 text-base md:text-lg text-white/80 max-w-xl mx-auto leading-relaxed">
                 {s.subtitle}
               </p>
-              <Link href={s.href} className="mq-btn mq-btn-primary mt-8 inline-flex bg-white text-black hover:bg-white/90 shadow-lg">
+              <Link
+                href={s.href}
+                className="mq-btn mq-btn-primary mt-8 inline-flex bg-white text-black border-black hover:bg-white/90"
+              >
                 {s.cta}
               </Link>
             </Container>
@@ -104,10 +108,11 @@ export function HeroSlider() {
             key={i}
             type="button"
             onClick={() => setSlide(i)}
-            className={`h-2.5 rounded-full transition-all ${i === slide ? "w-10 bg-white" : "w-5 bg-white/40"}`}
+            className={`h-1 rounded-full transition-all ${i === slide ? "w-10 bg-white" : "w-6 bg-white/40"}`}
             aria-label={`Slide ${i + 1}`}
           />
         ))}
+      </div>
       </div>
     </section>
   );

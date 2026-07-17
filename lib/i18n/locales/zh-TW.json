@@ -1,9 +1,17 @@
 {
   "gate": {
-    "label": "歡迎",
-    "title": "選擇您的語言",
-    "subtitle": "選擇語言以繼續在 MQ 購物。",
-    "continue": "繼續"
+    "label": "安全購物入口",
+    "title": "打造專屬體驗",
+    "subtitle": "選擇目的地，即可取得準確運費、在地優惠，以及為您量身打造的購物旅程。",
+    "continue": "繼續購物",
+    "currency": "貨幣",
+    "regionSelector": "地區選擇",
+    "support": "支援",
+    "shippingPolicy": "運送政策",
+    "terms": "服務條款",
+    "privacy": "隱私權政策",
+    "cookies": "Cookie 設定",
+    "copyright": "© 2024 MQ Shop. 版權所有。"
   },
   "topBar": {
     "promo": "滿 $75 免運費 — 選購 MQ 系列",

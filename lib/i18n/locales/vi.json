@@ -1,9 +1,17 @@
 {
   "gate": {
-    "label": "Chào mừng",
-    "title": "Chọn ngôn ngữ của bạn",
-    "subtitle": "Chọn ngôn ngữ để tiếp tục mua sắm tại MQ.",
-    "continue": "Tiếp tục"
+    "label": "Cổng mua sắm an toàn",
+    "title": "Cá nhân hóa trải nghiệm",
+    "subtitle": "Chọn điểm đến để nhận phí vận chuyển chính xác, ưu đãi địa phương và hành trình mua sắm phù hợp với bạn.",
+    "continue": "Tiếp tục mua sắm",
+    "currency": "Tiền tệ",
+    "regionSelector": "Chọn khu vực",
+    "support": "Hỗ trợ",
+    "shippingPolicy": "Chính sách vận chuyển",
+    "terms": "Điều khoản dịch vụ",
+    "privacy": "Chính sách bảo mật",
+    "cookies": "Cài đặt cookie",
+    "copyright": "© 2024 MQ Shop. Bảo lưu mọi quyền."
   },
   "topBar": {
     "promo": "Miễn phí vận chuyển đơn từ $75 — Khám phá Bộ sưu tập MQ",

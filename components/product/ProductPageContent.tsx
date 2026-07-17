@@ -40,17 +40,20 @@ export function ProductPageContent({
       />
       <Container className="py-10 md:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
-          <div className="relative aspect-[4/5] bg-mq-surface-subtle overflow-hidden">
+          <div data-mq-fly-source data-mq-product-gallery className="relative aspect-[4/5] mq-product-image-bg mq-product-media">
             <Image
               src={product.image}
               alt={product.name}
               fill
-              className="object-cover"
+              className="mq-product-media-img"
               sizes="(max-width:1024px) 100vw, 50vw"
+              quality={88}
               priority
             />
             {product.salePercent && (
-              <span className="absolute top-4 left-4 mq-sale-badge">-{product.salePercent}%</span>
+              <span className="absolute top-4 left-4 mq-sale-badge z-10 shadow-sm">
+                -{product.salePercent}%
+              </span>
             )}
           </div>
 

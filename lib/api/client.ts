@@ -4,7 +4,7 @@ const TOKEN_KEY = "mq_access_token";
 const REFRESH_KEY = "mq_refresh_token";
 
 export function getApiHost(): string {
-  return (process.env.NEXT_PUBLIC_API_HOST || "http://localhost:3001").replace(/\/$/, "");
+  return (process.env.NEXT_PUBLIC_API_HOST || "http://localhost:3000").replace(/\/$/, "");
 }
 
 export function getApiBase(): string {

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { DM_Sans, Playfair_Display } from "next/font/google";
+import { Figtree, Nunito_Sans } from "next/font/google";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { CartProvider } from "@/components/providers/CartProvider";
+import { FlyToCartProvider } from "@/components/cart/FlyToCartProvider";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import { NotificationProvider } from "@/components/providers/NotificationProvider";
 import { QueryProvider } from "@/components/providers/QueryProvider";
@@ -10,17 +11,17 @@ import { AppShell } from "@/components/layout/AppShell";
 import { AppToaster } from "@/components/ui/AppToaster";
 import "./globals.css";
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
+const nunitoSans = Nunito_Sans({
+  variable: "--font-nunito-sans",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
+const figtree = Figtree({
+  variable: "--font-figtree",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -39,7 +40,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${playfair.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${nunitoSans.variable} ${figtree.variable}`} suppressHydrationWarning>
       <body className="min-h-screen flex flex-col antialiased font-sans">
         <QueryProvider>
           <ThemeProvider>
@@ -47,8 +48,10 @@ export default function RootLayout({
               <AuthProvider>
                 <NotificationProvider>
                   <CartProvider>
-                    <AppShell>{children}</AppShell>
-                    <AppToaster />
+                    <FlyToCartProvider>
+                      <AppShell>{children}</AppShell>
+                      <AppToaster />
+                    </FlyToCartProvider>
                   </CartProvider>
                 </NotificationProvider>
               </AuthProvider>

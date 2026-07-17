@@ -1,9 +1,17 @@
 {
   "gate": {
-    "label": "Welcome",
-    "title": "Choose your language",
-    "subtitle": "Select a language to continue shopping at MQ.",
-    "continue": "Continue"
+    "label": "Secure Shopping Portal",
+    "title": "Tailor Your Experience",
+    "subtitle": "Select your destination to unlock accurate shipping rates, local offers, and a shopping journey designed around you.",
+    "continue": "Continue to Shop",
+    "currency": "Currency",
+    "regionSelector": "Region Selector",
+    "support": "Support",
+    "shippingPolicy": "Shipping Policy",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "cookies": "Cookie Settings",
+    "copyright": "© 2024 MQ Shop. All rights reserved."
   },
   "topBar": {
     "promo": "Free shipping on orders over $75 — Shop the MQ Collection",
