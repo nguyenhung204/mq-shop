@@ -40,7 +40,6 @@ export function useAdminRma() {
     queryFn: async () => asArray<ApiRma>(await adminApi.rma()),
   });
 }
-//trigger build
 export function useAdminFinance() {
   return useQuery({
     queryKey: adminKeys.finance(),
