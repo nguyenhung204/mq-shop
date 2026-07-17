@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Star } from "lucide-react";
+import { CreditCard, Headphones, RotateCcw, ShieldCheck, Star } from "lucide-react";
 import { categories } from "@/lib/data/categories";
 import { products } from "@/lib/data/products";
 import { heroImages, miscImages } from "@/lib/images";
@@ -19,10 +19,26 @@ export function HomePageContent() {
   const hotProducts = products.filter((p) => p.badge === "hot");
 
   const trustIcons = [
-    { title: t("home.trustPayment"), desc: t("home.trustPaymentDesc") },
-    { title: t("home.trustSupport"), desc: t("home.trustSupportDesc") },
-    { title: t("home.trustReturns"), desc: t("home.trustReturnsDesc") },
-    { title: t("home.trustQuality"), desc: t("home.trustQualityDesc") },
+    {
+      title: t("home.trustPayment"),
+      desc: t("home.trustPaymentDesc"),
+      Icon: CreditCard,
+    },
+    {
+      title: t("home.trustSupport"),
+      desc: t("home.trustSupportDesc"),
+      Icon: Headphones,
+    },
+    {
+      title: t("home.trustReturns"),
+      desc: t("home.trustReturnsDesc"),
+      Icon: RotateCcw,
+    },
+    {
+      title: t("home.trustQuality"),
+      desc: t("home.trustQualityDesc"),
+      Icon: ShieldCheck,
+    },
   ];
 
   const testimonials = [
@@ -37,7 +53,11 @@ export function HomePageContent() {
 
       <section className="py-14 md:py-20">
         <Container>
-          <div className="mq-carousel-track">
+          <div className="mq-carousel-track"
+          style={{
+            justifyContent: "space-between",
+          }}
+          >
             {categories.map((cat, i) => (
               <CategoryCard
                 key={cat.slug}
@@ -123,7 +143,7 @@ export function HomePageContent() {
       <section className="py-14 md:py-20">
         <Container>
           <SectionHeading label={t("home.newCollection")} title={t("home.styleForEveryStory")} />
-          <ProductCarousel products={products.slice(0, 6)} />
+          <ProductCarousel products={products} />
         </Container>
       </section>
 
@@ -171,11 +191,20 @@ export function HomePageContent() {
 
       <section className="py-14 md:py-20 border-t border-mq-border">
         <Container>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
-            {trustIcons.map((item) => (
-              <div key={item.title}>
-                <h4 className="text-sm font-semibold text-mq-text mb-2 uppercase tracking-wider">{item.title}</h4>
-                <p className="text-sm text-mq-text-secondary leading-relaxed">{item.desc}</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-10">
+            {trustIcons.map(({ title, desc, Icon }) => (
+              <div key={title} className="min-w-0">
+                <Icon
+                  className="mb-4 text-mq-text"
+                  size={28}
+                  strokeWidth={1.5}
+                  absoluteStrokeWidth
+                  aria-hidden
+                />
+                <h4 className="text-sm font-semibold text-mq-text mb-2 uppercase tracking-[0.08em]">
+                  {title}
+                </h4>
+                <p className="text-sm text-mq-text-secondary leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
