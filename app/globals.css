@@ -24,7 +24,8 @@
   --mq-accent-cyan: #1cbcd2;
   --mq-container: 1430px;
   --mq-header-h: 72px;
-  --mq-topbar-h: 40px;
+  /* promo 40px + utility links 36px */
+  --mq-topbar-h: 76px;
   --mq-mega-bg: #ffffff;
 
   /* Soft-modern shape scale
@@ -325,6 +326,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .mq-badge-teal { color: var(--mq-accent-teal); background: rgba(25, 149, 136, 0.13); }
+.mq-badge-muted { color: var(--mq-text-secondary); background: color-mix(in srgb, var(--mq-text) 8%, transparent); }
 .mq-badge-orange { color: var(--mq-accent-orange); background: rgba(252, 89, 52, 0.13); }
 .mq-badge-pink { color: var(--mq-accent-pink); background: rgba(230, 42, 101, 0.13); }
 .mq-badge-cyan { color: var(--mq-accent-cyan); background: rgba(28, 188, 210, 0.13); }
@@ -586,6 +588,13 @@ h1, h2, h3, h4, h5, h6 {
   transition: background var(--mq-transition), color var(--mq-transition);
 }
 
+/* Explicit toggle — beats .mq-icon-btn display on desktop */
+@media (min-width: 1024px) {
+  button.mq-mobile-nav-toggle {
+    display: none;
+  }
+}
+
 .mq-carousel-nav {
   display: flex;
   gap: 6px;
@@ -696,7 +705,10 @@ body.mq-mobile-nav-open {
 }
 
 @media (max-width: 767px) {
-  :root { --mq-header-h: 60px; }
+  :root {
+    --mq-header-h: 64px;
+    --mq-topbar-h: 72px;
+  }
   .mq-carousel-track { gap: 1.15rem; }
   .mq-section-title { font-size: clamp(1.5rem, 6vw, 2rem); }
   .mq-btn { padding: 10px 20px; font-size: 13px; }
