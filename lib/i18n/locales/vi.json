@@ -118,7 +118,12 @@
     "home": "Nhà cửa",
     "tech": "Công nghệ",
     "essentials": "Thiết yếu",
-    "gifts": "Quà tặng"
+    "gifts": "Quà tặng",
+    "electronics": "Điện tử",
+    "fashion": "Thời trang",
+    "home-living": "Nhà cửa & Đời sống",
+    "beauty": "Làm đẹp",
+    "toys": "Đồ chơi"
   },
   "shop": {
     "filter": "Lọc",

@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { catalogApi } from "@/lib/api";
+import { categoryLabel } from "@/lib/api/categoryLabel";
 import { mapListingCard } from "@/lib/api/mapProduct";
 import type { ApiCategory, PageMeta } from "@/lib/api/types";
 import type { Product } from "@/lib/data/products";
@@ -31,8 +32,7 @@ function CategoryFilters({
         </a>
       </li>
       {categories.map((cat) => {
-        const label =
-          locale === "vi" && cat.nameVi ? cat.nameVi : cat.name || cat.slug;
+        const label = locale ? categoryLabel(cat, locale) : cat.name || cat.slug;
         return (
           <li key={cat.id}>
             <a
@@ -52,7 +52,7 @@ function CategoryFilters({
 }
 
 export function ShopContent() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const searchParams = useSearchParams();
   const categoryId = searchParams.get("category");
   const sort = searchParams.get("sort");
@@ -115,7 +115,9 @@ export function ShopContent() {
 
   const activeCategory = categories.find((c) => c.id === categoryId);
   const pageTitle = activeCategory
-    ? activeCategory.nameVi || activeCategory.name
+    ? locale
+      ? categoryLabel(activeCategory, locale)
+      : activeCategory.name || activeCategory.slug
     : t("nav.shop");
   const closeFilter = () => setFilterOpen(false);
 

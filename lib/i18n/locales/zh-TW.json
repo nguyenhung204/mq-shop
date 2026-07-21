@@ -118,7 +118,12 @@
     "home": "居家",
     "tech": "科技",
     "essentials": "必需品",
-    "gifts": "禮品"
+    "gifts": "禮品",
+    "electronics": "電子產品",
+    "fashion": "時尚",
+    "home-living": "居家生活",
+    "beauty": "美妝",
+    "toys": "玩具"
   },
   "shop": {
     "filter": "篩選",

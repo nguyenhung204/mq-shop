@@ -91,8 +91,11 @@ export type ApiProduct = {
 export type ApiCategory = {
   id: string;
   slug: string;
+  /** English (default) display name */
   name: string;
   nameVi?: string;
+  /** Traditional Chinese — optional until BE ships the field */
+  nameZhTw?: string | null;
   parentId?: string | null;
 };
 

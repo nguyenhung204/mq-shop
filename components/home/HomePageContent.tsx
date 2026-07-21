@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CreditCard, Headphones, RotateCcw, ShieldCheck, Star } from "lucide-react";
 import { catalogApi } from "@/lib/api";
+import { categoryLabel } from "@/lib/api/categoryLabel";
 import { mapListingCard } from "@/lib/api/mapProduct";
 import type { ApiCategory } from "@/lib/api/types";
 import type { Product } from "@/lib/data/products";
@@ -77,7 +78,7 @@ export function HomePageContent() {
               <CategoryCard
                 key={cat.id}
                 name={
-                  locale === "vi" && cat.nameVi ? cat.nameVi : cat.name || cat.slug
+                  locale ? categoryLabel(cat, locale) : cat.name || cat.slug
                 }
                 slug={cat.id}
                 image={

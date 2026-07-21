@@ -20,8 +20,10 @@ import {
   AdminActions,
   AdminIconButton,
 } from "@/components/admin/AdminIconButton";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
+import { categoryLabel } from "@/lib/api/categoryLabel";
 
 const MAX_IMAGES = 10;
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -71,6 +73,7 @@ function statusBadgeClass(status: ApiProduct["status"]): string {
 }
 
 function ProductsInner() {
+  const { locale } = useLanguage();
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
   const { data, isLoading: productsLoading, isError, error } = useSellerProducts(
@@ -85,6 +88,7 @@ function ProductsInner() {
   const hideProduct = useHideSellerProduct();
   const unhideProduct = useUnhideSellerProduct();
   const uploadImages = useUploadProductImages();
+  const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<ApiProduct | null>(null);
   const [formError, setFormError] = useState("");
   const [existingUrls, setExistingUrls] = useState<string[]>([]);
@@ -99,6 +103,7 @@ function ProductsInner() {
   });
 
   const resetForm = () => {
+    setShowForm(false);
     setEditing(null);
     setFormError("");
     setExistingUrls([]);
@@ -111,6 +116,22 @@ function ProductsInner() {
       stock: "0",
       sku: "",
     });
+  };
+
+  const openCreate = () => {
+    setEditing(null);
+    setFormError("");
+    setExistingUrls([]);
+    setNewFiles([]);
+    setForm({
+      categoryId: "",
+      title: "",
+      description: "",
+      price: "19.99",
+      stock: "0",
+      sku: "",
+    });
+    setShowForm(true);
   };
 
   const startEdit = (p: ApiProduct) => {
@@ -126,6 +147,7 @@ function ProductsInner() {
       stock: String(p.stock ?? 0),
       sku: p.sku || "",
     });
+    setShowForm(true);
   };
 
   const onPickFiles = (files: FileList | null) => {
@@ -178,9 +200,23 @@ function ProductsInner() {
       let uploaded: string[] = [];
       if (newFiles.length) {
         const res = await uploadImages.mutateAsync(newFiles);
-        uploaded = res.urls || [];
+        const raw = res?.urls ?? (Array.isArray(res) ? res : []);
+        uploaded = raw
+          .map((item) => (typeof item === "string" ? item : (item as { url?: string })?.url || ""))
+          .map((u) => u.trim())
+          .filter(Boolean);
+        if (!uploaded.length) {
+          setFormError("Image upload did not return URLs. Check MinIO / STORAGE_PUBLIC_URL.");
+          return;
+        }
       }
       const images = [...existingUrls, ...uploaded].slice(0, MAX_IMAGES);
+      if (!images.every((u) => /^https?:\/\//i.test(u))) {
+        setFormError(
+          "Image URLs must be absolute http(s) links. Check STORAGE_PUBLIC_URL on the API.",
+        );
+        return;
+      }
       const body = {
         title: form.title,
         description: form.description || form.title,
@@ -214,13 +250,14 @@ function ProductsInner() {
     createProduct.isPending || updateProduct.isPending || uploadImages.isPending;
 
   return (
-    <div className="space-y-8">
-        {isError && (
-          <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : "Failed to load"}
-          </div>
-        )}
+    <div className="space-y-6">
+      {isError && (
+        <div className="mq-alert mq-alert-error">
+          {error instanceof Error ? error.message : "Failed to load"}
+        </div>
+      )}
 
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-3 items-center">
           <label className="text-sm text-mq-text-muted">Status</label>
           <select
@@ -233,15 +270,26 @@ function ProductsInner() {
           >
             {statusOptions.map((s) => (
               <option key={s || "all"} value={s}>
-                {s || "All"}
+                {s === "PENDING" ? "Pending review" : s || "All"}
               </option>
             ))}
           </select>
         </div>
+        {!showForm ? (
+          <button type="button" className="mq-btn mq-btn-primary text-sm" onClick={openCreate}>
+            Add product
+          </button>
+        ) : (
+          <button type="button" className="mq-btn mq-btn-outline text-sm" onClick={resetForm}>
+            Back to list
+          </button>
+        )}
+      </div>
 
+      {showForm ? (
         <form className="mq-card p-6 grid sm:grid-cols-2 gap-3" onSubmit={(e) => void submit(e)}>
           <h2 className="sm:col-span-2 text-lg">
-            {editing ? `Edit product (${editing.status})` : "Create product"}
+            {editing ? `Edit product (${statusLabel(editing.status)})` : "Create product"}
           </h2>
           {editing?.status === "REJECTED" && reasonText(editing.rejectionReason) && (
             <p className="sm:col-span-2 text-sm text-mq-accent-pink">
@@ -261,7 +309,7 @@ function ProductsInner() {
             <option value="">Category</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.nameVi || c.name}
+                {locale ? categoryLabel(c, locale) : c.name || c.slug}
               </option>
             ))}
           </select>
@@ -325,7 +373,10 @@ function ProductsInner() {
             {(existingUrls.length > 0 || newFiles.length > 0) && (
               <ul className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {existingUrls.map((url) => (
-                  <li key={url} className="relative group border border-mq-border rounded-[var(--mq-radius-sm)] overflow-hidden">
+                  <li
+                    key={url}
+                    className="relative group border border-mq-border rounded-[var(--mq-radius-sm)] overflow-hidden"
+                  >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={url} alt="" className="w-full aspect-square object-cover" />
                     <button
@@ -375,90 +426,102 @@ function ProductsInner() {
                     ? "Creating…"
                     : "Create product"}
             </button>
-            {editing && (
-              <button type="button" className="mq-btn mq-btn-outline" onClick={resetForm}>
-                Cancel edit
-              </button>
-            )}
+            <button type="button" className="mq-btn mq-btn-outline" onClick={resetForm}>
+              Cancel
+            </button>
           </div>
         </form>
+      ) : null}
 
-        {productsLoading ? (
-          <TableSkeleton rows={6} cols={5} />
-        ) : (
-          <div className="mq-table-wrap">
-            <table className="w-full text-sm">
-              <thead className="bg-mq-surface-subtle text-left">
-                <tr>
-                  <th className="p-3">Title</th>
-                  <th className="p-3">Price</th>
-                  <th className="p-3">Stock</th>
-                  <th className="p-3">Status</th>
-                  <th className="p-3" />
-                </tr>
-              </thead>
-              <tbody>
-                {products.map((p) => (
-                  <tr key={p.id} className="border-t border-mq-border">
-                    <td className="p-3">
-                      <div className="flex items-center gap-2">
-                        {productImages(p)[0] ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={productImages(p)[0]}
-                            alt=""
-                            className="w-10 h-10 rounded object-cover border border-mq-border"
-                          />
-                        ) : null}
-                        <div>
-                          <div>{p.title || p.name || p.sku || "—"}</div>
-                          {p.status === "REJECTED" && reasonText(p.rejectionReason) && (
-                            <div className="text-xs text-mq-accent-pink mt-1">
-                              {reasonText(p.rejectionReason)}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-3">{formatMoney(p.price ?? p.priceUsd)}</td>
-                    <td className="p-3">{p.stock ?? "—"}</td>
-                    <td className="p-3">
-                      <span className={statusBadgeClass(p.status)}>{statusLabel(p.status)}</span>
-                    </td>
-                    <td className="p-3">
-                      <AdminActions>
-                        <AdminIconButton
-                          label="Edit"
-                          icon={Pencil}
-                          tone="secondary"
-                          onClick={() => startEdit(p)}
-                        />
-                        {p.status === "HIDDEN" ? (
-                          <AdminIconButton
-                            label="Unhide"
-                            icon={Eye}
-                            tone="approve"
-                            disabled={unhideProduct.isPending}
-                            onClick={() => void unhideProduct.mutateAsync(p.id)}
-                          />
-                        ) : (
-                          <AdminIconButton
-                            label="Hide"
-                            icon={EyeOff}
-                            tone="warn"
-                            disabled={hideProduct.isPending}
-                            onClick={() => void hideProduct.mutateAsync(p.id)}
-                          />
-                        )}
-                      </AdminActions>
-                    </td>
+      {!showForm ? (
+        <>
+          {productsLoading ? (
+            <TableSkeleton rows={6} cols={5} />
+          ) : products.length === 0 ? (
+            <div className="mq-card p-8 text-center space-y-3">
+              <p className="text-sm text-mq-text-secondary">No products yet.</p>
+              <button type="button" className="mq-btn mq-btn-primary text-sm" onClick={openCreate}>
+                Add product
+              </button>
+            </div>
+          ) : (
+            <div className="mq-table-wrap">
+              <table className="w-full text-sm">
+                <thead className="bg-mq-surface-subtle text-left">
+                  <tr>
+                    <th className="p-3">Title</th>
+                    <th className="p-3">Price</th>
+                    <th className="p-3">Stock</th>
+                    <th className="p-3">Status</th>
+                    <th className="p-3" />
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-        <PaginationBar page={page} meta={meta} onPageChange={setPage} />
+                </thead>
+                <tbody>
+                  {products.map((p) => (
+                    <tr key={p.id} className="border-t border-mq-border">
+                      <td className="p-3">
+                        <div className="flex items-center gap-2">
+                          {productImages(p)[0] ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={productImages(p)[0]}
+                              alt=""
+                              className="w-10 h-10 rounded object-cover border border-mq-border"
+                            />
+                          ) : null}
+                          <div>
+                            <div>{p.title || p.name || p.sku || "—"}</div>
+                            {p.status === "REJECTED" && reasonText(p.rejectionReason) && (
+                              <div className="text-xs text-mq-accent-pink mt-1">
+                                {reasonText(p.rejectionReason)}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-3">{formatMoney(p.price ?? p.priceUsd)}</td>
+                      <td className="p-3">{p.stock ?? "—"}</td>
+                      <td className="p-3">
+                        <span className={statusBadgeClass(p.status)}>
+                          {statusLabel(p.status)}
+                        </span>
+                      </td>
+                      <td className="p-3">
+                        <AdminActions>
+                          <AdminIconButton
+                            label="Edit"
+                            icon={Pencil}
+                            tone="secondary"
+                            onClick={() => startEdit(p)}
+                          />
+                          {p.status === "HIDDEN" ? (
+                            <AdminIconButton
+                              label="Unhide"
+                              icon={Eye}
+                              tone="approve"
+                              disabled={unhideProduct.isPending}
+                              onClick={() => void unhideProduct.mutateAsync(p.id)}
+                            />
+                          ) : (
+                            <AdminIconButton
+                              label="Hide"
+                              icon={EyeOff}
+                              tone="warn"
+                              disabled={hideProduct.isPending}
+                              onClick={() => void hideProduct.mutateAsync(p.id)}
+                            />
+                          )}
+                        </AdminActions>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <PaginationBar page={page} meta={meta} onPageChange={setPage} />
+        </>
+      ) : null}
     </div>
   );
 }

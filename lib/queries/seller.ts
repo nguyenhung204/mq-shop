@@ -144,7 +144,7 @@ export function useCreateSellerProduct() {
     mutationFn: (body: unknown) => sellerApi.createProduct(body),
     onSuccess: () => {
       invalidate();
-      toast.success("Product created (PENDING)");
+      toast.success("Product created — Pending review");
     },
     onError: (e) => toast.error(getErrorMessage(e, "Create failed")),
   });

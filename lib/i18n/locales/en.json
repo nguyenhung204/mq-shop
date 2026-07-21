@@ -118,7 +118,12 @@
     "home": "Home",
     "tech": "Tech",
     "essentials": "Essentials",
-    "gifts": "Gifts"
+    "gifts": "Gifts",
+    "electronics": "Electronics",
+    "fashion": "Fashion",
+    "home-living": "Home & Living",
+    "beauty": "Beauty",
+    "toys": "Toys"
   },
   "shop": {
     "filter": "Filter",
