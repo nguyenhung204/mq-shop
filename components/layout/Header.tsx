@@ -16,8 +16,7 @@ import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import { RoleSwitcher } from "@/components/layout/RoleSwitcher";
 import { TopBar } from "@/components/layout/TopBar";
-import { useAuth } from "@/components/providers/AuthProvider";
-import { postAuthPath } from "@/lib/auth/routes";
+import { UserMenu } from "@/components/layout/UserMenu";
 import { heroImages } from "@/lib/images";
 
 function NavBadge({ type }: { type: "sale" | "hot" | "new" }) {
@@ -35,9 +34,7 @@ export function Header() {
   const { dark, toggle } = useTheme();
   const { itemCount } = useCart();
   const { t } = useLanguage();
-  const { isAuthenticated, user } = useAuth();
   const router = useRouter();
-  const accountHref = isAuthenticated ? postAuthPath(user) : "/my-account";
 
   const closeMega = useCallback(() => setActiveMega(null), []);
 
@@ -198,16 +195,7 @@ export function Header() {
               onMouseEnter={closeMega}
             >
               <NotificationBell />
-              <Link
-                href={accountHref}
-                className="mq-icon-btn text-mq-text hover:text-mq-gold transition-colors"
-                aria-label="Account"
-                onClick={closeMega}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </Link>
+              <UserMenu />
               <Link
                 id="mq-cart-target"
                 href="/cart"
@@ -446,6 +434,7 @@ export function Header() {
               <RoleSwitcher />
               <div className="flex items-center gap-1 overflow-visible">
                 <NotificationBell />
+                <UserMenu />
                 <LanguageSwitcher menuAlign="start" menuPlacement="above" />
                 <button type="button" onClick={toggle} className="mq-theme-toggle mq-icon-btn" aria-label="Toggle theme">
                   {dark ? (

@@ -284,6 +284,52 @@ export function useApplyShop() {
   });
 }
 
+function shopMediaErrorMessage(e: unknown, fallback: string): string {
+  if (e instanceof ApiError) {
+    switch (e.code) {
+      case "INVALID_SHOP_LOGO":
+      case "INVALID_SHOP_BANNER":
+      case "INVALID_SHOP_IMAGE":
+        return "Invalid image type. Use JPEG, PNG, WebP, or GIF.";
+      case "SHOP_LOGO_TOO_LARGE":
+      case "SHOP_BANNER_TOO_LARGE":
+      case "SHOP_IMAGE_TOO_LARGE":
+        return "Image must be ≤ 5MB.";
+      case "SHOP_NOT_ELIGIBLE":
+        return "Shop must be APPROVED and not suspended.";
+      case "FORBIDDEN":
+        return "You do not have permission to edit this shop.";
+      default:
+        break;
+    }
+  }
+  return getErrorMessage(e, fallback);
+}
+
+export function useUploadShopLogo() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (file: File) => shopApi.uploadLogo(file),
+    onSuccess: (shop: ApiShop) => {
+      queryClient.setQueryData(sellerKeys.shop(), shop);
+      toast.success("Logo updated");
+    },
+    onError: (e) => toast.error(shopMediaErrorMessage(e, "Logo upload failed")),
+  });
+}
+
+export function useUploadShopBanner() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (file: File) => shopApi.uploadBanner(file),
+    onSuccess: (shop: ApiShop) => {
+      queryClient.setQueryData(sellerKeys.shop(), shop);
+      toast.success("Banner updated");
+    },
+    onError: (e) => toast.error(shopMediaErrorMessage(e, "Banner upload failed")),
+  });
+}
+
 export function useDownloadMaterials() {
   return useMutation({
     mutationFn: (folder: string) => cmsApi.downloadMaterials(folder),

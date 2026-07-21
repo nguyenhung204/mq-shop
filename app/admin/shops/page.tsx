@@ -15,13 +15,20 @@ import {
   AdminIconButton,
   AdminIconLink,
 } from "@/components/admin/AdminIconButton";
+import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
+
+type ReasonAction = {
+  kind: "reject" | "violation";
+  shopId: string;
+  shopName: string;
+};
 
 function ShopsInner() {
   const [status, setStatus] = useState("PENDING");
   const [page, setPage] = useState(1);
-  const [reason, setReason] = useState("Thiếu giấy tờ");
+  const [reasonAction, setReasonAction] = useState<ReasonAction | null>(null);
   const { data, isLoading, isError, error } = useAdminShops(status, page);
   const shops = data?.items ?? [];
   const meta = data?.meta;
@@ -29,22 +36,19 @@ function ShopsInner() {
   const rejectShop = useRejectShop();
   const suspendShop = useSuspendShop();
 
+  const modalBusy =
+    reasonAction?.kind === "reject" ? rejectShop.isPending : suspendShop.isPending;
+
   return (
     <>
       <AdminPageHeader
         title="Shops"
         description="Review seller applications and violation locks."
-      />
-      <div className="space-y-4">
-        {isError && (
-          <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : "Failed"}
-          </div>
-        )}
-        <div className="flex flex-wrap gap-3">
+        actions={
           <select
-            className="mq-input max-w-xs"
+            className="mq-input max-w-[11rem]"
             value={status}
+            aria-label="Filter by status"
             onChange={(e) => {
               setStatus(e.target.value);
               setPage(1);
@@ -56,13 +60,15 @@ function ShopsInner() {
               </option>
             ))}
           </select>
-          <input
-            className="mq-input max-w-md"
-            placeholder="Reject/violation reason"
-            value={reason}
-            onChange={(e) => setReason(e.target.value.slice(0, 150))}
-          />
-        </div>
+        }
+      />
+
+      <div className="space-y-4">
+        {isError && (
+          <div className="mq-alert mq-alert-error">
+            {error instanceof Error ? error.message : "Failed"}
+          </div>
+        )}
         {isLoading && <AdminCardListSkeleton />}
         {shops.map((s) => (
           <div key={s.id} className="mq-card p-4 flex flex-wrap justify-between gap-3 text-sm">
@@ -78,28 +84,62 @@ function ShopsInner() {
                 label="Approve"
                 icon={Check}
                 tone="approve"
-                disabled={approveShop.isPending}
+                disabled={approveShop.isPending || s.status !== "PENDING"}
                 onClick={() => void approveShop.mutateAsync(s.id)}
               />
               <AdminIconButton
                 label="Reject"
                 icon={X}
                 tone="reject"
-                disabled={rejectShop.isPending}
-                onClick={() => void rejectShop.mutateAsync({ id: s.id, reason })}
+                disabled={rejectShop.isPending || s.status !== "PENDING"}
+                onClick={() =>
+                  setReasonAction({ kind: "reject", shopId: s.id, shopName: s.name })
+                }
               />
               <AdminIconButton
                 label="Violation lock"
                 icon={ShieldAlert}
                 tone="warn"
-                disabled={suspendShop.isPending}
-                onClick={() => void suspendShop.mutateAsync({ id: s.id, reason })}
+                disabled={suspendShop.isPending || s.status !== "APPROVED"}
+                onClick={() =>
+                  setReasonAction({ kind: "violation", shopId: s.id, shopName: s.name })
+                }
               />
             </AdminActions>
           </div>
         ))}
         <PaginationBar page={page} meta={meta} onPageChange={setPage} />
       </div>
+
+      <AdminReasonModal
+        open={!!reasonAction}
+        title={reasonAction?.kind === "reject" ? "Reject shop" : "Violation lock"}
+        description={
+          reasonAction
+            ? reasonAction.kind === "reject"
+              ? `Tell the seller why “${reasonAction.shopName}” was rejected.`
+              : `Optional note for locking “${reasonAction.shopName}”.`
+            : undefined
+        }
+        confirmLabel={reasonAction?.kind === "reject" ? "Reject" : "Lock shop"}
+        required={reasonAction?.kind === "reject"}
+        busy={modalBusy}
+        onClose={() => {
+          if (!modalBusy) setReasonAction(null);
+        }}
+        onConfirm={async (reason) => {
+          if (!reasonAction) return;
+          if (reasonAction.kind === "reject") {
+            await rejectShop.mutateAsync({ id: reasonAction.shopId, reason });
+          } else {
+            await suspendShop.mutateAsync({
+              id: reasonAction.shopId,
+              reason: reason || undefined,
+            });
+          }
+          setReasonAction(null);
+        }}
+      />
     </>
   );
 }

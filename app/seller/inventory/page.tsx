@@ -9,8 +9,6 @@ import {
   useSellerInventory,
 } from "@/lib/queries/seller";
 import { AuthGuard } from "@/components/guards/AuthGuard";
-import { SellerNav } from "@/components/seller/SellerNav";
-import { Container, PageHero } from "@/components/ui/shared";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 
 function InventoryInner() {
@@ -33,10 +31,7 @@ function InventoryInner() {
   const pending = data?.pending ?? [];
 
   return (
-    <>
-      <PageHero title="Inventory" breadcrumb={[{ label: "Seller", href: "/seller" }, { label: "Inventory" }]} />
-      <Container className="py-10 space-y-8">
-        <SellerNav />
+    <div className="space-y-8">
         {isError && (
           <div className="mq-alert mq-alert-error">
             {error instanceof Error ? error.message : "Failed to load inventory"}
@@ -117,8 +112,7 @@ function InventoryInner() {
             </section>
           </>
         )}
-      </Container>
-    </>
+    </div>
   );
 }
 

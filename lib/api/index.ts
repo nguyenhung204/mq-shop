@@ -123,6 +123,18 @@ export const shopApi = {
   me: () => api.get<ApiShop>("/shops/me"),
   updateMe: (body: Partial<{ name: string; pickupAddress: string; legalDocumentUrl: string }>) =>
     api.put<ApiShop>("/shops/me", body),
+  /** Multipart field `logo` → MinIO WebP (~512×512). Gate: EDIT_SHOP, APPROVED, not suspended. */
+  uploadLogo: (file: File) => {
+    const fd = new FormData();
+    fd.append("logo", file);
+    return api.postForm<ApiShop>("/shops/me/logo", fd);
+  },
+  /** Multipart field `banner` → MinIO WebP (~1600×400). Gate: EDIT_SHOP, APPROVED, not suspended. */
+  uploadBanner: (file: File) => {
+    const fd = new FormData();
+    fd.append("banner", file);
+    return api.postForm<ApiShop>("/shops/me/banner", fd);
+  },
   listStaff: () => api.get<unknown[]>("/shops/me/staff"),
   addStaff: (body: { userId: string; role?: string }) =>
     api.post("/shops/me/staff", body),

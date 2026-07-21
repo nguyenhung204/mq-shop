@@ -220,28 +220,31 @@ Roles: ACCOUNTANT / ADMIN / SUPER_ADMIN (`VIEW_AUDIT_LOG`).
 
 ---
 
-### 2.5 Notifications (SSE)
+### 2.5 Notifications
 
-| UI | Method | Path |
-|----|--------|------|
-| Realtime notify | `GET` | `/notifications/stream` |
+| UI | Method | Path | Auth |
+|----|--------|------|------|
+| Inbox list + unreadCount | `GET` | `/notifications` | JWT |
+| Mark one read | `POST` | `/notifications/:id/read` | JWT |
+| Mark all read | `POST` | `/notifications/read-all` | JWT |
+| Live events (open tab) | `GET` | `/notifications/stream` | Cookie JWT · SSE |
 
-**Auth:** cookie JWT — `EventSource(..., { withCredentials: true })`. Mở sau login, đóng khi logout.
+**List:** call on login / entering admin (or when opening the bell). Do **not** rely on SSE for history.
 
-Event payload:
+**SSE:** `EventSource(..., { withCredentials: true })` — new events only while connected. Toast + prepend to inbox.
+
+Event / item shape:
 
 ```ts
-{ id, userId, title, body, readAt: null, createdAt }
+{ id, userId?, title, body, readAt: string | null, createdAt }
 ```
 
-**FE (phase hiện tại):**
-- Toast mỗi event + panel in-memory (sessionStorage theo user, sống qua F5 trong tab)
-- Badge / mark-read **local only** (`readAt` từ stream luôn `null`)
-- Không gọi REST list / mark-read (chưa có)
+**FE:**
+- `GET /notifications` → panel history + badge `unreadCount`
+- Mark-read via REST (optimistic UI, rollback on error)
+- SSE supplements live updates only
 
-Dùng cho: admin lock user, duyệt/từ chối shop, duyệt/từ chối/ẩn product, v.v.
-
-Mail vẫn gửi song song (shop/product) — SSE = realtime, mail = backup.
+Mail may still send in parallel for some actions.
 
 ---
 
@@ -253,6 +256,8 @@ Mail vẫn gửi song song (shop/product) — SSE = realtime, mail = backup.
 |----|--------|------|------|
 | Nộp / nộp lại hồ sơ | `POST` | `/shops/apply` | Role có `BUYER`; multipart |
 | Xem shop của tôi | `GET` | `/shops/me` | JWT |
+| Upload logo | `POST` | `/shops/me/logo` | `EDIT_SHOP`; shop `APPROVED`, not suspended; multipart field `logo` |
+| Upload banner | `POST` | `/shops/me/banner` | `EDIT_SHOP`; shop `APPROVED`, not suspended; multipart field `banner` |
 
 #### Multipart fields (`shops/apply`)
 
@@ -262,6 +267,15 @@ Mail vẫn gửi song song (shop/product) — SSE = realtime, mail = backup.
 | `taxId` | 1–15 chữ số |
 | `countryCode` | 2 chữ (vd `VN`) |
 | `document` | file ≤5MB: JPEG/PNG/WebP/PDF |
+
+#### Logo / banner upload (`/shops/me/logo`, `/shops/me/banner`)
+
+| Field | Constraint |
+|-------|------------|
+| `logo` | ≤5MB JPEG/PNG/WebP/GIF → MinIO WebP (~512×512); replaces previous object |
+| `banner` | ≤5MB JPEG/PNG/WebP/GIF → MinIO WebP (~1600×400); replaces previous object |
+
+Response: `ShopView` (`logoUrl` / `bannerUrl` updated).
 
 #### ShopView (`data`)
 
@@ -569,5 +583,4 @@ Multipart: dùng `FormData`, **không** set `Content-Type` thủ công (browser 
 - Product brand field (đã bỏ — shop = brand store)
 - Inventory / SKU variant thật (`004`)
 - Cart / order (`005`)
-- REST notification inbox / mark-read
 - Auto-delete / export CSV audit files (query đã giới hạn retention window)

@@ -206,7 +206,66 @@
     "resetPassword": "重設密碼",
     "backToLogin": "返回登入",
     "noAccount": "還沒有帳號？",
-    "haveAccount": "已經有帳號？"
+    "haveAccount": "已經有帳號？",
+    "myProfile": "我的個人資料",
+    "signOut": "登出",
+    "nav": {
+      "profile": "個人資料",
+      "password": "密碼",
+      "email": "電子郵件",
+      "activity": "活動"
+    },
+    "sections": {
+      "profileTitle": "個人資料詳情",
+      "profileDesc": "更新您在 MQ 顯示的姓名與頭像。",
+      "passwordTitle": "變更密碼",
+      "passwordDesc": "請使用強密碼。更新後需重新登入。",
+      "emailTitle": "變更電子郵件",
+      "emailDesc": "我們會寄送一次性驗證碼至新的電子郵件。",
+      "activityTitle": "您的活動",
+      "activityDesc": "前往訂單、錢包、退換貨或申請開店。"
+    },
+    "fields": {
+      "fullName": "全名",
+      "avatar": "頭像",
+      "avatarHint": "JPEG、PNG、WebP 或 GIF · 最大 5MB",
+      "currentPassword": "目前密碼",
+      "newPassword": "新密碼（至少 8 碼）",
+      "newEmail": "新電子郵件",
+      "otp": "OTP 驗證碼"
+    },
+    "actions": {
+      "saveProfile": "儲存個人資料",
+      "updatePassword": "更新密碼",
+      "requestOtp": "請求 OTP",
+      "confirmEmail": "確認電子郵件"
+    },
+    "messages": {
+      "profileUpdated": "個人資料已更新。",
+      "passwordTooShort": "密碼至少需要 8 個字元。",
+      "otpSent": "OTP 已寄至新電子郵件。",
+      "emailUpdated": "電子郵件已更新。"
+    },
+    "links": {
+      "orders": "訂單",
+      "ordersDesc": "追蹤購買與配送",
+      "wallet": "錢包",
+      "walletDesc": "餘額、轉帳與提領",
+      "rma": "RMA",
+      "rmaDesc": "退貨與換貨",
+      "applyShop": "申請開店",
+      "applyShopDesc": "開始在 MQ 販售"
+    },
+    "otp": {
+      "timeRemaining": "剩餘時間",
+      "codeExpired": "驗證碼已過期",
+      "minutes": "分",
+      "seconds": "秒",
+      "hintActive": "OTP 自寄出起有效 {minutes} 分鐘。",
+      "hintExpired": "驗證碼已過期 — 請點 Resend OTP 取得新碼。",
+      "ariaExpires": "OTP 將於 {time} 後失效",
+      "ariaExpired": "OTP 已過期"
+    }
   },
   "mega": {
     "productTypes": "商品類型",

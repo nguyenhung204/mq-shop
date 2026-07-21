@@ -20,8 +20,6 @@ import {
   AdminActions,
   AdminIconButton,
 } from "@/components/admin/AdminIconButton";
-import { SellerNav } from "@/components/seller/SellerNav";
-import { Container, PageHero } from "@/components/ui/shared";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 
@@ -216,13 +214,7 @@ function ProductsInner() {
     createProduct.isPending || updateProduct.isPending || uploadImages.isPending;
 
   return (
-    <>
-      <PageHero
-        title="Products"
-        breadcrumb={[{ label: "Seller", href: "/seller" }, { label: "Products" }]}
-      />
-      <Container className="py-10 space-y-8">
-        <SellerNav />
+    <div className="space-y-8">
         {isError && (
           <div className="mq-alert mq-alert-error">
             {error instanceof Error ? error.message : "Failed to load"}
@@ -467,8 +459,7 @@ function ProductsInner() {
           </div>
         )}
         <PaginationBar page={page} meta={meta} onPageChange={setPage} />
-      </Container>
-    </>
+    </div>
   );
 }
 

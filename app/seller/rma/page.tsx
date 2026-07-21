@@ -3,8 +3,6 @@
 import { FormEvent, useState } from "react";
 import { useConfirmStockReturn, useSellerRma, useWarehouses } from "@/lib/queries/seller";
 import { AuthGuard } from "@/components/guards/AuthGuard";
-import { SellerNav } from "@/components/seller/SellerNav";
-import { Container, PageHero } from "@/components/ui/shared";
 import { RmaListSkeleton } from "@/components/ui/Skeleton";
 
 function SellerRmaInner() {
@@ -44,10 +42,7 @@ function SellerRmaInner() {
   };
 
   return (
-    <>
-      <PageHero title="Seller RMA" breadcrumb={[{ label: "Seller", href: "/seller" }, { label: "RMA" }]} />
-      <Container className="py-10 space-y-4">
-        <SellerNav />
+    <div className="space-y-4">
         <p className="text-sm text-mq-text-muted">
           You cannot approve/reject RMA. After APPROVED, confirm stock when goods arrive (qty + RETURNED/NEW).
         </p>
@@ -94,8 +89,7 @@ function SellerRmaInner() {
             )}
           </div>
         ))}
-      </Container>
-    </>
+    </div>
   );
 }
 

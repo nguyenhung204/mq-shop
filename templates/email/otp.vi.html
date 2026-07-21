@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <meta name="color-scheme" content="light" />
+    <meta name="supported-color-schemes" content="light" />
+    <title>MQ — Mã xác minh</title>
+    <!--
+      Locale: vi (translated from otp.html / en)
+      Placeholders: {{fullName}} · {{otpCode}} · {{expiresIn}} e.g. "10 phút" · {{year}}
+    -->
+  </head>
+  <body style="margin:0;padding:0;background:#f3f3f3;color:#111111;font-family:'Nunito Sans',Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">
+      Mã OTP MQ của bạn là {{otpCode}} — hết hạn sau {{expiresIn}}.
+    </div>
+
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f3f3f3;">
+      <tr>
+        <td align="center" style="padding:40px 16px 48px;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:580px;">
+            <tr>
+              <td style="padding:0 0 20px;text-align:center;">
+                <span style="font-family:'Figtree',Helvetica,Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.32em;color:#111111;">MQ</span>
+              </td>
+            </tr>
+          </table>
+
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:580px;background:#ffffff;border-radius:28px;overflow:hidden;border:1px solid #ececec;box-shadow:0 12px 40px rgba(0,0,0,0.07),0 2px 8px rgba(0,0,0,0.03);">
+            <tr>
+              <td style="height:5px;line-height:5px;font-size:0;background:#ffd21d;">&nbsp;</td>
+            </tr>
+
+            <tr>
+              <td style="padding:36px 36px 8px;background:#111111;">
+                <p style="margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#ffd21d;">
+                  Xác minh email
+                </p>
+                <h1 style="margin:0;font-family:'Figtree',Helvetica,Arial,sans-serif;font-size:28px;font-weight:600;letter-spacing:-0.03em;line-height:1.2;color:#ffffff;">
+                  Đây là mã của bạn
+                </h1>
+                <p style="margin:12px 0 0;max-width:360px;font-size:14px;line-height:1.55;color:rgba(255,255,255,0.68);">
+                  Soft essentials · bảo mật · chỉ dùng một lần
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="height:18px;line-height:18px;font-size:0;background:linear-gradient(180deg,#111111 0%,#ffffff 100%);">&nbsp;</td>
+            </tr>
+
+            <tr>
+              <td style="padding:8px 36px 8px;">
+                <p style="margin:0 0 22px;font-size:15px;line-height:1.65;color:#555555;">
+                  Xin chào{{fullName}},<br />
+                  Nhập mã 6 số bên dưới trên MQ để tiếp tục. Mã hết hạn sau
+                  <strong style="color:#111111;">{{expiresIn}}</strong>.
+                </p>
+
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#fafafa;border:1px solid #ececec;border-radius:20px;">
+                  <tr>
+                    <td align="center" style="padding:28px 20px 12px;">
+                      <p style="margin:0 0 14px;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#888888;">
+                        Mã xác minh
+                      </p>
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 auto;">
+                        <tr>
+                          <td align="center" style="padding:18px 28px;background:#111111;border-radius:16px;border:2px solid #ffd21d;">
+                            <span style="font-family:'Figtree',Helvetica,Arial,sans-serif;font-size:34px;font-weight:700;letter-spacing:0.42em;color:#ffffff;line-height:1;padding-left:0.42em;">
+                              {{otpCode}}
+                            </span>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td style="padding:8px 20px 24px;">
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#111111;border-radius:18px;border:2px solid #ffd21d;">
+                        <tr>
+                          <td align="center" style="padding:20px 16px 8px;">
+                            <p style="margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#ffd21d;">
+                              Thời gian còn lại
+                            </p>
+                            <p style="margin:0;font-family:'Figtree',Helvetica,Arial,sans-serif;font-size:48px;font-weight:700;letter-spacing:0.12em;line-height:1;color:#ffffff;font-variant-numeric:tabular-nums;">
+                              10:00
+                            </p>
+                            <p style="margin:10px 0 0;font-size:13px;font-weight:600;color:rgba(255,255,255,0.75);">
+                              {{expiresIn}} · đếm ngược trên web
+                            </p>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding:12px 20px 20px;">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:rgba(255,255,255,0.12);border-radius:999px;">
+                              <tr>
+                                <td style="height:8px;line-height:8px;font-size:0;width:100%;background:#ffd21d;border-radius:999px;">&nbsp;</td>
+                              </tr>
+                            </table>
+                            <p style="margin:12px 0 0;text-align:center;font-size:12px;line-height:1.45;color:rgba(255,255,255,0.55);">
+                              Hết giờ? Bấm <strong style="color:#ffd21d;">Resend OTP</strong> để nhận mã mới.
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:22px 36px 8px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <td style="padding:4px 0 4px 14px;border-left:3px solid #ffd21d;">
+                      <p style="margin:0 0 4px;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#111111;">
+                        Lưu ý an toàn
+                      </p>
+                      <p style="margin:0;font-size:13px;line-height:1.55;color:#777777;">
+                        MQ không bao giờ hỏi mã OTP qua điện thoại hay chat.
+                        Nếu bạn không yêu cầu mã này, hãy bỏ qua email — tài khoản vẫn an toàn.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:28px 36px 32px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top:1px solid #ececec;">
+                  <tr>
+                    <td style="padding-top:20px;">
+                      <p style="margin:0 0 4px;font-family:'Figtree',Helvetica,Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:0.22em;color:#111111;">
+                        MQ
+                      </p>
+                      <p style="margin:0;font-size:12px;line-height:1.5;color:#999999;">
+                        Soft modern essentials<br />
+                        © {{year}} MQ Shop. Bảo lưu mọi quyền.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+
+          <p style="margin:22px 0 0;max-width:580px;font-size:11px;line-height:1.5;color:#aaaaaa;text-align:center;">
+            Bạn nhận email này vì đang xác minh tài khoản MQ.
+          </p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

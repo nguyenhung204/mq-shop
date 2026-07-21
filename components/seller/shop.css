@@ -1,0 +1,152 @@
+/* Shop section panels — used inside SellerShell main column */
+.mq-shop-nav {
+  display: flex;
+  flex-direction: row;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding-bottom: 0.15rem;
+}
+
+.mq-shop-nav-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-shrink: 0;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--mq-text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+
+.mq-shop-nav-item:hover:not(:disabled) {
+  color: var(--mq-text);
+  background: var(--mq-surface-subtle);
+}
+
+.mq-shop-nav-item:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.mq-shop-nav-item.is-active {
+  color: #111;
+  background: var(--mq-gold);
+  border-color: #e7ba0a;
+  box-shadow: 0 6px 16px rgba(255, 210, 29, 0.28);
+}
+
+.mq-shop-panel {
+  padding: 1.35rem 1.25rem 1.45rem;
+  border: 1px solid var(--mq-border);
+  border-radius: var(--mq-radius-lg);
+  background: var(--mq-surface);
+  box-shadow: var(--mq-shadow-sm);
+}
+
+.mq-shop-panel-head {
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.95rem;
+  border-bottom: 1px solid var(--mq-border);
+}
+
+.mq-shop-panel-head h2 {
+  margin: 0;
+  font-family: var(--font-figtree), system-ui, sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--mq-text);
+}
+
+.mq-shop-panel-head h2::after {
+  content: "";
+  display: block;
+  width: 2rem;
+  height: 3px;
+  margin-top: 0.55rem;
+  border-radius: 999px;
+  background: var(--mq-gold);
+}
+
+.mq-shop-panel-head p {
+  margin: 0.55rem 0 0;
+  max-width: 36rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--mq-text-secondary);
+}
+
+.mq-shop-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+  max-width: 28rem;
+}
+
+.mq-shop-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.mq-shop-field label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--mq-text-secondary);
+}
+
+.mq-shop-hint {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--mq-text-muted);
+}
+
+.mq-shop-dl {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.mq-shop-dl dt {
+  margin: 0 0 0.2rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--mq-text-muted);
+}
+
+.mq-shop-dl dd {
+  margin: 0;
+  color: var(--mq-text);
+  word-break: break-word;
+}
+
+.mq-shop-panel .mq-btn {
+  border-radius: 999px;
+}
+
+@media (min-width: 640px) {
+  .mq-shop-dl {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .mq-shop-dl .mq-shop-dl-span {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 960px) {
+  .mq-shop-panel {
+    padding: 1.75rem;
+  }
+}

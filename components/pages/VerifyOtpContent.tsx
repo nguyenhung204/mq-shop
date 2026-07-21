@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { AuthPanel } from "@/components/auth/AuthPanel";
+import { OtpCountdown } from "@/components/auth/OtpCountdown";
 import { authApi } from "@/lib/api/auth";
 import { ApiError, setTokens } from "@/lib/api/client";
 import { postAuthPath } from "@/lib/auth/routes";
@@ -18,10 +19,16 @@ export function VerifyOtpContent() {
   const [error, setError] = useState("");
   const [ok, setOk] = useState("");
   const [busy, setBusy] = useState(false);
+  const [timerKey, setTimerKey] = useState(0);
+  const [expired, setExpired] = useState(false);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
+    if (expired) {
+      setError("OTP expired. Please resend a new code.");
+      return;
+    }
     setBusy(true);
     try {
       const data = await authApi.verifyOtp({ email, otp: code });
@@ -42,10 +49,14 @@ export function VerifyOtpContent() {
 
   const onResend = async () => {
     setError("");
+    setOk("");
     setBusy(true);
     try {
       await authApi.resendOtp({ email });
-      setOk("OTP resent.");
+      setOk("OTP resent. The new code is valid for 10 minutes.");
+      setCode("");
+      setExpired(false);
+      setTimerKey((key) => key + 1);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Resend failed");
     } finally {
@@ -59,12 +70,14 @@ export function VerifyOtpContent() {
       description="Enter the 6-digit code we sent to your email."
       asideTitle="Almost there"
       asideText="One quick code to confirm your email and activate your MQ account."
-      footer={
-        <Link href="/my-account">Back to login</Link>
-      }
+      footer={<Link href="/my-account">Back to login</Link>}
     >
       {error && <div className="mq-alert mq-alert-error">{error}</div>}
       {ok && <div className="mq-alert mq-alert-success">{ok}</div>}
+      <OtpCountdown
+        resetKey={timerKey}
+        onExpireChange={setExpired}
+      />
       <form className="mq-auth-actions flex w-full flex-col gap-2.5" onSubmit={onSubmit}>
         <div className="mq-auth-field">
           <label htmlFor="otp-email">Email</label>
@@ -88,12 +101,13 @@ export function VerifyOtpContent() {
             maxLength={6}
             inputMode="numeric"
             autoComplete="one-time-code"
+            disabled={expired}
           />
         </div>
         <button
           type="submit"
           className="mq-btn mq-btn-primary w-full"
-          disabled={busy || code.length !== 6}
+          disabled={busy || expired || code.length !== 6}
         >
           Verify
         </button>

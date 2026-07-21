@@ -591,6 +591,165 @@ h1, h2, h3, h4, h5, h6 {
   width: 100%;
 }
 
+/* OTP countdown — prominent MQ chrome */
+.mq-otp-timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 1.05rem 1rem 0.95rem;
+  border: 2px solid var(--mq-gold);
+  border-radius: 18px;
+  background:
+    radial-gradient(ellipse 80% 70% at 50% 0%, rgba(255, 210, 29, 0.22), transparent 65%),
+    #111111;
+  color: #fff;
+  text-align: center;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+}
+
+.mq-otp-timer-label {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--mq-gold);
+}
+
+.mq-otp-timer-display {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.mq-otp-timer-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  min-width: 3.4rem;
+}
+
+.mq-otp-timer-digits {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.25rem;
+  padding: 0.35rem 0.4rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 210, 29, 0.35);
+  font-family: var(--font-figtree), system-ui, sans-serif;
+  font-size: clamp(1.85rem, 4.5vw, 2.35rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: #fff;
+}
+
+.mq-otp-timer-unit-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.mq-otp-timer-colon {
+  padding-top: 0.2rem;
+  font-family: var(--font-figtree), system-ui, sans-serif;
+  font-size: clamp(1.6rem, 4vw, 2rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--mq-gold);
+}
+
+.mq-otp-timer-track {
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.mq-otp-timer-fill {
+  height: 100%;
+  width: 100%;
+  transform-origin: left center;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--mq-gold), #ffe566);
+  box-shadow: 0 0 12px rgba(255, 210, 29, 0.45);
+  transition: transform 280ms linear;
+}
+
+.mq-otp-timer-hint {
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.mq-otp-timer.is-warn {
+  border-color: #f59e0b;
+  background:
+    radial-gradient(ellipse 80% 70% at 50% 0%, rgba(245, 158, 11, 0.28), transparent 65%),
+    #1a1208;
+}
+
+.mq-otp-timer.is-warn .mq-otp-timer-label,
+.mq-otp-timer.is-warn .mq-otp-timer-colon {
+  color: #fbbf24;
+}
+
+.mq-otp-timer.is-warn .mq-otp-timer-fill {
+  background: linear-gradient(90deg, #f59e0b, var(--mq-gold));
+}
+
+.mq-otp-timer.is-critical,
+.mq-otp-timer.is-expired {
+  border-color: #fb923c;
+  background:
+    radial-gradient(ellipse 80% 70% at 50% 0%, rgba(234, 88, 12, 0.3), transparent 65%),
+    #1a0c08;
+  animation: mq-otp-pulse 1.2s ease-in-out infinite;
+}
+
+.mq-otp-timer.is-critical .mq-otp-timer-label,
+.mq-otp-timer.is-expired .mq-otp-timer-label,
+.mq-otp-timer.is-critical .mq-otp-timer-colon,
+.mq-otp-timer.is-expired .mq-otp-timer-colon {
+  color: #fb923c;
+}
+
+.mq-otp-timer.is-critical .mq-otp-timer-fill,
+.mq-otp-timer.is-expired .mq-otp-timer-fill {
+  background: #ea580c;
+  box-shadow: 0 0 12px rgba(234, 88, 12, 0.45);
+}
+
+.mq-otp-timer.is-expired {
+  animation: none;
+}
+
+@keyframes mq-otp-pulse {
+  0%,
+  100% {
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+  }
+  50% {
+    box-shadow: 0 10px 28px rgba(234, 88, 12, 0.28);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mq-otp-timer.is-critical {
+    animation: none;
+  }
+}
+
 @media (min-width: 900px) {
   .mq-auth-panel {
     grid-template-columns: 1.05fr 1fr;
@@ -919,6 +1078,140 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: var(--mq-radius-sm);
     transition: background var(--mq-transition), color var(--mq-transition);
   }
+}
+
+/* Header user avatar menu */
+.mq-user-menu {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.mq-user-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 999px;
+  transition: transform var(--mq-transition), box-shadow var(--mq-transition);
+}
+
+.mq-user-menu-trigger:hover,
+.mq-user-menu.is-open .mq-user-menu-trigger {
+  box-shadow: 0 0 0 2px var(--mq-gold);
+}
+
+.mq-user-avatar-img,
+.mq-user-avatar-initials {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--mq-border);
+}
+
+.mq-user-avatar-img {
+  object-fit: cover;
+  background: var(--mq-surface-subtle);
+}
+
+.mq-user-avatar-initials {
+  font-family: var(--font-figtree), system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #111;
+  background: linear-gradient(135deg, var(--mq-gold), #f5c400);
+}
+
+.mq-user-menu-dropdown {
+  position: absolute;
+  top: calc(100% - 2px);
+  right: 0;
+  z-index: 60;
+  min-width: 11.5rem;
+  padding: 0.4rem;
+  border: 1px solid var(--mq-border);
+  border-radius: 14px;
+  background: var(--mq-surface);
+  box-shadow: var(--mq-shadow);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(6px);
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease,
+    visibility 160ms ease;
+}
+
+.mq-user-menu:hover .mq-user-menu-dropdown,
+.mq-user-menu.is-open .mq-user-menu-dropdown {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: none;
+}
+
+.mq-user-menu-meta {
+  padding: 0.55rem 0.65rem 0.45rem;
+  border-bottom: 1px solid var(--mq-border);
+  margin-bottom: 0.25rem;
+}
+
+.mq-user-menu-name {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--mq-text);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mq-user-menu-email {
+  margin: 0.15rem 0 0;
+  font-size: 0.7rem;
+  color: var(--mq-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mq-user-menu-item {
+  display: block;
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  text-align: left;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--mq-text);
+  cursor: pointer;
+  transition: background var(--mq-transition), color var(--mq-transition);
+}
+
+.mq-user-menu-item:hover {
+  background: var(--mq-surface-subtle);
+  color: var(--mq-text);
+}
+
+.mq-user-menu-item-danger {
+  color: var(--mq-text-secondary);
+}
+
+.mq-user-menu-item-danger:hover {
+  color: #c2410c;
+  background: color-mix(in srgb, #ea580c 8%, var(--mq-surface));
 }
 
 /* Desktop: hide mobile nav toggle (backup if wrapper class missing) */
@@ -1873,5 +2166,45 @@ body.mq-mobile-nav-open {
   justify-content: flex-end;
   gap: 0.5rem;
   padding-top: 0.35rem;
+}
+
+.mq-admin-modal-desc {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--mq-text-secondary);
+}
+
+.mq-admin-modal-label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--mq-text-secondary);
+}
+
+.mq-admin-modal-textarea {
+  resize: vertical;
+  min-height: 5.5rem;
+}
+
+.mq-admin-modal-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0.4rem 0 0.85rem;
+  font-size: 0.72rem;
+  color: var(--mq-text-muted);
+}
+
+.mq-admin-modal-error {
+  color: #c2410c;
+}
+
+.mq-admin-modal-body .mq-admin-modal-actions {
+  padding-top: 0;
 }
 

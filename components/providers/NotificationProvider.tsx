@@ -12,90 +12,70 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { getApiHost } from "@/lib/api/client";
+import { notificationApi } from "@/lib/api/notifications";
 import type { ApiNotification } from "@/lib/api/types";
 import { useAuth } from "./AuthProvider";
 
 const MAX_ITEMS = 50;
-const STORAGE_KEY = "mq_sse_notifications";
 
 type StreamStatus = "idle" | "live" | "reconnecting" | "offline";
 
 type NotificationContextValue = {
   items: ApiNotification[];
   unreadCount: number;
+  loading: boolean;
   streamStatus: StreamStatus;
-  markRead: (id: string) => void;
-  markAllRead: () => void;
+  refresh: () => Promise<void>;
+  markRead: (id: string) => Promise<void>;
+  markAllRead: () => Promise<void>;
   clear: () => void;
 };
 
 const NotificationContext = createContext<NotificationContextValue | null>(null);
 
-function storageKey(userId: string) {
-  return `${STORAGE_KEY}:${userId}`;
-}
-
-function loadCached(userId: string): ApiNotification[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = sessionStorage.getItem(storageKey(userId));
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as ApiNotification[];
-    return Array.isArray(parsed) ? parsed.slice(0, MAX_ITEMS) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveCached(userId: string, items: ApiNotification[]) {
-  if (typeof window === "undefined") return;
-  try {
-    sessionStorage.setItem(storageKey(userId), JSON.stringify(items.slice(0, MAX_ITEMS)));
-  } catch {
-    /* quota / private mode */
-  }
-}
-
-function clearCached(userId?: string | null) {
-  if (typeof window === "undefined") return;
-  if (userId) {
-    sessionStorage.removeItem(storageKey(userId));
-    return;
-  }
-  Object.keys(sessionStorage)
-    .filter((k) => k.startsWith(`${STORAGE_KEY}:`))
-    .forEach((k) => sessionStorage.removeItem(k));
+function countUnread(list: ApiNotification[]) {
+  return list.reduce((n, item) => n + (item.readAt ? 0 : 1), 0);
 }
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
-  const { isAuthenticated, loading: authLoading, user } = useAuth();
-  const userId = user?.id || null;
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [items, setItems] = useState<ApiNotification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [streamStatus, setStreamStatus] = useState<StreamStatus>("idle");
   const seenIds = useRef<Set<string>>(new Set());
+  const itemsRef = useRef(items);
+  itemsRef.current = items;
 
-  // Restore session cache after login; clear on logout
+  const refresh = useCallback(async () => {
+    if (!isAuthenticated) return;
+    setLoading(true);
+    try {
+      const result = await notificationApi.list({ page: 1, pageSize: MAX_ITEMS });
+      setItems(result.items.slice(0, MAX_ITEMS));
+      setUnreadCount(result.unreadCount);
+      seenIds.current = new Set(result.items.map((n) => n.id));
+    } catch {
+      /* keep current inbox on transient failure */
+    } finally {
+      setLoading(false);
+    }
+  }, [isAuthenticated]);
+
+  // REST history on login — admin/buyer do not depend on SSE for inbox
   useEffect(() => {
     if (authLoading) return;
-    if (!isAuthenticated || !userId) {
+    if (!isAuthenticated) {
       setItems([]);
+      setUnreadCount(0);
       seenIds.current.clear();
       setStreamStatus("idle");
-      clearCached();
       return;
     }
-    const cached = loadCached(userId);
-    setItems(cached);
-    seenIds.current = new Set(cached.map((n) => n.id));
-  }, [isAuthenticated, authLoading, userId]);
+    void refresh();
+  }, [authLoading, isAuthenticated, refresh]);
 
-  // Persist in-memory list for this tab session (survives F5)
-  useEffect(() => {
-    if (!userId || !isAuthenticated) return;
-    saveCached(userId, items);
-  }, [items, userId, isAuthenticated]);
-
-  // SSE after login — cookie JWT via withCredentials
+  // SSE — live events only while the tab is open
   useEffect(() => {
     if (authLoading || !isAuthenticated) return;
 
@@ -109,7 +89,6 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     }
 
     setStreamStatus("reconnecting");
-
     source.onopen = () => setStreamStatus("live");
 
     source.onmessage = (ev) => {
@@ -119,10 +98,10 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         if (seenIds.current.has(n.id)) return;
         seenIds.current.add(n.id);
 
-        // Stream always sends readAt: null — treat as unread until local mark
-        const incoming: ApiNotification = { ...n, readAt: null };
-
+        const incoming: ApiNotification = { ...n, readAt: n.readAt ?? null };
         setItems((prev) => [incoming, ...prev.filter((x) => x.id !== incoming.id)].slice(0, MAX_ITEMS));
+        if (!incoming.readAt) setUnreadCount((c) => c + 1);
+
         toast.info(incoming.title || "Notification", {
           description: incoming.body || undefined,
           duration: 5000,
@@ -133,7 +112,6 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     };
 
     source.onerror = () => {
-      // Browser EventSource auto-reconnects; surface soft status
       setStreamStatus(source.readyState === EventSource.CLOSED ? "offline" : "reconnecting");
     };
 
@@ -143,33 +121,56 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     };
   }, [isAuthenticated, authLoading]);
 
-  const markRead = useCallback((id: string) => {
-    setItems((prev) =>
-      prev.map((n) =>
-        n.id === id && !n.readAt ? { ...n, readAt: new Date().toISOString() } : n,
-      ),
-    );
+  const markRead = useCallback(async (id: string) => {
+    const target = itemsRef.current.find((n) => n.id === id);
+    if (!target || target.readAt) return;
+
+    const now = new Date().toISOString();
+    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, readAt: now } : n)));
+    setUnreadCount((c) => Math.max(0, c - 1));
+
+    try {
+      await notificationApi.markRead(id);
+    } catch {
+      setItems((prev) => prev.map((n) => (n.id === id ? { ...n, readAt: target.readAt } : n)));
+      setUnreadCount((c) => c + 1);
+    }
   }, []);
 
-  const markAllRead = useCallback(() => {
+  const markAllRead = useCallback(async () => {
+    const snapshot = itemsRef.current;
+    if (countUnread(snapshot) === 0) return;
+
     const now = new Date().toISOString();
     setItems((prev) => prev.map((n) => ({ ...n, readAt: n.readAt ?? now })));
+    setUnreadCount(0);
+
+    try {
+      await notificationApi.markAllRead();
+    } catch {
+      setItems(snapshot);
+      setUnreadCount(countUnread(snapshot));
+    }
   }, []);
 
   const clear = useCallback(() => {
     setItems([]);
+    setUnreadCount(0);
     seenIds.current.clear();
-    if (userId) clearCached(userId);
-  }, [userId]);
-
-  const unreadCount = useMemo(
-    () => items.reduce((n, item) => n + (item.readAt ? 0 : 1), 0),
-    [items],
-  );
+  }, []);
 
   const value = useMemo(
-    () => ({ items, unreadCount, streamStatus, markRead, markAllRead, clear }),
-    [items, unreadCount, streamStatus, markRead, markAllRead, clear],
+    () => ({
+      items,
+      unreadCount,
+      loading,
+      streamStatus,
+      refresh,
+      markRead,
+      markAllRead,
+      clear,
+    }),
+    [items, unreadCount, loading, streamStatus, refresh, markRead, markAllRead, clear],
   );
 
   return (

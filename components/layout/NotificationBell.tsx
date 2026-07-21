@@ -14,12 +14,21 @@ function statusLabel(status: string): string {
 
 export function NotificationBell() {
   const { isAuthenticated } = useAuth();
-  const { items, unreadCount, streamStatus, markRead, markAllRead } = useNotifications();
+  const {
+    items,
+    unreadCount,
+    loading,
+    streamStatus,
+    refresh,
+    markRead,
+    markAllRead,
+  } = useNotifications();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
+    void refresh();
     const onPointer = (e: MouseEvent) => {
       if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
     };
@@ -32,7 +41,7 @@ export function NotificationBell() {
       document.removeEventListener("mousedown", onPointer);
       document.removeEventListener("keydown", onKey);
     };
-  }, [open]);
+  }, [open, refresh]);
 
   if (!isAuthenticated) return null;
 
@@ -56,7 +65,7 @@ export function NotificationBell() {
               {streamStatus !== "idle" && (
                 <p className="text-[10px] text-mq-text-muted mt-0.5">
                   {statusLabel(streamStatus)}
-                  {streamStatus === "live" ? " · SSE" : ""}
+                  {streamStatus === "live" ? " · live updates" : ""}
                 </p>
               )}
             </div>
@@ -64,18 +73,18 @@ export function NotificationBell() {
               type="button"
               className="text-xs text-mq-text-muted hover:text-mq-text disabled:opacity-40"
               disabled={unreadCount === 0}
-              onClick={() => markAllRead()}
+              onClick={() => void markAllRead()}
             >
               Mark all read
             </button>
           </div>
           <ul className="max-h-80 overflow-y-auto">
-            {items.length === 0 && (
+            {loading && items.length === 0 && (
+              <li className="px-4 py-6 text-sm text-mq-text-muted text-center">Loading…</li>
+            )}
+            {!loading && items.length === 0 && (
               <li className="px-4 py-6 text-sm text-mq-text-muted text-center">
-                No notifications this session.
-                <span className="block text-[11px] mt-1 opacity-80">
-                  New events appear here live after connect.
-                </span>
+                No notifications yet.
               </li>
             )}
             {items.map((n) => (
@@ -86,7 +95,7 @@ export function NotificationBell() {
                     n.readAt ? "opacity-70" : ""
                   }`}
                   onClick={() => {
-                    if (!n.readAt) markRead(n.id);
+                    if (!n.readAt) void markRead(n.id);
                     setOpen(false);
                   }}
                 >
@@ -110,9 +119,6 @@ export function NotificationBell() {
               </li>
             ))}
           </ul>
-          <p className="px-4 py-2 text-[10px] text-mq-text-muted border-t border-mq-border">
-            Session inbox only — history resets when the tab session ends.
-          </p>
         </div>
       )}
     </div>

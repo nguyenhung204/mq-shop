@@ -12,6 +12,7 @@ import type { LocalizedText } from "@/lib/api/types";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
+import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
 import { Check, ShieldAlert, X } from "lucide-react";
 
 function reasonText(reason: string | LocalizedText | null | undefined): string {
@@ -21,7 +22,7 @@ function reasonText(reason: string | LocalizedText | null | undefined): string {
 }
 
 function ShopDetailInner({ id }: { id: string }) {
-  const [reason, setReason] = useState("Thiếu giấy tờ");
+  const [reasonKind, setReasonKind] = useState<"reject" | "violation" | null>(null);
   const { data: shop, isLoading, isError, error } = useAdminShop(id);
   const approveShop = useApproveShop();
   const rejectShop = useRejectShop();
@@ -29,6 +30,8 @@ function ShopDetailInner({ id }: { id: string }) {
 
   const docUrl = shop?.documentUrl || shop?.legalDocumentUrl;
   const busy = approveShop.isPending || rejectShop.isPending || suspendShop.isPending;
+  const modalBusy =
+    reasonKind === "reject" ? rejectShop.isPending : suspendShop.isPending;
 
   return (
     <>
@@ -139,13 +142,7 @@ function ShopDetailInner({ id }: { id: string }) {
               </div>
             )}
 
-            <div className="pt-2 space-y-3 border-t border-mq-border">
-              <input
-                className="mq-input max-w-md"
-                placeholder="Reject / violation reason (1–150)"
-                value={reason}
-                onChange={(e) => setReason(e.target.value.slice(0, 150))}
-              />
+            <div className="pt-2 border-t border-mq-border">
               <AdminActions>
                 <AdminIconButton
                   label="Approve"
@@ -158,21 +155,51 @@ function ShopDetailInner({ id }: { id: string }) {
                   label="Reject"
                   icon={X}
                   tone="reject"
-                  disabled={busy || shop.status !== "PENDING" || reason.length < 1}
-                  onClick={() => void rejectShop.mutateAsync({ id: shop.id, reason })}
+                  disabled={busy || shop.status !== "PENDING"}
+                  onClick={() => setReasonKind("reject")}
                 />
                 <AdminIconButton
                   label="Violation lock"
                   icon={ShieldAlert}
                   tone="warn"
                   disabled={busy || shop.status !== "APPROVED"}
-                  onClick={() => void suspendShop.mutateAsync({ id: shop.id, reason })}
+                  onClick={() => setReasonKind("violation")}
                 />
               </AdminActions>
             </div>
           </div>
         )}
       </div>
+
+      <AdminReasonModal
+        open={!!reasonKind && !!shop}
+        title={reasonKind === "reject" ? "Reject shop" : "Violation lock"}
+        description={
+          shop
+            ? reasonKind === "reject"
+              ? `Tell the seller why “${shop.name}” was rejected.`
+              : `Optional note for locking “${shop.name}”.`
+            : undefined
+        }
+        confirmLabel={reasonKind === "reject" ? "Reject" : "Lock shop"}
+        required={reasonKind === "reject"}
+        busy={modalBusy}
+        onClose={() => {
+          if (!modalBusy) setReasonKind(null);
+        }}
+        onConfirm={async (reason) => {
+          if (!shop || !reasonKind) return;
+          if (reasonKind === "reject") {
+            await rejectShop.mutateAsync({ id: shop.id, reason });
+          } else {
+            await suspendShop.mutateAsync({
+              id: shop.id,
+              reason: reason || undefined,
+            });
+          }
+          setReasonKind(null);
+        }}
+      />
     </>
   );
 }
