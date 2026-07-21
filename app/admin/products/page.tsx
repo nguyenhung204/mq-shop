@@ -14,6 +14,7 @@ import type { ApiProduct } from "@/lib/api/types";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
+import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 
@@ -31,10 +32,15 @@ function productExcerpt(p: ApiProduct): string {
   return text.length > 140 ? `${text.slice(0, 140)}…` : text;
 }
 
+type RejectTarget = {
+  id: string;
+  title: string;
+};
+
 function ProductsInner() {
   const [status, setStatus] = useState("PENDING");
   const [page, setPage] = useState(1);
-  const [reason, setReason] = useState("Nội dung không phù hợp");
+  const [rejectTarget, setRejectTarget] = useState<RejectTarget | null>(null);
   const { data, isLoading, isError, error } = useAdminProducts(status, page);
   const items = data?.items ?? [];
   const meta = data?.meta;
@@ -48,23 +54,11 @@ function ProductsInner() {
       <AdminPageHeader
         title="Products"
         description="Approve, reject, or hide catalog listings."
-      />
-      <div className="space-y-4">
-        {isError && (
-          <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : "Failed"}
-          </div>
-        )}
-        <div className="flex flex-wrap gap-3">
-          <input
-            className="mq-input max-w-md"
-            value={reason}
-            onChange={(e) => setReason(e.target.value.slice(0, 500))}
-            placeholder="Reject reason (1–500)"
-          />
+        actions={
           <select
-            className="mq-input max-w-xs"
+            className="mq-input max-w-[11rem]"
             value={status}
+            aria-label="Filter by status"
             onChange={(e) => {
               setStatus(e.target.value);
               setPage(1);
@@ -72,15 +66,24 @@ function ProductsInner() {
           >
             {["PENDING", "ACTIVE", "REJECTED", "HIDDEN"].map((s) => (
               <option key={s} value={s}>
-                {s}
+                {s === "PENDING" ? "Pending review" : s}
               </option>
             ))}
           </select>
-        </div>
+        }
+      />
+
+      <div className="space-y-4">
+        {isError && (
+          <div className="mq-alert mq-alert-error">
+            {error instanceof Error ? error.message : "Failed"}
+          </div>
+        )}
         {isLoading && <AdminCardListSkeleton />}
         {items.map((p) => {
           const thumb = productThumb(p);
           const excerpt = productExcerpt(p);
+          const title = p.title || p.name || p.sku || "Product";
           return (
             <div key={p.id} className="mq-card p-4 flex flex-wrap gap-4 text-sm">
               {thumb ? (
@@ -94,27 +97,29 @@ function ProductsInner() {
                 <div className="w-20 h-20 rounded border border-mq-border shrink-0 bg-mq-surface-subtle" />
               )}
               <div className="flex-1 min-w-[200px]">
-                <p className="font-medium">{p.title || p.name || p.sku}</p>
+                <p className="font-medium">{title}</p>
                 <p className="text-xs text-mq-text-muted mt-0.5">
                   {formatMoney(p.price ?? p.priceUsd)} · {p.status}
                   {p.sku ? ` · SKU ${p.sku}` : ""}
                 </p>
-                {excerpt && <p className="text-xs text-mq-text-secondary mt-2">{excerpt}</p>}
+                {excerpt ? (
+                  <p className="text-xs text-mq-text-secondary mt-2">{excerpt}</p>
+                ) : null}
               </div>
               <AdminActions>
                 <AdminIconButton
                   label="Approve"
                   icon={Check}
                   tone="approve"
-                  disabled={approveProduct.isPending}
+                  disabled={approveProduct.isPending || p.status !== "PENDING"}
                   onClick={() => void approveProduct.mutateAsync(p.id)}
                 />
                 <AdminIconButton
                   label="Reject"
                   icon={X}
                   tone="reject"
-                  disabled={rejectProduct.isPending || reason.length < 1}
-                  onClick={() => void rejectProduct.mutateAsync({ id: p.id, reason })}
+                  disabled={rejectProduct.isPending || p.status !== "PENDING"}
+                  onClick={() => setRejectTarget({ id: p.id, title })}
                 />
                 {p.status === "HIDDEN" ? (
                   <AdminIconButton
@@ -139,6 +144,28 @@ function ProductsInner() {
         })}
         <PaginationBar page={page} meta={meta} onPageChange={setPage} />
       </div>
+
+      <AdminReasonModal
+        open={!!rejectTarget}
+        title="Reject product"
+        description={
+          rejectTarget
+            ? `Tell the seller why “${rejectTarget.title}” was rejected.`
+            : undefined
+        }
+        confirmLabel="Reject"
+        required
+        maxLength={500}
+        busy={rejectProduct.isPending}
+        onClose={() => {
+          if (!rejectProduct.isPending) setRejectTarget(null);
+        }}
+        onConfirm={async (reason) => {
+          if (!rejectTarget) return;
+          await rejectProduct.mutateAsync({ id: rejectTarget.id, reason });
+          setRejectTarget(null);
+        }}
+      />
     </>
   );
 }

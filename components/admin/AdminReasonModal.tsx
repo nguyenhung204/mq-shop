@@ -7,8 +7,10 @@ type AdminReasonModalProps = {
   title: string;
   description?: string;
   confirmLabel: string;
-  /** Reject requires 1–150; violation allows empty (max 150). */
+  /** Reject requires min 1 char; violation may allow empty. */
   required?: boolean;
+  /** Max reason length (shop reject 150, product reject 500). */
+  maxLength?: number;
   busy?: boolean;
   onClose: () => void;
   onConfirm: (reason: string) => void | Promise<void>;
@@ -20,6 +22,7 @@ export function AdminReasonModal({
   description,
   confirmLabel,
   required = true,
+  maxLength = 150,
   busy = false,
   onClose,
   onConfirm,
@@ -43,16 +46,18 @@ export function AdminReasonModal({
   if (!open) return null;
 
   const trimmed = reason.trim();
-  const canSubmit = required ? trimmed.length >= 1 && trimmed.length <= 150 : trimmed.length <= 150;
+  const canSubmit = required
+    ? trimmed.length >= 1 && trimmed.length <= maxLength
+    : trimmed.length <= maxLength;
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (required && trimmed.length < 1) {
-      setError("Reason is required (1–150 characters).");
+      setError(`Reason is required (1–${maxLength} characters).`);
       return;
     }
-    if (trimmed.length > 150) {
-      setError("Reason must be at most 150 characters.");
+    if (trimmed.length > maxLength) {
+      setError(`Reason must be at most ${maxLength} characters.`);
       return;
     }
     setError("");
@@ -74,7 +79,10 @@ export function AdminReasonModal({
         aria-modal="true"
         aria-labelledby={titleId}
       >
-        <header className="mq-admin-modal-head" style={{ flexDirection: "column", alignItems: "flex-start" }}>
+        <header
+          className="mq-admin-modal-head"
+          style={{ flexDirection: "column", alignItems: "flex-start" }}
+        >
           <h2 id={titleId} className="mq-admin-modal-title">
             {title}
           </h2>
@@ -88,14 +96,16 @@ export function AdminReasonModal({
             id={inputId}
             className="mq-input mq-admin-modal-textarea"
             rows={4}
-            maxLength={150}
+            maxLength={maxLength}
             value={reason}
             autoFocus
-            placeholder="1–150 characters"
-            onChange={(e) => setReason(e.target.value.slice(0, 150))}
+            placeholder={`1–${maxLength} characters`}
+            onChange={(e) => setReason(e.target.value.slice(0, maxLength))}
           />
           <div className="mq-admin-modal-meta">
-            <span>{reason.length}/150</span>
+            <span>
+              {reason.length}/{maxLength}
+            </span>
             {error ? <span className="mq-admin-modal-error">{error}</span> : null}
           </div>
           <div className="mq-admin-modal-actions">

@@ -26,15 +26,19 @@ export function MyAccountContent() {
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [busy, setBusy] = useState(false);
+  /** Avoid flashing the My Account hub before post-login navigation. */
+  const [redirecting, setRedirecting] = useState(false);
 
   const onLogin = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
     setBusy(true);
+    setRedirecting(true);
     try {
       const loggedIn = await login(loginId, loginPw);
-      router.push(postAuthPath(loggedIn));
+      router.replace(postAuthPath(loggedIn));
     } catch (err) {
+      setRedirecting(false);
       const code = err instanceof ApiError ? err.code : null;
       if (code === "INVALID_CREDENTIALS") setError("Invalid email or password.");
       else if (code === "ACCOUNT_LOCKED") setError("This account is locked.");
@@ -51,6 +55,19 @@ export function MyAccountContent() {
     }
   };
 
+  if (redirecting) {
+    return (
+      <AuthPanel
+        title={t("account.login")}
+        description="Welcome back. Sign in to continue shopping."
+        asideTitle="Welcome back"
+        asideText="Pick up where you left off — wishlist, orders, and soft finds waiting."
+      >
+        <p className="py-8 text-center text-sm text-mq-text-muted">Signing in…</p>
+      </AuthPanel>
+    );
+  }
+
   if (isAuthenticated && user) {
     return (
       <>
@@ -62,18 +79,32 @@ export function MyAccountContent() {
               Roles: {user.roles?.join(", ") || "BUYER"}
             </p>
             <div className="flex flex-wrap gap-3 pt-2">
-              <Link href="/account" className="mq-btn mq-btn-primary">Profile</Link>
-              <Link href="/orders" className="mq-btn mq-btn-outline">Orders</Link>
-              <Link href="/wallet" className="mq-btn mq-btn-outline">Wallet</Link>
-              <Link href="/rma" className="mq-btn mq-btn-outline">RMA</Link>
+              <Link href="/account" className="mq-btn mq-btn-primary">
+                Profile
+              </Link>
+              <Link href="/orders" className="mq-btn mq-btn-outline">
+                Orders
+              </Link>
+              <Link href="/wallet" className="mq-btn mq-btn-outline">
+                Wallet
+              </Link>
+              <Link href="/rma" className="mq-btn mq-btn-outline">
+                RMA
+              </Link>
               {hasRole("SELLER") && (
-                <Link href="/seller" className="mq-btn mq-btn-outline">Seller Center</Link>
+                <Link href="/seller" className="mq-btn mq-btn-outline">
+                  Seller Center
+                </Link>
               )}
               {!hasRole("SELLER") && (
-                <Link href="/seller/shop" className="mq-btn mq-btn-outline">Open a shop</Link>
+                <Link href="/seller/shop" className="mq-btn mq-btn-outline">
+                  Open a shop
+                </Link>
               )}
               {(hasRole("ADMIN") || hasRole("SUPER_ADMIN")) && (
-                <Link href="/admin" className="mq-btn mq-btn-outline">Admin</Link>
+                <Link href="/admin" className="mq-btn mq-btn-outline">
+                  Admin
+                </Link>
               )}
             </div>
             <button
@@ -101,8 +132,7 @@ export function MyAccountContent() {
       asideText="Pick up where you left off — wishlist, orders, and soft finds waiting."
       footer={
         <>
-          {t("account.noAccount")}{" "}
-          <Link href={registerHref}>{t("account.register")}</Link>
+          {t("account.noAccount")} <Link href={registerHref}>{t("account.register")}</Link>
         </>
       }
     >
@@ -136,7 +166,10 @@ export function MyAccountContent() {
         <button type="submit" className="mq-btn mq-btn-primary w-full" disabled={busy}>
           {t("account.logIn")}
         </button>
-        <Link href="/my-account/lost-password" className="mq-auth-link block w-full text-center text-[0.72rem] text-mq-text-muted hover:text-mq-text">
+        <Link
+          href="/my-account/lost-password"
+          className="mq-auth-link block w-full text-center text-[0.72rem] text-mq-text-muted hover:text-mq-text"
+        >
           {t("account.lostPassword")}
         </Link>
       </form>

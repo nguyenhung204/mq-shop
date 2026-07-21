@@ -1,17 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CreditCard, Headphones, RotateCcw, ShieldCheck, Star } from "lucide-react";
 import { catalogApi } from "@/lib/api";
 import { categoryLabel } from "@/lib/api/categoryLabel";
 import { mapListingCard } from "@/lib/api/mapProduct";
 import type { ApiCategory } from "@/lib/api/types";
 import type { Product } from "@/lib/data/products";
-import { heroImages, miscImages, categoryImages } from "@/lib/images";
+import { categoryImages, miscImages } from "@/lib/images";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-import { HeroSlider } from "@/components/home/HeroSlider";
 import { CategoryCard } from "@/components/ui/ProductCard";
 import { ProductCarousel } from "@/components/ui/ProductCarousel";
 import { Container, SectionHeading } from "@/components/ui/shared";
@@ -34,22 +32,44 @@ export function HomePageContent() {
   const { t, locale } = useLanguage();
   const [categories, setCategories] = useState<ApiCategory[]>([]);
   const [listing, setListing] = useState<Product[]>([]);
+  const [loadingCats, setLoadingCats] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    setLoadingCats(true);
     void catalogApi
       .categories()
       .then(setCategories)
-      .catch(() => setCategories([]));
-    void catalogApi
-      .listing({ page: 1, pageSize: 24 })
-      .then((res) => setListing(res.items.map((p) => mapListingCard(p))))
-      .catch(() => setListing([]));
+      .catch(() => setCategories([]))
+      .finally(() => setLoadingCats(false));
   }, []);
 
-  const saleProducts = listing.filter((p) => p.salePercent || p.inStock > 0).slice(0, 12);
-  const newProducts = listing.slice(0, 12);
-  const hotProducts = [...listing].sort((a, b) => b.price - a.price).slice(0, 12);
-  const featured = listing.slice(0, 12);
+  useEffect(() => {
+    setLoadingProducts(true);
+    setError(null);
+    void catalogApi
+      .listing({ page: 1, pageSize: 24 })
+      .then((res) => {
+        setListing(res.items.map((p) => mapListingCard(p)));
+      })
+      .catch((err: unknown) => {
+        setListing([]);
+        setError(err instanceof Error ? err.message : "Failed to load products");
+      })
+      .finally(() => setLoadingProducts(false));
+  }, []);
+
+  const inStock = useMemo(
+    () => listing.filter((p) => p.inStock > 0 && p.displayMode !== "OUT_OF_STOCK_WATERMARK"),
+    [listing],
+  );
+  const newest = useMemo(() => listing.slice(0, 12), [listing]);
+  const featured = useMemo(() => {
+    const sorted = [...listing].sort((a, b) => b.price - a.price);
+    return sorted.slice(0, 12);
+  }, [listing]);
+  const picks = useMemo(() => (inStock.length ? inStock : listing).slice(0, 12), [inStock, listing]);
 
   const trustIcons = [
     { title: t("home.trustPayment"), desc: t("home.trustPaymentDesc"), Icon: CreditCard },
@@ -66,76 +86,57 @@ export function HomePageContent() {
 
   return (
     <>
-      <HeroSlider />
-
-      <section className="py-14 md:py-20">
+      <section className="pt-10 pb-14 md:pt-14 md:pb-20">
         <Container>
-          <div
-            className="mq-carousel-track"
-            style={{ justifyContent: "space-between" }}
-          >
-            {categories.map((cat, i) => (
-              <CategoryCard
-                key={cat.id}
-                name={
-                  locale ? categoryLabel(cat, locale) : cat.name || cat.slug
-                }
-                slug={cat.id}
-                image={
-                  FALLBACK_CATEGORY_IMAGES[cat.slug] ||
-                  categoryImages.accessories
-                }
-                priority={i < 4}
-              />
-            ))}
-          </div>
+          {loadingCats ? (
+            <div className="mq-carousel-track gap-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="shrink-0 w-[140px] md:w-[180px] aspect-[3/4] rounded-[var(--mq-radius-lg)] bg-mq-surface-subtle animate-pulse"
+                />
+              ))}
+            </div>
+          ) : categories.length === 0 ? (
+            <p className="text-sm text-mq-text-muted text-center py-8">No categories yet.</p>
+          ) : (
+            <div className="mq-carousel-track" style={{ justifyContent: "space-between" }}>
+              {categories.map((cat, i) => (
+                <CategoryCard
+                  key={cat.id}
+                  name={locale ? categoryLabel(cat, locale) : cat.name || cat.slug}
+                  slug={cat.id}
+                  image={
+                    FALLBACK_CATEGORY_IMAGES[cat.slug] || categoryImages.accessories
+                  }
+                  priority={i < 4}
+                />
+              ))}
+            </div>
+          )}
         </Container>
       </section>
+
+      {error ? (
+        <Container className="pb-8">
+          <div className="mq-alert mq-alert-error">{error}</div>
+        </Container>
+      ) : null}
 
       <section className="py-14 md:py-20 bg-mq-surface-subtle">
         <Container>
           <SectionHeading
             label={t("home.seasonSale")}
             title={t("home.forEveryMoment")}
-            action={{ label: t("common.shopAll"), href: "/shop?sort=deals" }}
+            action={{ label: t("common.shopAll"), href: "/shop" }}
           />
-          <ProductCarousel products={saleProducts} priorityCount={2} />
-        </Container>
-      </section>
-
-      <section className="py-8">
-        <Container>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              { title: t("home.timelessDesign"), image: heroImages.promo1 },
-              { title: t("home.thoughtfulGifts"), image: heroImages.promo2 },
-            ].map((banner) => (
-              <div
-                key={banner.title}
-                className="relative h-[300px] md:h-[420px] overflow-hidden group rounded-[var(--mq-radius-lg)]"
-              >
-                <Image
-                  src={banner.image}
-                  alt={banner.title}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  sizes="(max-width:768px) 100vw, 50vw"
-                  quality={75}
-                />
-                <div className="absolute inset-0 bg-black/35 flex flex-col items-center justify-center text-center p-8">
-                  <h3 className="text-2xl md:text-3xl text-white font-display tracking-tight uppercase">
-                    {banner.title}
-                  </h3>
-                  <Link
-                    href="/shop"
-                    className="mq-btn mq-btn-primary mt-5 w-fit text-xs bg-white text-black border-black hover:bg-white/90"
-                  >
-                    {t("common.discoverNow")}
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
+          {loadingProducts ? (
+            <ProductCarouselSkeleton />
+          ) : picks.length === 0 ? (
+            <EmptyProducts />
+          ) : (
+            <ProductCarousel products={picks} priorityCount={2} />
+          )}
         </Container>
       </section>
 
@@ -144,9 +145,15 @@ export function HomePageContent() {
           <SectionHeading
             label={t("home.justArrived")}
             title={t("home.newAtMq")}
-            action={{ label: t("common.shopAll"), href: "/shop?sort=new" }}
+            action={{ label: t("common.shopAll"), href: "/shop" }}
           />
-          <ProductCarousel products={newProducts} />
+          {loadingProducts ? (
+            <ProductCarouselSkeleton />
+          ) : newest.length === 0 ? (
+            <EmptyProducts />
+          ) : (
+            <ProductCarousel products={newest} />
+          )}
         </Container>
       </section>
 
@@ -157,14 +164,13 @@ export function HomePageContent() {
             title={t("home.curatedSelection")}
             action={{ label: t("common.seeCollection"), href: "/shop" }}
           />
-          <ProductCarousel products={hotProducts} priorityCount={2} />
-        </Container>
-      </section>
-
-      <section className="py-14 md:py-20">
-        <Container>
-          <SectionHeading label={t("home.newCollection")} title={t("home.styleForEveryStory")} />
-          <ProductCarousel products={featured} />
+          {loadingProducts ? (
+            <ProductCarouselSkeleton />
+          ) : featured.length === 0 ? (
+            <EmptyProducts />
+          ) : (
+            <ProductCarousel products={featured} priorityCount={2} />
+          )}
         </Container>
       </section>
 
@@ -251,5 +257,27 @@ export function HomePageContent() {
         </Container>
       </section>
     </>
+  );
+}
+
+function EmptyProducts() {
+  return (
+    <p className="text-sm text-mq-text-muted text-center py-10">
+      No products in the catalog yet.
+    </p>
+  );
+}
+
+function ProductCarouselSkeleton() {
+  return (
+    <div className="mq-carousel-track gap-4">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="shrink-0 w-[220px] md:w-[260px] space-y-3">
+          <div className="aspect-square rounded-[var(--mq-radius-lg)] bg-mq-surface animate-pulse" />
+          <div className="h-3 w-3/4 rounded bg-mq-surface animate-pulse" />
+          <div className="h-3 w-1/2 rounded bg-mq-surface animate-pulse" />
+        </div>
+      ))}
+    </div>
   );
 }

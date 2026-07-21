@@ -810,8 +810,8 @@ h1, h2, h3, h4, h5, h6 {
 /* Cart/wishlist count bubble */
 .mq-count-badge {
   position: absolute;
-  top: -6px;
-  right: -8px;
+  top: -4px;
+  right: -4px;
   min-width: 18px;
   height: 18px;
   padding: 0 4px;

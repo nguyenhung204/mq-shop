@@ -1,7 +1,6 @@
 import { api } from "./client";
 import type {
   ApiAuditLog,
-  ApiBanner,
   ApiCategory,
   ApiOrder,
   ApiProduct,
@@ -16,7 +15,7 @@ import type {
   PaymentMethod,
   WalletBalance,
 } from "./types";
-import { asArray } from "./utils";
+import { asArray, parsePage } from "./utils";
 
 export const catalogApi = {
   categories: async () => {
@@ -44,14 +43,7 @@ export const catalogApi = {
         withMeta: true,
       },
     );
-    if (Array.isArray(res)) {
-      return { items: res, meta: undefined as PageMeta | undefined };
-    }
-    const wrapped = res as { data: ListingCard[]; meta?: PageMeta };
-    return {
-      items: asArray<ListingCard>(wrapped.data ?? wrapped),
-      meta: wrapped.meta,
-    };
+    return parsePage<ListingCard>(res);
   },
   /** @deprecated prefer listing() */
   searchProducts: async (query: {
@@ -84,8 +76,6 @@ export const catalogApi = {
     }
   },
   product: (id: string) => api.get<ApiProduct>(`/products/${id}`, { auth: false }),
-  banners: (locale: string) =>
-    api.get<ApiBanner[]>("/banners", { auth: false, query: { locale } }),
 };
 
 export const cartApi = {
