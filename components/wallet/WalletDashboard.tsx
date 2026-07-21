@@ -20,7 +20,7 @@ function WalletInner() {
   const link =
     affiliate?.link ||
     (typeof window !== "undefined" && affiliate?.code
-      ? `${window.location.origin}/my-account?ref=${affiliate.code}`
+      ? `${window.location.origin}/my-account/register?ref=${affiliate.code}`
       : affiliate?.code || "");
 
   const copyLink = async () => {

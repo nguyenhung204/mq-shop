@@ -7,8 +7,7 @@ import {
   useToggleBanner,
 } from "@/lib/queries/admin";
 import { AuthGuard } from "@/components/guards/AuthGuard";
-import { AdminNav } from "@/components/admin/AdminNav";
-import { Container, PageHero } from "@/components/ui/shared";
+import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 
 function BannersInner() {
@@ -35,10 +34,12 @@ function BannersInner() {
 
   return (
     <>
-      <PageHero title="Banners" breadcrumb={[{ label: "Admin", href: "/admin" }, { label: "Banners" }]} />
-      <Container className="py-10 space-y-6">
-        <AdminNav />
-        {isError && (
+      <AdminPageHeader
+        title="Banners"
+        description="Manage homepage CMS banners."
+      />
+<div className="space-y-6">
+{isError && (
           <div className="mq-alert mq-alert-error">
             {error instanceof Error ? error.message : "Failed"}
           </div>
@@ -77,7 +78,7 @@ function BannersInner() {
             </button>
           </div>
         ))}
-      </Container>
+      </div>
     </>
   );
 }

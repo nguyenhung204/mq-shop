@@ -3,13 +3,16 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { AuthPanel } from "@/components/auth/AuthPanel";
 import { authApi } from "@/lib/api/auth";
-import { ApiError } from "@/lib/api/client";
-import { Container, PageHero } from "@/components/ui/shared";
+import { ApiError, setTokens } from "@/lib/api/client";
+import { postAuthPath } from "@/lib/auth/routes";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 export function VerifyOtpContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { setUser } = useAuth();
   const [email, setEmail] = useState(searchParams.get("email") || "");
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
@@ -21,44 +24,88 @@ export function VerifyOtpContent() {
     setError("");
     setBusy(true);
     try {
-      await authApi.verifyOtp({ email, code });
-      setOk("Email verified. You can sign in now.");
-      setTimeout(() => router.push("/my-account"), 800);
+      const data = await authApi.verifyOtp({ email, otp: code });
+      if (data?.accessToken) setTokens(data.accessToken, data.refreshToken);
+      if (data?.user) setUser(data.user);
+      setOk("Email verified. You are signed in.");
+      setTimeout(() => router.push(postAuthPath(data?.user)), 600);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Verification failed");
+      const codeName = err instanceof ApiError ? err.code : null;
+      if (codeName === "INVALID_OTP") setError("Invalid or expired OTP.");
+      else if (codeName === "REGISTRATION_NOT_FOUND")
+        setError("Registration session expired. Please register again.");
+      else setError(err instanceof ApiError ? err.message : "Verification failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onResend = async () => {
+    setError("");
+    setBusy(true);
+    try {
+      await authApi.resendOtp({ email });
+      setOk("OTP resent.");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Resend failed");
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <>
-      <PageHero title="Verify email" breadcrumb={[{ label: "Account", href: "/my-account" }, { label: "Verify OTP" }]} />
-      <Container className="py-12 md:py-16 max-w-md mx-auto">
-        <div className="mq-card p-6 space-y-4">
-          <p className="text-sm text-mq-text-secondary">
-            Enter the OTP sent to your email to activate your account.
-          </p>
-          {error && <div className="mq-alert mq-alert-error">{error}</div>}
-          {ok && <div className="mq-alert mq-alert-success">{ok}</div>}
-          <form className="space-y-4" onSubmit={onSubmit}>
-            <div>
-              <label className="block text-sm font-medium mb-1.5">Email</label>
-              <input type="email" className="mq-input" value={email} onChange={(e) => setEmail(e.target.value)} required />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1.5">OTP code</label>
-              <input className="mq-input" value={code} onChange={(e) => setCode(e.target.value)} required />
-            </div>
-            <button type="submit" className="mq-btn mq-btn-primary w-full" disabled={busy}>
-              Verify
-            </button>
-          </form>
-          <Link href="/my-account" className="block text-sm text-center text-mq-text-muted hover:text-mq-text">
-            Back to login
-          </Link>
+    <AuthPanel
+      title="Verify email"
+      description="Enter the 6-digit code we sent to your email."
+      asideTitle="Almost there"
+      asideText="One quick code to confirm your email and activate your MQ account."
+      footer={
+        <Link href="/my-account">Back to login</Link>
+      }
+    >
+      {error && <div className="mq-alert mq-alert-error">{error}</div>}
+      {ok && <div className="mq-alert mq-alert-success">{ok}</div>}
+      <form className="mq-auth-actions flex w-full flex-col gap-2.5" onSubmit={onSubmit}>
+        <div className="mq-auth-field">
+          <label htmlFor="otp-email">Email</label>
+          <input
+            id="otp-email"
+            type="email"
+            className="mq-input"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
         </div>
-      </Container>
-    </>
+        <div className="mq-auth-field">
+          <label htmlFor="otp-code">OTP code</label>
+          <input
+            id="otp-code"
+            className="mq-input"
+            value={code}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            required
+            maxLength={6}
+            inputMode="numeric"
+            autoComplete="one-time-code"
+          />
+        </div>
+        <button
+          type="submit"
+          className="mq-btn mq-btn-primary w-full"
+          disabled={busy || code.length !== 6}
+        >
+          Verify
+        </button>
+        <button
+          type="button"
+          className="mq-btn mq-btn-outline w-full"
+          disabled={busy || !email}
+          onClick={() => void onResend()}
+        >
+          Resend OTP
+        </button>
+      </form>
+    </AuthPanel>
   );
 }

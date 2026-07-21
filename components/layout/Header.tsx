@@ -17,6 +17,7 @@ import { NotificationBell } from "@/components/layout/NotificationBell";
 import { RoleSwitcher } from "@/components/layout/RoleSwitcher";
 import { TopBar } from "@/components/layout/TopBar";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { postAuthPath } from "@/lib/auth/routes";
 import { heroImages } from "@/lib/images";
 
 function NavBadge({ type }: { type: "sale" | "hot" | "new" }) {
@@ -34,8 +35,9 @@ export function Header() {
   const { dark, toggle } = useTheme();
   const { itemCount } = useCart();
   const { t } = useLanguage();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const router = useRouter();
+  const accountHref = isAuthenticated ? postAuthPath(user) : "/my-account";
 
   const closeMega = useCallback(() => setActiveMega(null), []);
 
@@ -195,8 +197,9 @@ export function Header() {
               className="flex items-center gap-0.5 sm:gap-1 shrink-0 ml-auto"
               onMouseEnter={closeMega}
             >
+              <NotificationBell />
               <Link
-                href={isAuthenticated ? "/account" : "/my-account"}
+                href={accountHref}
                 className="mq-icon-btn text-mq-text hover:text-mq-gold transition-colors"
                 aria-label="Account"
                 onClick={closeMega}
@@ -248,23 +251,26 @@ export function Header() {
                 )}
               </button>
 
-              <button
-                type="button"
-                className="mq-mobile-nav-toggle mq-icon-btn text-mq-text"
-                onClick={() => {
-                  closeMega();
-                  setMobileOpen((open) => !open);
-                }}
-                aria-label="Menu"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                  {mobileOpen ? (
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  ) : (
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                  )}
-                </svg>
-              </button>
+              {/* Wrapper owns lg:hidden — .mq-icon-btn display must not override it */}
+              <div className="shrink-0 lg:hidden">
+                <button
+                  type="button"
+                  className="mq-mobile-nav-toggle mq-icon-btn text-mq-text"
+                  onClick={() => {
+                    closeMega();
+                    setMobileOpen((open) => !open);
+                  }}
+                  aria-label="Menu"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                    {mobileOpen ? (
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    ) : (
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    )}
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         </header>

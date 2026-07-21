@@ -1,0 +1,370 @@
+openapi: 3.0.3
+info:
+  title: MQ Shopping MLM & Wallet API
+  version: 1.0.0
+  description: >
+    Affiliate network, Level-2 PIN, P2P transfers, and wallet withdrawals.
+    Network reads enforce BR_02 isolation.
+servers:
+  - url: /api/v1
+tags:
+  - name: MLM
+  - name: WalletPin
+  - name: P2P
+  - name: Withdrawal
+paths:
+  /mlm/me/affiliate-link:
+    get:
+      tags: [MLM]
+      summary: Get personal affiliate link
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Affiliate URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    example: "https://app.example/register?ref=uuid"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /mlm/me/network:
+    get:
+      tags: [MLM]
+      summary: Downline list (BR_02 scoped to caller tree)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: depth
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: Downline members
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DownlinePage"
+        "403":
+          description: Attempt to access out-of-line IDs
+  /mlm/me/commission-stats:
+    get:
+      tags: [MLM]
+      summary: Total commission and downline summary (own network only)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Commission stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommissionStatsResponse"
+  /wallet/pin/request-otp:
+    post:
+      tags: [WalletPin]
+      summary: Request OTP for Level-2 PIN setup/change
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                channel:
+                  type: string
+                  enum: [SMS, EMAIL]
+      responses:
+        "202":
+          description: OTP sent
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /wallet/pin/setup:
+    post:
+      tags: [WalletPin]
+      summary: Set 6-digit Level-2 PIN after OTP verification
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetPinRequest"
+      responses:
+        "200":
+          description: PIN saved (hashed)
+        "400":
+          description: OTP invalid or PIN mismatch
+  /wallet/p2p/recipient:
+    get:
+      tags: [P2P]
+      summary: Resolve recipient by ID or phone for confirmation
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: query
+          required: true
+          schema:
+            type: string
+            description: User ID or phone
+      responses:
+        "200":
+          description: Recipient display name
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recipientId:
+                    type: string
+                    format: uuid
+                  displayName:
+                    type: string
+        "404":
+          description: Recipient not found
+  /wallet/p2p/transfer:
+    post:
+      tags: [P2P]
+      summary: P2P transfer with Level-2 PIN
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/P2PTransferRequest"
+      responses:
+        "200":
+          description: Transfer completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/P2PTransferResponse"
+        "400":
+          description: Wrong PIN, insufficient balance, or self-transfer
+  /wallet/withdrawals:
+    post:
+      tags: [Withdrawal]
+      summary: Request withdrawal (freezes funds, PENDING)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WithdrawalRequest"
+      responses:
+        "201":
+          description: PENDING withdrawal created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WithdrawalResponse"
+        "400":
+          description: PIN/balance/min amount error
+    get:
+      tags: [Withdrawal]
+      summary: List own withdrawal requests
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: User withdrawals
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/WithdrawalResponse"
+  /wallet/withdrawals/{id}/reject:
+    post:
+      tags: [Withdrawal]
+      summary: Admin reject — unfreeze
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/WithdrawalId"
+      responses:
+        "200":
+          description: REJECTED
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /wallet/withdrawals/{id}/approve:
+    post:
+      tags: [Withdrawal]
+      summary: Admin approve — APPROVED awaiting bank pay
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/WithdrawalId"
+      responses:
+        "200":
+          description: APPROVED
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /wallet/withdrawals/{id}/pay:
+    post:
+      tags: [Withdrawal]
+      summary: Execute bank payout — COMPLETED or PAY_FAILED
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/WithdrawalId"
+      responses:
+        "200":
+          description: Pay outcome
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WithdrawalResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    WithdrawalId:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    Unauthorized:
+      description: Not authenticated
+    Forbidden:
+      description: Missing permission
+  schemas:
+    DownlineMember:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        depth:
+          type: integer
+        joinedAt:
+          type: string
+          format: date-time
+    DownlinePage:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/DownlineMember"
+        meta:
+          $ref: "#/components/schemas/PageMeta"
+    CommissionStatsResponse:
+      type: object
+      properties:
+        totalCommission:
+          type: number
+        directDownlineCount:
+          type: integer
+        downline:
+          type: array
+          items:
+            $ref: "#/components/schemas/DownlineMember"
+    SetPinRequest:
+      type: object
+      required: [otp, pin, confirmPin]
+      properties:
+        otp:
+          type: string
+        pin:
+          type: string
+          pattern: "^[0-9]{6}$"
+          writeOnly: true
+        confirmPin:
+          type: string
+          pattern: "^[0-9]{6}$"
+          writeOnly: true
+    P2PTransferRequest:
+      type: object
+      required: [recipientId, amount, pin]
+      properties:
+        recipientId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          minimum: 0.01
+        pin:
+          type: string
+          writeOnly: true
+    P2PTransferResponse:
+      type: object
+      properties:
+        transferGroupId:
+          type: string
+          format: uuid
+        senderBalanceAfter:
+          type: number
+        recipientBalanceAfter:
+          type: number
+    WithdrawalRequest:
+      type: object
+      required: [amount, bankAccountName, bankAccountNumber, bankCode, pin]
+      properties:
+        amount:
+          type: number
+        bankAccountName:
+          type: string
+        bankAccountNumber:
+          type: string
+        bankCode:
+          type: string
+        pin:
+          type: string
+          writeOnly: true
+    WithdrawalResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        amount:
+          type: number
+        status:
+          type: string
+          enum: [PENDING, APPROVED, COMPLETED, REJECTED, PAY_FAILED]
+        transferReference:
+          type: string
+          nullable: true
+    PageMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer

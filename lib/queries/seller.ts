@@ -4,13 +4,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { catalogApi, cmsApi, inventoryApi, sellerApi, shopApi } from "@/lib/api";
 import { ApiError } from "@/lib/api/client";
-import type { ApiCategory, ApiOrder, ApiProduct, ApiRma, ApiShop } from "@/lib/api/types";
-import { asArray } from "@/lib/api/utils";
+import type { ApiCategory, ApiOrder, ApiProduct, ApiRma, ApiShop, PageMeta } from "@/lib/api/types";
+import { asArray, parsePage } from "@/lib/api/utils";
 import { getErrorMessage } from "@/lib/queries/utils";
 
 export const sellerKeys = {
   all: ["seller"] as const,
-  products: () => [...sellerKeys.all, "products"] as const,
+  products: (status: string, page: number) =>
+    [...sellerKeys.all, "products", status, page] as const,
   categories: () => [...sellerKeys.all, "categories"] as const,
   orders: () => [...sellerKeys.all, "orders"] as const,
   rma: () => [...sellerKeys.all, "rma"] as const,
@@ -30,10 +31,18 @@ function useSellerInvalidate() {
   return () => void queryClient.invalidateQueries({ queryKey: sellerKeys.all });
 }
 
-export function useSellerProducts() {
+export function useSellerProducts(status?: string, page = 1, pageSize = 20) {
+  const statusKey = status || "";
   return useQuery({
-    queryKey: sellerKeys.products(),
-    queryFn: async () => asArray<ApiProduct>(await sellerApi.products()),
+    queryKey: sellerKeys.products(statusKey, page),
+    queryFn: async (): Promise<{ items: ApiProduct[]; meta?: PageMeta }> =>
+      parsePage<ApiProduct>(
+        await sellerApi.products({
+          status: status || undefined,
+          page,
+          pageSize,
+        }),
+      ),
   });
 }
 
@@ -106,6 +115,29 @@ export function useMarketingMaterials() {
   });
 }
 
+function productImageErrorMessage(e: unknown, fallback: string): string {
+  if (e instanceof ApiError) {
+    switch (e.code) {
+      case "INVALID_PRODUCT_IMAGE":
+        return "Invalid image type. Use JPEG, PNG, WebP, or GIF.";
+      case "PRODUCT_IMAGE_TOO_LARGE":
+        return "Each image must be ≤ 5MB.";
+      case "SHOP_NOT_ELIGIBLE":
+        return "Shop must be APPROVED and not suspended.";
+      default:
+        break;
+    }
+  }
+  return getErrorMessage(e, fallback);
+}
+
+export function useUploadProductImages() {
+  return useMutation({
+    mutationFn: (files: File[]) => sellerApi.uploadImages(files),
+    onError: (e) => toast.error(productImageErrorMessage(e, "Image upload failed")),
+  });
+}
+
 export function useCreateSellerProduct() {
   const invalidate = useSellerInvalidate();
   return useMutation({
@@ -118,6 +150,19 @@ export function useCreateSellerProduct() {
   });
 }
 
+export function useUpdateSellerProduct() {
+  const invalidate = useSellerInvalidate();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: unknown }) =>
+      sellerApi.updateProduct(id, body),
+    onSuccess: () => {
+      invalidate();
+      toast.success("Product updated");
+    },
+    onError: (e) => toast.error(getErrorMessage(e, "Update failed")),
+  });
+}
+
 export function useHideSellerProduct() {
   const invalidate = useSellerInvalidate();
   return useMutation({
@@ -127,6 +172,24 @@ export function useHideSellerProduct() {
       toast.success("Product hidden");
     },
     onError: (e) => toast.error(getErrorMessage(e)),
+  });
+}
+
+export function useUnhideSellerProduct() {
+  const invalidate = useSellerInvalidate();
+  return useMutation({
+    mutationFn: (id: string) => sellerApi.unhideProduct(id),
+    onSuccess: () => {
+      invalidate();
+      toast.success("Product unhidden — pending review");
+    },
+    onError: (e) => {
+      if (e instanceof ApiError && e.code === "PRODUCT_NOT_HIDDEN") {
+        toast.error("Product is not hidden.");
+        return;
+      }
+      toast.error(getErrorMessage(e));
+    },
   });
 }
 
@@ -212,13 +275,7 @@ export function useRejectInventory() {
 export function useApplyShop() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (body: {
-      name: string;
-      taxCode: string;
-      countryCode: string;
-      pickupAddress: string;
-      legalDocumentUrl?: string;
-    }) => shopApi.apply(body),
+    mutationFn: (formData: FormData) => shopApi.apply(formData),
     onSuccess: (shop: ApiShop) => {
       queryClient.setQueryData(sellerKeys.shop(), shop);
       toast.success("Application submitted. Waiting for Admin approval.");

@@ -1,38 +1,47 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useApplyShop, useSellerShop } from "@/lib/queries/seller";
+import { useApplyShop, useSellerShop, sellerKeys } from "@/lib/queries/seller";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { SellerNav } from "@/components/seller/SellerNav";
-import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Container, PageHero } from "@/components/ui/shared";
 import { ShopCardSkeleton } from "@/components/ui/Skeleton";
 import { useQueryClient } from "@tanstack/react-query";
-import { sellerKeys } from "@/lib/queries/seller";
+
+function reasonText(reason: unknown): string {
+  if (!reason) return "";
+  if (typeof reason === "string") return reason;
+  if (typeof reason === "object" && reason !== null) {
+    const r = reason as Record<string, string>;
+    return r.vi || r.en || r["zh-TW"] || "";
+  }
+  return "";
+}
 
 function ShopInner() {
-  const { locale } = useLanguage();
-  const lang = locale === "zh-TW" ? "zh-TW" : locale === "en" ? "en" : "vi";
   const queryClient = useQueryClient();
   const { data: shop, isLoading, isError, error } = useSellerShop();
   const applyShop = useApplyShop();
   const [form, setForm] = useState({
     name: "",
-    taxCode: "",
+    taxId: "",
     countryCode: "VN",
-    pickupAddress: "",
-    legalDocumentUrl: "",
   });
+  const [documentFile, setDocumentFile] = useState<File | null>(null);
 
   const apply = async (e: FormEvent) => {
     e.preventDefault();
-    await applyShop.mutateAsync(form);
+    if (!documentFile) return;
+    const fd = new FormData();
+    fd.append("name", form.name);
+    fd.append("taxId", form.taxId);
+    fd.append("countryCode", form.countryCode);
+    fd.append("document", documentFile);
+    await applyShop.mutateAsync(fd);
   };
 
-  const reason =
-    shop?.rejectionReason?.[lang] ||
-    shop?.rejectionReason?.vi ||
-    "";
+  const canReapply = shop?.status === "REJECTED" && !shop.isSuspended;
+  const reason = reasonText(shop?.rejectionReason);
 
   return (
     <>
@@ -45,15 +54,26 @@ function ShopInner() {
           </div>
         )}
         {isLoading && <ShopCardSkeleton />}
-        {!isLoading && shop ? (
-          <div className="mq-card p-6 space-y-3">
+        {!isLoading && shop && (
+          <div className="mq-card p-6 space-y-3 mb-6">
             <h2 className="text-xl">{shop.name}</h2>
             <span className="mq-badge mq-badge-cyan">{shop.status}</span>
-            <p className="text-sm text-mq-text-secondary">Tax: {shop.taxCode} · {shop.countryCode}</p>
-            <p className="text-sm">{shop.pickupAddress}</p>
+            {(shop.violationFlag || shop.contactAdminRequired || shop.isSuspended) && (
+              <div className="mq-alert mq-alert-error text-sm">
+                Contact admin required — shop may be suspended or flagged.
+              </div>
+            )}
+            <p className="text-sm text-mq-text-secondary">
+              Tax: {shop.taxId || shop.taxCode} · {shop.countryCode}
+            </p>
             {reason && <p className="text-sm text-mq-accent-pink">Reason: {reason}</p>}
-            {shop.status === "APPROVED" && (
-              <p className="text-sm text-mq-text-muted">If you just got approved, sign out and sign in again to refresh SELLER role in JWT.</p>
+            {shop.status === "PENDING" && (
+              <p className="text-sm text-mq-text-muted">Waiting for admin approval…</p>
+            )}
+            {shop.status === "APPROVED" && !shop.isSuspended && (
+              <p className="text-sm text-mq-text-muted">
+                Shop approved. Refresh session if Seller menus are missing.
+              </p>
             )}
             <button
               type="button"
@@ -63,18 +83,50 @@ function ShopInner() {
               Refresh
             </button>
           </div>
-        ) : !isLoading ? (
+        )}
+
+        {(!shop || canReapply) && !isLoading && (
           <form className="mq-card p-6 space-y-3" onSubmit={(e) => void apply(e)}>
-            <input className="mq-input" placeholder="Shop name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-            <input className="mq-input" placeholder="Tax code (1–15 digits)" value={form.taxCode} onChange={(e) => setForm({ ...form, taxCode: e.target.value.replace(/\D/g, "").slice(0, 15) })} required />
-            <input className="mq-input" placeholder="Country code" value={form.countryCode} onChange={(e) => setForm({ ...form, countryCode: e.target.value.toUpperCase() })} maxLength={2} required />
-            <textarea className="mq-textarea" placeholder="Pickup address" value={form.pickupAddress} onChange={(e) => setForm({ ...form, pickupAddress: e.target.value })} required />
-            <input className="mq-input" placeholder="Legal document URL" value={form.legalDocumentUrl} onChange={(e) => setForm({ ...form, legalDocumentUrl: e.target.value })} />
-            <button className="mq-btn mq-btn-primary w-full" disabled={applyShop.isPending}>
+            <h2 className="text-lg">{canReapply ? "Resubmit application" : "Apply to open a shop"}</h2>
+            <input
+              className="mq-input"
+              placeholder="Shop name"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              required
+              minLength={2}
+              maxLength={100}
+            />
+            <input
+              className="mq-input"
+              placeholder="Tax ID (1–15 digits)"
+              value={form.taxId}
+              onChange={(e) =>
+                setForm({ ...form, taxId: e.target.value.replace(/\D/g, "").slice(0, 15) })
+              }
+              required
+            />
+            <input
+              className="mq-input"
+              placeholder="Country code"
+              value={form.countryCode}
+              onChange={(e) => setForm({ ...form, countryCode: e.target.value.toUpperCase() })}
+              maxLength={2}
+              required
+            />
+            <input
+              className="mq-input"
+              type="file"
+              accept="image/jpeg,image/png,image/webp,application/pdf"
+              onChange={(e) => setDocumentFile(e.target.files?.[0] || null)}
+              required={!canReapply}
+            />
+            <p className="text-xs text-mq-text-muted">Document ≤5MB (JPEG/PNG/WebP/PDF)</p>
+            <button className="mq-btn mq-btn-primary w-full" disabled={applyShop.isPending || !documentFile}>
               {applyShop.isPending ? "Submitting…" : "Submit application"}
             </button>
           </form>
-        ) : null}
+        )}
       </Container>
     </>
   );

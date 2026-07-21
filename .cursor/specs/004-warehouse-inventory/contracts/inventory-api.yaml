@@ -1,0 +1,385 @@
+openapi: 3.0.3
+info:
+  title: MQ Shopping Inventory API
+  version: 1.0.0
+  description: >
+    Inventory slips (create PENDING), Seller/shop approve-reject, Admin approve-reject,
+    and read-only stock ledger. Stock mutations occur only on APPROVE inside transactions.
+servers:
+  - url: /api/v1
+tags:
+  - name: InventorySlip
+  - name: InventoryAdmin
+  - name: StockLedger
+paths:
+  /inventory/warehouses:
+    post:
+      tags: [InventorySlip]
+      summary: Create shop warehouse
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code:
+                  type: string
+                  pattern: "^[A-Za-z0-9_-]+$"
+                  maxLength: 32
+                address:
+                  type: string
+                  maxLength: 200
+      responses:
+        "201":
+          description: Warehouse created
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          description: Duplicate warehouse code
+  /inventory/variants:
+    post:
+      tags: [InventorySlip]
+      summary: Create shop SKU variant (initial availableStock)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sku]
+              properties:
+                sku:
+                  type: string
+                  maxLength: 64
+                availableStock:
+                  type: integer
+                  minimum: 0
+                  default: 0
+                unitPrice:
+                  type: number
+                  minimum: 0
+                isEnrollmentPackage:
+                  type: boolean
+      responses:
+        "201":
+          description: Variant created
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          description: Duplicate SKU
+  /inventory/slips:
+    get:
+      tags: [InventorySlip]
+      summary: List inventory slips for caller shop scope
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema:
+            $ref: "#/components/schemas/InventorySlipStatus"
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: Paginated slips
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventorySlipPage"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      tags: [InventorySlip]
+      summary: Create inventory slip (PENDING, no stock change)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateInventorySlipRequest"
+      responses:
+        "201":
+          description: Slip created PENDING
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventorySlipResponse"
+        "400":
+          description: Validation (quantity, type)
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          description: Unknown SKU or warehouse code
+  /inventory/slips/{slipId}:
+    get:
+      tags: [InventorySlip]
+      summary: Get slip detail (shop-scoped)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/SlipId"
+      responses:
+        "200":
+          description: Slip detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventorySlipResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          description: Not found
+  /inventory/slips/{slipId}/approve:
+    post:
+      tags: [InventorySlip]
+      summary: Shop owner/Seller approve PENDING slip (atomic stock + ledger)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/SlipId"
+      responses:
+        "200":
+          description: Approved; stock updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventorySlipResponse"
+        "409":
+          description: Already processed
+        "422":
+          description: Insufficient stock for ADJUST_OUT
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /inventory/slips/{slipId}/reject:
+    post:
+      tags: [InventorySlip]
+      summary: Shop owner/Seller reject PENDING slip
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/SlipId"
+      responses:
+        "200":
+          description: Rejected; stock unchanged
+        "409":
+          description: Already processed
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/inventory/slips/{slipId}/approve:
+    post:
+      tags: [InventoryAdmin]
+      summary: Admin/SuperAdmin approve PENDING slip
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/SlipId"
+      responses:
+        "200":
+          description: Approved
+        "409":
+          description: Already processed
+        "422":
+          description: Insufficient stock
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/inventory/slips/{slipId}/reject:
+    post:
+      tags: [InventoryAdmin]
+      summary: Admin/SuperAdmin reject PENDING slip
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/SlipId"
+      responses:
+        "200":
+          description: Rejected
+        "409":
+          description: Already processed
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /inventory/ledger:
+    get:
+      tags: [StockLedger]
+      summary: Read-only stock ledger (shop-scoped)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: sku
+          schema:
+            type: string
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Ledger entries (immutable)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StockLedgerPage"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    SlipId:
+      in: path
+      name: slipId
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    Unauthorized:
+      description: Missing or invalid JWT
+    Forbidden:
+      description: Missing permission or cross-shop access
+  schemas:
+    InventorySlipType:
+      type: string
+      enum: [IN, ADJUST_IN, ADJUST_OUT]
+    InventorySlipStatus:
+      type: string
+      enum: [PENDING, APPROVED, REJECTED]
+    CreateInventorySlipRequest:
+      type: object
+      required: [sku, quantity, type]
+      properties:
+        sku:
+          type: string
+        quantity:
+          type: integer
+          minimum: 1
+        type:
+          $ref: "#/components/schemas/InventorySlipType"
+        warehouseCode:
+          type: string
+        locationNote:
+          type: string
+          description: Optional address/map override on slip
+    InventorySlip:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        shopId:
+          type: string
+          format: uuid
+        sku:
+          type: string
+        type:
+          $ref: "#/components/schemas/InventorySlipType"
+        quantity:
+          type: integer
+        status:
+          $ref: "#/components/schemas/InventorySlipStatus"
+        warehouseCode:
+          type: string
+          nullable: true
+        locationNote:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        processedAt:
+          type: string
+          format: date-time
+          nullable: true
+    InventorySlipResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/InventorySlip"
+    InventorySlipPage:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/InventorySlip"
+        meta:
+          $ref: "#/components/schemas/PageMeta"
+    StockLedgerEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        slipId:
+          type: string
+          format: uuid
+        sku:
+          type: string
+        type:
+          $ref: "#/components/schemas/InventorySlipType"
+        quantity:
+          type: integer
+        quantityBefore:
+          type: integer
+        quantityAfter:
+          type: integer
+        recordedAt:
+          type: string
+          format: date-time
+    StockLedgerPage:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/StockLedgerEntry"
+        meta:
+          $ref: "#/components/schemas/PageMeta"
+    PageMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer

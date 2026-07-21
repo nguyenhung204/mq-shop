@@ -204,7 +204,9 @@
     "lostPasswordTitle": "忘記密碼",
     "lostPasswordDesc": "請輸入電子郵件，我們將寄送重設密碼連結。",
     "resetPassword": "重設密碼",
-    "backToLogin": "返回登入"
+    "backToLogin": "返回登入",
+    "noAccount": "還沒有帳號？",
+    "haveAccount": "已經有帳號？"
   },
   "mega": {
     "productTypes": "商品類型",

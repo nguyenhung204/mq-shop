@@ -204,7 +204,9 @@
     "lostPasswordTitle": "Lost Password",
     "lostPasswordDesc": "Please enter your email address. You will receive a link to create a new password via email.",
     "resetPassword": "Reset password",
-    "backToLogin": "Back to login"
+    "backToLogin": "Back to login",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?"
   },
   "mega": {
     "productTypes": "Product Types",

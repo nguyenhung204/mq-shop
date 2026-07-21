@@ -1,0 +1,487 @@
+openapi: 3.0.3
+info:
+  title: MQ Shopping Order API
+  version: 1.0.0
+  description: >
+    Single-shop checkout, shipping updates, cancel, and RMA lifecycle.
+    Stock reserve/unreserve/consume is transactional; money refund on cancel is out of scope.
+servers:
+  - url: /api/v1
+tags:
+  - name: Cart
+  - name: Checkout
+  - name: Order
+  - name: Fulfillment
+  - name: RMA
+  - name: OrderAdmin
+paths:
+  /cart:
+    get:
+      tags: [Cart]
+      summary: Get buyer cart with items
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Cart and items
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CartResponse"
+  /cart/items:
+    post:
+      tags: [Cart]
+      summary: Add or increment cart item (same-shop only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddCartItemRequest"
+      responses:
+        "201":
+          description: Item added/updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CartItem"
+        "400":
+          description: Multi-shop cart or invalid SKU/qty
+  /cart/items/{itemId}:
+    patch:
+      tags: [Cart]
+      summary: Update quantity and/or selected
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: itemId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCartItemRequest"
+      responses:
+        "200":
+          description: Updated item
+        "404":
+          description: Item not found
+    delete:
+      tags: [Cart]
+      summary: Remove cart item
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: itemId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Removed
+        "404":
+          description: Item not found
+  /orders/checkout:
+    post:
+      tags: [Checkout]
+      summary: Place single-shop order from selected cart lines (or legacy lines body)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutRequest"
+      responses:
+        "201":
+          description: Order created PENDING or PAID; selected cart lines cleared when useCart
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "400":
+          description: Multi-shop cart, empty selection, or validation error
+        "409":
+          description: Insufficient stock
+        "503":
+          description: Shipping quote unavailable
+  /orders:
+    get:
+      tags: [Order]
+      summary: List orders (scoped by role)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema:
+            $ref: "#/components/schemas/OrderStatus"
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Paginated orders
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderPage"
+  /orders/{orderId}:
+    get:
+      tags: [Order]
+      summary: Order detail
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/OrderId"
+      responses:
+        "200":
+          description: Order with lines
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderDetailResponse"
+  /orders/{orderId}/shipping-status:
+    patch:
+      tags: [Fulfillment]
+      summary: Update shipping status (shop-scoped)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/OrderId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateShippingStatusRequest"
+      responses:
+        "200":
+          description: Status updated
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          description: Order CANCELLED or invalid transition
+  /orders/{orderId}/cancel:
+    post:
+      tags: [Order]
+      summary: Cancel order (unreserve stock; no auto refund)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/OrderId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CancelOrderRequest"
+      responses:
+        "200":
+          description: Cancelled
+        "409":
+          description: Not cancellable (e.g. DELIVERED)
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /orders/{orderId}/rma:
+    post:
+      tags: [RMA]
+      summary: Buyer request RMA within 7 days of delivery
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/OrderId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRmaRequest"
+      responses:
+        "201":
+          description: RMA PENDING
+        "403":
+          description: Outside 7-day window or not DELIVERED
+        "409":
+          description: RMA already exists
+  /admin/orders/{orderId}/cancel:
+    post:
+      tags: [OrderAdmin]
+      summary: Admin cancel on behalf (no extra approval)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/OrderId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CancelOrderRequest"
+      responses:
+        "200":
+          description: Cancelled
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/rma/{rmaId}/approve:
+    post:
+      tags: [RMA]
+      summary: Accounting/Admin approve RMA (gateway + report)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/RmaId"
+      responses:
+        "200":
+          description: REFUND_APPROVED or REFUNDED if gateway immediate
+        "422":
+          description: Gateway refund failed
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/rma/{rmaId}/reject:
+    post:
+      tags: [RMA]
+      summary: Reject RMA with reason
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/RmaId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason:
+                  type: string
+      responses:
+        "200":
+          description: RMA rejected
+        "403":
+          $ref: "#/components/responses/Forbidden"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    OrderId:
+      in: path
+      name: orderId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RmaId:
+      in: path
+      name: rmaId
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    Forbidden:
+      description: Missing permission or wrong shop
+  schemas:
+    OrderStatus:
+      type: string
+      enum: [PENDING, PAID, PROCESSING, SHIPPING, DELIVERED, CANCELLED, REFUND_APPROVED, REFUNDED]
+    AddCartItemRequest:
+      type: object
+      required: [sku, quantity]
+      properties:
+        sku:
+          type: string
+        quantity:
+          type: integer
+          minimum: 1
+        selected:
+          type: boolean
+          default: true
+    UpdateCartItemRequest:
+      type: object
+      properties:
+        quantity:
+          type: integer
+          minimum: 1
+        selected:
+          type: boolean
+    CartItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        sku:
+          type: string
+        variantId:
+          type: string
+          format: uuid
+        shopId:
+          type: string
+          format: uuid
+        quantity:
+          type: integer
+        selected:
+          type: boolean
+    CartResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        buyerId:
+          type: string
+          format: uuid
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CartItem"
+    CheckoutRequest:
+      type: object
+      required: [shippingAddress, paymentMethodRef]
+      properties:
+        useCart:
+          type: boolean
+          description: When true (default if lines omitted), checkout selected cart lines
+          default: true
+        shopId:
+          type: string
+          format: uuid
+          description: Required when useCart=false with explicit lines
+        lines:
+          type: array
+          minItems: 1
+          description: Legacy ad-hoc lines when useCart=false
+          items:
+            type: object
+            required: [sku, quantity]
+            properties:
+              sku:
+                type: string
+              quantity:
+                type: integer
+                minimum: 1
+        shippingAddress:
+          type: object
+          required: [line1, city, country]
+          properties:
+            line1:
+              type: string
+            city:
+              type: string
+            country:
+              type: string
+        paymentMethodRef:
+          type: string
+    UpdateShippingStatusRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [PROCESSING, SHIPPING, DELIVERED]
+    CancelOrderRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          type: string
+    CreateRmaRequest:
+      type: object
+      required: [reason, bankAccountInfo]
+      properties:
+        reason:
+          type: string
+        evidenceUrls:
+          type: array
+          items:
+            type: string
+            format: uri
+        bankAccountInfo:
+          type: object
+          description: Bank details for external settlement when needed
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        shopId:
+          type: string
+          format: uuid
+        status:
+          $ref: "#/components/schemas/OrderStatus"
+        merchandiseSubtotal:
+          type: number
+        shippingFee:
+          type: number
+        totalAmount:
+          type: number
+        deliveredAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+    OrderResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/Order"
+    OrderDetailResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+            - $ref: "#/components/schemas/Order"
+            - type: object
+              properties:
+                lines:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      sku:
+                        type: string
+                      quantity:
+                        type: integer
+                      lineTotal:
+                        type: number
+    OrderPage:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Order"
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+            pageSize:
+              type: integer
+            total:
+              type: integer

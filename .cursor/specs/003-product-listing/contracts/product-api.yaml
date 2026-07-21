@@ -1,0 +1,542 @@
+openapi: 3.0.3
+info:
+  title: MQ Shopping Product & Listing API
+  version: 1.0.0
+  description: Seller catalog management, admin review, and customer listing.
+servers:
+  - url: /api/v1
+tags:
+  - name: Product
+  - name: ProductAdmin
+  - name: Listing
+paths:
+  /products:
+    post:
+      tags: [Product]
+      summary: Create product (SELLER) — status PENDING
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProductRequest"
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          description: Not SELLER or shop not eligible
+    get:
+      tags: [Product]
+      summary: List own shop products (SELLER)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema:
+            $ref: "#/components/schemas/ProductStatus"
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductPage"
+  /products/{productId}:
+    get:
+      tags: [Product]
+      summary: Get own product detail (SELLER)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/productId"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      tags: [Product]
+      summary: Update product (SELLER) — may trigger PENDING if REJECTED+sensitive
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/productId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProductRequest"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /products/{productId}/hide:
+    post:
+      tags: [Product]
+      summary: Seller hide product → HIDDEN
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/productId"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+  /admin/products:
+    get:
+      tags: [ProductAdmin]
+      summary: Admin review queue
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema:
+            $ref: "#/components/schemas/ProductStatus"
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductPage"
+  /admin/products/{productId}/approve:
+    post:
+      tags: [ProductAdmin]
+      summary: Approve to marketplace → ACTIVE
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/productId"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+  /admin/products/{productId}/reject:
+    post:
+      tags: [ProductAdmin]
+      summary: Reject with mandatory reason → REJECTED
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/productId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RejectProductRequest"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+        "400":
+          description: Missing reason
+  /admin/products/{productId}/hide:
+    post:
+      tags: [ProductAdmin]
+      summary: Admin hide (violation/out of stock) → HIDDEN
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/productId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+  /products/listing:
+    get:
+      tags: [Listing]
+      summary: Customer search/browse — ACTIVE + APPROVED shop only
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+        - in: query
+          name: categoryId
+          schema:
+            type: string
+            description: Memory id `cat-{slug}` (from GET /categories)
+            example: cat-electronics
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Listing cards with stock display mode
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListingPage"
+  /categories:
+    get:
+      tags: [Categories]
+      summary: List product categories (Public) — FE filters + seller forms
+      responses:
+        "200":
+          description: Category catalog; use `id` as `categoryId` on create/listing
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CategoryItem"
+  /admin/categories:
+    post:
+      tags: [CategoriesAdmin]
+      summary: Create platform category (Admin)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCategoryRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryItem"
+        "409":
+          description: Slug already exists
+  /admin/categories/{categoryId}:
+    patch:
+      tags: [CategoriesAdmin]
+      summary: Update category name / nameVi / parent (Admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: categoryId
+          required: true
+          schema:
+            type: string
+            example: cat-toys
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCategoryRequest"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryItem"
+        "404":
+          description: Not found
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    productId:
+      in: path
+      name: productId
+      required: true
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    ProductStatus:
+      type: string
+      enum: [PENDING, ACTIVE, REJECTED, HIDDEN]
+    DisplayMode:
+      type: string
+      enum: [NORMAL, OUT_OF_STOCK_WATERMARK]
+    WatermarkText:
+      type: object
+      properties:
+        vi:
+          type: string
+          example: hết hàng
+        zh:
+          type: string
+          example: 補貨中
+        en:
+          type: string
+          example: restocking
+    CategoryItem:
+      type: object
+      required: [id, slug, name, nameVi, parentId]
+      properties:
+        id:
+          type: string
+          description: Use as `categoryId` (`cat-{slug}`)
+          example: cat-electronics
+        slug:
+          type: string
+          example: electronics
+        name:
+          type: string
+          example: Electronics
+        nameVi:
+          type: string
+          example: Điện tử
+        parentId:
+          type: string
+          nullable: true
+    CreateCategoryRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        nameVi:
+          type: string
+          minLength: 2
+          maxLength: 100
+        slug:
+          type: string
+          pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+          maxLength: 64
+          description: Optional; auto from name if omitted
+        parentId:
+          type: string
+          nullable: true
+          description: Parent `cat-{slug}` or null
+    UpdateCategoryRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        nameVi:
+          type: string
+          nullable: true
+          minLength: 2
+          maxLength: 100
+        parentId:
+          type: string
+          nullable: true
+    CreateProductRequest:
+      type: object
+      required: [title, description, categoryId, price, images]
+      properties:
+        title:
+          type: string
+          minLength: 3
+          maxLength: 200
+        description:
+          type: string
+        brand:
+          type: string
+        categoryId:
+          type: string
+          description: From GET /categories `id` (e.g. cat-electronics)
+          example: cat-electronics
+        price:
+          type: number
+          minimum: 0
+        stock:
+          type: integer
+          minimum: 0
+          default: 0
+        images:
+          type: array
+          minItems: 1
+          maxItems: 10
+          items:
+            type: string
+            format: uri
+        attributes:
+          type: object
+          additionalProperties: true
+        sku:
+          type: string
+    UpdateProductRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        brand:
+          type: string
+        categoryId:
+          type: string
+          format: uuid
+        price:
+          type: number
+        stock:
+          type: integer
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+        attributes:
+          type: object
+    RejectProductRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        shopId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        brand:
+          type: string
+          nullable: true
+        categoryId:
+          type: string
+          format: uuid
+        price:
+          type: number
+        stock:
+          type: integer
+        images:
+          type: array
+          items:
+            type: string
+        attributes:
+          type: object
+        status:
+          $ref: "#/components/schemas/ProductStatus"
+        rejectionReason:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ProductResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/Product"
+    ProductPage:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+            pageSize:
+              type: integer
+            total:
+              type: integer
+    ListingCard:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        price:
+          type: number
+        thumbnailUrl:
+          type: string
+        stock:
+          type: integer
+        displayMode:
+          $ref: "#/components/schemas/DisplayMode"
+        watermarkText:
+          $ref: "#/components/schemas/WatermarkText"
+    ListingPage:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/ListingCard"
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+            pageSize:
+              type: integer
+            total:
+              type: integer
+  responses:
+    BadRequest:
+      description: Validation error
+    Forbidden:
+      description: Not authorized
+    NotFound:
+      description: Not found

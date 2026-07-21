@@ -1,9 +1,10 @@
 "use client";
 
+import { Check, X } from "lucide-react";
 import { useAdminRma, useAdminRmaDecision } from "@/lib/queries/admin";
 import { AuthGuard } from "@/components/guards/AuthGuard";
-import { AdminNav } from "@/components/admin/AdminNav";
-import { Container, PageHero } from "@/components/ui/shared";
+import { AdminPageHeader } from "@/components/admin/AdminShell";
+import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 
 function RmaInner() {
@@ -12,10 +13,14 @@ function RmaInner() {
 
   return (
     <>
-      <PageHero title="Admin RMA" breadcrumb={[{ label: "Admin", href: "/admin" }, { label: "RMA" }]} />
-      <Container className="py-10 space-y-4">
-        <AdminNav />
-        <p className="text-sm text-mq-text-muted">Admin can decide anytime while REQUESTED (no need to wait 3 days).</p>
+      <AdminPageHeader
+        title="RMA"
+        description="Approve or reject return requests."
+      />
+      <div className="space-y-4">
+        <p className="text-sm text-mq-text-muted">
+          Admin can decide anytime while REQUESTED (no need to wait 3 days).
+        </p>
         {isError && (
           <div className="mq-alert mq-alert-error">
             {error instanceof Error ? error.message : "Failed"}
@@ -25,18 +30,38 @@ function RmaInner() {
         {items.map((r) => (
           <div key={r.id} className="mq-card p-4 flex flex-wrap justify-between gap-3 text-sm">
             <div>
-              <p>{r.orderId.slice(0, 8)}… · {r.status}</p>
+              <p>
+                {r.orderId.slice(0, 8)}… · {r.status}
+              </p>
               <p className="text-xs text-mq-text-muted line-clamp-2">{r.reason}</p>
             </div>
             {r.status === "REQUESTED" && (
-              <div className="flex gap-2">
-                <button type="button" className="mq-btn mq-btn-primary text-xs" disabled={rmaDecision.isPending} onClick={() => void rmaDecision.mutateAsync({ id: r.id, decision: "APPROVED" })}>Approve</button>
-                <button type="button" className="mq-btn mq-btn-outline text-xs" disabled={rmaDecision.isPending} onClick={() => void rmaDecision.mutateAsync({ id: r.id, decision: "REJECTED", reason: "Not eligible" })}>Reject</button>
-              </div>
+              <AdminActions>
+                <AdminIconButton
+                  label="Approve"
+                  icon={Check}
+                  tone="approve"
+                  disabled={rmaDecision.isPending}
+                  onClick={() => void rmaDecision.mutateAsync({ id: r.id, decision: "APPROVED" })}
+                />
+                <AdminIconButton
+                  label="Reject"
+                  icon={X}
+                  tone="reject"
+                  disabled={rmaDecision.isPending}
+                  onClick={() =>
+                    void rmaDecision.mutateAsync({
+                      id: r.id,
+                      decision: "REJECTED",
+                      reason: "Not eligible",
+                    })
+                  }
+                />
+              </AdminActions>
             )}
           </div>
         ))}
-      </Container>
+      </div>
     </>
   );
 }

@@ -1,0 +1,275 @@
+openapi: 3.0.3
+info:
+  title: MQ Shopping Commission API
+  version: 1.0.0
+  description: >
+    User-scoped commission stats and Admin ops for month-end close / rank config.
+    Money mutations for referral are event-driven (see events.md), not via these POSTs.
+servers:
+  - url: /api/v1
+tags:
+  - name: CommissionUser
+  - name: CommissionAdmin
+paths:
+  /commission/me/summary:
+    get:
+      tags: [CommissionUser]
+      summary: Current user commission summary (BR_02 scoped to self)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommissionSummaryResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /commission/me/credits:
+    get:
+      tags: [CommissionUser]
+      summary: Paginated commission credits for current user
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: type
+          schema:
+            $ref: "#/components/schemas/CommissionType"
+        - in: query
+          name: periodKey
+          schema:
+            type: string
+            example: "2026-07"
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: Page of credits
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommissionCreditPage"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /admin/commission/ranks:
+    get:
+      tags: [CommissionAdmin]
+      summary: List rank commission config
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Rank rows
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/RankCommissionConfig"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    put:
+      tags: [CommissionAdmin]
+      summary: Replace/update rank percent table
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ranks]
+              properties:
+                ranks:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/RankCommissionConfigInput"
+      responses:
+        "200":
+          description: Updated
+        "400":
+          description: Validation (e.g. rank≥6 percent > 10%)
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/commission/closes:
+    get:
+      tags: [CommissionAdmin]
+      summary: List month-end close runs
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Close runs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CommissionCloseRun"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/commission/closes/{periodKey}/run:
+    post:
+      tags: [CommissionAdmin]
+      summary: Enqueue or re-run month-end close (idempotent if COMPLETED)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: periodKey
+          required: true
+          schema:
+            type: string
+            example: "2026-06"
+      responses:
+        "202":
+          description: Accepted / already completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommissionCloseRun"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    Unauthorized:
+      description: Missing/invalid token
+    Forbidden:
+      description: Missing Admin/Accounting permission
+  schemas:
+    CommissionType:
+      type: string
+      enum:
+        - REFERRAL
+        - DIFFERENTIAL
+        - STREAK
+        - GLOBAL_FUND
+        - REFERRAL_CLAWBACK
+    CommissionSummaryResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            totalEarned:
+              type: number
+            byType:
+              type: object
+              additionalProperties:
+                type: number
+            consecutiveMonths:
+              type: integer
+            rank:
+              type: integer
+    CommissionCreditPage:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommissionCredit"
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+            pageSize:
+              type: integer
+            total:
+              type: integer
+    CommissionCredit:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          $ref: "#/components/schemas/CommissionType"
+        amount:
+          type: number
+        periodKey:
+          type: string
+          nullable: true
+        orderId:
+          type: string
+          format: uuid
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+    RankCommissionConfig:
+      type: object
+      properties:
+        rank:
+          type: integer
+        percent:
+          type: number
+          description: 0.03 = 3%
+        globalTitle:
+          type: string
+          nullable: true
+          enum: [DIRECTOR, PRESIDENT, CROWN]
+        active:
+          type: boolean
+    RankCommissionConfigInput:
+      type: object
+      required: [rank, percent]
+      properties:
+        rank:
+          type: integer
+        percent:
+          type: number
+        globalTitle:
+          type: string
+          nullable: true
+          enum: [DIRECTOR, PRESIDENT, CROWN]
+        active:
+          type: boolean
+          default: true
+    CommissionCloseRun:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        periodKey:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, RUNNING, COMPLETED, FAILED]
+        companyGmv:
+          type: number
+          nullable: true
+        startedAt:
+          type: string
+          format: date-time
+          nullable: true
+        finishedAt:
+          type: string
+          format: date-time
+          nullable: true

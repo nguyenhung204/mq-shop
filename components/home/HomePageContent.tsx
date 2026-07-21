@@ -2,43 +2,59 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { CreditCard, Headphones, RotateCcw, ShieldCheck, Star } from "lucide-react";
-import { categories } from "@/lib/data/categories";
-import { products } from "@/lib/data/products";
-import { heroImages, miscImages } from "@/lib/images";
+import { catalogApi } from "@/lib/api";
+import { mapListingCard } from "@/lib/api/mapProduct";
+import type { ApiCategory } from "@/lib/api/types";
+import type { Product } from "@/lib/data/products";
+import { heroImages, miscImages, categoryImages } from "@/lib/images";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { HeroSlider } from "@/components/home/HeroSlider";
 import { CategoryCard } from "@/components/ui/ProductCard";
 import { ProductCarousel } from "@/components/ui/ProductCarousel";
 import { Container, SectionHeading } from "@/components/ui/shared";
 
+const FALLBACK_CATEGORY_IMAGES: Record<string, string> = {
+  electronics: categoryImages.tech,
+  fashion: categoryImages.apparel,
+  "home-living": categoryImages.home,
+  beauty: categoryImages.gifts,
+  toys: categoryImages.accessories,
+  accessories: categoryImages.accessories,
+  apparel: categoryImages.apparel,
+  home: categoryImages.home,
+  tech: categoryImages.tech,
+  gifts: categoryImages.gifts,
+  essentials: categoryImages.essentials,
+};
+
 export function HomePageContent() {
-  const { t } = useLanguage();
-  const saleProducts = products.filter((p) => p.salePercent);
-  const newProducts = products.filter((p) => p.badge === "new");
-  const hotProducts = products.filter((p) => p.badge === "hot");
+  const { t, locale } = useLanguage();
+  const [categories, setCategories] = useState<ApiCategory[]>([]);
+  const [listing, setListing] = useState<Product[]>([]);
+
+  useEffect(() => {
+    void catalogApi
+      .categories()
+      .then(setCategories)
+      .catch(() => setCategories([]));
+    void catalogApi
+      .listing({ page: 1, pageSize: 24 })
+      .then((res) => setListing(res.items.map((p) => mapListingCard(p))))
+      .catch(() => setListing([]));
+  }, []);
+
+  const saleProducts = listing.filter((p) => p.salePercent || p.inStock > 0).slice(0, 12);
+  const newProducts = listing.slice(0, 12);
+  const hotProducts = [...listing].sort((a, b) => b.price - a.price).slice(0, 12);
+  const featured = listing.slice(0, 12);
 
   const trustIcons = [
-    {
-      title: t("home.trustPayment"),
-      desc: t("home.trustPaymentDesc"),
-      Icon: CreditCard,
-    },
-    {
-      title: t("home.trustSupport"),
-      desc: t("home.trustSupportDesc"),
-      Icon: Headphones,
-    },
-    {
-      title: t("home.trustReturns"),
-      desc: t("home.trustReturnsDesc"),
-      Icon: RotateCcw,
-    },
-    {
-      title: t("home.trustQuality"),
-      desc: t("home.trustQualityDesc"),
-      Icon: ShieldCheck,
-    },
+    { title: t("home.trustPayment"), desc: t("home.trustPaymentDesc"), Icon: CreditCard },
+    { title: t("home.trustSupport"), desc: t("home.trustSupportDesc"), Icon: Headphones },
+    { title: t("home.trustReturns"), desc: t("home.trustReturnsDesc"), Icon: RotateCcw },
+    { title: t("home.trustQuality"), desc: t("home.trustQualityDesc"), Icon: ShieldCheck },
   ];
 
   const testimonials = [
@@ -53,17 +69,21 @@ export function HomePageContent() {
 
       <section className="py-14 md:py-20">
         <Container>
-          <div className="mq-carousel-track"
-          style={{
-            justifyContent: "space-between",
-          }}
+          <div
+            className="mq-carousel-track"
+            style={{ justifyContent: "space-between" }}
           >
             {categories.map((cat, i) => (
               <CategoryCard
-                key={cat.slug}
-                name={t(`categories.${cat.slug}`)}
-                slug={cat.slug}
-                image={cat.image}
+                key={cat.id}
+                name={
+                  locale === "vi" && cat.nameVi ? cat.nameVi : cat.name || cat.slug
+                }
+                slug={cat.id}
+                image={
+                  FALLBACK_CATEGORY_IMAGES[cat.slug] ||
+                  categoryImages.accessories
+                }
                 priority={i < 4}
               />
             ))}
@@ -143,7 +163,7 @@ export function HomePageContent() {
       <section className="py-14 md:py-20">
         <Container>
           <SectionHeading label={t("home.newCollection")} title={t("home.styleForEveryStory")} />
-          <ProductCarousel products={products} />
+          <ProductCarousel products={featured} />
         </Container>
       </section>
 
@@ -152,13 +172,18 @@ export function HomePageContent() {
           <SectionHeading label={t("home.reviews")} title={t("home.whatClientsSay")} />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {testimonials.map((item) => (
-              <blockquote key={item.name} className="bg-mq-surface p-8 border border-mq-border rounded-[var(--mq-radius-lg)]">
+              <blockquote
+                key={item.name}
+                className="bg-mq-surface p-8 border border-mq-border rounded-[var(--mq-radius-lg)]"
+              >
                 <div className="flex gap-0.5 mb-4 text-mq-gold">
                   {Array.from({ length: item.rating }).map((_, i) => (
                     <Star key={i} size={14} fill="currentColor" strokeWidth={0} />
                   ))}
                 </div>
-                <p className="text-mq-text-secondary text-sm leading-relaxed">&ldquo;{item.quote}&rdquo;</p>
+                <p className="text-mq-text-secondary text-sm leading-relaxed">
+                  &ldquo;{item.quote}&rdquo;
+                </p>
                 <footer className="mt-5">
                   <p className="text-sm font-medium text-mq-text">{item.name}</p>
                   <time className="text-xs text-mq-text-muted">{item.date}</time>
@@ -174,13 +199,27 @@ export function HomePageContent() {
           <SectionHeading label={t("home.compare")} title={t("home.seeTheDifference")} />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-h-[280px] sm:min-h-0 sm:h-[360px] md:h-[480px]">
             <div className="relative min-h-[200px] sm:min-h-0 sm:h-full overflow-hidden rounded-[var(--mq-radius-lg)]">
-              <Image src={miscImages.compareBefore} alt={t("common.standard")} fill className="object-cover" sizes="50vw" quality={75} />
+              <Image
+                src={miscImages.compareBefore}
+                alt={t("common.standard")}
+                fill
+                className="object-cover"
+                sizes="50vw"
+                quality={75}
+              />
               <span className="absolute top-4 left-4 bg-black text-white text-[10px] px-3 py-1 uppercase tracking-widest rounded-[var(--mq-radius-sm)]">
                 {t("common.standard")}
               </span>
             </div>
             <div className="relative min-h-[200px] sm:min-h-0 sm:h-full overflow-hidden rounded-[var(--mq-radius-lg)]">
-              <Image src={miscImages.compareAfter} alt={t("common.mqQuality")} fill className="object-cover" sizes="50vw" quality={75} />
+              <Image
+                src={miscImages.compareAfter}
+                alt={t("common.mqQuality")}
+                fill
+                className="object-cover"
+                sizes="50vw"
+                quality={75}
+              />
               <span className="absolute top-4 right-4 mq-sale-badge uppercase tracking-widest">
                 {t("common.mqQuality")}
               </span>

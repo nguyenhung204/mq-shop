@@ -204,7 +204,9 @@
     "lostPasswordTitle": "Quên mật khẩu",
     "lostPasswordDesc": "Nhập email của bạn. Bạn sẽ nhận liên kết tạo mật khẩu mới qua email.",
     "resetPassword": "Đặt lại mật khẩu",
-    "backToLogin": "Quay lại đăng nhập"
+    "backToLogin": "Quay lại đăng nhập",
+    "noAccount": "Chưa có tài khoản?",
+    "haveAccount": "Đã có tài khoản?"
   },
   "mega": {
     "productTypes": "Loại sản phẩm",
