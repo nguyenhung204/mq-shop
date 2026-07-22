@@ -135,6 +135,16 @@ export function UserMenu() {
             Seller Center
           </Link>
         ) : null}
+        {hasRole("WAREHOUSE") && !hasRole("SELLER") ? (
+          <Link
+            href="/seller/inventory"
+            role="menuitem"
+            className="mq-user-menu-item"
+            onClick={() => setOpen(false)}
+          >
+            Inventory
+          </Link>
+        ) : null}
         <button
           type="button"
           role="menuitem"

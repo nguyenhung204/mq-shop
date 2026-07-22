@@ -32,6 +32,19 @@ function productExcerpt(p: ApiProduct): string {
   return text.length > 140 ? `${text.slice(0, 140)}…` : text;
 }
 
+function productPriceLabel(p: ApiProduct): string {
+  const min = p.minPrice ?? p.price ?? Number(p.priceUsd);
+  const max = p.maxPrice ?? p.price ?? Number(p.priceUsd);
+  if (min != null && max != null && !Number.isNaN(min) && !Number.isNaN(max) && min !== max) {
+    return `${formatMoney(min)} – ${formatMoney(max)}`;
+  }
+  return formatMoney(min ?? p.priceUsd);
+}
+
+function productVariants(p: ApiProduct) {
+  return Array.isArray(p.variants) ? p.variants : [];
+}
+
 type RejectTarget = {
   id: string;
   title: string;
@@ -83,7 +96,8 @@ function ProductsInner() {
         {items.map((p) => {
           const thumb = productThumb(p);
           const excerpt = productExcerpt(p);
-          const title = p.title || p.name || p.sku || "Product";
+          const title = p.title || p.name || "Product";
+          const variants = productVariants(p);
           return (
             <div key={p.id} className="mq-card p-4 flex flex-wrap gap-4 text-sm">
               {thumb ? (
@@ -99,11 +113,28 @@ function ProductsInner() {
               <div className="flex-1 min-w-[200px]">
                 <p className="font-medium">{title}</p>
                 <p className="text-xs text-mq-text-muted mt-0.5">
-                  {formatMoney(p.price ?? p.priceUsd)} · {p.status}
-                  {p.sku ? ` · SKU ${p.sku}` : ""}
+                  {productPriceLabel(p)} · stock {p.stock ?? "—"} · {p.status}
                 </p>
                 {excerpt ? (
                   <p className="text-xs text-mq-text-secondary mt-2">{excerpt}</p>
+                ) : null}
+                {variants.length > 0 ? (
+                  <ul className="mt-2 space-y-1 text-xs text-mq-text-muted">
+                    {variants.map((v) => (
+                      <li key={v.id} className="flex flex-wrap gap-x-2">
+                        <span className="font-medium text-mq-text-secondary">{v.sku}</span>
+                        <span>{formatMoney(v.sellingPrice)}</span>
+                        <span>qty {v.availableStock}</span>
+                        {v.options && Object.keys(v.options).length > 0 ? (
+                          <span>
+                            {Object.entries(v.options)
+                              .map(([k, val]) => `${k}:${val}`)
+                              .join(" · ")}
+                          </span>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
                 ) : null}
               </div>
               <AdminActions>

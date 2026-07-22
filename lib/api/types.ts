@@ -5,9 +5,16 @@ export type Locale = "vi" | "en" | "zh-TW" | "zh_TW";
 export type Role =
   | "BUYER"
   | "SELLER"
+  | "WAREHOUSE"
+  | "CS"
   | "ADMIN"
   | "SUPER_ADMIN"
   | "ACCOUNTANT";
+
+export type StaffRole = "WAREHOUSE" | "CS" | "ACCOUNTANT";
+
+/** Roles returned / filterable on GET /admin/staff pool. */
+export type StaffPoolRole = "BUYER" | StaffRole;
 
 export type LocalizedText = {
   vi: string;
@@ -33,6 +40,8 @@ export type AuthUser = {
   status?: "ACTIVE" | "LOCKED" | "DELETED" | string;
   roles: Role[];
   permissions?: string[];
+  /** Present for shop staff (WAREHOUSE / CS / ACCOUNTANT). */
+  shopId?: string | null;
   emailVerifiedAt?: string | null;
   createdAt?: string;
 };
@@ -56,11 +65,63 @@ export type Paginated<T> = {
 export type ListingCard = {
   id: string;
   title: string;
+  /** Derived min variant price (backward-friendly). */
   price: number;
+  minPrice?: number;
+  maxPrice?: number;
   thumbnailUrl: string | null;
+  /** Sum of variant availableStock. */
   stock: number;
   displayMode: "NORMAL" | "OUT_OF_STOCK_WATERMARK";
   watermarkText: null | { vi: string; zh: string; en: string };
+};
+
+export type ProductVariant = {
+  id: string;
+  productId: string;
+  shopId?: string;
+  sku: string;
+  /** Sell price (source of truth for checkout). */
+  sellingPrice: number;
+  availableStock: number;
+  options?: Record<string, string> | null;
+  images?: string[];
+  costPrice?: number | null;
+  isEnrollmentPackage?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+/** Public PDP variant — omits costPrice / shop-only fields. */
+export type PublicProductVariant = {
+  id: string;
+  productId: string;
+  sku: string;
+  sellingPrice: number;
+  availableStock: number;
+  options: Record<string, string> | null;
+  images: string[];
+  isEnrollmentPackage?: boolean;
+};
+
+/** GET /products/listing/:productId */
+export type PublicProductDetail = {
+  id: string;
+  shopId?: string;
+  title: string;
+  description?: string | null;
+  categoryId?: string;
+  price: number;
+  minPrice: number;
+  maxPrice: number;
+  stock: number;
+  images: string[];
+  attributes?: Record<string, unknown> | null;
+  variants: PublicProductVariant[];
+  displayMode: "NORMAL" | "OUT_OF_STOCK_WATERMARK";
+  watermarkText: null | { vi: string; zh: string; en: string };
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type ApiProduct = {
@@ -71,14 +132,20 @@ export type ApiProduct = {
   name?: string;
   description?: string | null;
   categoryId?: string;
+  /** Derived: min(variant.sellingPrice) — read-only convenience. */
   price?: number;
+  minPrice?: number;
+  maxPrice?: number;
   priceUsd?: string | number;
+  /** Derived: sum(variant.availableStock). */
   stock?: number;
+  /** @deprecated prefer variants[].sku */
   sku?: string | null;
   images?: string[] | { url: string; sortOrder?: number }[];
   attributes?: Record<string, unknown> | null;
   status: "PENDING" | "ACTIVE" | "REJECTED" | "HIDDEN";
   rejectionReason?: string | LocalizedText | null;
+  variants?: ProductVariant[];
   isHidden?: boolean;
   isOutOfStock?: boolean;
   restockingOverlay?: boolean;
@@ -86,6 +153,36 @@ export type ApiProduct = {
   translations?: { locale: string; name: string; description?: string }[];
   createdAt?: string;
   updatedAt?: string;
+};
+
+export type CreateProductRequest = {
+  title: string;
+  description: string;
+  categoryId: string;
+  attributes?: Record<string, unknown>;
+  variants: Array<{
+    sku: string;
+    sellingPrice: number;
+    options?: Record<string, string>;
+  }>;
+};
+
+export type UpdateProductRequest = {
+  title?: string;
+  description?: string;
+  categoryId?: string;
+  attributes?: Record<string, unknown> | null;
+};
+
+export type AddProductVariantRequest = {
+  sku: string;
+  sellingPrice: number;
+  options?: Record<string, string>;
+};
+
+export type UpdateProductVariantRequest = {
+  sellingPrice?: number;
+  options?: Record<string, string> | null;
 };
 
 export type ApiCategory = {

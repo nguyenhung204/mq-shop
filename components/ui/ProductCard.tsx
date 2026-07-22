@@ -105,7 +105,11 @@ export function ProductCard({
         </div>
         <div className="mt-1 flex items-center gap-2">
           <span className="text-sm font-semibold text-mq-text">
-            {formatPrice(product.price)}
+            {product.minPrice != null &&
+            product.maxPrice != null &&
+            product.minPrice !== product.maxPrice
+              ? `${formatPrice(product.minPrice)} – ${formatPrice(product.maxPrice)}`
+              : formatPrice(product.price)}
           </span>
           {product.originalPrice && (
             <span className="text-sm text-mq-text-muted line-through">
@@ -144,7 +148,11 @@ export function ProductCardMini({ product }: { product: Product }) {
           {product.name}
         </p>
         <p className="text-xs font-semibold text-mq-text mt-0.5">
-          {formatPrice(product.price)}
+          {product.minPrice != null &&
+          product.maxPrice != null &&
+          product.minPrice !== product.maxPrice
+            ? `${formatPrice(product.minPrice)} – ${formatPrice(product.maxPrice)}`
+            : formatPrice(product.price)}
           {product.originalPrice && (
             <span className="text-mq-text-muted line-through ml-1.5 font-normal">
               {formatPrice(product.originalPrice)}

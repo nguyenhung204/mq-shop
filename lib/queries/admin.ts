@@ -2,9 +2,9 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { adminApi, financeApi } from "@/lib/api";
+import { adminApi, adminStaffApi, financeApi } from "@/lib/api";
 import { ApiError } from "@/lib/api/client";
-import type { ApiBanner, ApiProduct, ApiRma, ApiShop } from "@/lib/api/types";
+import type { ApiBanner, ApiProduct, ApiRma, ApiShop, AuthUser, StaffPoolRole, StaffRole } from "@/lib/api/types";
 import { asArray, parsePage } from "@/lib/api/utils";
 import { getErrorMessage } from "@/lib/queries/utils";
 
@@ -129,6 +129,18 @@ export function useSuspendShop() {
   });
 }
 
+function productActionError(e: unknown): string {
+  if (e instanceof ApiError) {
+    if (e.code === "PRODUCT_NOT_PENDING") {
+      return "Product is not PENDING — cannot approve/reject.";
+    }
+    if (e.code === "PRODUCT_NOT_HIDDEN") {
+      return "Product is not hidden.";
+    }
+  }
+  return getErrorMessage(e);
+}
+
 export function useApproveProduct() {
   const invalidate = useAdminInvalidate();
   return useMutation({
@@ -137,7 +149,7 @@ export function useApproveProduct() {
       invalidate();
       toast.success("Product approved");
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
+    onError: (e) => toast.error(productActionError(e)),
   });
 }
 
@@ -150,7 +162,7 @@ export function useRejectProduct() {
       invalidate();
       toast.success("Product rejected");
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
+    onError: (e) => toast.error(productActionError(e)),
   });
 }
 
@@ -359,10 +371,96 @@ export function useAdminUserAction() {
 }
 
 export function useCreateStaff() {
+  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (body: { email: string; password: string; permissions: string[] }) =>
-      adminApi.createStaff(body),
-    onSuccess: () => toast.success("Staff created (may need Super Admin approve)"),
+    mutationFn: (body: {
+      email: string;
+      fullName?: string;
+      role: StaffRole;
+      shopId: string;
+    }) => adminStaffApi.create(body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["admin", "staff"] });
+      toast.success("Staff created");
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  });
+}
+
+export function useAdminStaffList(params: {
+  shopId?: string;
+  role?: StaffPoolRole | "";
+  page?: number;
+  pageSize?: number;
+}) {
+  const page = params.page ?? 1;
+  const pageSize = params.pageSize ?? 20;
+  return useQuery({
+    queryKey: [
+      "admin",
+      "staff",
+      params.shopId ?? "",
+      params.role ?? "",
+      page,
+      pageSize,
+    ],
+    queryFn: async () =>
+      parsePage<AuthUser>(
+        await adminStaffApi.list({
+          shopId: params.shopId || undefined,
+          role: params.role || undefined,
+          page,
+          pageSize,
+        }),
+      ),
+  });
+}
+
+export function useUpdateStaffRoles() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      userId,
+      body,
+    }: {
+      userId: string;
+      body: {
+        roles: StaffRole[];
+        shopId?: string;
+      };
+    }) => adminStaffApi.updateRoles(userId, body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["admin", "staff"] });
+      toast.success("Staff roles updated");
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  });
+}
+
+export function useStaffAccountAction() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      kind,
+    }: {
+      userId: string;
+      kind: "lock" | "unlock" | "delete";
+    }) => {
+      if (kind === "lock") return adminStaffApi.lock(userId);
+      if (kind === "unlock") return adminStaffApi.unlock(userId);
+      return adminStaffApi.remove(userId);
+    },
+    onSuccess: (_d, vars) => {
+      void queryClient.invalidateQueries({ queryKey: ["admin", "staff"] });
+      toast.success(
+        vars.kind === "lock"
+          ? "Staff locked"
+          : vars.kind === "unlock"
+            ? "Staff unlocked"
+            : "Staff deleted",
+      );
+    },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
 }

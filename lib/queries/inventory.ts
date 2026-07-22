@@ -4,7 +4,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/client";
 import {
+  adminInventoryApi,
   inventoryApi,
+  type AdminListLedgerParams,
+  type AdminListSlipsParams,
   type CreateSlipRequest,
   type CreateVariantRequest,
   type CreateWarehouseRequest,
@@ -30,6 +33,7 @@ export const inventoryKeys = {
       params.page ?? 1,
       params.pageSize ?? 20,
       params.q?.trim() || "",
+      params.productId || "",
     ] as const,
   slips: (params: ListSlipsParams) =>
     [
@@ -50,6 +54,31 @@ export const inventoryKeys = {
       params.from || "",
       params.to || "",
     ] as const,
+  adminSlips: (params: {
+    status?: InventorySlipStatus | "";
+    shopId?: string;
+    page?: number;
+    pageSize?: number;
+  }) =>
+    [
+      ...inventoryKeys.all,
+      "admin-slips",
+      params.page ?? 1,
+      params.pageSize ?? 20,
+      params.status ?? "",
+      params.shopId ?? "",
+    ] as const,
+  adminLedger: (params: AdminListLedgerParams) =>
+    [
+      ...inventoryKeys.all,
+      "admin-ledger",
+      params.shopId,
+      params.page ?? 1,
+      params.pageSize ?? 20,
+      params.sku?.trim() || "",
+      params.from || "",
+      params.to || "",
+    ] as const,
 };
 
 function inventoryErrorMessage(e: unknown, fallback: string): string {
@@ -61,12 +90,16 @@ function inventoryErrorMessage(e: unknown, fallback: string): string {
         return "SKU already exists in this shop.";
       case "VARIANT_NOT_FOUND":
         return "SKU not found. Create the variant first.";
+      case "PRODUCT_NOT_FOUND":
+        return "Product not found in this shop.";
       case "WAREHOUSE_NOT_FOUND":
         return "Warehouse code not found.";
       case "INVENTORY_SLIP_NOT_FOUND":
         return "Inventory slip not found.";
       case "INVENTORY_SLIP_ALREADY_PROCESSED":
         return "This slip was already approved or rejected.";
+      case "INVENTORY_SLIP_DUPLICATE_SKU":
+        return "Duplicate SKU in slip items — each SKU can appear only once.";
       case "INSUFFICIENT_STOCK":
         return "Not enough stock for this adjustment.";
       case "SHOP_NOT_ELIGIBLE":
@@ -96,11 +129,12 @@ export function useInventoryVariants(params: ListVariantsParams = {}) {
   const page = params.page ?? 1;
   const pageSize = params.pageSize ?? 20;
   const q = params.q?.trim() || undefined;
+  const productId = params.productId || undefined;
   return useQuery({
-    queryKey: inventoryKeys.variants({ page, pageSize, q }),
+    queryKey: inventoryKeys.variants({ page, pageSize, q, productId }),
     queryFn: async () =>
       parsePage<InventoryVariant>(
-        await inventoryApi.listVariants({ page, pageSize, q }),
+        await inventoryApi.listVariants({ page, pageSize, q, productId }),
       ),
     placeholderData: (prev) => prev,
   });
@@ -117,6 +151,22 @@ export function useInventorySlips(params: ListSlipsParams = {}) {
         await inventoryApi.listSlips({ page, pageSize, status }),
       ),
     placeholderData: (prev) => prev,
+  });
+}
+
+export function useInventorySlip(slipId: string | null) {
+  return useQuery({
+    queryKey: inventoryKeys.slip(slipId ?? ""),
+    queryFn: () => inventoryApi.getSlip(slipId!),
+    enabled: !!slipId,
+  });
+}
+
+export function useAdminInventorySlip(slipId: string | null) {
+  return useQuery({
+    queryKey: [...inventoryKeys.all, "admin-slip", slipId ?? ""] as const,
+    queryFn: () => adminInventoryApi.getSlip(slipId!),
+    enabled: !!slipId,
   });
 }
 
@@ -188,6 +238,77 @@ export function useRejectSlip() {
   const invalidate = useInventoryInvalidate();
   return useMutation({
     mutationFn: (slipId: string) => inventoryApi.rejectSlip(slipId),
+    onSuccess: () => {
+      invalidate();
+      toast.success("Slip rejected");
+    },
+    onError: (e) => toast.error(inventoryErrorMessage(e, "Reject failed")),
+  });
+}
+
+export function useAdminInventorySlips(params: AdminListSlipsParams = {}) {
+  const page = params.page ?? 1;
+  const pageSize = params.pageSize ?? 20;
+  const status = params.status;
+  const shopId = params.shopId;
+  return useQuery({
+    queryKey: inventoryKeys.adminSlips({ page, pageSize, status, shopId }),
+    queryFn: async () =>
+      parsePage<InventorySlip>(
+        await adminInventoryApi.listSlips({ page, pageSize, status, shopId }),
+      ),
+    placeholderData: (prev) => prev,
+  });
+}
+
+export function useAdminInventoryLedger(params: Partial<AdminListLedgerParams> = {}) {
+  const shopId = params.shopId?.trim() || "";
+  const page = params.page ?? 1;
+  const pageSize = params.pageSize ?? 20;
+  const sku = params.sku?.trim() || undefined;
+  const from = params.from || undefined;
+  const to = params.to || undefined;
+  return useQuery({
+    queryKey: inventoryKeys.adminLedger({
+      shopId,
+      page,
+      pageSize,
+      sku,
+      from,
+      to,
+    }),
+    queryFn: async () =>
+      parsePage<StockLedgerEntry>(
+        await adminInventoryApi.listLedger({
+          shopId,
+          page,
+          pageSize,
+          sku,
+          from,
+          to,
+        }),
+      ),
+    enabled: Boolean(shopId),
+    placeholderData: (prev) => prev,
+  });
+}
+
+export function useAdminApproveSlip() {
+  const invalidate = useInventoryInvalidate();
+  return useMutation({
+    mutationFn: (slipId: string) => adminInventoryApi.approveSlip(slipId),
+    onSuccess: () => {
+      invalidate();
+      toast.success("Slip approved — stock updated");
+    },
+    onError: (e) => toast.error(inventoryErrorMessage(e, "Approve failed")),
+  });
+}
+
+export function useAdminRejectSlip() {
+  const invalidate = useInventoryInvalidate();
+  return useMutation({
+    mutationFn: (slipId: string) => adminInventoryApi.rejectSlip(slipId),
     onSuccess: () => {
       invalidate();
       toast.success("Slip rejected");

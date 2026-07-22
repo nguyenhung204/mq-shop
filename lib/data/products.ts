@@ -6,8 +6,11 @@ export type Product = {
   name: string;
   brand: string;
   price: number;
+  minPrice?: number;
+  maxPrice?: number;
   originalPrice?: number;
   image: string;
+  images?: string[];
   category: string;
   categorySlug: string;
   rating: number;
@@ -21,6 +24,16 @@ export type Product = {
   watermarkText?: null | { vi: string; zh: string; en: string };
   rejectionReason?: string;
   status?: string;
+  /** Public PDP variants for picker. */
+  variants?: Array<{
+    id: string;
+    sku: string;
+    price: number;
+    availableStock: number;
+    options: Record<string, string> | null;
+    images: string[];
+  }>;
+  selectedVariantId?: string;
 };
 
 export const products: Product[] = [

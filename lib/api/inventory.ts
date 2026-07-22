@@ -15,30 +15,44 @@ export type Warehouse = {
 export type InventoryVariant = {
   id: string;
   shopId: string;
+  productId: string;
   sku: string;
+  /** Sell price. */
+  sellingPrice: number;
   availableStock: number;
-  unitPrice: number | null;
+  options?: Record<string, string> | null;
+  images?: string[];
+  costPrice: number | null;
   isEnrollmentPackage: boolean;
   createdAt: string;
   updatedAt: string;
 };
 
+export type InventorySlipItem = {
+  id: string;
+  sku: string;
+  quantity: number;
+  unitCost: number | null;
+};
+
 export type InventorySlip = {
   id: string;
+  code: string;
   shopId: string;
-  sku: string;
   type: InventorySlipType;
-  quantity: number;
   status: InventorySlipStatus;
   warehouseCode: string | null;
   locationNote: string | null;
+  createdByUserId: string;
   processedAt: string | null;
   createdAt: string;
+  items: InventorySlipItem[];
 };
 
 export type StockLedgerEntry = {
   id: string;
   slipId: string;
+  slipItemId: string;
   sku: string;
   type: InventorySlipType;
   quantity: number;
@@ -53,22 +67,30 @@ export type CreateWarehouseRequest = {
 };
 
 export type CreateVariantRequest = {
+  productId: string;
   sku: string;
-  availableStock?: number;
-  unitPrice?: number | null;
+  sellingPrice: number;
+  options?: Record<string, string>;
+  costPrice?: number | null;
   isEnrollmentPackage?: boolean;
 };
 
-export type CreateSlipRequest = {
+export type CreateSlipItemRequest = {
   sku: string;
   quantity: number;
+  unitCost?: number | null;
+};
+
+export type CreateSlipRequest = {
   type: InventorySlipType;
   warehouseCode?: string;
   locationNote?: string;
+  items: CreateSlipItemRequest[];
 };
 
 export type ListVariantsParams = {
   q?: string;
+  productId?: string;
   page?: number;
   pageSize?: number;
 };
@@ -90,6 +112,16 @@ export type ListLedgerParams = {
 export type AdminListSlipsParams = {
   status?: InventorySlipStatus;
   shopId?: string;
+  page?: number;
+  pageSize?: number;
+};
+
+export type AdminListLedgerParams = {
+  /** Required by GET /admin/inventory/ledger */
+  shopId: string;
+  sku?: string;
+  from?: string;
+  to?: string;
   page?: number;
   pageSize?: number;
 };
@@ -148,6 +180,12 @@ export const adminInventoryApi = {
 
   getSlip: (slipId: string) =>
     api.get<InventorySlip>(`/admin/inventory/slips/${slipId}`),
+
+  listLedger: (query: AdminListLedgerParams) =>
+    api.get<PageEnvelope<StockLedgerEntry>>("/admin/inventory/ledger", {
+      query,
+      withMeta: true,
+    }),
 
   approveSlip: (slipId: string) =>
     api.post<InventorySlip>(`/admin/inventory/slips/${slipId}/approve`, {}),

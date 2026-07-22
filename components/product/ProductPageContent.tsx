@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import { Check } from "lucide-react";
 import { Product, formatPrice } from "@/lib/data/products";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -16,6 +17,15 @@ const TAB_KEYS = [
   "product.tabShipping",
 ] as const;
 
+function variantLabel(v: NonNullable<Product["variants"]>[number]): string {
+  if (v.options && Object.keys(v.options).length > 0) {
+    return Object.entries(v.options)
+      .map(([k, val]) => `${k}: ${val}`)
+      .join(" · ");
+  }
+  return v.sku;
+}
+
 export function ProductPageContent({
   product,
   related,
@@ -24,6 +34,33 @@ export function ProductPageContent({
   related: Product[];
 }) {
   const { t } = useLanguage();
+  const variants = product.variants ?? [];
+  const [selectedId, setSelectedId] = useState(
+    product.selectedVariantId || variants[0]?.id || "",
+  );
+
+  const selected = useMemo(
+    () => variants.find((v) => v.id === selectedId) ?? variants[0],
+    [variants, selectedId],
+  );
+
+  const displayImage =
+    (selected?.images?.length ? selected.images[0] : null) ||
+    product.images?.[0] ||
+    product.image;
+
+  const displayPrice = selected?.price ?? product.price;
+  const displayStock = selected?.availableStock ?? product.inStock;
+  const outOfStock = displayStock <= 0;
+
+  const cartProduct: Product = {
+    ...product,
+    price: displayPrice,
+    image: displayImage,
+    inStock: displayStock,
+    selectedVariantId: selected?.id,
+    features: outOfStock ? ["Out of stock"] : product.features.filter((f) => f !== "Out of stock"),
+  };
 
   return (
     <>
@@ -40,9 +77,14 @@ export function ProductPageContent({
       />
       <Container className="py-10 md:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
-          <div data-mq-fly-source data-mq-product-gallery className="relative aspect-[4/5] mq-product-image-bg mq-product-media">
+          <div
+            data-mq-fly-source
+            data-mq-product-gallery
+            className="relative aspect-[4/5] mq-product-image-bg mq-product-media"
+          >
             <Image
-              src={product.image}
+              key={displayImage}
+              src={displayImage}
               alt={product.name}
               fill
               className="mq-product-media-img"
@@ -55,6 +97,11 @@ export function ProductPageContent({
                 -{product.salePercent}%
               </span>
             )}
+            {outOfStock && product.displayMode === "OUT_OF_STOCK_WATERMARK" ? (
+              <span className="absolute inset-0 z-10 flex items-center justify-center bg-black/35 text-white text-sm font-medium tracking-wide uppercase">
+                {t("product.outOfStock") || "Out of stock"}
+              </span>
+            ) : null}
           </div>
 
           <div>
@@ -63,7 +110,9 @@ export function ProductPageContent({
               <span className="mq-badge mq-badge-teal">{t("product.badgeBestPrice")}</span>
               <span className="mq-badge mq-badge-teal">{t("product.badgeFreeShipping")}</span>
             </div>
-            <p className="text-xs text-mq-text-muted uppercase tracking-[0.15em] mb-2">{product.brand}</p>
+            <p className="text-xs text-mq-text-muted uppercase tracking-[0.15em] mb-2">
+              {product.brand}
+            </p>
             <h1 className="text-2xl md:text-[26px] font-sans text-mq-text mb-3">{product.name}</h1>
             <div className="flex items-center gap-3 mb-4">
               <Stars rating={product.rating} />
@@ -72,7 +121,7 @@ export function ProductPageContent({
               </span>
             </div>
             <div className="flex items-center gap-3 mb-6">
-              <span className="text-2xl font-medium">{formatPrice(product.price)}</span>
+              <span className="text-2xl font-medium">{formatPrice(displayPrice)}</span>
               {product.originalPrice && (
                 <span className="text-lg text-mq-text-muted line-through">
                   {formatPrice(product.originalPrice)}
@@ -80,14 +129,47 @@ export function ProductPageContent({
               )}
             </div>
 
-            <p className="text-sm text-mq-text-secondary mb-4">
-              <span className="text-mq-accent-orange font-medium">12 {t("product.soldLastHour")}</span>
-              {" · "}
-              <span className="text-mq-accent-orange font-medium">8 {t("product.peopleViewing")}</span>
-            </p>
+            {variants.length > 0 ? (
+              <div className="mb-6 space-y-2">
+                <p className="text-sm font-medium text-mq-text">Options</p>
+                <div className="flex flex-wrap gap-2">
+                  {variants.map((v) => {
+                    const active = v.id === selected?.id;
+                    const disabled = v.availableStock <= 0;
+                    return (
+                      <button
+                        key={v.id}
+                        type="button"
+                        disabled={disabled && variants.some((x) => x.availableStock > 0)}
+                        onClick={() => setSelectedId(v.id)}
+                        className={`px-3 py-1.5 text-xs border rounded-[var(--mq-radius-sm)] transition-colors ${
+                          active
+                            ? "border-mq-text bg-mq-text text-white"
+                            : "border-mq-border text-mq-text hover:border-mq-text"
+                        } ${disabled ? "opacity-50" : ""}`}
+                      >
+                        {variantLabel(v)}
+                        <span className="ml-1.5 text-[10px] opacity-80">
+                          {formatPrice(v.price)}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {selected ? (
+                  <p className="text-xs text-mq-text-muted">
+                    SKU {selected.sku}
+                    {" · "}
+                    {selected.availableStock > 0
+                      ? `${selected.availableStock} in stock`
+                      : "Out of stock"}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
 
             <ul className="space-y-2 mb-6 text-sm text-mq-text-secondary">
-              {product.features.map((f) => (
+              {cartProduct.features.map((f) => (
                 <li key={f} className="flex items-start gap-2">
                   <Check className="w-4 h-4 text-mq-gold mt-0.5 shrink-0" strokeWidth={2} />
                   {f}
@@ -97,17 +179,31 @@ export function ProductPageContent({
 
             {product.salePercent && (
               <div className="bg-mq-surface-subtle p-4 mb-6 text-sm">
-                <p className="font-medium text-mq-accent-orange mb-1">{t("product.saleEndsSoon")}</p>
+                <p className="font-medium text-mq-accent-orange mb-1">
+                  {t("product.saleEndsSoon")}
+                </p>
                 <p className="text-mq-text-muted">02d : 14h : 32m : 18s</p>
               </div>
             )}
 
-            <ProductActions product={product} />
+            {outOfStock ? (
+              <p className="mq-alert mq-alert-error mb-6 text-sm">
+                This option is out of stock.
+              </p>
+            ) : (
+              <ProductActions product={cartProduct} />
+            )}
 
             <div className="flex gap-6 text-sm text-mq-text-secondary mb-8">
-              <button type="button" className="hover:text-mq-text">{t("product.compare")}</button>
-              <Link href="/wishlist" className="hover:text-mq-text">{t("nav.wishlist")}</Link>
-              <button type="button" className="hover:text-mq-text">{t("product.askUs")}</button>
+              <button type="button" className="hover:text-mq-text">
+                {t("product.compare")}
+              </button>
+              <Link href="/wishlist" className="hover:text-mq-text">
+                {t("nav.wishlist")}
+              </Link>
+              <button type="button" className="hover:text-mq-text">
+                {t("product.askUs")}
+              </button>
             </div>
 
             <div className="border-t border-mq-border pt-6 space-y-3 text-sm text-mq-text-secondary">
@@ -133,8 +229,8 @@ export function ProductPageContent({
           <div className="prose prose-sm max-w-none text-mq-text-secondary">
             <p>{product.description}</p>
             <p className="mt-4">
-              {t("product.stock")}: {product.inStock} {t("product.unitsAvailable")}. SKU: MQ-
-              {product.id.padStart(4, "0")}
+              {t("product.stock")}: {displayStock} {t("product.unitsAvailable")}
+              {selected ? ` · SKU ${selected.sku}` : null}
             </p>
           </div>
         </div>

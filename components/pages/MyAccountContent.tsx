@@ -96,7 +96,12 @@ export function MyAccountContent() {
                   Seller Center
                 </Link>
               )}
-              {!hasRole("SELLER") && (
+              {hasRole("WAREHOUSE") && !hasRole("SELLER") && (
+                <Link href="/seller/inventory" className="mq-btn mq-btn-outline">
+                  Inventory
+                </Link>
+              )}
+              {!hasRole("SELLER") && !hasRole("WAREHOUSE") && (
                 <Link href="/seller/shop" className="mq-btn mq-btn-outline">
                   Open a shop
                 </Link>

@@ -17,13 +17,13 @@ import { Container } from "@/components/ui/shared";
 import "./seller.css";
 
 const links = [
-  { href: "/seller", label: "Overview", icon: LayoutDashboard },
-  { href: "/seller/shop", label: "Shop", icon: Store },
-  { href: "/seller/products", label: "Products", icon: Package },
-  { href: "/seller/inventory", label: "Inventory", icon: Boxes },
-  { href: "/seller/orders", label: "Orders", icon: ShoppingBag },
-  { href: "/seller/rma", label: "RMA", icon: RotateCcw },
-  { href: "/seller/materials", label: "Materials", icon: FolderOpen },
+  { href: "/seller", label: "Overview", icon: LayoutDashboard, sellerOnly: true },
+  { href: "/seller/shop", label: "Shop", icon: Store, sellerOnly: true },
+  { href: "/seller/products", label: "Products", icon: Package, sellerOnly: true },
+  { href: "/seller/inventory", label: "Inventory", icon: Boxes, sellerOnly: false },
+  { href: "/seller/orders", label: "Orders", icon: ShoppingBag, sellerOnly: true },
+  { href: "/seller/rma", label: "RMA", icon: RotateCcw, sellerOnly: true },
+  { href: "/seller/materials", label: "Materials", icon: FolderOpen, sellerOnly: true },
 ] as const;
 
 function titleFromPath(pathname: string): { title: string; desc?: string } {
@@ -53,9 +53,13 @@ function titleFromPath(pathname: string): { title: string; desc?: string } {
 
 export function SellerNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const { hasRole } = useAuth();
+  const warehouseOnly = hasRole("WAREHOUSE") && !hasRole("SELLER");
+  const visible = warehouseOnly ? links.filter((l) => !l.sellerOnly) : links;
+
   return (
     <nav className="mq-seller-nav" aria-label="Seller center">
-      {links.map((l) => {
+      {visible.map((l) => {
         const active =
           l.href === "/seller"
             ? pathname === "/seller"
@@ -80,8 +84,9 @@ export function SellerNav({ onNavigate }: { onNavigate?: () => void }) {
 
 export function SellerShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, hasRole } = useAuth();
   const { title, desc } = titleFromPath(pathname);
+  const warehouseOnly = hasRole("WAREHOUSE") && !hasRole("SELLER");
 
   return (
     <section className="mq-seller-page">
@@ -92,8 +97,10 @@ export function SellerShell({ children }: { children: ReactNode }) {
               MQ
             </span>
             <div className="mq-seller-identity-text">
-              <p className="mq-seller-kicker">Seller</p>
-              <h2 className="mq-seller-title">Seller Center</h2>
+              <p className="mq-seller-kicker">{warehouseOnly ? "Warehouse" : "Seller"}</p>
+              <h2 className="mq-seller-title">
+                {warehouseOnly ? "Warehouse" : "Seller Center"}
+              </h2>
               <p className="mq-seller-sub">{user?.fullName || user?.email || "—"}</p>
             </div>
           </div>

@@ -240,7 +240,7 @@ export const api = {
     apiRequest<T>(path, { ...opts, method: "PUT", body }),
   patch: <T>(path: string, body?: unknown, opts?: Omit<RequestOptions, "method" | "body" | "formData">) =>
     apiRequest<T>(path, { ...opts, method: "PATCH", body }),
-  delete: <T>(path: string, opts?: Omit<RequestOptions, "method" | "body" | "formData">) =>
+  delete: <T>(path: string, opts?: Omit<RequestOptions, "method" | "formData">) =>
     apiRequest<T>(path, { ...opts, method: "DELETE" }),
   postForm: <T>(path: string, formData: FormData, opts?: Omit<RequestOptions, "method" | "body" | "formData">) =>
     apiRequest<T>(path, { ...opts, method: "POST", formData }),
