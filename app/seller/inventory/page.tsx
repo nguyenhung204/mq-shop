@@ -175,7 +175,6 @@ function VariantsTab() {
   const [productId, setProductId] = useState("");
   const [sku, setSku] = useState("");
   const [sellingPrice, setSellingPrice] = useState("");
-  const [costPrice, setCostPrice] = useState("");
   const [optionsText, setOptionsText] = useState("");
   const [isEnrollmentPackage, setIsEnrollmentPackage] = useState(false);
 
@@ -202,7 +201,6 @@ function VariantsTab() {
     const trimmedSku = sku.trim();
     const sell = Number(sellingPrice);
     if (!productId || !trimmedSku || !Number.isFinite(sell) || sell < 0) return;
-    const cost = costPrice.trim() === "" ? undefined : Number(costPrice);
     let options: Record<string, string> | undefined;
     const trimmedOpts = optionsText.trim();
     if (trimmedOpts) {
@@ -220,13 +218,11 @@ function VariantsTab() {
       productId,
       sku: trimmedSku,
       sellingPrice: sell,
-      costPrice: cost != null && !Number.isNaN(cost) ? cost : undefined,
       options,
       isEnrollmentPackage,
     });
     setSku("");
     setSellingPrice("");
-    setCostPrice("");
     setOptionsText("");
     setIsEnrollmentPackage(false);
     setShowForm(false);
@@ -311,15 +307,6 @@ function VariantsTab() {
             value={sellingPrice}
             onChange={(e) => setSellingPrice(e.target.value)}
             required
-          />
-          <input
-            className="mq-input"
-            type="number"
-            min="0"
-            step="0.01"
-            placeholder="Cost price (optional)"
-            value={costPrice}
-            onChange={(e) => setCostPrice(e.target.value)}
           />
           <input
             className="mq-input sm:col-span-2"
@@ -496,7 +483,7 @@ function SlipsTab() {
     <div className="space-y-4">
       <p className="text-sm text-mq-text-muted">
         Slips are multi-SKU stock-change requests. Creating a slip does not change stock until you
-        approve it. Optional unit cost on IN lines updates SKU cost price on approve.
+        approve it.
       </p>
 
       <div className="flex flex-wrap items-center gap-3">
