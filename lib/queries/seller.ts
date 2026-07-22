@@ -23,8 +23,8 @@ export { useWarehouses } from "@/lib/queries/inventory";
 
 export const sellerKeys = {
   all: ["seller"] as const,
-  products: (status: string, page: number) =>
-    [...sellerKeys.all, "products", status, page] as const,
+  products: (status: string, page: number, pageSize = 20) =>
+    [...sellerKeys.all, "products", status, page, pageSize] as const,
   product: (id: string) => [...sellerKeys.all, "product", id] as const,
   categories: () => [...sellerKeys.all, "categories"] as const,
   orders: () => [...sellerKeys.all, "orders"] as const,
@@ -43,7 +43,7 @@ function useSellerInvalidate() {
 export function useSellerProducts(status?: string, page = 1, pageSize = 20) {
   const statusKey = status || "";
   return useQuery({
-    queryKey: sellerKeys.products(statusKey, page),
+    queryKey: sellerKeys.products(statusKey, page, pageSize),
     queryFn: async (): Promise<{ items: ApiProduct[]; meta?: PageMeta }> =>
       parsePage<ApiProduct>(
         await sellerApi.products({

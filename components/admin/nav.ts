@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   BadgeDollarSign,
+  Boxes,
   ClipboardList,
   FolderTree,
   ImageIcon,
@@ -36,6 +37,13 @@ export const adminNavItems: AdminNavItem[] = [
     label: "Products",
     icon: Package,
     permissions: ["APPROVE_PRODUCT", "REJECT_PRODUCT", "HIDE_PRODUCT"],
+    group: "ops",
+  },
+  {
+    href: "/admin/inventory",
+    label: "Inventory",
+    icon: Boxes,
+    permissions: ["VIEW_INVENTORY", "EDIT_INVENTORY"],
     group: "ops",
   },
   {

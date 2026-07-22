@@ -15,8 +15,13 @@ export type Warehouse = {
 export type InventoryVariant = {
   id: string;
   shopId: string;
+  productId: string;
   sku: string;
+  /** Sell price. */
+  price: number;
   availableStock: number;
+  options?: Record<string, string> | null;
+  images?: string[];
   unitPrice: number | null;
   isEnrollmentPackage: boolean;
   createdAt: string;
@@ -53,8 +58,10 @@ export type CreateWarehouseRequest = {
 };
 
 export type CreateVariantRequest = {
+  productId: string;
   sku: string;
-  availableStock?: number;
+  price: number;
+  options?: Record<string, string>;
   unitPrice?: number | null;
   isEnrollmentPackage?: boolean;
 };
@@ -69,6 +76,7 @@ export type CreateSlipRequest = {
 
 export type ListVariantsParams = {
   q?: string;
+  productId?: string;
   page?: number;
   pageSize?: number;
 };

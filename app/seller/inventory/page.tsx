@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import Link from "next/link";
 import { Check, X } from "lucide-react";
 import type {
   InventorySlip,
@@ -22,6 +23,7 @@ import {
   useRejectSlip,
   useWarehouses,
 } from "@/lib/queries/inventory";
+import { useSellerProducts } from "@/lib/queries/seller";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import {
   AdminActions,
@@ -167,14 +169,21 @@ function WarehousesTab() {
 
 function VariantsTab() {
   const [q, setQ] = useState("");
+  const [productFilter, setProductFilter] = useState("");
   const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
+  const [productId, setProductId] = useState("");
   const [sku, setSku] = useState("");
+  const [price, setPrice] = useState("");
   const [unitPrice, setUnitPrice] = useState("");
   const [isEnrollmentPackage, setIsEnrollmentPackage] = useState(false);
 
+  const { data: productsPage } = useSellerProducts(undefined, 1, 100);
+  const productOptions = productsPage?.items ?? [];
+
   const { data, isLoading, isError, error } = useInventoryVariants({
     q: q || undefined,
+    productId: productFilter || undefined,
     page,
     pageSize: 20,
   });
@@ -182,18 +191,26 @@ function VariantsTab() {
   const items = data?.items ?? [];
   const meta = data?.meta;
 
+  const productTitle = (id: string) => {
+    const p = productOptions.find((x) => x.id === id);
+    return p?.title || p?.name || id.slice(0, 8);
+  };
+
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const trimmed = sku.trim();
-    if (!trimmed) return;
-    const price = unitPrice.trim() === "" ? undefined : Number(unitPrice);
+    const trimmedSku = sku.trim();
+    const sell = Number(price);
+    if (!productId || !trimmedSku || !Number.isFinite(sell) || sell < 0) return;
+    const cost = unitPrice.trim() === "" ? undefined : Number(unitPrice);
     await createVariant.mutateAsync({
-      sku: trimmed,
-      availableStock: 0,
-      unitPrice: price != null && !Number.isNaN(price) ? price : undefined,
+      productId,
+      sku: trimmedSku,
+      price: sell,
+      unitPrice: cost != null && !Number.isNaN(cost) ? cost : undefined,
       isEnrollmentPackage,
     });
     setSku("");
+    setPrice("");
     setUnitPrice("");
     setIsEnrollmentPackage(false);
     setShowForm(false);
@@ -203,8 +220,12 @@ function VariantsTab() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-mq-text-muted">
-        SKUs are the source of truth for stock. Stock only changes when a slip is{" "}
-        <strong>approved</strong> — create with 0 and use IN slips to receive goods.
+        Prefer adding SKUs on the{" "}
+        <Link href="/seller/products" className="underline">
+          Products
+        </Link>{" "}
+        form. This shortcut still needs a product + sell price. Stock starts at 0 — use slips to
+        receive goods.
       </p>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -217,6 +238,22 @@ function VariantsTab() {
             setPage(1);
           }}
         />
+        <select
+          className="mq-input max-w-[14rem]"
+          value={productFilter}
+          aria-label="Filter by product"
+          onChange={(e) => {
+            setProductFilter(e.target.value);
+            setPage(1);
+          }}
+        >
+          <option value="">All products</option>
+          {productOptions.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.title || p.name || p.id.slice(0, 8)}
+            </option>
+          ))}
+        </select>
         <button
           type="button"
           className="mq-btn mq-btn-primary ml-auto"
@@ -228,6 +265,19 @@ function VariantsTab() {
 
       {showForm ? (
         <form className="mq-card p-4 grid sm:grid-cols-2 gap-3" onSubmit={(e) => void onSubmit(e)}>
+          <select
+            className="mq-input sm:col-span-2"
+            value={productId}
+            onChange={(e) => setProductId(e.target.value)}
+            required
+          >
+            <option value="">Select product</option>
+            {productOptions.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.title || p.name || p.id.slice(0, 8)}
+              </option>
+            ))}
+          </select>
           <input
             className="mq-input"
             placeholder="SKU (e.g. MOUSE-001)"
@@ -241,11 +291,21 @@ function VariantsTab() {
             type="number"
             min="0"
             step="0.01"
+            placeholder="Sell price"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            required
+          />
+          <input
+            className="mq-input"
+            type="number"
+            min="0"
+            step="0.01"
             placeholder="Unit cost (optional)"
             value={unitPrice}
             onChange={(e) => setUnitPrice(e.target.value)}
           />
-          <label className="flex items-center gap-2 text-sm sm:col-span-2">
+          <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
               checked={isEnrollmentPackage}
@@ -265,7 +325,7 @@ function VariantsTab() {
         </div>
       )}
       {isLoading ? (
-        <TableSkeleton rows={5} cols={4} />
+        <TableSkeleton rows={5} cols={5} />
       ) : items.length === 0 ? (
         <p className="text-sm text-mq-text-muted">No SKUs yet.</p>
       ) : (
@@ -275,6 +335,8 @@ function VariantsTab() {
               <thead>
                 <tr className="text-left text-mq-text-muted border-b border-mq-border">
                   <th className="py-2 pr-3 font-medium">SKU</th>
+                  <th className="py-2 pr-3 font-medium">Product</th>
+                  <th className="py-2 pr-3 font-medium">Sell price</th>
                   <th className="py-2 pr-3 font-medium">Available</th>
                   <th className="py-2 pr-3 font-medium">Unit cost</th>
                   <th className="py-2 font-medium">Flags</th>
@@ -284,6 +346,10 @@ function VariantsTab() {
                 {items.map((v: InventoryVariant) => (
                   <tr key={v.id} className="border-b border-mq-border/60">
                     <td className="py-2.5 pr-3 font-medium">{v.sku}</td>
+                    <td className="py-2.5 pr-3 text-xs text-mq-text-secondary">
+                      {productTitle(v.productId)}
+                    </td>
+                    <td className="py-2.5 pr-3">{formatMoney(v.price)}</td>
                     <td className="py-2.5 pr-3">{v.availableStock}</td>
                     <td className="py-2.5 pr-3 text-mq-text-secondary">
                       {v.unitPrice != null ? formatMoney(v.unitPrice) : "—"}

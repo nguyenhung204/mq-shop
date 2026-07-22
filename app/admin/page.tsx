@@ -3,6 +3,7 @@
 import Link from "next/link";
 import {
   BadgeDollarSign,
+  Boxes,
   ClipboardList,
   FolderTree,
   ImageIcon,
@@ -36,6 +37,13 @@ const cards: {
     desc: "Review listings — approve, reject, or hide",
     permissions: ["APPROVE_PRODUCT"],
     icon: Package,
+  },
+  {
+    href: "/admin/inventory",
+    label: "Inventory",
+    desc: "Approve or reject cross-shop stock slips",
+    permissions: ["VIEW_INVENTORY", "EDIT_INVENTORY"],
+    icon: Boxes,
   },
   {
     href: "/admin/categories",
