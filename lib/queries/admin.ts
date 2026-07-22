@@ -130,6 +130,18 @@ export function useSuspendShop() {
   });
 }
 
+function productActionError(e: unknown): string {
+  if (e instanceof ApiError) {
+    if (e.code === "PRODUCT_NOT_PENDING") {
+      return "Product is not PENDING — cannot approve/reject.";
+    }
+    if (e.code === "PRODUCT_NOT_HIDDEN") {
+      return "Product is not hidden.";
+    }
+  }
+  return getErrorMessage(e);
+}
+
 export function useApproveProduct() {
   const invalidate = useAdminInvalidate();
   return useMutation({
@@ -138,7 +150,7 @@ export function useApproveProduct() {
       invalidate();
       toast.success("Product approved");
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
+    onError: (e) => toast.error(productActionError(e)),
   });
 }
 
@@ -151,7 +163,7 @@ export function useRejectProduct() {
       invalidate();
       toast.success("Product rejected");
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
+    onError: (e) => toast.error(productActionError(e)),
   });
 }
 

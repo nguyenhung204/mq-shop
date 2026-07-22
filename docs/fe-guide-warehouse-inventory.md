@@ -4,7 +4,7 @@
 > **Auth:** Cookie-based JWT — include `credentials: 'include'` on every request.  
 > **Content-Type:** `application/json` (except image uploads = `multipart/form-data`).
 
-> **Product ↔ Variant (003+004 redesign):** 1 Product : N Variants. Stock lives only on `variant.availableStock`. **Sell price lives on `variant.price`** (product has no `price`). Listing `stock` = sum of variants; listing `price`/`minPrice`/`maxPrice` from variants. Create product with `variants: [{ sku, price, options? }]` (no images in JSON); upload images via `POST /products/:id/images` (avatar-style multipart). Create variant requires `productId` + `price`.
+> **Product ↔ Variant (003+004 redesign):** 1 Product : N Variants. Stock lives only on `variant.availableStock`. **Sell price lives on `variant.sellingPrice`** (product has no `price`). Listing `stock` = sum of variants; listing `price`/`minPrice`/`maxPrice` from variants. Create product with `variants: [{ sku, sellingPrice, options? }]` (no images in JSON); upload images via `POST /products/:id/images`. Create variant requires `productId` + `sellingPrice` (+ optional `costPrice`).
 
 > **Product FE guide (full create/edit/listing):** [`../../003-product-listing/contracts/fe-guide-product-listing.md`](../../003-product-listing/contracts/fe-guide-product-listing.md)
 
@@ -186,9 +186,9 @@ POST /inventory/variants
 {
   "productId": "prod-uuid",
   "sku": "MOUSE-001",
-  "price": 29.99,
+  "sellingPrice": 29.99,
   "options": { "color": "black" },
-  "unitPrice": 18.5,
+  "costPrice": 18.5,
   "isEnrollmentPackage": false
 }
 ```
@@ -197,9 +197,9 @@ POST /inventory/variants
 |-------|------|----------|-----------|
 | `productId` | UUID | ✅ | Must belong to caller's shop |
 | `sku` | string | ✅ | max 64, unique per shop |
-| `price` | number | ✅ | ≥ 0 — **sell price** |
+| `sellingPrice` | number | ✅ | ≥ 0 — **sell price** |
 | `options` | object | ❌ | e.g. `{ size, color }` |
-| `unitPrice` | number | ❌ | ≥ 0 — purchase/cost |
+| `costPrice` | number | ❌ | ≥ 0 — purchase/cost on SKU |
 | `isEnrollmentPackage` | boolean | ❌ | default false |
 
 > Prefer creating variants with the product: `POST /products` `{ variants: [{ sku, price, options? }] }` or `POST /products/:id/variants`. Images: `POST /products/:id/variants/:variantId/images` (multipart).
@@ -241,9 +241,9 @@ GET /inventory/variants?q=MOUSE&page=1&pageSize=20
         "shopId": "shop-uuid",
         "productId": "prod-uuid",
         "sku": "MOUSE-001",
-        "price": 29.99,
+        "sellingPrice": 29.99,
         "availableStock": 50,
-        "unitPrice": 18.5,
+        "costPrice": 18.5,
         "isEnrollmentPackage": false,
         "createdAt": "2026-07-21T13:00:00.000Z",
         "updatedAt": "2026-07-21T14:00:00.000Z"
@@ -273,29 +273,35 @@ POST /inventory/slips
 
 **Permission:** `ADD_INVENTORY`
 
+> **Breaking:** 1 slip = **header + N items**. `sku` / `quantity` / `unitCost` live on `items[]`, not the header.
+
 **Request body:**
 
 ```json
 {
-  "sku": "MOUSE-001",
-  "quantity": 50,
   "type": "IN",
   "warehouseCode": "KHO-HN",
-  "locationNote": "Kệ A3, tầng 2"
+  "locationNote": "Kệ A3, tầng 2",
+  "items": [
+    { "sku": "MOUSE-001", "quantity": 50, "unitCost": 18.5 },
+    { "sku": "KB-001", "quantity": 20, "unitCost": 55.0 }
+  ]
 }
 ```
 
 | Field | Type | Required | Values / Constraint |
 |-------|------|----------|---------------------|
-| `sku` | string | ✅ | Must exist as a variant in this shop |
-| `quantity` | integer | ✅ | ≥ 1 (always positive — direction controlled by `type`) |
-| `type` | enum | ✅ | `IN` · `ADJUST_IN` · `ADJUST_OUT` |
+| `type` | enum | ✅ | `IN` · `ADJUST_IN` · `ADJUST_OUT` (applies to **all** items) |
+| `items` | array | ✅ | min 1; each `{ sku, quantity, unitCost? }`; **no duplicate SKU** |
+| `items[].sku` | string | ✅ | Must exist as a variant in this shop |
+| `items[].quantity` | integer | ✅ | ≥ 1 (always positive — direction controlled by `type`) |
+| `items[].unitCost` | number | ❌ | ≥ 0 — per-unit cost for this line (typical for `IN`) |
 | `warehouseCode` | string | ❌ | Must exist in this shop if provided |
 | `locationNote` | string | ❌ | max 300 chars |
 
 **Slip types:**
 
-| Type | Stock effect on approve | Use case |
+| Type | Stock effect on approve (per item) | Use case |
 |------|------------------------|----------|
 | `IN` | `availableStock += quantity` | New goods received |
 | `ADJUST_IN` | `availableStock += quantity` | Manual stock increase / correction |
@@ -308,15 +314,19 @@ POST /inventory/slips
   "message": "Inventory slip created successfully",
   "data": {
     "id": "slip-uuid",
+    "code": "PN-20260722-A1B2",
     "shopId": "shop-uuid",
-    "sku": "MOUSE-001",
     "type": "IN",
-    "quantity": 50,
     "status": "PENDING",
     "warehouseCode": "KHO-HN",
     "locationNote": "Kệ A3, tầng 2",
+    "createdByUserId": "user-uuid",
     "processedAt": null,
-    "createdAt": "2026-07-21T13:00:00.000Z"
+    "createdAt": "2026-07-21T13:00:00.000Z",
+    "items": [
+      { "id": "item-uuid-1", "sku": "MOUSE-001", "quantity": 50, "unitCost": 18.5 },
+      { "id": "item-uuid-2", "sku": "KB-001", "quantity": 20, "unitCost": 55.0 }
+    ]
   }
 }
 ```
@@ -327,6 +337,7 @@ POST /inventory/slips
 |--------|------|------|
 | 404 | `VARIANT_NOT_FOUND` | SKU not found in this shop |
 | 404 | `WAREHOUSE_NOT_FOUND` | warehouseCode not found in this shop |
+| 409 | `INVENTORY_SLIP_DUPLICATE_SKU` | Same SKU twice in `items` |
 
 ---
 
@@ -397,13 +408,14 @@ POST /inventory/slips/:slipId/approve
 
 No request body.
 
-**What happens server-side (atomic transaction):**
-1. Lock variant row (`SELECT FOR UPDATE`)
-2. Verify `availableStock >= quantity` for `ADJUST_OUT` (else 422)
-3. Update `availableStock` on variant
-4. Flip slip `status → APPROVED`, set `processedAt`
-5. Insert immutable ledger entry (`quantityBefore`, `quantityAfter`)
-6. Commit
+**What happens server-side (atomic transaction — all-or-nothing):**
+1. Load all `inventory_slip_items` for the slip
+2. For each item (ordered by SKU): lock variant (`SELECT FOR UPDATE`)
+3. Verify `availableStock >= quantity` for `ADJUST_OUT` (else 422 → rollback **entire** slip)
+4. Update `availableStock` (+ optional `costPrice` from `unitCost` on IN/ADJUST_IN)
+5. Insert **one** immutable ledger row per item (`slipItemId`, `quantityBefore`, `quantityAfter`)
+6. Flip slip `status → APPROVED`, set `processedAt`
+7. Commit
 
 **Response `200`:**
 
@@ -495,6 +507,7 @@ GET /inventory/ledger?sku=MOUSE-001&from=2026-07-01T00:00:00Z&page=1&pageSize=50
       {
         "id": "ledger-uuid",
         "slipId": "slip-uuid",
+        "slipItemId": "item-uuid",
         "sku": "MOUSE-001",
         "type": "IN",
         "quantity": 50,
@@ -617,32 +630,41 @@ export interface Variant {
   shopId: string;
   productId: string;
   sku: string;
-  price: number; // sell price
+  sellingPrice: number; // sell price
   availableStock: number;
   options: Record<string, string> | null;
   images: string[];
-  unitPrice: number | null; // purchase/cost
+  costPrice: number | null; // purchase/cost on SKU
   isEnrollmentPackage: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
+export interface InventorySlipItem {
+  id: string;
+  sku: string;
+  quantity: number;
+  unitCost: number | null;
+}
+
 export interface InventorySlip {
   id: string;
+  code: string;                 // auto PN-YYYYMMDD-XXXX
   shopId: string;
-  sku: string;
   type: InventorySlipType;
-  quantity: number;
   status: InventorySlipStatus;
   warehouseCode: string | null;
   locationNote: string | null;
+  createdByUserId: string;
   processedAt: string | null; // ISO-8601, null when PENDING
   createdAt: string;
+  items: InventorySlipItem[];
 }
 
 export interface StockLedgerEntry {
   id: string;
   slipId: string;
+  slipItemId: string;
   sku: string;
   type: InventorySlipType;
   quantity: number;
@@ -675,16 +697,21 @@ export interface CreateWarehouseRequest {
 export interface CreateVariantRequest {
   productId: string;
   sku: string;                    // max 64
-  price: number;                  // sell price >= 0
+  sellingPrice: number;           // sell price >= 0
   options?: Record<string, string>;
-  unitPrice?: number | null;      // purchase/cost >= 0
+  costPrice?: number | null;       // purchase/cost on SKU
   isEnrollmentPackage?: boolean;  // default false
 }
 
-export interface CreateSlipRequest {
+export interface CreateSlipItemRequest {
   sku: string;               // must exist in shop
   quantity: number;          // >= 1
+  unitCost?: number | null;  // per-unit cost for this line
+}
+
+export interface CreateSlipRequest {
   type: InventorySlipType;
+  items: CreateSlipItemRequest[]; // min 1, no duplicate SKU
   warehouseCode?: string;    // optional, max 32
   locationNote?: string;     // optional, max 300
 }
@@ -726,14 +753,14 @@ export interface ListLedgerParams {
 ```
 1. Create product (+ variants) once
    POST /products  { title, description, categoryId, variants: [{ sku, price, options? }] }
-   — or add SKU later: POST /products/:id/variants { sku, price, options? }
-   — inventory shortcut: POST /inventory/variants { productId, sku, price, … }
+   — or add SKU later: POST /products/:id/variants { sku, sellingPrice, options? }
+   — inventory shortcut: POST /inventory/variants { productId, sku, sellingPrice, costPrice?, … }
 
 2. (Optional) Create warehouse (once per location)
    POST /inventory/warehouses  { code: "KHO-HN", address: "..." }
 
 3. Create inventory slip (every time stock arrives)
-   POST /inventory/slips  { sku: "MOUSE-001", quantity: 100, type: "IN", warehouseCode: "KHO-HN" }
+   POST /inventory/slips  { type: "IN", warehouseCode: "KHO-HN", items: [{ sku: "MOUSE-001", quantity: 100, unitCost: 18.5 }, { sku: "KB-001", quantity: 20, unitCost: 55 }] }
    → status: "PENDING"
 
 4. Approve the slip (seller self-approves or waits for admin)
@@ -762,7 +789,7 @@ export interface ListLedgerParams {
 ### Seller adjusts stock downward (write-off)
 
 ```
-POST /inventory/slips  { sku: "MOUSE-001", quantity: 5, type: "ADJUST_OUT" }
+POST /inventory/slips  { type: "ADJUST_OUT", items: [{ sku: "MOUSE-001", quantity: 5 }] }
 POST /inventory/slips/:slipId/approve
 → availableStock -= 5
 → 422 INSUFFICIENT_STOCK if availableStock < 5
@@ -778,8 +805,9 @@ POST /inventory/slips/:slipId/approve
 - **`processedAt` null guard:** Always check `processedAt !== null` before displaying approval time.
 - **`quantityAfter` on ledger** is the authoritative post-approve stock — use it for ledger display, not `variant.availableStock` snapshots in history.
 - **Ledger is append-only** — never attempt to delete or edit ledger entries from FE.
-- **Do not edit sell price via inventory slip** — use `PATCH /products/:id/variants/:variantId` `{ price }`.
-
+- **Do not edit sell price via inventory slip** — use `PATCH /products/:id/variants/:variantId` `{ sellingPrice }`.
+- **Cost:** `variant.costPrice` = current cost on SKU; `items[].unitCost` = cost for that line. On approve `IN`/`ADJUST_IN` with `unitCost`, BE sets `variant.costPrice = unitCost` per line.
+- **Multi-SKU:** one slip header + N items; approve is **all-or-nothing**; ledger writes **one row per item**.
 ---
 
 ## 12. Seed Data (local FE testing)
@@ -812,13 +840,13 @@ Admin: `admin@example.com` / `Admin123!` (or `SEED_ADMIN_*` env overrides)
 
 **Variants**
 
-| sku | price (sell) | availableStock | notes |
+| sku | sellingPrice | availableStock | notes |
 |-----|--------------|----------------|-------|
 | `SEED-MOUSE-001` | 29.99 | 100 | After approved IN |
 | `SEED-KB-001` | 89.00 | 0 | Out of stock |
 | `SEED-TEE-M-BLK` | 15.50 | 10 | Multi-variant tee |
 | `SEED-TEE-L-RED` | 16.50 | 10 | Different sell price |
-| `SEED-TEE-001` | 15.50 | 20 | Legacy slip demo SKU |
+| `SEED-TEE-001` | 15.50 | 20 | Included in multi-SKU approved slip |
 | `PKG-GOLD` | 199.00 | 5 | `isEnrollmentPackage: true` |
 
 **Slips** (re-seeded each run; `locationNote` starts with `[SEED]`)

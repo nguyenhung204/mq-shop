@@ -201,11 +201,13 @@ export type {
   Warehouse,
   InventoryVariant,
   InventorySlip,
+  InventorySlipItem,
   InventorySlipStatus,
   InventorySlipType,
   StockLedgerEntry,
   CreateWarehouseRequest,
   CreateVariantRequest,
+  CreateSlipItemRequest,
   CreateSlipRequest,
 } from "./inventory";
 

@@ -1,10 +1,26 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 
 export default function SellerPage() {
   const { hasRole } = useAuth();
+  const router = useRouter();
+  const warehouseOnly = hasRole("WAREHOUSE") && !hasRole("SELLER");
+
+  useEffect(() => {
+    if (warehouseOnly) router.replace("/seller/inventory");
+  }, [warehouseOnly, router]);
+
+  if (warehouseOnly) {
+    return (
+      <div className="mq-seller-panel max-w-lg text-sm text-mq-text-muted">
+        Redirecting to inventory…
+      </div>
+    );
+  }
 
   if (!hasRole("SELLER")) {
     return (

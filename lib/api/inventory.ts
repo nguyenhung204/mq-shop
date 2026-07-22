@@ -18,32 +18,41 @@ export type InventoryVariant = {
   productId: string;
   sku: string;
   /** Sell price. */
-  price: number;
+  sellingPrice: number;
   availableStock: number;
   options?: Record<string, string> | null;
   images?: string[];
-  unitPrice: number | null;
+  costPrice: number | null;
   isEnrollmentPackage: boolean;
   createdAt: string;
   updatedAt: string;
 };
 
+export type InventorySlipItem = {
+  id: string;
+  sku: string;
+  quantity: number;
+  unitCost: number | null;
+};
+
 export type InventorySlip = {
   id: string;
+  code: string;
   shopId: string;
-  sku: string;
   type: InventorySlipType;
-  quantity: number;
   status: InventorySlipStatus;
   warehouseCode: string | null;
   locationNote: string | null;
+  createdByUserId: string;
   processedAt: string | null;
   createdAt: string;
+  items: InventorySlipItem[];
 };
 
 export type StockLedgerEntry = {
   id: string;
   slipId: string;
+  slipItemId: string;
   sku: string;
   type: InventorySlipType;
   quantity: number;
@@ -60,18 +69,23 @@ export type CreateWarehouseRequest = {
 export type CreateVariantRequest = {
   productId: string;
   sku: string;
-  price: number;
+  sellingPrice: number;
   options?: Record<string, string>;
-  unitPrice?: number | null;
+  costPrice?: number | null;
   isEnrollmentPackage?: boolean;
 };
 
-export type CreateSlipRequest = {
+export type CreateSlipItemRequest = {
   sku: string;
   quantity: number;
+  unitCost?: number | null;
+};
+
+export type CreateSlipRequest = {
   type: InventorySlipType;
   warehouseCode?: string;
   locationNote?: string;
+  items: CreateSlipItemRequest[];
 };
 
 export type ListVariantsParams = {

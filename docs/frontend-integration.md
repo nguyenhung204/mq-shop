@@ -418,10 +418,23 @@ stateDiagram-v2
 
 ## 4. Module Product Listing (`003`) — Product ↔ Variant redesign
 
+### FE rename map (bắt buộc sửa type / form)
+
+| Cũ (FE đang có) | Mới |
+|-----------------|-----|
+| `variant.price` | `variant.sellingPrice` |
+| `variant.unitPrice` | `variant.costPrice` |
+| Create/update variant body `price` | `sellingPrice` |
+| Inventory create variant `unitPrice` | `costPrice` |
+| Slip body flat `{ sku, quantity, unitCost }` | `{ type, items:[{ sku, quantity, unitCost? }] }` + response `code`, `items[]` |
+
+**Product list/PDP card** vẫn có `price` / `minPrice` / `maxPrice` — đó là **derived** từ `min/max(sellingPrice)`, không phải cột DB, không editable.
+
+
 > **Breaking (FE phải sửa):**
-> - 1 Product = N Variants; **giá bán = `variant.price`**; **tồn = `variant.availableStock`**
+> - 1 Product = N Variants; **giá bán = `variant.sellingPrice`**; **tồn = `variant.availableStock`**
 > - Product **không còn** `price` / `stock` / `sku`
-> - Create bắt buộc `variants: [{ sku, price, options? }, …]` (min 1)
+> - Create bắt buộc `variants: [{ sku, sellingPrice, options? }, …]` (min 1)
 > - Ảnh **không** gửi URL trong JSON create — upload multipart sau create (giống avatar)
 > - Listing `price` = min variant; `stock` = sum variant; thêm `minPrice` / `maxPrice`
 > - Public PDP: `GET /products/listing/:productId`
@@ -430,12 +443,12 @@ stateDiagram-v2
 
 ```
 Product (title, description, category, images[], status, attributes)
-  └── Variant[] (sku, price, options?, images[], availableStock)
+  └── Variant[] (sku, sellingPrice, options?, images[], availableStock)
 ```
 
-- SP đơn giản (không options UI): vẫn tạo **1 default variant** với `sku` + `price`
+- SP đơn giản (không options UI): vẫn tạo **1 default variant** với `sku` + `sellingPrice`
 - Ảnh variant trống → FE fallback `product.images`
-- Checkout / PDP: dùng **selected `variant.price`**, không dùng product-level `price`
+- Checkout / PDP: dùng **selected `variant.sellingPrice`**, không dùng product-level `price`
 
 ---
 
@@ -482,7 +495,7 @@ Seed: `cat-electronics`, `cat-fashion`, `cat-home-living`, `cat-beauty`, `cat-to
 
 ```
 1. POST /products
-   { title, description, categoryId, attributes?, variants: [{ sku, price, options? }, ...] }
+   { title, description, categoryId, attributes?, variants: [{ sku, sellingPrice, options? }, ...] }
    → status PENDING, images=[], stock variants = 0
 
 2. POST /products/:productId/images   (multipart field "images")
@@ -503,7 +516,7 @@ Seed: `cat-electronics`, `cat-fashion`, `cat-home-living`, `cat-beauty`, `cat-to
   attributes?: object;
   variants: Array<{           // min 1
     sku: string;              // unique trong shop
-    price: number;            // giá bán ≥ 0
+    sellingPrice: number;     // giá bán ≥ 0
     options?: Record<string, string>;  // vd { size: "M", color: "black" }
   }>;
 }
@@ -526,10 +539,10 @@ Seed: `cat-electronics`, `cat-fashion`, `cat-home-living`, `cat-beauty`, `cat-to
 
 ```ts
 // POST /products/:productId/variants
-{ sku: string; price: number; options?: Record<string, string> }
+{ sku: string; sellingPrice: number; options?: Record<string, string> }
 
 // PATCH /products/:productId/variants/:variantId
-{ price?: number; options?: Record<string, string> | null }
+{ sellingPrice?: number; options?: Record<string, string> | null }
 ```
 
 Tồn kho **không** sửa ở đây — dùng inventory slips (module `004` bên dưới).
@@ -565,11 +578,11 @@ type ProductVariantView = {
   productId: string;
   shopId: string;
   sku: string;
-  price: number;                 // sell price SoT
+  sellingPrice: number;          // sell price SoT
   availableStock: number;
   options: Record<string, string> | null;
   images: string[];
-  unitPrice: number | null;      // giá nhập (inventory)
+  costPrice: number | null;        // giá nhập hiện tại trên SKU
   isEnrollmentPackage: boolean;
   createdAt: string;
   updatedAt: string;
@@ -599,13 +612,14 @@ type ProductView = {
 
 | Việc | Đúng | Sai |
 |------|------|-----|
-| Sửa **giá bán** | `PATCH /products/:id/variants/:variantId` `{ price }` | `PATCH /products/:id` với `price` (field đã bỏ) |
+| Sửa **giá bán** | `PATCH /products/:id/variants/:variantId` `{ sellingPrice }` | `PATCH /products/:id` với `price` (field đã bỏ) |
 | Sửa **tồn kho** | Inventory slip `POST /inventory/slips` rồi approve | Đổi `stock` / `availableStock` trên product PATCH |
 | Hiện giá trên list | Dùng `price` (= min) hoặc `minPrice`–`maxPrice` | Coi `product.price` là SoT checkout |
-| Checkout / chọn SKU | Dùng `variant.id` + `variant.price` | Dùng product-level `price` |
+| Checkout / chọn SKU | Dùng `variant.id` + `variant.sellingPrice` | Dùng product-level `price` |
 | Ảnh theo màu/size | `variant.images` nếu có, không thì `product.images` | Bắt buộc mọi variant có ảnh |
-| `unitPrice` | Chỉ seller/admin (giá nhập) | Hiện cho khách trên PDP |
-| Public PDP | Type riêng — **không** có `unitPrice`, `status`, `rejectionReason` | Reuse nguyên `ProductView` seller |
+| `costPrice` | Chỉ seller/admin (giá nhập trên SKU) | Hiện cho khách trên PDP |
+| Nhập hàng có giá | Slip `items[].unitCost` (per unit) | Chỉ ghi `costPrice` trên variant mà không qua slip |
+| Public PDP | Type riêng — **không** có `costPrice`, `status`, `rejectionReason` | Reuse nguyên `ProductView` seller |
 
 `product.price` / `product.stock` trên response là **derived** (min giá / tổng tồn) — tiện UI list, không phải field editable.
 
@@ -632,7 +646,7 @@ stateDiagram-v2
 
 **Sensitive → REJECTED về PENDING:**  
 product: `title`, `description`, `categoryId`, `attributes`, **images**  
-variant: **`price`**
+variant: **`sellingPrice`**
 
 | Code | UI |
 |------|-----|
@@ -709,7 +723,7 @@ Nếu `minPrice !== maxPrice` → hiện range / “Từ {minPrice}”.
     id: string;
     productId: string;
     sku: string;
-    price: number;
+    sellingPrice: number;
     availableStock: number;
     options: Record<string, string> | null;
     images: string[];
@@ -724,10 +738,10 @@ Nếu `minPrice !== maxPrice` → hiện range / “Từ {minPrice}”.
 
 **PDP rules:**
 
-1. User chọn variant → hiện `variant.price` + `availableStock`
+1. User chọn variant → hiện `variant.sellingPrice` + `availableStock`
 2. Ảnh: `variant.images.length ? variant.images : product.images`
-3. Checkout dùng `variant.id` / `variant.price`
-4. Public **không** có `unitPrice`, `status`, `rejectionReason`
+3. Checkout dùng `variant.id` / `variant.sellingPrice`
+4. Public **không** có `costPrice`, `status`, `rejectionReason`
 
 ---
 
@@ -756,9 +770,9 @@ Stock SoT = `variant.availableStock` — **chỉ đổi khi slip được APPROV
 {
   productId: string;   // bắt buộc — thuộc shop
   sku: string;
-  price: number;       // sell price bắt buộc
+  sellingPrice: number; // sell price bắt buộc
   options?: Record<string, string>;
-  unitPrice?: number | null;   // giá nhập
+  costPrice?: number | null;    // giá nhập trên SKU
   isEnrollmentPackage?: boolean;
 }
 // availableStock luôn bắt đầu 0 — nhập hàng bằng slip
@@ -770,16 +784,23 @@ Stock SoT = `variant.availableStock` — **chỉ đổi khi slip được APPROV
 
 ```ts
 {
-  sku: string;                 // phải tồn tại trong shop
-  quantity: number;            // ≥ 1
-  type: "IN" | "ADJUST_IN" | "ADJUST_OUT";
-  warehouseCode?: string;      // optional
+  type: "IN" | "ADJUST_IN" | "ADJUST_OUT";  // áp dụng cả phiếu
+  warehouseCode?: string;
   locationNote?: string;
+  items: Array<{
+    sku: string;                 // phải tồn tại trong shop
+    quantity: number;            // ≥ 1
+    unitCost?: number | null;    // giá nhập / unit của dòng (thường dùng cho IN)
+  }>; // min 1, không trùng SKU
 }
 ```
 
+> Header: `code` (auto `PN-YYYYMMDD-XXXX`), `createdByUserId`, `type`, `status`, kho/ghi chú.  
+> `unitCost` trên **từng item**. Approve **all-or-nothing**; mỗi item → 1 dòng `stock_ledger` (`slipItemId`). Khi approve `IN` / `ADJUST_IN` có `unitCost`, BE cập nhật `variant.costPrice` theo dòng.
+
+
 ```
-PENDING ──approve──► APPROVED  (stock thay đổi + ledger row)
+PENDING ──approve──► APPROVED  (stock ± tất cả items + N ledger rows)
 PENDING ──reject───► REJECTED  (stock không đổi)
 ```
 
@@ -789,8 +810,9 @@ PENDING ──reject───► REJECTED  (stock không đổi)
 | `WAREHOUSE_NOT_FOUND` | warehouseCode sai |
 | `VARIANT_NOT_FOUND` | SKU chưa có |
 | `VARIANT_SKU_TAKEN` | Trùng SKU |
+| `INVENTORY_SLIP_DUPLICATE_SKU` | Trùng SKU trong `items` |
 | `INVENTORY_SLIP_ALREADY_PROCESSED` | Approve/reject lại |
-| `INSUFFICIENT_STOCK` | ADJUST_OUT vượt tồn |
+| `INSUFFICIENT_STOCK` | ADJUST_OUT vượt tồn (rollback cả phiếu) |
 | `SHOP_NOT_ELIGIBLE` | Shop không đủ điều kiện |
 
 ### 5.2 Admin inventory
@@ -808,7 +830,7 @@ PENDING ──reject───► REJECTED  (stock không đổi)
 1. POST /products (+ variants) hoặc POST /products/:id/variants
 2. POST /products/:id/images
 3. (optional) POST /inventory/warehouses { code: "KHO-HN" }
-4. POST /inventory/slips { sku, quantity, type: "IN", warehouseCode? }
+4. POST /inventory/slips { type: "IN", items: [{ sku, quantity, unitCost? }, …], warehouseCode? }
 5. POST /inventory/slips/:id/approve   → availableStock tăng
 6. GET /inventory/ledger?sku=…
 7. GET /products/listing  → stock = SUM(variants)
@@ -831,12 +853,15 @@ PENDING ──reject───► REJECTED  (stock không đổi)
 
 - [ ] Gate theo shop status / suspended
 - [ ] Product list theo status
-- [ ] Create: `variants[]` bắt buộc; **không** root price/stock/images URL
+- [ ] Rename FE types: `sellingPrice` / `costPrice` (bỏ `variant.price` / `unitPrice`)
+- [ ] Create: `variants[]` bắt buộc với `sellingPrice`; **không** root price/stock/images URL
+- [ ] Slip multi-SKU: `{ type, items:[{sku,quantity,unitCost?}] }` (min 1)
+- [ ] Slip nhập hàng: gửi `unitCost` trên từng dòng khi biết giá nhập
 - [ ] Sau create: multipart `POST …/images`
 - [ ] Edit metadata `PATCH`; edit giá = `PATCH …/variants/:id`
 - [ ] Add SKU `POST …/variants`
 - [ ] Hide / unhide
-- [ ] REJECTED + rejectionReason + resubmit (đổi sensitive / upload ảnh / đổi variant.price)
+- [ ] REJECTED + rejectionReason + resubmit (đổi sensitive / upload ảnh / đổi variant.sellingPrice)
 - [ ] Inventory: warehouses, slips create/approve, ledger
 - [ ] Không sửa stock qua product PATCH
 

@@ -5,6 +5,7 @@ export type Locale = "vi" | "en" | "zh-TW" | "zh_TW";
 export type Role =
   | "BUYER"
   | "SELLER"
+  | "WAREHOUSE"
   | "ADMIN"
   | "SUPER_ADMIN"
   | "ACCOUNTANT";
@@ -73,22 +74,22 @@ export type ProductVariant = {
   shopId?: string;
   sku: string;
   /** Sell price (source of truth for checkout). */
-  price: number;
+  sellingPrice: number;
   availableStock: number;
   options?: Record<string, string> | null;
   images?: string[];
-  unitPrice?: number | null;
+  costPrice?: number | null;
   isEnrollmentPackage?: boolean;
   createdAt?: string;
   updatedAt?: string;
 };
 
-/** Public PDP variant — omits unitPrice / shop-only fields. */
+/** Public PDP variant — omits costPrice / shop-only fields. */
 export type PublicProductVariant = {
   id: string;
   productId: string;
   sku: string;
-  price: number;
+  sellingPrice: number;
   availableStock: number;
   options: Record<string, string> | null;
   images: string[];
@@ -123,7 +124,7 @@ export type ApiProduct = {
   name?: string;
   description?: string | null;
   categoryId?: string;
-  /** Derived: min(variant.price) — read-only convenience. */
+  /** Derived: min(variant.sellingPrice) — read-only convenience. */
   price?: number;
   minPrice?: number;
   maxPrice?: number;
@@ -153,7 +154,7 @@ export type CreateProductRequest = {
   attributes?: Record<string, unknown>;
   variants: Array<{
     sku: string;
-    price: number;
+    sellingPrice: number;
     options?: Record<string, string>;
   }>;
 };
@@ -167,12 +168,12 @@ export type UpdateProductRequest = {
 
 export type AddProductVariantRequest = {
   sku: string;
-  price: number;
+  sellingPrice: number;
   options?: Record<string, string>;
 };
 
 export type UpdateProductVariantRequest = {
-  price?: number;
+  sellingPrice?: number;
   options?: Record<string, string> | null;
 };
 

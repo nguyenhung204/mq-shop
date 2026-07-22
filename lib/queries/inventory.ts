@@ -86,6 +86,8 @@ function inventoryErrorMessage(e: unknown, fallback: string): string {
         return "Inventory slip not found.";
       case "INVENTORY_SLIP_ALREADY_PROCESSED":
         return "This slip was already approved or rejected.";
+      case "INVENTORY_SLIP_DUPLICATE_SKU":
+        return "Duplicate SKU in slip items — each SKU can appear only once.";
       case "INSUFFICIENT_STOCK":
         return "Not enough stock for this adjustment.";
       case "SHOP_NOT_ELIGIBLE":

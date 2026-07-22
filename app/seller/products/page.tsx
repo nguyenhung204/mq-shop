@@ -37,7 +37,7 @@ type VariantDraft = {
   key: string;
   id?: string;
   sku: string;
-  price: string;
+  sellingPrice: string;
   availableStock?: number;
 };
 
@@ -99,13 +99,13 @@ function variantsOf(p: ApiProduct): ProductVariant[] {
 
 function draftFromVariants(variants: ProductVariant[]): VariantDraft[] {
   if (!variants.length) {
-    return [{ key: crypto.randomUUID(), sku: "", price: "" }];
+    return [{ key: crypto.randomUUID(), sku: "", sellingPrice: "" }];
   }
   return variants.map((v) => ({
     key: v.id,
     id: v.id,
     sku: v.sku,
-    price: String(v.price),
+    sellingPrice: String(v.sellingPrice),
     availableStock: v.availableStock,
   }));
 }
@@ -142,7 +142,7 @@ function ProductsInner() {
     description: "",
   });
   const [variants, setVariants] = useState<VariantDraft[]>([
-    { key: crypto.randomUUID(), sku: "", price: "19.99" },
+    { key: crypto.randomUUID(), sku: "", sellingPrice: "19.99" },
   ]);
 
   const resetForm = () => {
@@ -153,7 +153,7 @@ function ProductsInner() {
     setRemovedUrls([]);
     setNewFiles([]);
     setForm({ categoryId: "", title: "", description: "" });
-    setVariants([{ key: crypto.randomUUID(), sku: "", price: "19.99" }]);
+    setVariants([{ key: crypto.randomUUID(), sku: "", sellingPrice: "19.99" }]);
   };
 
   const openCreate = () => {
@@ -163,7 +163,7 @@ function ProductsInner() {
     setRemovedUrls([]);
     setNewFiles([]);
     setForm({ categoryId: "", title: "", description: "" });
-    setVariants([{ key: crypto.randomUUID(), sku: "", price: "19.99" }]);
+    setVariants([{ key: crypto.randomUUID(), sku: "", sellingPrice: "19.99" }]);
     setShowForm(true);
   };
 
@@ -223,27 +223,27 @@ function ProductsInner() {
   };
 
   const addVariantRow = () => {
-    setVariants((prev) => [...prev, { key: crypto.randomUUID(), sku: "", price: "" }]);
+    setVariants((prev) => [...prev, { key: crypto.randomUUID(), sku: "", sellingPrice: "" }]);
   };
 
   const removeVariantRow = (key: string) => {
     setVariants((prev) => (prev.length <= 1 ? prev : prev.filter((v) => v.key !== key)));
   };
 
-  const validateVariants = (): { sku: string; price: number }[] | null => {
-    const cleaned: { sku: string; price: number }[] = [];
+  const validateVariants = (): { sku: string; sellingPrice: number }[] | null => {
+    const cleaned: { sku: string; sellingPrice: number }[] = [];
     for (const v of variants) {
       const sku = v.sku.trim();
-      const price = Number(v.price);
+      const sellingPrice = Number(v.sellingPrice);
       if (!sku) {
         setFormError("Each variant needs a SKU.");
         return null;
       }
-      if (!Number.isFinite(price) || price < 0) {
+      if (!Number.isFinite(sellingPrice) || sellingPrice < 0) {
         setFormError(`Invalid sell price for SKU “${sku}”.`);
         return null;
       }
-      cleaned.push({ sku, price });
+      cleaned.push({ sku, sellingPrice });
     }
     if (!cleaned.length) {
       setFormError("Add at least one variant (SKU + sell price).");
@@ -278,20 +278,20 @@ function ProductsInner() {
 
         const original = variantsOf(editing);
         for (const draft of variants) {
-          const price = Number(draft.price);
+          const sellingPrice = Number(draft.sellingPrice);
           if (draft.id) {
             const prev = original.find((o) => o.id === draft.id);
-            if (prev && prev.price !== price) {
+            if (prev && prev.sellingPrice !== sellingPrice) {
               await updateVariant.mutateAsync({
                 productId: editing.id,
                 variantId: draft.id,
-                body: { price },
+                body: { sellingPrice },
               });
             }
           } else if (draft.sku.trim()) {
             await addVariant.mutateAsync({
               productId: editing.id,
-              body: { sku: draft.sku.trim(), price },
+              body: { sku: draft.sku.trim(), sellingPrice },
             });
           }
         }
@@ -463,8 +463,8 @@ function ProductsInner() {
                     step="0.01"
                     min="0"
                     placeholder="Sell price"
-                    value={v.price}
-                    onChange={(e) => updateVariantDraft(v.key, { price: e.target.value })}
+                    value={v.sellingPrice}
+                    onChange={(e) => updateVariantDraft(v.key, { sellingPrice: e.target.value })}
                     required
                   />
                   <span className="text-xs text-mq-text-muted whitespace-nowrap">

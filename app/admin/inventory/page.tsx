@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check, X } from "lucide-react";
 import type { InventorySlip, InventorySlipStatus } from "@/lib/api/inventory";
+import { formatMoney } from "@/lib/api/utils";
 import {
   useAdminApproveSlip,
   useAdminInventorySlips,
@@ -34,6 +35,15 @@ function formatWhen(iso: string | null | undefined): string {
   } catch {
     return iso;
   }
+}
+
+function slipItemsSummary(s: InventorySlip): string {
+  const lines = s.items ?? [];
+  if (!lines.length) return "No items";
+  const first = lines[0];
+  const head = `${first.sku} ×${first.quantity}`;
+  if (lines.length === 1) return head;
+  return `${head} +${lines.length - 1} more`;
 }
 
 function InventoryInner() {
@@ -91,14 +101,24 @@ function InventoryInner() {
             >
               <div className="min-w-[200px] flex-1 space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-medium">{s.sku}</span>
+                  <span className="font-medium font-mono text-xs">{s.code}</span>
                   <span className={statusBadge(s.status)}>{s.status}</span>
                   <span className="text-xs text-mq-text-muted">{s.type}</span>
                 </div>
-                <p className="text-mq-text-secondary">
-                  Qty {s.quantity}
-                  {s.warehouseCode ? ` · ${s.warehouseCode}` : ""}
-                </p>
+                <p className="text-mq-text-secondary">{slipItemsSummary(s)}</p>
+                {(s.items?.length ?? 0) > 0 ? (
+                  <ul className="text-xs text-mq-text-muted space-y-0.5">
+                    {s.items.map((it) => (
+                      <li key={it.id}>
+                        {it.sku} ×{it.quantity}
+                        {it.unitCost != null ? ` @ ${formatMoney(it.unitCost)}` : ""}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+                {s.warehouseCode ? (
+                  <p className="text-xs text-mq-text-muted">Warehouse {s.warehouseCode}</p>
+                ) : null}
                 {s.locationNote ? (
                   <p className="text-xs text-mq-text-muted">{s.locationNote}</p>
                 ) : null}

@@ -57,7 +57,7 @@ export function mapPublicProductDetail(p: PublicProductDetail): Product {
   const variants = (p.variants ?? []).map((v) => ({
     id: v.id,
     sku: v.sku,
-    price: Number(v.price) || 0,
+    price: Number(v.sellingPrice) || 0,
     availableStock: Math.max(0, v.availableStock ?? 0),
     options: v.options ?? null,
     images: Array.isArray(v.images) ? v.images.filter(Boolean) : [],
@@ -107,7 +107,7 @@ export function mapApiProduct(p: BeProduct, locale = "vi"): Product {
   const variants = (p.variants ?? []).map((v) => ({
     id: v.id,
     sku: v.sku,
-    price: Number(v.price) || 0,
+    price: Number(v.sellingPrice) || 0,
     availableStock: Math.max(0, v.availableStock ?? 0),
     options: v.options ?? null,
     images: Array.isArray(v.images) ? v.images.filter(Boolean) : [],

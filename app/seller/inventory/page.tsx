@@ -174,8 +174,8 @@ function VariantsTab() {
   const [showForm, setShowForm] = useState(false);
   const [productId, setProductId] = useState("");
   const [sku, setSku] = useState("");
-  const [price, setPrice] = useState("");
-  const [unitPrice, setUnitPrice] = useState("");
+  const [sellingPrice, setSellingPrice] = useState("");
+  const [costPrice, setCostPrice] = useState("");
   const [isEnrollmentPackage, setIsEnrollmentPackage] = useState(false);
 
   const { data: productsPage } = useSellerProducts(undefined, 1, 100);
@@ -199,19 +199,19 @@ function VariantsTab() {
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const trimmedSku = sku.trim();
-    const sell = Number(price);
+    const sell = Number(sellingPrice);
     if (!productId || !trimmedSku || !Number.isFinite(sell) || sell < 0) return;
-    const cost = unitPrice.trim() === "" ? undefined : Number(unitPrice);
+    const cost = costPrice.trim() === "" ? undefined : Number(costPrice);
     await createVariant.mutateAsync({
       productId,
       sku: trimmedSku,
-      price: sell,
-      unitPrice: cost != null && !Number.isNaN(cost) ? cost : undefined,
+      sellingPrice: sell,
+      costPrice: cost != null && !Number.isNaN(cost) ? cost : undefined,
       isEnrollmentPackage,
     });
     setSku("");
-    setPrice("");
-    setUnitPrice("");
+    setSellingPrice("");
+    setCostPrice("");
     setIsEnrollmentPackage(false);
     setShowForm(false);
     setPage(1);
@@ -292,8 +292,8 @@ function VariantsTab() {
             min="0"
             step="0.01"
             placeholder="Sell price"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
+            value={sellingPrice}
+            onChange={(e) => setSellingPrice(e.target.value)}
             required
           />
           <input
@@ -301,9 +301,9 @@ function VariantsTab() {
             type="number"
             min="0"
             step="0.01"
-            placeholder="Unit cost (optional)"
-            value={unitPrice}
-            onChange={(e) => setUnitPrice(e.target.value)}
+            placeholder="Cost price (optional)"
+            value={costPrice}
+            onChange={(e) => setCostPrice(e.target.value)}
           />
           <label className="flex items-center gap-2 text-sm">
             <input
@@ -338,7 +338,7 @@ function VariantsTab() {
                   <th className="py-2 pr-3 font-medium">Product</th>
                   <th className="py-2 pr-3 font-medium">Sell price</th>
                   <th className="py-2 pr-3 font-medium">Available</th>
-                  <th className="py-2 pr-3 font-medium">Unit cost</th>
+                  <th className="py-2 pr-3 font-medium">Cost price</th>
                   <th className="py-2 font-medium">Flags</th>
                 </tr>
               </thead>
@@ -349,10 +349,10 @@ function VariantsTab() {
                     <td className="py-2.5 pr-3 text-xs text-mq-text-secondary">
                       {productTitle(v.productId)}
                     </td>
-                    <td className="py-2.5 pr-3">{formatMoney(v.price)}</td>
+                    <td className="py-2.5 pr-3">{formatMoney(v.sellingPrice)}</td>
                     <td className="py-2.5 pr-3">{v.availableStock}</td>
                     <td className="py-2.5 pr-3 text-mq-text-secondary">
-                      {v.unitPrice != null ? formatMoney(v.unitPrice) : "—"}
+                      {v.costPrice != null ? formatMoney(v.costPrice) : "—"}
                     </td>
                     <td className="py-2.5 text-xs text-mq-text-muted">
                       {v.isEnrollmentPackage ? "Enrollment pkg" : "—"}
@@ -369,17 +369,28 @@ function VariantsTab() {
   );
 }
 
+function slipItemsSummary(s: InventorySlip): string {
+  const lines = s.items ?? [];
+  if (!lines.length) return "—";
+  const first = lines[0];
+  const head = `${first.sku} ×${first.quantity}`;
+  if (lines.length === 1) return head;
+  return `${head} +${lines.length - 1}`;
+}
+
+function emptySlipLine() {
+  return { key: crypto.randomUUID(), sku: "", quantity: "1", unitCost: "" };
+}
+
 function SlipsTab() {
   const [status, setStatus] = useState<InventorySlipStatus | "">("");
   const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({
-    sku: "",
-    quantity: "1",
-    type: "IN" as InventorySlipType,
-    warehouseCode: "",
-    locationNote: "",
-  });
+  const [formError, setFormError] = useState("");
+  const [type, setType] = useState<InventorySlipType>("IN");
+  const [warehouseCode, setWarehouseCode] = useState("");
+  const [locationNote, setLocationNote] = useState("");
+  const [lines, setLines] = useState(() => [emptySlipLine()]);
 
   const { data: warehouses = [] } = useWarehouses();
   const { data: variantPage } = useInventoryVariants({ pageSize: 100 });
@@ -400,31 +411,70 @@ function SlipsTab() {
   const meta = data?.meta;
   const busy = createSlip.isPending || approveSlip.isPending || rejectSlip.isPending;
 
+  const updateLine = (
+    key: string,
+    patch: Partial<{ sku: string; quantity: string; unitCost: string }>,
+  ) => {
+    setLines((prev) => prev.map((l) => (l.key === key ? { ...l, ...patch } : l)));
+  };
+
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    await createSlip.mutateAsync({
-      sku: form.sku.trim(),
-      quantity: Number(form.quantity),
-      type: form.type,
-      warehouseCode: form.warehouseCode || undefined,
-      locationNote: form.locationNote.trim() || undefined,
-    });
-    setForm({
-      sku: "",
-      quantity: "1",
-      type: "IN",
-      warehouseCode: "",
-      locationNote: "",
-    });
-    setShowForm(false);
-    setStatus("PENDING");
-    setPage(1);
+    setFormError("");
+    const skus = lines.map((l) => l.sku.trim()).filter(Boolean);
+    if (!skus.length) {
+      setFormError("Add at least one SKU line.");
+      return;
+    }
+    if (new Set(skus).size !== skus.length) {
+      setFormError("Duplicate SKU in slip items — each SKU can appear only once.");
+      return;
+    }
+    const payloadItems = [];
+    for (const line of lines) {
+      const sku = line.sku.trim();
+      if (!sku) continue;
+      const quantity = Number(line.quantity);
+      if (!Number.isInteger(quantity) || quantity < 1) {
+        setFormError(`Invalid quantity for SKU “${sku}”.`);
+        return;
+      }
+      const costRaw = line.unitCost.trim();
+      const unitCost = costRaw === "" ? undefined : Number(costRaw);
+      if (unitCost != null && (!Number.isFinite(unitCost) || unitCost < 0)) {
+        setFormError(`Invalid unit cost for SKU “${sku}”.`);
+        return;
+      }
+      payloadItems.push({
+        sku,
+        quantity,
+        unitCost,
+      });
+    }
+    try {
+      await createSlip.mutateAsync({
+        type,
+        warehouseCode: warehouseCode || undefined,
+        locationNote: locationNote.trim() || undefined,
+        items: payloadItems,
+      });
+      setType("IN");
+      setWarehouseCode("");
+      setLocationNote("");
+      setLines([emptySlipLine()]);
+      setShowForm(false);
+      setStatus("PENDING");
+      setPage(1);
+    } catch {
+      // toast handled in mutation
+    }
   };
 
   return (
     <div className="space-y-4">
       <p className="text-sm text-mq-text-muted">
-        Slips are stock-change requests. Creating a slip does not change stock until you approve it.
+        Slips are multi-SKU stock-change requests. Creating a slip does not change stock until you
+        approve it. Optional unit cost on IN lines updates SKU cost price on approve.
       </p>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -452,60 +502,109 @@ function SlipsTab() {
       </div>
 
       {showForm ? (
-        <form className="mq-card p-4 grid sm:grid-cols-2 gap-3" onSubmit={(e) => void onSubmit(e)}>
-          <select
-            className="mq-input"
-            value={form.sku}
-            onChange={(e) => setForm({ ...form, sku: e.target.value })}
-            required
-          >
-            <option value="">Select SKU</option>
-            {skuOptions.map((sku) => (
-              <option key={sku} value={sku}>
-                {sku}
-              </option>
+        <form className="mq-card p-4 space-y-3" onSubmit={(e) => void onSubmit(e)}>
+          <div className="grid sm:grid-cols-2 gap-3">
+            <select
+              className="mq-input"
+              value={type}
+              onChange={(e) => setType(e.target.value as InventorySlipType)}
+            >
+              <option value="IN">IN — goods received</option>
+              <option value="ADJUST_IN">ADJUST_IN — increase</option>
+              <option value="ADJUST_OUT">ADJUST_OUT — write-off</option>
+            </select>
+            <select
+              className="mq-input"
+              value={warehouseCode}
+              onChange={(e) => setWarehouseCode(e.target.value)}
+            >
+              <option value="">Warehouse (optional)</option>
+              {warehouses.map((w) => (
+                <option key={w.id} value={w.code}>
+                  {w.code}
+                </option>
+              ))}
+            </select>
+            <input
+              className="mq-input sm:col-span-2"
+              placeholder="Location note (optional)"
+              value={locationNote}
+              maxLength={300}
+              onChange={(e) => setLocationNote(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-sm font-semibold">Items</h3>
+              <button
+                type="button"
+                className="mq-btn mq-btn-outline text-xs"
+                onClick={() => setLines((prev) => [...prev, emptySlipLine()])}
+              >
+                Add line
+              </button>
+            </div>
+            {lines.map((line) => (
+              <div
+                key={line.key}
+                className="grid sm:grid-cols-[1fr_5rem_7rem_auto] gap-2 items-center"
+              >
+                <select
+                  className="mq-input"
+                  value={line.sku}
+                  onChange={(e) => updateLine(line.key, { sku: e.target.value })}
+                  required
+                >
+                  <option value="">Select SKU</option>
+                  {skuOptions.map((sku) => (
+                    <option key={sku} value={sku}>
+                      {sku}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  className="mq-input"
+                  type="number"
+                  min={1}
+                  step={1}
+                  aria-label="Quantity"
+                  value={line.quantity}
+                  onChange={(e) => updateLine(line.key, { quantity: e.target.value })}
+                  required
+                />
+                <input
+                  className="mq-input"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  placeholder="Unit cost"
+                  aria-label="Unit cost"
+                  value={line.unitCost}
+                  onChange={(e) => updateLine(line.key, { unitCost: e.target.value })}
+                />
+                {lines.length > 1 ? (
+                  <button
+                    type="button"
+                    className="mq-icon-btn text-mq-text-muted"
+                    aria-label="Remove line"
+                    onClick={() =>
+                      setLines((prev) => prev.filter((l) => l.key !== line.key))
+                    }
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <span />
+                )}
+              </div>
             ))}
-          </select>
-          <input
-            className="mq-input"
-            type="number"
-            min={1}
-            step={1}
-            value={form.quantity}
-            onChange={(e) => setForm({ ...form, quantity: e.target.value })}
-            required
-          />
-          <select
-            className="mq-input"
-            value={form.type}
-            onChange={(e) =>
-              setForm({ ...form, type: e.target.value as InventorySlipType })
-            }
-          >
-            <option value="IN">IN — goods received</option>
-            <option value="ADJUST_IN">ADJUST_IN — increase</option>
-            <option value="ADJUST_OUT">ADJUST_OUT — write-off</option>
-          </select>
-          <select
-            className="mq-input"
-            value={form.warehouseCode}
-            onChange={(e) => setForm({ ...form, warehouseCode: e.target.value })}
-          >
-            <option value="">Warehouse (optional)</option>
-            {warehouses.map((w) => (
-              <option key={w.id} value={w.code}>
-                {w.code}
-              </option>
-            ))}
-          </select>
-          <input
-            className="mq-input sm:col-span-2"
-            placeholder="Location note (optional)"
-            value={form.locationNote}
-            maxLength={300}
-            onChange={(e) => setForm({ ...form, locationNote: e.target.value })}
-          />
-          <button className="mq-btn mq-btn-primary sm:col-span-2" disabled={createSlip.isPending}>
+          </div>
+
+          {formError ? (
+            <p className="w-full text-xs text-mq-text-muted">{formError}</p>
+          ) : null}
+          <button className="mq-btn mq-btn-primary w-full sm:w-auto" disabled={createSlip.isPending}>
             {createSlip.isPending ? "Creating…" : "Create slip"}
           </button>
         </form>
@@ -526,9 +625,9 @@ function SlipsTab() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-mq-text-muted border-b border-mq-border">
-                  <th className="py-2 pr-3 font-medium">SKU</th>
+                  <th className="py-2 pr-3 font-medium">Code</th>
                   <th className="py-2 pr-3 font-medium">Type</th>
-                  <th className="py-2 pr-3 font-medium">Qty</th>
+                  <th className="py-2 pr-3 font-medium">Items</th>
                   <th className="py-2 pr-3 font-medium">Status</th>
                   <th className="py-2 pr-3 font-medium">Warehouse</th>
                   <th className="py-2 pr-3 font-medium">Created</th>
@@ -538,9 +637,25 @@ function SlipsTab() {
               <tbody>
                 {items.map((s: InventorySlip) => (
                   <tr key={s.id} className="border-b border-mq-border/60 align-top">
-                    <td className="py-2.5 pr-3 font-medium">{s.sku}</td>
+                    <td className="py-2.5 pr-3 font-medium font-mono text-xs">{s.code}</td>
                     <td className="py-2.5 pr-3 text-xs">{slipTypeLabel(s.type)}</td>
-                    <td className="py-2.5 pr-3">{s.quantity}</td>
+                    <td className="py-2.5 pr-3">
+                      <span className="font-medium">{slipItemsSummary(s)}</span>
+                      {(s.items?.length ?? 0) > 1 ? (
+                        <ul className="mt-1 text-xs text-mq-text-muted space-y-0.5">
+                          {s.items.map((it) => (
+                            <li key={it.id}>
+                              {it.sku} ×{it.quantity}
+                              {it.unitCost != null ? ` @ ${formatMoney(it.unitCost)}` : ""}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : s.items?.[0]?.unitCost != null ? (
+                        <span className="block text-xs text-mq-text-muted mt-0.5">
+                          @ {formatMoney(s.items[0].unitCost)}
+                        </span>
+                      ) : null}
+                    </td>
                     <td className="py-2.5 pr-3">
                       <span className={slipStatusBadge(s.status)}>{s.status}</span>
                     </td>
@@ -611,7 +726,7 @@ function LedgerTab() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-mq-text-muted">
-        Immutable history. Each approved slip writes one ledger row. Use{" "}
+        Immutable history. Each approved slip writes one ledger row per item. Use{" "}
         <code>quantityAfter</code> as the historical stock figure.
       </p>
 
@@ -748,7 +863,7 @@ function InventoryInner() {
 
 export default function SellerInventoryPage() {
   return (
-    <AuthGuard roles={["SELLER"]}>
+    <AuthGuard roles={["SELLER", "WAREHOUSE"]}>
       <InventoryInner />
     </AuthGuard>
   );
