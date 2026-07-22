@@ -25,7 +25,7 @@ export default function SellerPage() {
       {[
         ["/seller/shop", "My shop"],
         ["/seller/products", "Manage products"],
-        ["/seller/inventory", "Warehouses & stock"],
+        ["/seller/inventory", "Warehouses, SKUs & slips"],
         ["/seller/orders", "Sales orders"],
         ["/seller/rma", "Confirm RMA stock"],
         ["/seller/materials", "Marketing materials"],

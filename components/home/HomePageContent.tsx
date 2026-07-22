@@ -10,6 +10,7 @@ import type { ApiCategory } from "@/lib/api/types";
 import type { Product } from "@/lib/data/products";
 import { categoryImages, miscImages } from "@/lib/images";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { HeroSlider } from "@/components/home/HeroSlider";
 import { CategoryCard } from "@/components/ui/ProductCard";
 import { ProductCarousel } from "@/components/ui/ProductCarousel";
 import { Container, SectionHeading } from "@/components/ui/shared";
@@ -86,6 +87,8 @@ export function HomePageContent() {
 
   return (
     <>
+      <HeroSlider />
+
       <section className="pt-10 pb-14 md:pt-14 md:pb-20">
         <Container>
           {loadingCats ? (

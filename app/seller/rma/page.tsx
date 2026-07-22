@@ -72,7 +72,10 @@ function SellerRmaInner() {
                 >
                   <option value="">Warehouse</option>
                   {warehouses.map((w) => (
-                    <option key={w.id} value={w.id}>{w.name}</option>
+                    <option key={w.id} value={w.id}>
+                      {w.code}
+                      {w.address ? ` — ${w.address}` : ""}
+                    </option>
                   ))}
                 </select>
                 <input className="mq-input" placeholder="SKU" required value={forms[r.id]?.sku || ""} onChange={(e) => updateForm(r.id, { sku: e.target.value })} />

@@ -34,7 +34,10 @@ function titleFromPath(pathname: string): { title: string; desc?: string } {
     return { title: "Products", desc: "Create and manage your catalog." };
   }
   if (pathname.startsWith("/seller/inventory")) {
-    return { title: "Inventory", desc: "Warehouses and stock requests." };
+    return {
+      title: "Inventory",
+      desc: "Warehouses, SKUs, slips, and stock ledger.",
+    };
   }
   if (pathname.startsWith("/seller/orders")) {
     return { title: "Sales orders", desc: "Orders placed for your shop." };

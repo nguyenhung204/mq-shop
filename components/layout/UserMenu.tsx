@@ -44,7 +44,7 @@ function UserAvatar({ user }: { user: AuthUser }) {
 
 export function UserMenu() {
   const { t } = useLanguage();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, hasRole } = useAuth();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -125,6 +125,16 @@ export function UserMenu() {
         >
           {t("account.myProfile")}
         </Link>
+        {hasRole("SELLER") ? (
+          <Link
+            href="/seller"
+            role="menuitem"
+            className="mq-user-menu-item"
+            onClick={() => setOpen(false)}
+          >
+            Seller Center
+          </Link>
+        ) : null}
         <button
           type="button"
           role="menuitem"

@@ -160,35 +160,22 @@ export const sellerApi = {
       note?: string;
     },
   ) => api.put(`/seller/rma/${id}/confirm-stock-return`, body),
-  inventoryRequests: (status?: string) =>
-    api.get("/seller/inventory/requests", { query: { status } }),
-  approveInventory: (id: string) =>
-    api.put(`/seller/inventory/requests/${id}/approve`, {}),
-  rejectInventory: (id: string, body: { reason: string }) =>
-    api.put(`/seller/inventory/requests/${id}/reject`, body),
   landingCost: (productId: string) =>
     api.get("/seller/landing-cost", { query: { product_id: productId, productId } }),
 };
 
-export const inventoryApi = {
-  warehouses: () => api.get("/warehouses"),
-  createWarehouse: (body: {
-    name: string;
-    addressText: string;
-    googleMapsUrl?: string;
-  }) => api.post("/warehouses", body),
-  updateWarehouse: (id: string, body: unknown) => api.put(`/warehouses/${id}`, body),
-  list: (query?: { is_low_stock?: boolean }) => api.get("/inventory", { query }),
-  createRequest: (body: {
-    warehouseId: string;
-    sku: string;
-    quantity: number;
-    requestType: "IN" | "ADJUST_IN" | "ADJUST_OUT";
-    reason?: string;
-    evidenceDocumentUrl?: string;
-  }) => api.post("/inventory/requests", body),
-  requests: () => api.get("/inventory/requests"),
-};
+export { inventoryApi, adminInventoryApi } from "./inventory";
+export type {
+  Warehouse,
+  InventoryVariant,
+  InventorySlip,
+  InventorySlipStatus,
+  InventorySlipType,
+  StockLedgerEntry,
+  CreateWarehouseRequest,
+  CreateVariantRequest,
+  CreateSlipRequest,
+} from "./inventory";
 
 export const walletApi = {
   affiliateLink: () => api.get<{ code: string; link?: string }>("/wallet/affiliate-link"),
