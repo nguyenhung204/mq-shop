@@ -176,6 +176,7 @@ function VariantsTab() {
   const [sku, setSku] = useState("");
   const [sellingPrice, setSellingPrice] = useState("");
   const [costPrice, setCostPrice] = useState("");
+  const [optionsText, setOptionsText] = useState("");
   const [isEnrollmentPackage, setIsEnrollmentPackage] = useState(false);
 
   const { data: productsPage } = useSellerProducts(undefined, 1, 100);
@@ -202,16 +203,31 @@ function VariantsTab() {
     const sell = Number(sellingPrice);
     if (!productId || !trimmedSku || !Number.isFinite(sell) || sell < 0) return;
     const cost = costPrice.trim() === "" ? undefined : Number(costPrice);
+    let options: Record<string, string> | undefined;
+    const trimmedOpts = optionsText.trim();
+    if (trimmedOpts) {
+      options = {};
+      for (const part of trimmedOpts.split(/[,;]/)) {
+        const piece = part.trim();
+        if (!piece) continue;
+        const m = piece.match(/^([^=:]+)\s*[=:]\s*(.+)$/);
+        if (!m) return;
+        options[m[1].trim()] = m[2].trim();
+      }
+      if (!Object.keys(options).length) options = undefined;
+    }
     await createVariant.mutateAsync({
       productId,
       sku: trimmedSku,
       sellingPrice: sell,
       costPrice: cost != null && !Number.isNaN(cost) ? cost : undefined,
+      options,
       isEnrollmentPackage,
     });
     setSku("");
     setSellingPrice("");
     setCostPrice("");
+    setOptionsText("");
     setIsEnrollmentPackage(false);
     setShowForm(false);
     setPage(1);
@@ -304,6 +320,12 @@ function VariantsTab() {
             placeholder="Cost price (optional)"
             value={costPrice}
             onChange={(e) => setCostPrice(e.target.value)}
+          />
+          <input
+            className="mq-input sm:col-span-2"
+            placeholder="Options (optional) — size=M, color=black"
+            value={optionsText}
+            onChange={(e) => setOptionsText(e.target.value)}
           />
           <label className="flex items-center gap-2 text-sm">
             <input

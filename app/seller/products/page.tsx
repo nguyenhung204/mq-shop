@@ -11,12 +11,14 @@ import {
   useCategories,
   useCreateSellerProduct,
   useDeleteProductImages,
+  useDeleteVariantImages,
   useHideSellerProduct,
   useSellerProducts,
   useUnhideSellerProduct,
   useUpdateSellerProduct,
   useUpdateSellerVariant,
   useUploadProductImages,
+  useUploadVariantImages,
 } from "@/lib/queries/seller";
 import type { ApiProduct, ProductVariant } from "@/lib/api/types";
 import { AuthGuard } from "@/components/guards/AuthGuard";
@@ -38,7 +40,10 @@ type VariantDraft = {
   id?: string;
   sku: string;
   sellingPrice: string;
+  /** Compact `size=M, color=black` — parsed to Record on save. */
+  optionsText: string;
   availableStock?: number;
+  images?: string[];
 };
 
 function reasonText(reason: ApiProduct["rejectionReason"]): string {
@@ -52,6 +57,47 @@ function productImages(p: ApiProduct): string[] {
   return p.images
     .map((img) => (typeof img === "string" ? img : img?.url || ""))
     .filter(Boolean);
+}
+
+function formatOptionsText(opts: Record<string, string> | null | undefined): string {
+  if (!opts || !Object.keys(opts).length) return "";
+  return Object.entries(opts)
+    .map(([k, v]) => `${k}=${v}`)
+    .join(", ");
+}
+
+/** Parse `size=M, color=black` or `size:M; color:black`. Empty → undefined. */
+function parseOptionsText(
+  raw: string,
+): { ok: true; options?: Record<string, string> } | { ok: false; error: string } {
+  const trimmed = raw.trim();
+  if (!trimmed) return { ok: true, options: undefined };
+  const out: Record<string, string> = {};
+  for (const part of trimmed.split(/[,;]/)) {
+    const piece = part.trim();
+    if (!piece) continue;
+    const m = piece.match(/^([^=:]+)\s*[=:]\s*(.+)$/);
+    if (!m) {
+      return {
+        ok: false,
+        error: `Invalid options “${piece}”. Use key=value (e.g. size=M, color=black).`,
+      };
+    }
+    const key = m[1].trim();
+    const value = m[2].trim();
+    if (!key || !value) {
+      return { ok: false, error: "Option key and value cannot be empty." };
+    }
+    out[key] = value;
+  }
+  return { ok: true, options: Object.keys(out).length ? out : undefined };
+}
+
+function optionsEqual(
+  a: Record<string, string> | null | undefined,
+  b: Record<string, string> | null | undefined,
+): boolean {
+  return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 }
 
 function statusLabel(status: ApiProduct["status"]): string {
@@ -99,14 +145,16 @@ function variantsOf(p: ApiProduct): ProductVariant[] {
 
 function draftFromVariants(variants: ProductVariant[]): VariantDraft[] {
   if (!variants.length) {
-    return [{ key: crypto.randomUUID(), sku: "", sellingPrice: "" }];
+    return [{ key: crypto.randomUUID(), sku: "", sellingPrice: "", optionsText: "" }];
   }
   return variants.map((v) => ({
     key: v.id,
     id: v.id,
     sku: v.sku,
     sellingPrice: String(v.sellingPrice),
+    optionsText: formatOptionsText(v.options),
     availableStock: v.availableStock,
+    images: Array.isArray(v.images) ? v.images.filter(Boolean) : [],
   }));
 }
 
@@ -129,6 +177,8 @@ function ProductsInner() {
   const unhideProduct = useUnhideSellerProduct();
   const uploadImages = useUploadProductImages();
   const deleteImages = useDeleteProductImages();
+  const uploadVariantImages = useUploadVariantImages();
+  const deleteVariantImages = useDeleteVariantImages();
 
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<ApiProduct | null>(null);
@@ -142,7 +192,7 @@ function ProductsInner() {
     description: "",
   });
   const [variants, setVariants] = useState<VariantDraft[]>([
-    { key: crypto.randomUUID(), sku: "", sellingPrice: "19.99" },
+    { key: crypto.randomUUID(), sku: "", sellingPrice: "19.99", optionsText: "" },
   ]);
 
   const resetForm = () => {
@@ -153,7 +203,9 @@ function ProductsInner() {
     setRemovedUrls([]);
     setNewFiles([]);
     setForm({ categoryId: "", title: "", description: "" });
-    setVariants([{ key: crypto.randomUUID(), sku: "", sellingPrice: "19.99" }]);
+    setVariants([
+      { key: crypto.randomUUID(), sku: "", sellingPrice: "19.99", optionsText: "" },
+    ]);
   };
 
   const openCreate = () => {
@@ -163,7 +215,9 @@ function ProductsInner() {
     setRemovedUrls([]);
     setNewFiles([]);
     setForm({ categoryId: "", title: "", description: "" });
-    setVariants([{ key: crypto.randomUUID(), sku: "", sellingPrice: "19.99" }]);
+    setVariants([
+      { key: crypto.randomUUID(), sku: "", sellingPrice: "19.99", optionsText: "" },
+    ]);
     setShowForm(true);
   };
 
@@ -223,15 +277,24 @@ function ProductsInner() {
   };
 
   const addVariantRow = () => {
-    setVariants((prev) => [...prev, { key: crypto.randomUUID(), sku: "", sellingPrice: "" }]);
+    setVariants((prev) => [
+      ...prev,
+      { key: crypto.randomUUID(), sku: "", sellingPrice: "", optionsText: "" },
+    ]);
   };
 
   const removeVariantRow = (key: string) => {
     setVariants((prev) => (prev.length <= 1 ? prev : prev.filter((v) => v.key !== key)));
   };
 
-  const validateVariants = (): { sku: string; sellingPrice: number }[] | null => {
-    const cleaned: { sku: string; sellingPrice: number }[] = [];
+  const validateVariants = ():
+    | { sku: string; sellingPrice: number; options?: Record<string, string> }[]
+    | null => {
+    const cleaned: {
+      sku: string;
+      sellingPrice: number;
+      options?: Record<string, string>;
+    }[] = [];
     for (const v of variants) {
       const sku = v.sku.trim();
       const sellingPrice = Number(v.sellingPrice);
@@ -243,13 +306,83 @@ function ProductsInner() {
         setFormError(`Invalid sell price for SKU “${sku}”.`);
         return null;
       }
-      cleaned.push({ sku, sellingPrice });
+      const parsed = parseOptionsText(v.optionsText);
+      if (!parsed.ok) {
+        setFormError(parsed.error);
+        return null;
+      }
+      cleaned.push({ sku, sellingPrice, options: parsed.options });
     }
     if (!cleaned.length) {
       setFormError("Add at least one variant (SKU + sell price).");
       return null;
     }
     return cleaned;
+  };
+
+  const validateImageFile = (file: File): string | null => {
+    if (file.size > MAX_BYTES) return `“${file.name}” exceeds 5MB.`;
+    if (
+      !ACCEPT.split(",").includes(file.type) &&
+      !/\.(jpe?g|png|webp|gif)$/i.test(file.name)
+    ) {
+      return `“${file.name}” is not JPEG/PNG/WebP/GIF.`;
+    }
+    return null;
+  };
+
+  const onPickVariantFiles = async (variantId: string, files: FileList | null) => {
+    if (!editing || !files?.length) return;
+    setFormError("");
+    const draft = variants.find((v) => v.id === variantId);
+    const currentCount = draft?.images?.length ?? 0;
+    const room = MAX_IMAGES - currentCount;
+    if (room <= 0) {
+      setFormError(`Maximum ${MAX_IMAGES} images per SKU.`);
+      return;
+    }
+    const picked: File[] = [];
+    for (const file of Array.from(files).slice(0, room)) {
+      const err = validateImageFile(file);
+      if (err) {
+        setFormError(err);
+        return;
+      }
+      picked.push(file);
+    }
+    if (!picked.length) return;
+    try {
+      const updated = await uploadVariantImages.mutateAsync({
+        productId: editing.id,
+        variantId,
+        files: picked,
+      });
+      const urls = Array.isArray(updated?.images) ? updated.images.filter(Boolean) : [];
+      setVariants((prev) =>
+        prev.map((v) => (v.id === variantId ? { ...v, images: urls } : v)),
+      );
+    } catch (err) {
+      if (err instanceof ApiError) setFormError(err.message);
+    }
+  };
+
+  const removeVariantImage = async (variantId: string, url: string) => {
+    if (!editing) return;
+    try {
+      const updated = await deleteVariantImages.mutateAsync({
+        productId: editing.id,
+        variantId,
+        urls: [url],
+      });
+      const urls = Array.isArray(updated?.images)
+        ? updated.images.filter(Boolean)
+        : (variants.find((v) => v.id === variantId)?.images ?? []).filter((u) => u !== url);
+      setVariants((prev) =>
+        prev.map((v) => (v.id === variantId ? { ...v, images: urls } : v)),
+      );
+    } catch (err) {
+      if (err instanceof ApiError) setFormError(err.message);
+    }
   };
 
   const submit = async (e: FormEvent) => {
@@ -265,6 +398,8 @@ function ProductsInner() {
     const cleaned = validateVariants();
     if (!cleaned) return;
 
+    const wasRejected = editing?.status === "REJECTED";
+
     try {
       if (editing) {
         await updateProduct.mutateAsync({
@@ -274,24 +409,39 @@ function ProductsInner() {
             description: form.description || form.title,
             categoryId: form.categoryId,
           },
+          silent: wasRejected,
         });
 
         const original = variantsOf(editing);
-        for (const draft of variants) {
-          const sellingPrice = Number(draft.sellingPrice);
+        for (let i = 0; i < variants.length; i++) {
+          const draft = variants[i];
+          const payload = cleaned[i];
+          const sellingPrice = payload.sellingPrice;
+          const options = payload.options;
           if (draft.id) {
             const prev = original.find((o) => o.id === draft.id);
-            if (prev && prev.sellingPrice !== sellingPrice) {
+            const priceChanged = prev && prev.sellingPrice !== sellingPrice;
+            const optChanged = prev && !optionsEqual(prev.options, options ?? null);
+            if (priceChanged || optChanged) {
               await updateVariant.mutateAsync({
                 productId: editing.id,
                 variantId: draft.id,
-                body: { sellingPrice },
+                body: {
+                  sellingPrice,
+                  options: options ?? null,
+                },
+                silent: true,
               });
             }
           } else if (draft.sku.trim()) {
             await addVariant.mutateAsync({
               productId: editing.id,
-              body: { sku: draft.sku.trim(), sellingPrice },
+              body: {
+                sku: draft.sku.trim(),
+                sellingPrice,
+                options,
+              },
+              silent: true,
             });
           }
         }
@@ -307,6 +457,10 @@ function ProductsInner() {
             productId: editing.id,
             files: newFiles,
           });
+        }
+
+        if (wasRejected) {
+          toast.success("Resubmitted — Pending review");
         }
       } else {
         const created = await createProduct.mutateAsync({
@@ -343,7 +497,9 @@ function ProductsInner() {
     addVariant.isPending ||
     updateVariant.isPending ||
     uploadImages.isPending ||
-    deleteImages.isPending;
+    deleteImages.isPending ||
+    uploadVariantImages.isPending ||
+    deleteVariantImages.isPending;
 
   return (
     <div className="space-y-6">
@@ -387,11 +543,17 @@ function ProductsInner() {
           <h2 className="sm:col-span-2 text-lg">
             {editing ? `Edit product (${statusLabel(editing.status)})` : "Create product"}
           </h2>
-          {editing?.status === "REJECTED" && reasonText(editing.rejectionReason) ? (
-            <p className="sm:col-span-2 text-sm text-mq-accent-pink">
-              Rejection: {reasonText(editing.rejectionReason)} — edit title, description,
-              category, images, or sell price to resubmit.
-            </p>
+          {editing?.status === "REJECTED" ? (
+            <div className="sm:col-span-2 mq-alert mq-alert-error space-y-1">
+              <p className="font-medium">Rejected — edit to resubmit for review</p>
+              {reasonText(editing.rejectionReason) ? (
+                <p className="text-sm">Reason: {reasonText(editing.rejectionReason)}</p>
+              ) : null}
+              <p className="text-xs opacity-90">
+                Changing title, description, category, gallery, sell price, or options sends the
+                product back to Pending.
+              </p>
+            </div>
           ) : null}
           {formError ? (
             <div className="sm:col-span-2 mq-alert mq-alert-error">{formError}</div>
@@ -439,49 +601,113 @@ function ProductsInner() {
               </button>
             </div>
             <p className="text-xs text-mq-text-muted">
-              Sell price lives on each SKU. Stock starts at 0 — adjust via{" "}
+              Sell price lives on each SKU. Optional options:{" "}
+              <code>size=M, color=black</code>. Stock starts at 0 — adjust via{" "}
               <Link href="/seller/inventory" className="underline">
                 Inventory slips
               </Link>
               .
             </p>
-            <div className="space-y-2">
+            <div className="space-y-4">
               {variants.map((v) => (
-                <div key={v.key} className="grid sm:grid-cols-[1fr_1fr_auto_auto] gap-2 items-center">
+                <div
+                  key={v.key}
+                  className="space-y-2 border-b border-mq-border/60 pb-4 last:border-0 last:pb-0"
+                >
+                  <div className="grid sm:grid-cols-[1fr_1fr_auto] gap-2 items-center">
+                    <input
+                      className="mq-input"
+                      placeholder="SKU"
+                      value={v.sku}
+                      maxLength={64}
+                      disabled={!!v.id}
+                      onChange={(e) => updateVariantDraft(v.key, { sku: e.target.value })}
+                      required
+                    />
+                    <input
+                      className="mq-input"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="Sell price"
+                      value={v.sellingPrice}
+                      onChange={(e) =>
+                        updateVariantDraft(v.key, { sellingPrice: e.target.value })
+                      }
+                      required
+                    />
+                    <div className="flex items-center gap-2 justify-end">
+                      <span className="text-xs text-mq-text-muted whitespace-nowrap">
+                        Stock: {v.id ? (v.availableStock ?? 0) : 0}
+                      </span>
+                      {!v.id && variants.length > 1 ? (
+                        <button
+                          type="button"
+                          className="mq-icon-btn text-mq-text-muted"
+                          aria-label="Remove SKU row"
+                          onClick={() => removeVariantRow(v.key)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
                   <input
-                    className="mq-input"
-                    placeholder="SKU"
-                    value={v.sku}
-                    maxLength={64}
-                    disabled={!!v.id}
-                    onChange={(e) => updateVariantDraft(v.key, { sku: e.target.value })}
-                    required
+                    className="mq-input w-full"
+                    placeholder="Options (optional) — size=M, color=black"
+                    value={v.optionsText}
+                    onChange={(e) =>
+                      updateVariantDraft(v.key, { optionsText: e.target.value })
+                    }
                   />
-                  <input
-                    className="mq-input"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="Sell price"
-                    value={v.sellingPrice}
-                    onChange={(e) => updateVariantDraft(v.key, { sellingPrice: e.target.value })}
-                    required
-                  />
-                  <span className="text-xs text-mq-text-muted whitespace-nowrap">
-                    Stock: {v.id ? (v.availableStock ?? 0) : 0}
-                  </span>
-                  {!v.id && variants.length > 1 ? (
-                    <button
-                      type="button"
-                      className="mq-icon-btn text-mq-text-muted"
-                      aria-label="Remove SKU row"
-                      onClick={() => removeVariantRow(v.key)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  ) : (
-                    <span />
-                  )}
+                  {v.id && editing ? (
+                    <div className="space-y-2 rounded-[var(--mq-radius-sm)] bg-mq-surface-subtle p-3">
+                      <div className="flex flex-wrap items-baseline justify-between gap-2">
+                        <p className="text-xs font-medium">SKU images</p>
+                        <p className="text-[11px] text-mq-text-muted">
+                          {(v.images?.length ?? 0)}/{MAX_IMAGES} · empty → product gallery
+                        </p>
+                      </div>
+                      <input
+                        className="mq-input text-xs"
+                        type="file"
+                        accept={ACCEPT}
+                        multiple
+                        disabled={uploadVariantImages.isPending}
+                        onChange={(e) => {
+                          void onPickVariantFiles(v.id!, e.target.files);
+                          e.target.value = "";
+                        }}
+                      />
+                      {(v.images?.length ?? 0) > 0 ? (
+                        <ul className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                          {v.images!.map((url) => (
+                            <li
+                              key={url}
+                              className="relative border border-mq-border rounded overflow-hidden"
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={url}
+                                alt=""
+                                className="w-full aspect-square object-cover"
+                              />
+                              <button
+                                type="button"
+                                className="absolute top-0.5 right-0.5 text-[9px] px-1 py-0.5 bg-black/70 text-white rounded"
+                                disabled={deleteVariantImages.isPending}
+                                onClick={() => void removeVariantImage(v.id!, url)}
+                              >
+                                ×
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-[11px] text-mq-text-muted">No SKU images yet.</p>
+                      )}
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>
@@ -628,6 +854,15 @@ function ProductsInner() {
                           <span className={statusBadgeClass(p.status)}>
                             {statusLabel(p.status)}
                           </span>
+                          {p.status === "REJECTED" ? (
+                            <button
+                              type="button"
+                              className="block mt-1 text-xs underline text-mq-accent-pink"
+                              onClick={() => startEdit(p)}
+                            >
+                              Fix & resubmit
+                            </button>
+                          ) : null}
                         </td>
                         <td className="p-3">
                           <AdminActions>

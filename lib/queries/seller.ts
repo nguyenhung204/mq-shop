@@ -160,6 +160,46 @@ export function useDeleteProductImages() {
   });
 }
 
+export function useUploadVariantImages() {
+  const invalidate = useSellerInvalidate();
+  return useMutation({
+    mutationFn: ({
+      productId,
+      variantId,
+      files,
+    }: {
+      productId: string;
+      variantId: string;
+      files: File[];
+    }) => sellerApi.uploadVariantImages(productId, variantId, files),
+    onSuccess: () => {
+      invalidate();
+      toast.success("SKU images uploaded");
+    },
+    onError: (e) => toast.error(productImageErrorMessage(e, "SKU image upload failed")),
+  });
+}
+
+export function useDeleteVariantImages() {
+  const invalidate = useSellerInvalidate();
+  return useMutation({
+    mutationFn: ({
+      productId,
+      variantId,
+      urls,
+    }: {
+      productId: string;
+      variantId: string;
+      urls: string[];
+    }) => sellerApi.deleteVariantImages(productId, variantId, urls),
+    onSuccess: () => {
+      invalidate();
+      toast.success("SKU image removed");
+    },
+    onError: (e) => toast.error(productImageErrorMessage(e, "Remove SKU images failed")),
+  });
+}
+
 export function useCreateSellerProduct() {
   const invalidate = useSellerInvalidate();
   return useMutation({
@@ -175,10 +215,18 @@ export function useCreateSellerProduct() {
 export function useUpdateSellerProduct() {
   const invalidate = useSellerInvalidate();
   return useMutation({
-    mutationFn: ({ id, body }: { id: string; body: UpdateProductRequest }) =>
-      sellerApi.updateProduct(id, body),
-    onSuccess: () => {
+    mutationFn: ({
+      id,
+      body,
+      silent,
+    }: {
+      id: string;
+      body: UpdateProductRequest;
+      silent?: boolean;
+    }) => sellerApi.updateProduct(id, body),
+    onSuccess: (_product, vars) => {
       invalidate();
+      if (vars.silent) return;
       toast.success("Product updated");
     },
     onError: (e) => toast.error(productErrorMessage(e, "Update failed")),
@@ -191,13 +239,15 @@ export function useAddSellerVariant() {
     mutationFn: ({
       productId,
       body,
+      silent,
     }: {
       productId: string;
       body: AddProductVariantRequest;
+      silent?: boolean;
     }) => sellerApi.addVariant(productId, body),
-    onSuccess: () => {
+    onSuccess: (_data, vars) => {
       invalidate();
-      toast.success("SKU added");
+      if (!vars.silent) toast.success("SKU added");
     },
     onError: (e) => toast.error(productErrorMessage(e, "Add SKU failed")),
   });
@@ -210,14 +260,16 @@ export function useUpdateSellerVariant() {
       productId,
       variantId,
       body,
+      silent,
     }: {
       productId: string;
       variantId: string;
       body: UpdateProductVariantRequest;
+      silent?: boolean;
     }) => sellerApi.updateVariant(productId, variantId, body),
-    onSuccess: () => {
+    onSuccess: (_data, vars) => {
       invalidate();
-      toast.success("SKU updated");
+      if (!vars.silent) toast.success("SKU updated");
     },
     onError: (e) => toast.error(productErrorMessage(e, "Update SKU failed")),
   });
