@@ -6,12 +6,14 @@ import type { InventorySlip, InventorySlipStatus } from "@/lib/api/inventory";
 import { formatMoney } from "@/lib/api/utils";
 import {
   useAdminApproveSlip,
+  useAdminInventorySlip,
   useAdminInventorySlips,
   useAdminRejectSlip,
 } from "@/lib/queries/inventory";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
+import { SlipDetailBody } from "@/components/inventory/SlipDetailBody";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 
@@ -49,11 +51,13 @@ function slipItemsSummary(s: InventorySlip): string {
 function InventoryInner() {
   const [status, setStatus] = useState<InventorySlipStatus | "">("PENDING");
   const [page, setPage] = useState(1);
+  const [detailId, setDetailId] = useState<string | null>(null);
   const { data, isLoading, isError, error } = useAdminInventorySlips({
     status: status || undefined,
     page,
     pageSize: 20,
   });
+  const detailQuery = useAdminInventorySlip(detailId);
   const items = data?.items ?? [];
   const meta = data?.meta;
   const approveSlip = useAdminApproveSlip();
@@ -95,58 +99,78 @@ function InventoryInner() {
           <p className="text-sm text-mq-text-muted">No slips for this filter.</p>
         ) : (
           items.map((s: InventorySlip) => (
-            <div
-              key={s.id}
-              className="mq-card p-4 flex flex-wrap gap-4 items-start justify-between text-sm"
-            >
-              <div className="min-w-[200px] flex-1 space-y-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-medium font-mono text-xs">{s.code}</span>
-                  <span className={statusBadge(s.status)}>{s.status}</span>
-                  <span className="text-xs text-mq-text-muted">{s.type}</span>
+            <div key={s.id} className="mq-card p-4 space-y-3 text-sm">
+              <div className="flex flex-wrap gap-4 items-start justify-between">
+                <div className="min-w-[200px] flex-1 space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      className="font-medium font-mono text-xs underline-offset-2 hover:underline"
+                      onClick={() =>
+                        setDetailId((id) => (id === s.id ? null : s.id))
+                      }
+                    >
+                      {s.code}
+                    </button>
+                    <span className={statusBadge(s.status)}>{s.status}</span>
+                    <span className="text-xs text-mq-text-muted">{s.type}</span>
+                  </div>
+                  <p className="text-mq-text-secondary">{slipItemsSummary(s)}</p>
+                  {(s.items?.length ?? 0) > 0 ? (
+                    <ul className="text-xs text-mq-text-muted space-y-0.5">
+                      {s.items.map((it) => (
+                        <li key={it.id}>
+                          {it.sku} ×{it.quantity}
+                          {it.unitCost != null ? ` @ ${formatMoney(it.unitCost)}` : ""}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  {s.warehouseCode ? (
+                    <p className="text-xs text-mq-text-muted">Warehouse {s.warehouseCode}</p>
+                  ) : null}
+                  {s.locationNote ? (
+                    <p className="text-xs text-mq-text-muted">{s.locationNote}</p>
+                  ) : null}
+                  <p className="text-xs text-mq-text-muted font-mono">
+                    Shop {s.shopId.slice(0, 8)}… · Slip {s.id.slice(0, 8)}…
+                  </p>
+                  <p className="text-xs text-mq-text-muted">
+                    Created {formatWhen(s.createdAt)}
+                    {s.processedAt ? ` · Processed ${formatWhen(s.processedAt)}` : ""}
+                  </p>
                 </div>
-                <p className="text-mq-text-secondary">{slipItemsSummary(s)}</p>
-                {(s.items?.length ?? 0) > 0 ? (
-                  <ul className="text-xs text-mq-text-muted space-y-0.5">
-                    {s.items.map((it) => (
-                      <li key={it.id}>
-                        {it.sku} ×{it.quantity}
-                        {it.unitCost != null ? ` @ ${formatMoney(it.unitCost)}` : ""}
-                      </li>
-                    ))}
-                  </ul>
+                {s.status === "PENDING" ? (
+                  <AdminActions>
+                    <AdminIconButton
+                      label="Approve"
+                      icon={Check}
+                      tone="approve"
+                      disabled={busy}
+                      onClick={() => void approveSlip.mutateAsync(s.id)}
+                    />
+                    <AdminIconButton
+                      label="Reject"
+                      icon={X}
+                      tone="reject"
+                      disabled={busy}
+                      onClick={() => void rejectSlip.mutateAsync(s.id)}
+                    />
+                  </AdminActions>
                 ) : null}
-                {s.warehouseCode ? (
-                  <p className="text-xs text-mq-text-muted">Warehouse {s.warehouseCode}</p>
-                ) : null}
-                {s.locationNote ? (
-                  <p className="text-xs text-mq-text-muted">{s.locationNote}</p>
-                ) : null}
-                <p className="text-xs text-mq-text-muted font-mono">
-                  Shop {s.shopId.slice(0, 8)}… · Slip {s.id.slice(0, 8)}…
-                </p>
-                <p className="text-xs text-mq-text-muted">
-                  Created {formatWhen(s.createdAt)}
-                  {s.processedAt ? ` · Processed ${formatWhen(s.processedAt)}` : ""}
-                </p>
               </div>
-              {s.status === "PENDING" ? (
-                <AdminActions>
-                  <AdminIconButton
-                    label="Approve"
-                    icon={Check}
-                    tone="approve"
-                    disabled={busy}
-                    onClick={() => void approveSlip.mutateAsync(s.id)}
-                  />
-                  <AdminIconButton
-                    label="Reject"
-                    icon={X}
-                    tone="reject"
-                    disabled={busy}
-                    onClick={() => void rejectSlip.mutateAsync(s.id)}
-                  />
-                </AdminActions>
+              {detailId === s.id ? (
+                <SlipDetailBody
+                  slip={detailQuery.data}
+                  loading={detailQuery.isLoading}
+                  error={
+                    detailQuery.isError
+                      ? detailQuery.error instanceof Error
+                        ? detailQuery.error.message
+                        : "Failed to load"
+                      : null
+                  }
+                />
               ) : null}
             </div>
           ))

@@ -11,6 +11,7 @@ import {
   Settings,
   ShoppingBag,
   Store,
+  UserCog,
   Users,
 } from "lucide-react";
 
@@ -57,7 +58,14 @@ export const adminNavItems: AdminNavItem[] = [
     href: "/admin/users",
     label: "Users",
     icon: Users,
-    permissions: ["LOCK_USER", "UNLOCK_USER", "DELETE_USER", "CREATE_STAFF", "VIEW_USERS", "DELETE_ACCOUNT"],
+    permissions: ["LOCK_USER", "UNLOCK_USER", "DELETE_USER", "VIEW_USERS", "DELETE_ACCOUNT"],
+    group: "ops",
+  },
+  {
+    href: "/admin/staff",
+    label: "Staff",
+    icon: UserCog,
+    permissions: ["MANAGE_STAFF", "ASSIGN_ROLES"],
     group: "ops",
   },
   {

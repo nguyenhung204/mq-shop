@@ -190,6 +190,7 @@ function ProductsInner() {
     categoryId: "",
     title: "",
     description: "",
+    attributesText: "",
   });
   const [variants, setVariants] = useState<VariantDraft[]>([
     { key: crypto.randomUUID(), sku: "", sellingPrice: "19.99", optionsText: "" },
@@ -202,7 +203,7 @@ function ProductsInner() {
     setExistingUrls([]);
     setRemovedUrls([]);
     setNewFiles([]);
-    setForm({ categoryId: "", title: "", description: "" });
+    setForm({ categoryId: "", title: "", description: "", attributesText: "" });
     setVariants([
       { key: crypto.randomUUID(), sku: "", sellingPrice: "19.99", optionsText: "" },
     ]);
@@ -214,7 +215,7 @@ function ProductsInner() {
     setExistingUrls([]);
     setRemovedUrls([]);
     setNewFiles([]);
-    setForm({ categoryId: "", title: "", description: "" });
+    setForm({ categoryId: "", title: "", description: "", attributesText: "" });
     setVariants([
       { key: crypto.randomUUID(), sku: "", sellingPrice: "19.99", optionsText: "" },
     ]);
@@ -231,6 +232,9 @@ function ProductsInner() {
       categoryId: p.categoryId || "",
       title: p.title || p.name || "",
       description: p.description || "",
+      attributesText: formatOptionsText(
+        (p.attributes as Record<string, string> | null | undefined) ?? null,
+      ),
     });
     setVariants(draftFromVariants(variantsOf(p)));
     setShowForm(true);
@@ -398,6 +402,12 @@ function ProductsInner() {
     const cleaned = validateVariants();
     if (!cleaned) return;
 
+    const attrsParsed = parseOptionsText(form.attributesText);
+    if (!attrsParsed.ok) {
+      setFormError(attrsParsed.error.replace("options", "attributes"));
+      return;
+    }
+
     const wasRejected = editing?.status === "REJECTED";
 
     try {
@@ -408,6 +418,7 @@ function ProductsInner() {
             title: form.title,
             description: form.description || form.title,
             categoryId: form.categoryId,
+            attributes: attrsParsed.options ?? null,
           },
           silent: wasRejected,
         });
@@ -467,6 +478,7 @@ function ProductsInner() {
           title: form.title,
           description: form.description || form.title,
           categoryId: form.categoryId,
+          attributes: attrsParsed.options,
           variants: cleaned,
         });
         if (newFiles.length && created?.id) {
@@ -586,6 +598,12 @@ function ProductsInner() {
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
             required
+          />
+          <input
+            className="mq-input sm:col-span-2"
+            placeholder="Attributes (optional) — material=cotton, brand=MQ"
+            value={form.attributesText}
+            onChange={(e) => setForm({ ...form, attributesText: e.target.value })}
           />
 
           <div className="sm:col-span-2 space-y-3 border border-mq-border rounded-[var(--mq-radius)] p-4">

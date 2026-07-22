@@ -824,6 +824,25 @@ PENDING ──reject───► REJECTED  (stock không đổi)
 | Approve | `POST` | `/admin/inventory/slips/:slipId/approve` | `EDIT_INVENTORY` |
 | Reject | `POST` | `/admin/inventory/slips/:slipId/reject` | `EDIT_INVENTORY` |
 
+### 5.2b Admin gán NV shop (`MANAGE_STAFF` / `ASSIGN_ROLES`)
+
+Admin **sàn** (không phải seller) tạo/gán NV kho / CSKH / kế toán gắn `shopId`.
+
+| UI | Method | Path | Permission |
+|----|--------|------|------------|
+| Tạo NV | `POST` | `/admin/staff` | `MANAGE_STAFF` body `{ email, fullName?, role, shopId }` → `{ user, temporaryPassword }` |
+| List NV | `GET` | `/admin/staff?shopId&role&page&pageSize` | `MANAGE_STAFF` |
+| Gán/đổi role | `PATCH` | `/admin/staff/:userId/roles` | `ASSIGN_ROLES` `{ roles, shopId? }` |
+| Lock | `POST` | `/admin/staff/:userId/lock` | `MANAGE_STAFF` |
+| Unlock | `POST` | `/admin/staff/:userId/unlock` | `MANAGE_STAFF` |
+| Xoá | `DELETE` | `/admin/staff/:userId` | `MANAGE_STAFF` |
+
+`role` / `roles[]`: chỉ `WAREHOUSE` | `CS` | `ACCOUNTANT`. Shop phải `APPROVED`.
+
+Khi tạo/gán role: **email** `STAFF_ROLE_ASSIGNED` + **in-app notification** (shop name + role). Temp password chỉ trả lúc create.
+
+NV kho login → `/inventory/*` resolve shop qua `user.shopId` (không cần là owner).
+
 ### 5.3 Flow nhập hàng điển hình
 
 ```
@@ -868,6 +887,7 @@ PENDING ──reject───► REJECTED  (stock không đổi)
 ### Admin
 
 - [ ] Users lock/unlock/delete
+- [ ] **Staff shop:** `POST/GET /admin/staff`, `PATCH …/roles`, lock/unlock/delete (`MANAGE_STAFF` / `ASSIGN_ROLES`)
 - [ ] Shops approve/reject/violation-lock
 - [ ] Products queue approve/reject/hide (xem nested variants)
 - [ ] Categories create/update
@@ -914,7 +934,8 @@ Multipart: `FormData`, **không** set `Content-Type` thủ công.
 | Account | Password | Dùng để |
 |---------|----------|---------|
 | `seller@example.com` | `Seed123456!` | Catalog + inventory |
-| `admin@example.com` | `Admin123!` | Review products + slips |
+| `warehouse@example.com` | `Seed123456!` | Inventory staff (`shopId` = Seed Electronics) |
+| `admin@example.com` | `Admin123!` | Review products + slips + **assign staff** |
 
 Shop **Seed Electronics Store**: mouse/keyboard/tee/lamp + `KHO-HN`/`KHO-HCM` + slips PENDING.
 

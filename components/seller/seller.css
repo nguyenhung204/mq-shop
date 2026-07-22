@@ -195,7 +195,10 @@
   letter-spacing: 0.02em;
   gap: 0.35rem;
   min-height: 2rem;
+  height: auto;
   line-height: 1.2;
+  align-self: center;
+  flex-shrink: 0;
 }
 
 .mq-seller-page .mq-btn.text-xs {

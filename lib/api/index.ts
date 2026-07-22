@@ -211,6 +211,14 @@ export type {
   CreateSlipRequest,
 } from "./inventory";
 
+export { adminStaffApi } from "./staff";
+export type {
+  CreateStaffRequest,
+  CreateStaffResponse,
+  UpdateStaffRolesRequest,
+  ListStaffParams,
+} from "./staff";
+
 export const walletApi = {
   affiliateLink: () => api.get<{ code: string; link?: string }>("/wallet/affiliate-link"),
   networkTree: () => api.get("/wallet/network-tree"),
@@ -241,9 +249,6 @@ export const adminApi = {
   lockUser: (id: string) => api.post(`/admin/users/${id}/lock`, {}),
   unlockUser: (id: string) => api.post(`/admin/users/${id}/unlock`, {}),
   deleteUser: (id: string) => api.delete(`/admin/users/${id}`),
-  createStaff: (body: unknown) => api.post("/admin/staff-accounts", body),
-  assignPermissions: (id: string, body: { permissions: string[] }) =>
-    api.put(`/admin/staff-accounts/${id}/permissions`, body),
   shops: (status?: string, page?: number, pageSize?: number) =>
     api.get<ApiShop[] | { data: ApiShop[]; meta?: PageMeta } | Paginated<ApiShop>>("/admin/shops", {
       query: { status, page, pageSize },

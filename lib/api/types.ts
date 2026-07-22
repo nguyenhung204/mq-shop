@@ -6,9 +6,15 @@ export type Role =
   | "BUYER"
   | "SELLER"
   | "WAREHOUSE"
+  | "CS"
   | "ADMIN"
   | "SUPER_ADMIN"
   | "ACCOUNTANT";
+
+export type StaffRole = "WAREHOUSE" | "CS" | "ACCOUNTANT";
+
+/** Roles returned / filterable on GET /admin/staff pool. */
+export type StaffPoolRole = "BUYER" | StaffRole;
 
 export type LocalizedText = {
   vi: string;
@@ -34,6 +40,8 @@ export type AuthUser = {
   status?: "ACTIVE" | "LOCKED" | "DELETED" | string;
   roles: Role[];
   permissions?: string[];
+  /** Present for shop staff (WAREHOUSE / CS / ACCOUNTANT). */
+  shopId?: string | null;
   emailVerifiedAt?: string | null;
   createdAt?: string;
 };

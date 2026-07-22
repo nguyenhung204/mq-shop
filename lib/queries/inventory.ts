@@ -142,6 +142,22 @@ export function useInventorySlips(params: ListSlipsParams = {}) {
   });
 }
 
+export function useInventorySlip(slipId: string | null) {
+  return useQuery({
+    queryKey: inventoryKeys.slip(slipId ?? ""),
+    queryFn: () => inventoryApi.getSlip(slipId!),
+    enabled: !!slipId,
+  });
+}
+
+export function useAdminInventorySlip(slipId: string | null) {
+  return useQuery({
+    queryKey: [...inventoryKeys.all, "admin-slip", slipId ?? ""] as const,
+    queryFn: () => adminInventoryApi.getSlip(slipId!),
+    enabled: !!slipId,
+  });
+}
+
 export function useInventoryLedger(params: ListLedgerParams = {}) {
   const page = params.page ?? 1;
   const pageSize = params.pageSize ?? 20;

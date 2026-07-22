@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, Fragment, useMemo, useState } from "react";
 import Link from "next/link";
 import { Check, X } from "lucide-react";
 import type {
@@ -18,6 +18,7 @@ import {
   useCreateVariant,
   useCreateWarehouse,
   useInventoryLedger,
+  useInventorySlip,
   useInventorySlips,
   useInventoryVariants,
   useRejectSlip,
@@ -29,6 +30,7 @@ import {
   AdminActions,
   AdminIconButton,
 } from "@/components/admin/AdminIconButton";
+import { SlipDetailBody } from "@/components/inventory/SlipDetailBody";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 
@@ -106,7 +108,10 @@ function WarehousesTab() {
       <p className="text-sm text-mq-text-muted">
         Locations for receiving stock. Use codes like <code>KHO-HN</code> on slips.
       </p>
-      <form className="mq-card p-4 flex flex-wrap gap-3" onSubmit={(e) => void onSubmit(e)}>
+      <form
+        className="mq-card p-4 flex flex-wrap items-center gap-3"
+        onSubmit={(e) => void onSubmit(e)}
+      >
         <input
           className="mq-input flex-1 min-w-[140px]"
           placeholder="Code (e.g. KHO-HN)"
@@ -122,7 +127,10 @@ function WarehousesTab() {
           maxLength={200}
           onChange={(e) => setAddress(e.target.value)}
         />
-        <button className="mq-btn mq-btn-primary" disabled={createWarehouse.isPending}>
+        <button
+          className="mq-btn mq-btn-primary shrink-0 self-center"
+          disabled={createWarehouse.isPending}
+        >
           {createWarehouse.isPending ? "Adding…" : "Add warehouse"}
         </button>
         {formError ? (
@@ -396,6 +404,7 @@ function SlipsTab() {
   const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const [formError, setFormError] = useState("");
+  const [detailId, setDetailId] = useState<string | null>(null);
   const [type, setType] = useState<InventorySlipType>("IN");
   const [warehouseCode, setWarehouseCode] = useState("");
   const [locationNote, setLocationNote] = useState("");
@@ -413,6 +422,7 @@ function SlipsTab() {
     page,
     pageSize: 20,
   });
+  const detailQuery = useInventorySlip(detailId);
   const createSlip = useCreateSlip();
   const approveSlip = useApproveSlip();
   const rejectSlip = useRejectSlip();
@@ -645,8 +655,19 @@ function SlipsTab() {
               </thead>
               <tbody>
                 {items.map((s: InventorySlip) => (
-                  <tr key={s.id} className="border-b border-mq-border/60 align-top">
-                    <td className="py-2.5 pr-3 font-medium font-mono text-xs">{s.code}</td>
+                  <Fragment key={s.id}>
+                  <tr className="border-b border-mq-border/60 align-top">
+                    <td className="py-2.5 pr-3 font-medium font-mono text-xs">
+                      <button
+                        type="button"
+                        className="underline-offset-2 hover:underline text-left"
+                        onClick={() =>
+                          setDetailId((id) => (id === s.id ? null : s.id))
+                        }
+                      >
+                        {s.code}
+                      </button>
+                    </td>
                     <td className="py-2.5 pr-3 text-xs">{slipTypeLabel(s.type)}</td>
                     <td className="py-2.5 pr-3">
                       <span className="font-medium">{slipItemsSummary(s)}</span>
@@ -705,6 +726,24 @@ function SlipsTab() {
                       )}
                     </td>
                   </tr>
+                  {detailId === s.id ? (
+                    <tr className="border-b border-mq-border/60">
+                      <td colSpan={7} className="pb-3 pt-0">
+                        <SlipDetailBody
+                          slip={detailQuery.data}
+                          loading={detailQuery.isLoading}
+                          error={
+                            detailQuery.isError
+                              ? detailQuery.error instanceof Error
+                                ? detailQuery.error.message
+                                : "Failed to load"
+                              : null
+                          }
+                        />
+                      </td>
+                    </tr>
+                  ) : null}
+                  </Fragment>
                 ))}
               </tbody>
             </table>
