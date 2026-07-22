@@ -6,6 +6,7 @@ import { ApiError } from "@/lib/api/client";
 import {
   adminInventoryApi,
   inventoryApi,
+  type AdminListLedgerParams,
   type AdminListSlipsParams,
   type CreateSlipRequest,
   type CreateVariantRequest,
@@ -66,6 +67,17 @@ export const inventoryKeys = {
       params.pageSize ?? 20,
       params.status ?? "",
       params.shopId ?? "",
+    ] as const,
+  adminLedger: (params: AdminListLedgerParams) =>
+    [
+      ...inventoryKeys.all,
+      "admin-ledger",
+      params.shopId,
+      params.page ?? 1,
+      params.pageSize ?? 20,
+      params.sku?.trim() || "",
+      params.from || "",
+      params.to || "",
     ] as const,
 };
 
@@ -245,6 +257,38 @@ export function useAdminInventorySlips(params: AdminListSlipsParams = {}) {
       parsePage<InventorySlip>(
         await adminInventoryApi.listSlips({ page, pageSize, status, shopId }),
       ),
+    placeholderData: (prev) => prev,
+  });
+}
+
+export function useAdminInventoryLedger(params: Partial<AdminListLedgerParams> = {}) {
+  const shopId = params.shopId?.trim() || "";
+  const page = params.page ?? 1;
+  const pageSize = params.pageSize ?? 20;
+  const sku = params.sku?.trim() || undefined;
+  const from = params.from || undefined;
+  const to = params.to || undefined;
+  return useQuery({
+    queryKey: inventoryKeys.adminLedger({
+      shopId,
+      page,
+      pageSize,
+      sku,
+      from,
+      to,
+    }),
+    queryFn: async () =>
+      parsePage<StockLedgerEntry>(
+        await adminInventoryApi.listLedger({
+          shopId,
+          page,
+          pageSize,
+          sku,
+          from,
+          to,
+        }),
+      ),
+    enabled: Boolean(shopId),
     placeholderData: (prev) => prev,
   });
 }

@@ -116,6 +116,16 @@ export type AdminListSlipsParams = {
   pageSize?: number;
 };
 
+export type AdminListLedgerParams = {
+  /** Required by GET /admin/inventory/ledger */
+  shopId: string;
+  sku?: string;
+  from?: string;
+  to?: string;
+  page?: number;
+  pageSize?: number;
+};
+
 type PageEnvelope<T> =
   | T[]
   | { data: T[]; meta?: PageMeta }
@@ -170,6 +180,12 @@ export const adminInventoryApi = {
 
   getSlip: (slipId: string) =>
     api.get<InventorySlip>(`/admin/inventory/slips/${slipId}`),
+
+  listLedger: (query: AdminListLedgerParams) =>
+    api.get<PageEnvelope<StockLedgerEntry>>("/admin/inventory/ledger", {
+      query,
+      withMeta: true,
+    }),
 
   approveSlip: (slipId: string) =>
     api.post<InventorySlip>(`/admin/inventory/slips/${slipId}/approve`, {}),

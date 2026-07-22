@@ -821,6 +821,7 @@ PENDING ──reject───► REJECTED  (stock không đổi)
 |----|--------|------|------------|
 | Inbox slips | `GET` | `/admin/inventory/slips?status&page&pageSize` | `VIEW_INVENTORY` |
 | Chi tiết | `GET` | `/admin/inventory/slips/:slipId` | `VIEW_INVENTORY` |
+| Stock ledger | `GET` | `/admin/inventory/ledger?shopId&sku&from&to&page&pageSize` | `VIEW_INVENTORY` (`shopId` bắt buộc) |
 | Approve | `POST` | `/admin/inventory/slips/:slipId/approve` | `EDIT_INVENTORY` |
 | Reject | `POST` | `/admin/inventory/slips/:slipId/reject` | `EDIT_INVENTORY` |
 
