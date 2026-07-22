@@ -83,6 +83,38 @@ export type ProductVariant = {
   updatedAt?: string;
 };
 
+/** Public PDP variant — omits unitPrice / shop-only fields. */
+export type PublicProductVariant = {
+  id: string;
+  productId: string;
+  sku: string;
+  price: number;
+  availableStock: number;
+  options: Record<string, string> | null;
+  images: string[];
+  isEnrollmentPackage?: boolean;
+};
+
+/** GET /products/listing/:productId */
+export type PublicProductDetail = {
+  id: string;
+  shopId?: string;
+  title: string;
+  description?: string | null;
+  categoryId?: string;
+  price: number;
+  minPrice: number;
+  maxPrice: number;
+  stock: number;
+  images: string[];
+  attributes?: Record<string, unknown> | null;
+  variants: PublicProductVariant[];
+  displayMode: "NORMAL" | "OUT_OF_STOCK_WATERMARK";
+  watermarkText: null | { vi: string; zh: string; en: string };
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export type ApiProduct = {
   id: string;
   slug?: string;

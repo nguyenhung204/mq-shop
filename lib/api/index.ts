@@ -16,6 +16,7 @@ import type {
   Paginated,
   PaymentMethod,
   ProductVariant,
+  PublicProductDetail,
   UpdateProductRequest,
   UpdateProductVariantRequest,
   WalletBalance,
@@ -50,6 +51,9 @@ export const catalogApi = {
     );
     return parsePage<ListingCard>(res);
   },
+  /** Public PDP — ACTIVE products of approved shops only. */
+  productDetail: (productId: string) =>
+    api.get<PublicProductDetail>(`/products/listing/${productId}`, { auth: false }),
   /** @deprecated prefer listing() */
   searchProducts: async (query: {
     q?: string;
@@ -80,6 +84,7 @@ export const catalogApi = {
       return { items: asArray<ApiProduct>(legacy), meta: undefined };
     }
   },
+  /** @deprecated prefer productDetail() for storefront PDP */
   product: (id: string) => api.get<ApiProduct>(`/products/${id}`, { auth: false }),
 };
 
