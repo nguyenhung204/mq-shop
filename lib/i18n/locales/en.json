@@ -118,7 +118,12 @@
     "home": "Home",
     "tech": "Tech",
     "essentials": "Essentials",
-    "gifts": "Gifts"
+    "gifts": "Gifts",
+    "electronics": "Electronics",
+    "fashion": "Fashion",
+    "home-living": "Home & Living",
+    "beauty": "Beauty",
+    "toys": "Toys"
   },
   "shop": {
     "filter": "Filter",
@@ -204,7 +209,68 @@
     "lostPasswordTitle": "Lost Password",
     "lostPasswordDesc": "Please enter your email address. You will receive a link to create a new password via email.",
     "resetPassword": "Reset password",
-    "backToLogin": "Back to login"
+    "backToLogin": "Back to login",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "myProfile": "My profile",
+    "signOut": "Sign out",
+    "nav": {
+      "profile": "Profile",
+      "password": "Password",
+      "email": "Email",
+      "activity": "Activity"
+    },
+    "sections": {
+      "profileTitle": "Profile details",
+      "profileDesc": "Update how your name and photo appear across MQ.",
+      "passwordTitle": "Change password",
+      "passwordDesc": "Use a strong password. You will sign in again after updating.",
+      "emailTitle": "Change email",
+      "emailDesc": "We will send a one-time code to your new email address.",
+      "activityTitle": "Your activity",
+      "activityDesc": "Jump to orders, wallet, returns, or open a shop."
+    },
+    "fields": {
+      "fullName": "Full name",
+      "avatar": "Avatar",
+      "avatarHint": "JPEG, PNG, WebP or GIF · max 5MB",
+      "currentPassword": "Current password",
+      "newPassword": "New password (min 8)",
+      "newEmail": "New email",
+      "otp": "OTP code"
+    },
+    "actions": {
+      "saveProfile": "Save profile",
+      "updatePassword": "Update password",
+      "requestOtp": "Request OTP",
+      "confirmEmail": "Confirm email"
+    },
+    "messages": {
+      "profileUpdated": "Profile updated.",
+      "passwordTooShort": "Password must be at least 8 characters.",
+      "otpSent": "OTP sent to the new email.",
+      "emailUpdated": "Email updated."
+    },
+    "links": {
+      "orders": "Orders",
+      "ordersDesc": "Track purchases and delivery",
+      "wallet": "Wallet",
+      "walletDesc": "Balance, transfers, and payouts",
+      "rma": "RMA",
+      "rmaDesc": "Returns and exchanges",
+      "applyShop": "Apply shop",
+      "applyShopDesc": "Start selling on MQ"
+    },
+    "otp": {
+      "timeRemaining": "Time remaining",
+      "codeExpired": "Code expired",
+      "minutes": "min",
+      "seconds": "sec",
+      "hintActive": "OTP is valid for {minutes} minutes from when it was sent.",
+      "hintExpired": "Code expired — tap Resend OTP for a new one.",
+      "ariaExpires": "OTP expires in {time}",
+      "ariaExpired": "OTP expired"
+    }
   },
   "mega": {
     "productTypes": "Product Types",

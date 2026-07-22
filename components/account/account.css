@@ -1,0 +1,313 @@
+/* Imported by AccountDashboard — keeps styles in the component chunk */
+.mq-account-page {
+  min-height: calc(100vh - var(--mq-header-h) - var(--mq-topbar-h, 0px));
+  padding: 1.75rem 0 3rem;
+  background: linear-gradient(180deg, var(--mq-surface-subtle) 0%, var(--mq-surface) 55%);
+}
+
+.mq-account-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--mq-border);
+  border-radius: var(--mq-radius-lg);
+  background: var(--mq-surface);
+  box-shadow: var(--mq-shadow-sm);
+}
+
+.mq-account-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--mq-border);
+}
+
+.mq-account-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid var(--mq-border);
+  flex-shrink: 0;
+}
+
+.mq-account-avatar-lg {
+  width: 64px;
+  height: 64px;
+}
+
+.mq-account-avatar-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-figtree), system-ui, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111;
+  background: linear-gradient(135deg, var(--mq-gold), #f5c400);
+}
+
+.mq-account-avatar-lg.mq-account-avatar-fallback {
+  font-size: 1.15rem;
+}
+
+.mq-account-identity-text {
+  min-width: 0;
+}
+
+.mq-account-kicker {
+  margin: 0 0 0.2rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mq-text-muted);
+}
+
+.mq-account-name {
+  margin: 0;
+  font-family: var(--font-figtree), system-ui, sans-serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  color: var(--mq-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mq-account-email,
+.mq-account-roles {
+  margin: 0.2rem 0 0;
+  font-size: 0.75rem;
+  color: var(--mq-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mq-account-nav {
+  display: flex;
+  flex-direction: row;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding-bottom: 0.15rem;
+}
+
+.mq-account-nav-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-shrink: 0;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--mq-text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+
+.mq-account-nav-item:hover {
+  color: var(--mq-text);
+  background: var(--mq-surface-subtle);
+}
+
+.mq-account-nav-item.is-active {
+  color: #111;
+  background: var(--mq-gold);
+  border-color: #e7ba0a;
+  box-shadow: 0 6px 16px rgba(255, 210, 29, 0.28);
+}
+
+.mq-account-signout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  margin-top: auto;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid var(--mq-border);
+  border-radius: 999px;
+  background: var(--mq-surface);
+  color: var(--mq-text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+
+.mq-account-signout:hover {
+  color: #c2410c;
+  border-color: #f0c4b0;
+  background: #fff7f4;
+}
+
+.mq-account-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.mq-account-panel {
+  padding: 1.35rem 1.25rem 1.45rem;
+  border: 1px solid var(--mq-border);
+  border-radius: var(--mq-radius-lg);
+  background: var(--mq-surface);
+  box-shadow: var(--mq-shadow-sm);
+}
+
+.mq-account-panel-head {
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.95rem;
+  border-bottom: 1px solid var(--mq-border);
+}
+
+.mq-account-panel-head h2 {
+  margin: 0;
+  font-family: var(--font-figtree), system-ui, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--mq-text);
+}
+
+.mq-account-panel-head h2::after {
+  content: "";
+  display: block;
+  width: 2rem;
+  height: 3px;
+  margin-top: 0.55rem;
+  border-radius: 999px;
+  background: var(--mq-gold);
+}
+
+.mq-account-panel-head p {
+  margin: 0.55rem 0 0;
+  max-width: 36rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--mq-text-secondary);
+}
+
+.mq-account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+  max-width: 28rem;
+}
+
+.mq-account-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.mq-account-field label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--mq-text-secondary);
+}
+
+.mq-account-hint {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--mq-text-muted);
+}
+
+.mq-account-avatar-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+}
+
+.mq-account-avatar-row .mq-account-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.mq-account-link-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.mq-account-link-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 1rem 1.05rem;
+  border: 1px solid var(--mq-border);
+  border-radius: 16px;
+  background: var(--mq-surface-subtle);
+  color: var(--mq-text);
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.mq-account-link-card:hover {
+  border-color: #e7ba0a;
+  background: var(--mq-surface);
+  transform: translateY(-1px);
+}
+
+.mq-account-link-card strong {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.mq-account-link-card small {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.75rem;
+  color: var(--mq-text-muted);
+}
+
+.mq-account-main .mq-btn {
+  align-self: flex-start;
+  border-radius: 999px;
+}
+
+@media (min-width: 720px) {
+  .mq-account-link-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 960px) {
+  .mq-account-sidebar {
+    position: sticky;
+    top: calc(var(--mq-header-h) + 1rem);
+    min-height: 28rem;
+  }
+
+  .mq-account-identity {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .mq-account-nav {
+    flex-direction: column;
+    overflow: visible;
+  }
+
+  .mq-account-nav-item {
+    width: 100%;
+    justify-content: flex-start;
+    border-radius: 12px;
+  }
+
+  .mq-account-panel {
+    padding: 1.75rem;
+    min-height: 28rem;
+  }
+}

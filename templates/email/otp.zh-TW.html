@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <meta name="color-scheme" content="light" />
+    <meta name="supported-color-schemes" content="light" />
+    <title>MQ — 驗證碼</title>
+    <!--
+      Locale: zh-TW (translated from otp.html / en)
+      Placeholders: {{fullName}} · {{otpCode}} · {{expiresIn}} e.g. "10 分鐘" · {{year}}
+    -->
+  </head>
+  <body style="margin:0;padding:0;background:#f3f3f3;color:#111111;font-family:'Nunito Sans','PingFang TC','Microsoft JhengHei',Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">
+      您的 MQ 驗證碼為 {{otpCode}} — {{expiresIn}}後失效。
+    </div>
+
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f3f3f3;">
+      <tr>
+        <td align="center" style="padding:40px 16px 48px;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:580px;">
+            <tr>
+              <td style="padding:0 0 20px;text-align:center;">
+                <span style="font-family:'Figtree',Helvetica,Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.32em;color:#111111;">MQ</span>
+              </td>
+            </tr>
+          </table>
+
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:580px;background:#ffffff;border-radius:28px;overflow:hidden;border:1px solid #ececec;box-shadow:0 12px 40px rgba(0,0,0,0.07),0 2px 8px rgba(0,0,0,0.03);">
+            <tr>
+              <td style="height:5px;line-height:5px;font-size:0;background:#ffd21d;">&nbsp;</td>
+            </tr>
+
+            <tr>
+              <td style="padding:36px 36px 8px;background:#111111;">
+                <p style="margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#ffd21d;">
+                  電子郵件驗證
+                </p>
+                <h1 style="margin:0;font-family:'Figtree','PingFang TC','Microsoft JhengHei',Helvetica,Arial,sans-serif;font-size:28px;font-weight:600;letter-spacing:-0.03em;line-height:1.2;color:#ffffff;">
+                  這是您的驗證碼
+                </h1>
+                <p style="margin:12px 0 0;max-width:360px;font-size:14px;line-height:1.55;color:rgba(255,255,255,0.68);">
+                  Soft essentials · 安全 · 僅限一次使用
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="height:18px;line-height:18px;font-size:0;background:linear-gradient(180deg,#111111 0%,#ffffff 100%);">&nbsp;</td>
+            </tr>
+
+            <tr>
+              <td style="padding:8px 36px 8px;">
+                <p style="margin:0 0 22px;font-size:15px;line-height:1.65;color:#555555;">
+                  您好{{fullName}}：<br />
+                  請在 MQ 輸入下方 6 位數驗證碼以繼續。驗證碼將於
+                  <strong style="color:#111111;">{{expiresIn}}</strong>後失效。
+                </p>
+
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#fafafa;border:1px solid #ececec;border-radius:20px;">
+                  <tr>
+                    <td align="center" style="padding:28px 20px 12px;">
+                      <p style="margin:0 0 14px;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#888888;">
+                        驗證碼
+                      </p>
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 auto;">
+                        <tr>
+                          <td align="center" style="padding:18px 28px;background:#111111;border-radius:16px;border:2px solid #ffd21d;">
+                            <span style="font-family:'Figtree',Helvetica,Arial,sans-serif;font-size:34px;font-weight:700;letter-spacing:0.42em;color:#ffffff;line-height:1;padding-left:0.42em;">
+                              {{otpCode}}
+                            </span>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td style="padding:8px 20px 24px;">
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#111111;border-radius:18px;border:2px solid #ffd21d;">
+                        <tr>
+                          <td align="center" style="padding:20px 16px 8px;">
+                            <p style="margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#ffd21d;">
+                              剩餘時間
+                            </p>
+                            <p style="margin:0;font-family:'Figtree',Helvetica,Arial,sans-serif;font-size:48px;font-weight:700;letter-spacing:0.12em;line-height:1;color:#ffffff;font-variant-numeric:tabular-nums;">
+                              10:00
+                            </p>
+                            <p style="margin:10px 0 0;font-size:13px;font-weight:600;color:rgba(255,255,255,0.75);">
+                              {{expiresIn}} · 網站倒數計時
+                            </p>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding:12px 20px 20px;">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:rgba(255,255,255,0.12);border-radius:999px;">
+                              <tr>
+                                <td style="height:8px;line-height:8px;font-size:0;width:100%;background:#ffd21d;border-radius:999px;">&nbsp;</td>
+                              </tr>
+                            </table>
+                            <p style="margin:12px 0 0;text-align:center;font-size:12px;line-height:1.45;color:rgba(255,255,255,0.55);">
+                              時間到了？請點 <strong style="color:#ffd21d;">Resend OTP</strong> 取得新驗證碼。
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:22px 36px 8px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <td style="padding:4px 0 4px 14px;border-left:3px solid #ffd21d;">
+                      <p style="margin:0 0 4px;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#111111;">
+                        安全提醒
+                      </p>
+                      <p style="margin:0;font-size:13px;line-height:1.55;color:#777777;">
+                        MQ 絕不會透過電話或聊天詢問您的 OTP。
+                        若您未申請此驗證碼，請忽略本郵件——您的帳戶仍然安全。
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:28px 36px 32px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top:1px solid #ececec;">
+                  <tr>
+                    <td style="padding-top:20px;">
+                      <p style="margin:0 0 4px;font-family:'Figtree',Helvetica,Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:0.22em;color:#111111;">
+                        MQ
+                      </p>
+                      <p style="margin:0;font-size:12px;line-height:1.5;color:#999999;">
+                        Soft modern essentials<br />
+                        © {{year}} MQ Shop. 版權所有。
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+
+          <p style="margin:22px 0 0;max-width:580px;font-size:11px;line-height:1.5;color:#aaaaaa;text-align:center;">
+            您收到此郵件是因為正在驗證 MQ 帳戶。
+          </p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

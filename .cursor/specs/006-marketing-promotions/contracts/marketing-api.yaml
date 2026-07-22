@@ -1,0 +1,339 @@
+openapi: 3.0.3
+info:
+  title: MQ Shopping Marketing API
+  version: 1.0.0
+  description: >
+    Promotions (Seller PENDING, Admin ACTIVE), Admin approve/reject,
+    banner publish with cache invalidation, media library zip download.
+servers:
+  - url: /api/v1
+tags:
+  - name: Promotion
+  - name: PromotionAdmin
+  - name: Banner
+  - name: MediaLibrary
+  - name: PublicMarketing
+paths:
+  /marketing/promotions:
+    get:
+      tags: [Promotion]
+      summary: List promotions (scoped by role)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema:
+            $ref: "#/components/schemas/PromotionStatus"
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Paginated promotions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PromotionPage"
+    post:
+      tags: [Promotion]
+      summary: Create promotion (Seller → PENDING, Admin → ACTIVE)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertPromotionRequest"
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Validation (budget, schedule, foreign SKU)
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /marketing/promotions/{promotionId}:
+    patch:
+      tags: [Promotion]
+      summary: Update promotion (commercial edit may re-PENDING for Seller)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PromotionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertPromotionRequest"
+      responses:
+        "200":
+          description: Updated
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/marketing/promotions/pending:
+    get:
+      tags: [PromotionAdmin]
+      summary: Admin list PENDING promotions with budget and SKUs
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Pending list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PromotionPage"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/marketing/promotions/{promotionId}/approve:
+    post:
+      tags: [PromotionAdmin]
+      summary: Approve PENDING promotion → ACTIVE
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PromotionId"
+      responses:
+        "200":
+          description: ACTIVE; Seller notified
+        "409":
+          description: Already processed
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/marketing/promotions/{promotionId}/reject:
+    post:
+      tags: [PromotionAdmin]
+      summary: Reject PENDING promotion (reason required)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PromotionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason:
+                  type: string
+                  minLength: 1
+      responses:
+        "200":
+          description: REJECTED; Seller notified
+        "400":
+          description: Missing reason
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /admin/marketing/banners:
+    post:
+      tags: [Banner]
+      summary: Publish banner/content (multipart image + metadata)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [title, url, language, image]
+              properties:
+                title:
+                  type: string
+                url:
+                  type: string
+                language:
+                  type: string
+                  enum: [VI, EN]
+                image:
+                  type: string
+                  format: binary
+                sortOrder:
+                  type: integer
+      responses:
+        "201":
+          description: Published; public cache refreshed
+        "400":
+          description: Missing required fields
+        "503":
+          description: Cache invalidation failed
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /public/marketing/banners:
+    get:
+      tags: [PublicMarketing]
+      summary: Public banner list (Redis-backed)
+      parameters:
+        - in: query
+          name: lang
+          required: true
+          schema:
+            type: string
+            enum: [VI, EN]
+      responses:
+        "200":
+          description: Active banners for language
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Banner"
+  /marketing/media/folders:
+    get:
+      tags: [MediaLibrary]
+      summary: List media resource folders (VIEW_MKT_MAT)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Folder list
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /marketing/media/folders/{folderSlug}/download:
+    get:
+      tags: [MediaLibrary]
+      summary: Download folder as zip archive
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: folderSlug
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: application/zip stream
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          description: Empty folder or not found
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    PromotionId:
+      in: path
+      name: promotionId
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    Forbidden:
+      description: Missing permission or role blocked
+  schemas:
+    PromotionStatus:
+      type: string
+      enum: [PENDING, ACTIVE, REJECTED]
+    PromotionType:
+      type: string
+      enum: [PERCENT_OFF, FIXED_AMOUNT_OFF, SITE_WIDE]
+    UpsertPromotionRequest:
+      type: object
+      required: [name, type, discountLevel, budget, startAt, endAt]
+      properties:
+        name:
+          type: string
+        type:
+          $ref: "#/components/schemas/PromotionType"
+        discountLevel:
+          type: number
+        budget:
+          type: number
+          minimum: 0.01
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        skuIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+    Promotion:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        scope:
+          type: string
+          enum: [SHOP, PLATFORM]
+        name:
+          type: string
+        type:
+          $ref: "#/components/schemas/PromotionType"
+        discountLevel:
+          type: number
+        budget:
+          type: number
+        status:
+          $ref: "#/components/schemas/PromotionStatus"
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        rejectionReason:
+          type: string
+          nullable: true
+        skus:
+          type: array
+          items:
+            type: string
+    PromotionPage:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Promotion"
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+            pageSize:
+              type: integer
+            total:
+              type: integer
+    Banner:
+      type: object
+      properties:
+        title:
+          type: string
+        url:
+          type: string
+        language:
+          type: string
+        imageUrl:
+          type: string
+        sortOrder:
+          type: integer

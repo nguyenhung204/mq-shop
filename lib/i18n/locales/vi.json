@@ -118,7 +118,12 @@
     "home": "Nhà cửa",
     "tech": "Công nghệ",
     "essentials": "Thiết yếu",
-    "gifts": "Quà tặng"
+    "gifts": "Quà tặng",
+    "electronics": "Điện tử",
+    "fashion": "Thời trang",
+    "home-living": "Nhà cửa & Đời sống",
+    "beauty": "Làm đẹp",
+    "toys": "Đồ chơi"
   },
   "shop": {
     "filter": "Lọc",
@@ -204,7 +209,68 @@
     "lostPasswordTitle": "Quên mật khẩu",
     "lostPasswordDesc": "Nhập email của bạn. Bạn sẽ nhận liên kết tạo mật khẩu mới qua email.",
     "resetPassword": "Đặt lại mật khẩu",
-    "backToLogin": "Quay lại đăng nhập"
+    "backToLogin": "Quay lại đăng nhập",
+    "noAccount": "Chưa có tài khoản?",
+    "haveAccount": "Đã có tài khoản?",
+    "myProfile": "Hồ sơ của tôi",
+    "signOut": "Đăng xuất",
+    "nav": {
+      "profile": "Hồ sơ",
+      "password": "Mật khẩu",
+      "email": "Email",
+      "activity": "Hoạt động"
+    },
+    "sections": {
+      "profileTitle": "Thông tin hồ sơ",
+      "profileDesc": "Cập nhật tên và ảnh hiển thị trên MQ.",
+      "passwordTitle": "Đổi mật khẩu",
+      "passwordDesc": "Dùng mật khẩu mạnh. Bạn sẽ đăng nhập lại sau khi đổi.",
+      "emailTitle": "Đổi email",
+      "emailDesc": "Chúng tôi sẽ gửi mã OTP tới email mới.",
+      "activityTitle": "Hoạt động của bạn",
+      "activityDesc": "Đến đơn hàng, ví, đổi trả hoặc mở gian hàng."
+    },
+    "fields": {
+      "fullName": "Họ và tên",
+      "avatar": "Ảnh đại diện",
+      "avatarHint": "JPEG, PNG, WebP hoặc GIF · tối đa 5MB",
+      "currentPassword": "Mật khẩu hiện tại",
+      "newPassword": "Mật khẩu mới (tối thiểu 8)",
+      "newEmail": "Email mới",
+      "otp": "Mã OTP"
+    },
+    "actions": {
+      "saveProfile": "Lưu hồ sơ",
+      "updatePassword": "Cập nhật mật khẩu",
+      "requestOtp": "Gửi OTP",
+      "confirmEmail": "Xác nhận email"
+    },
+    "messages": {
+      "profileUpdated": "Đã cập nhật hồ sơ.",
+      "passwordTooShort": "Mật khẩu phải có ít nhất 8 ký tự.",
+      "otpSent": "Đã gửi OTP tới email mới.",
+      "emailUpdated": "Đã cập nhật email."
+    },
+    "links": {
+      "orders": "Đơn hàng",
+      "ordersDesc": "Theo dõi mua sắm và giao hàng",
+      "wallet": "Ví",
+      "walletDesc": "Số dư, chuyển khoản và rút tiền",
+      "rma": "RMA",
+      "rmaDesc": "Đổi trả và hoàn hàng",
+      "applyShop": "Mở gian hàng",
+      "applyShopDesc": "Bắt đầu bán trên MQ"
+    },
+    "otp": {
+      "timeRemaining": "Thời gian còn lại",
+      "codeExpired": "Mã đã hết hạn",
+      "minutes": "phút",
+      "seconds": "giây",
+      "hintActive": "Mã OTP có hiệu lực {minutes} phút kể từ lúc gửi.",
+      "hintExpired": "Mã đã hết hạn — bấm Resend OTP để nhận mã mới.",
+      "ariaExpires": "OTP hết hạn sau {time}",
+      "ariaExpired": "OTP đã hết hạn"
+    }
   },
   "mega": {
     "productTypes": "Loại sản phẩm",

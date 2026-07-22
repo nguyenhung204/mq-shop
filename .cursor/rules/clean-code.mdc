@@ -1,0 +1,77 @@
+---
+description: Enforce clean code principles, single responsibility, modular architecture, and maintainable code. Generate code that is easy to read, review, test, and extend.
+globs: "**/*.{ts,js,tsx,jsx}"
+alwaysApply: true
+---
+
+# Clean Code Rule
+
+## Objective
+
+Write production-ready code that is easy to understand, review, test, maintain, and extend.
+
+Prioritize readability over cleverness. Future developers should understand the code without needing explanations.
+
+## Core Principles
+
+Always follow: SOLID, KISS, DRY, YAGNI, composition over inheritance, Single Responsibility.
+
+Never sacrifice readability for shorter code.
+
+## Single Responsibility
+
+Every file / class answers one question: "What is this responsible for?" If the answer contains "and", split it.
+
+| Layer | Responsibility only |
+| --- | --- |
+| `*Controller` | HTTP: receive → validate → call service → return |
+| `*Service` | Business logic |
+| `*Repository` / store | Database / persistence access |
+| DTO | Data shape only |
+
+Never put business logic in controllers, DTOs, entities, middleware, or repositories.
+
+Never put DB / email / upload / cache / HTTP in a catch-all service — split into focused services (e.g. `OtpService`, `AvatarService`, `MailQueueService`).
+
+## Functions
+
+- One job per function; names describe behavior (`findUserByEmail`, not `handle` / `process` / `doStuff`).
+- Prefer 5–30 lines; max ~50 — extract private helpers when larger.
+- Prefer early return over deep nesting.
+- Always `async`/`await`; avoid nested Promise chains.
+
+## Naming
+
+- Variables explain intent: `activeUsers`, `isExpired`, `orderTotal` — not `data`, `obj`, `temp`, `result`.
+- Avoid abbreviations unless universally accepted.
+- No magic numbers: use named constants (`MAX_RETRY = 5`).
+
+## Architecture
+
+- Group by feature (`users/`, `shop/`, …), not giant shared dump folders.
+- Dependency direction: Controllers → Services → Repositories → Database. Never reverse.
+- Inject dependencies; do not `new` production services/repos in app code (test fakes/stacks may construct explicitly).
+- Prefer composition over inheritance.
+
+## Validation & Errors
+
+- Use dedicated validators; avoid validation scattered across services.
+- Throw meaningful domain errors (`UserNotFoundException`, `InvalidPasswordException`), not `throw Error("Something went wrong")`.
+
+## Comments, Logging, Duplication
+
+- Comments explain **why**, never **what**. Prefer readable code over comments.
+- Log meaningful events only; never log passwords, tokens, secrets, or PII.
+- Extract duplicated logic when it appears twice.
+
+## Testing
+
+- Prefer DI and no hidden dependencies so business logic is unit-test friendly.
+
+## When Generating or Refactoring
+
+Before finishing, verify: SRP, SOLID, small clear functions, no business logic in controllers, repos only persist, DTOs only transport, no magic numbers, early returns, testable, easy to extend.
+
+When refactoring: improve readability/modularity; never change behavior; no unnecessary abstraction or premature optimization.
+
+Generated code must follow this project's architecture, minimize coupling, maximize cohesion, and stay reviewable with minimal explanation.

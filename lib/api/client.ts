@@ -1,4 +1,4 @@
-import type { ApiErrorBody } from "./types";
+import type { ApiErrorBody, PageMeta } from "./types";
 
 const TOKEN_KEY = "mq_access_token";
 const REFRESH_KEY = "mq_refresh_token";
@@ -21,9 +21,9 @@ export function getRefreshToken(): string | null {
   return localStorage.getItem(REFRESH_KEY);
 }
 
-export function setTokens(accessToken: string, refreshToken: string) {
+export function setTokens(accessToken: string, refreshToken?: string) {
   localStorage.setItem(TOKEN_KEY, accessToken);
-  localStorage.setItem(REFRESH_KEY, refreshToken);
+  if (refreshToken) localStorage.setItem(REFRESH_KEY, refreshToken);
 }
 
 export function clearTokens() {
@@ -34,12 +34,14 @@ export function clearTokens() {
 export class ApiError extends Error {
   status: number;
   body: ApiErrorBody | null;
+  code: string | null;
 
   constructor(status: number, message: string, body: ApiErrorBody | null = null) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.body = body;
+    this.code = body?.data?.code || null;
   }
 }
 
@@ -53,22 +55,51 @@ function messageFromBody(body: ApiErrorBody | null, fallback: string): string {
 type RequestOptions = {
   method?: string;
   body?: unknown;
+  formData?: FormData;
   auth?: boolean;
   headers?: Record<string, string>;
   query?: Record<string, string | number | boolean | undefined | null>;
   /** Skip refresh retry (used by refresh itself) */
   _retried?: boolean;
+  /** Return full envelope { data, meta } instead of unwrapped data */
+  withMeta?: boolean;
 };
 
 let refreshPromise: Promise<boolean> | null = null;
 
 async function refreshAccessToken(): Promise<boolean> {
+  try {
+    // Docs: cookie-based POST /auth/refresh
+    const cookieRes = await fetch(`${getApiBase()}/auth/refresh`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (cookieRes.ok) {
+      const json = (await cookieRes.json()) as {
+        data?: { accessToken?: string; refreshToken?: string; user?: unknown };
+        accessToken?: string;
+        refreshToken?: string;
+      };
+      const access = json.data?.accessToken || json.accessToken;
+      const refresh = json.data?.refreshToken || json.refreshToken;
+      if (access) setTokens(access, refresh);
+      return true;
+    }
+  } catch {
+    /* fall through to body refresh */
+  }
+
   const refreshToken = getRefreshToken();
-  if (!refreshToken) return false;
+  if (!refreshToken) {
+    clearTokens();
+    return false;
+  }
 
   try {
     const res = await fetch(`${getApiBase()}/auth/refresh-token`, {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refreshToken }),
     });
@@ -76,8 +107,18 @@ async function refreshAccessToken(): Promise<boolean> {
       clearTokens();
       return false;
     }
-    const data = (await res.json()) as { accessToken: string; refreshToken: string };
-    setTokens(data.accessToken, data.refreshToken);
+    const json = (await res.json()) as {
+      data?: { accessToken: string; refreshToken: string };
+      accessToken?: string;
+      refreshToken?: string;
+    };
+    const access = json.data?.accessToken || json.accessToken;
+    const refresh = json.data?.refreshToken || json.refreshToken;
+    if (!access) {
+      clearTokens();
+      return false;
+    }
+    setTokens(access, refresh);
     return true;
   } catch {
     clearTokens();
@@ -86,7 +127,9 @@ async function refreshAccessToken(): Promise<boolean> {
 }
 
 function buildUrl(path: string, query?: RequestOptions["query"]): string {
-  const url = new URL(path.startsWith("http") ? path : `${getApiBase()}${path.startsWith("/") ? path : `/${path}`}`);
+  const url = new URL(
+    path.startsWith("http") ? path : `${getApiBase()}${path.startsWith("/") ? path : `/${path}`}`,
+  );
   if (query) {
     Object.entries(query).forEach(([k, v]) => {
       if (v !== undefined && v !== null && v !== "") url.searchParams.set(k, String(v));
@@ -95,11 +138,34 @@ function buildUrl(path: string, query?: RequestOptions["query"]): string {
   return url.toString();
 }
 
+function isEnvelope(json: unknown): json is {
+  statusCode: number;
+  data: unknown;
+  meta?: PageMeta;
+  message?: string;
+} {
+  return (
+    !!json &&
+    typeof json === "object" &&
+    "statusCode" in json &&
+    "data" in json
+  );
+}
+
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { method = "GET", body, auth = true, headers = {}, query, _retried } = options;
+  const {
+    method = "GET",
+    body,
+    formData,
+    auth = true,
+    headers = {},
+    query,
+    _retried,
+    withMeta,
+  } = options;
   const reqHeaders: Record<string, string> = { ...headers };
 
-  if (body !== undefined) {
+  if (body !== undefined && !formData) {
     reqHeaders["Content-Type"] = "application/json";
   }
 
@@ -111,7 +177,12 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   const res = await fetch(buildUrl(path, query), {
     method,
     headers: reqHeaders,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    credentials: "include",
+    body: formData
+      ? formData
+      : body !== undefined
+        ? JSON.stringify(body)
+        : undefined,
   });
 
   if (res.status === 401 && auth && !_retried) {
@@ -149,16 +220,28 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     throw new ApiError(res.status, messageFromBody(errBody, res.statusText), errBody);
   }
 
+  if (withMeta && isEnvelope(json)) {
+    return { data: json.data, meta: json.meta } as T;
+  }
+
+  if (isEnvelope(json)) {
+    return json.data as T;
+  }
+
   return json as T;
 }
 
 export const api = {
-  get: <T>(path: string, opts?: Omit<RequestOptions, "method" | "body">) =>
+  get: <T>(path: string, opts?: Omit<RequestOptions, "method" | "body" | "formData">) =>
     apiRequest<T>(path, { ...opts, method: "GET" }),
-  post: <T>(path: string, body?: unknown, opts?: Omit<RequestOptions, "method" | "body">) =>
+  post: <T>(path: string, body?: unknown, opts?: Omit<RequestOptions, "method" | "body" | "formData">) =>
     apiRequest<T>(path, { ...opts, method: "POST", body }),
-  put: <T>(path: string, body?: unknown, opts?: Omit<RequestOptions, "method" | "body">) =>
+  put: <T>(path: string, body?: unknown, opts?: Omit<RequestOptions, "method" | "body" | "formData">) =>
     apiRequest<T>(path, { ...opts, method: "PUT", body }),
-  delete: <T>(path: string, opts?: Omit<RequestOptions, "method" | "body">) =>
+  patch: <T>(path: string, body?: unknown, opts?: Omit<RequestOptions, "method" | "body" | "formData">) =>
+    apiRequest<T>(path, { ...opts, method: "PATCH", body }),
+  delete: <T>(path: string, opts?: Omit<RequestOptions, "method" | "body" | "formData">) =>
     apiRequest<T>(path, { ...opts, method: "DELETE" }),
+  postForm: <T>(path: string, formData: FormData, opts?: Omit<RequestOptions, "method" | "body" | "formData">) =>
+    apiRequest<T>(path, { ...opts, method: "POST", formData }),
 };

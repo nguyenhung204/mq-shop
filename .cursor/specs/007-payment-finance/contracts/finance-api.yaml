@@ -1,0 +1,558 @@
+openapi: 3.0.3
+info:
+  title: MQ Shopping Finance API
+  version: 1.0.0
+  description: >
+    Shop payouts, dual-control finance configuration, landing-cost quotes,
+    and role-scoped transaction history / report export.
+servers:
+  - url: /api/v1
+tags:
+  - name: Payout
+  - name: FinanceConfig
+  - name: LandingCost
+  - name: Transactions
+paths:
+  /finance/payouts:
+    post:
+      tags: [Payout]
+      summary: Create PENDING payout statement for shop and period
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePayoutRequest"
+      responses:
+        "201":
+          description: Payout slip created (PENDING)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutSlipResponse"
+        "400":
+          description: net ≤ 0, overlapping period, or missing revenue
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    get:
+      tags: [Payout]
+      summary: List payout slips (scoped by role)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: shopId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: status
+          schema:
+            $ref: "#/components/schemas/PayoutStatus"
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: Paginated payout slips
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutSlipPage"
+  /finance/payouts/{id}:
+    get:
+      tags: [Payout]
+      summary: Get payout slip detail
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PayoutId"
+      responses:
+        "200":
+          description: Payout detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutSlipResponse"
+        "404":
+          description: Not found
+  /finance/payouts/{id}/approve:
+    post:
+      tags: [Payout]
+      summary: Approve payout — initiate bank/gateway transfer
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PayoutId"
+      responses:
+        "200":
+          description: COMPLETED or TRANSFER_FAILED with outcome
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutSlipResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          description: Invalid state or missing shop payout destination
+  /finance/payouts/{id}/reject:
+    post:
+      tags: [Payout]
+      summary: Reject payout — no transfer
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PayoutId"
+      responses:
+        "200":
+          description: REJECTED
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutSlipResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /finance/payouts/{id}/retry-transfer:
+    post:
+      tags: [Payout]
+      summary: Retry gateway transfer for TRANSFER_FAILED slip
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PayoutId"
+      responses:
+        "200":
+          description: Retry outcome
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutSlipResponse"
+  /finance/config/live:
+    get:
+      tags: [FinanceConfig]
+      summary: Get live finance config (secrets masked)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Masked live config
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinanceConfigMaskedResponse"
+  /finance/config/pending:
+    post:
+      tags: [FinanceConfig]
+      summary: Super Admin submit pending finance config change
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitFinanceConfigRequest"
+      responses:
+        "201":
+          description: Pending config saved (encrypted)
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    get:
+      tags: [FinanceConfig]
+      summary: View pending config (masked) for Accounting review
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Pending config or null
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinanceConfigPendingResponse"
+  /finance/config/pending/apply:
+    post:
+      tags: [FinanceConfig]
+      summary: Accounting apply pending config platform-wide
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Live config updated
+        "404":
+          description: No pending config
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /finance/config/pending/discard:
+    post:
+      tags: [FinanceConfig]
+      summary: Accounting discard pending config
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Pending discarded
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /finance/config/commission-overrides:
+    post:
+      tags: [FinanceConfig]
+      summary: Upsert per-account commission override (Admin)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, commissionPercent]
+              properties:
+                userId:
+                  type: string
+                  format: uuid
+                commissionPercent:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+      responses:
+        "200":
+          description: Override saved
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /finance/landing-cost:
+    post:
+      tags: [LandingCost]
+      summary: Calculate landing cost breakdown and final amount
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LandingCostRequest"
+      responses:
+        "200":
+          description: Breakdown and final amount (floor 0)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LandingCostResponse"
+        "400":
+          description: Validation error
+  /finance/transactions:
+    get:
+      tags: [Transactions]
+      summary: Role-scoped transaction history
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: Scoped transaction page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionPage"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /finance/reports/export:
+    post:
+      tags: [Transactions]
+      summary: Start async Excel/CSV export (same scope as view)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportExportRequest"
+      responses:
+        "202":
+          description: Export job accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportExportJobResponse"
+  /finance/reports/export/{jobId}:
+    get:
+      tags: [Transactions]
+      summary: Poll export job status and download URL
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Job status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportExportJobResponse"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    PayoutId:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    Forbidden:
+      description: Missing permission
+    Unauthorized:
+      description: Not authenticated
+  schemas:
+    PayoutStatus:
+      type: string
+      enum: [PENDING, COMPLETED, REJECTED, TRANSFER_FAILED]
+    CreatePayoutRequest:
+      type: object
+      required: [shopId, startDate, endDate]
+      properties:
+        shopId:
+          type: string
+          format: uuid
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+    PayoutSlipResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        shopId:
+          type: string
+          format: uuid
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        grossRevenue:
+          type: number
+        platformFees:
+          type: number
+        shippingDeduction:
+          type: number
+        netAmount:
+          type: number
+        status:
+          $ref: "#/components/schemas/PayoutStatus"
+        transferReference:
+          type: string
+          nullable: true
+    PayoutSlipPage:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/PayoutSlipResponse"
+        meta:
+          $ref: "#/components/schemas/PageMeta"
+    FinanceConfigMaskedResponse:
+      type: object
+      properties:
+        commissionPercent:
+          type: number
+        gatewayName:
+          type: string
+        apiKeyMasked:
+          type: string
+          example: "****abcd"
+        secretKeyPresent:
+          type: boolean
+    SubmitFinanceConfigRequest:
+      type: object
+      required: [commissionPercent, gatewayName, apiKey, secretKey]
+      properties:
+        commissionPercent:
+          type: number
+        gatewayName:
+          type: string
+        apiKey:
+          type: string
+          writeOnly: true
+        secretKey:
+          type: string
+          writeOnly: true
+    FinanceConfigPendingResponse:
+      type: object
+      nullable: true
+      properties:
+        id:
+          type: string
+          format: uuid
+        commissionPercent:
+          type: number
+        gatewayName:
+          type: string
+        apiKeyMasked:
+          type: string
+        secretKeyPresent:
+          type: boolean
+        submittedAt:
+          type: string
+          format: date-time
+    LandingCostRequest:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            required: [basePrice]
+            properties:
+              basePrice:
+                type: number
+                minimum: 0
+              shipping:
+                type: number
+                minimum: 0
+                default: 0
+              vat:
+                type: number
+                minimum: 0
+                default: 0
+              packagingFee:
+                type: number
+                minimum: 0
+                default: 0
+              platformFee:
+                type: number
+                minimum: 0
+                default: 0
+              promotionIds:
+                type: array
+                items:
+                  type: string
+                  format: uuid
+    LandingCostResponse:
+      type: object
+      properties:
+        breakdown:
+          type: array
+          items:
+            type: object
+            properties:
+              label:
+                type: string
+              amount:
+                type: number
+        finalAmount:
+          type: number
+          minimum: 0
+    TransactionRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
+        description:
+          type: string
+    TransactionPage:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/TransactionRecord"
+        meta:
+          $ref: "#/components/schemas/PageMeta"
+    ReportExportRequest:
+      type: object
+      required: [startDate, endDate, format]
+      properties:
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        format:
+          type: string
+          enum: [EXCEL, CSV]
+    ReportExportJobResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [QUEUED, RUNNING, COMPLETED, FAILED]
+        downloadUrl:
+          type: string
+          nullable: true
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        errorMessage:
+          type: string
+          nullable: true
+    PageMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer

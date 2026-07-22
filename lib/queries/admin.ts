@@ -3,14 +3,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { adminApi, financeApi } from "@/lib/api";
-import type { ApiBanner, ApiProduct, ApiRma, ApiShop, LocalizedText } from "@/lib/api/types";
-import { asArray } from "@/lib/api/utils";
+import { ApiError } from "@/lib/api/client";
+import type { ApiBanner, ApiProduct, ApiRma, ApiShop } from "@/lib/api/types";
+import { asArray, parsePage } from "@/lib/api/utils";
 import { getErrorMessage } from "@/lib/queries/utils";
 
 export const adminKeys = {
   all: ["admin"] as const,
-  shops: (status: string) => [...adminKeys.all, "shops", status] as const,
-  products: (status: string) => [...adminKeys.all, "products", status] as const,
+  shops: (status: string, page: number) => [...adminKeys.all, "shops", status, page] as const,
+  shop: (id: string) => [...adminKeys.all, "shop", id] as const,
+  products: (status: string, page: number) => [...adminKeys.all, "products", status, page] as const,
   rma: () => [...adminKeys.all, "rma"] as const,
   finance: () => [...adminKeys.all, "finance"] as const,
   banners: () => [...adminKeys.all, "banners"] as const,
@@ -20,17 +22,36 @@ export type FinanceBatch = { id: string; status?: string; netAmountUsd?: string 
 export type FinanceWithdraw = { id: string; status?: string; amountPoints?: string | number };
 export type FinanceGateway = { id: string; gatewayName?: string; status?: string; createdBy?: string };
 
-export function useAdminShops(status: string) {
+function shopActionError(e: unknown): string {
+  if (e instanceof ApiError) {
+    if (e.code === "SHOP_NOT_PENDING") return "Shop is not PENDING — cannot approve/reject.";
+    if (e.code === "SHOP_NOT_APPROVED") return "Shop is not APPROVED — cannot violation-lock.";
+  }
+  return getErrorMessage(e);
+}
+
+export function useAdminShops(status: string, page = 1, pageSize = 20) {
   return useQuery({
-    queryKey: adminKeys.shops(status),
-    queryFn: async () => asArray<ApiShop>(await adminApi.shops(status)),
+    queryKey: adminKeys.shops(status, page),
+    queryFn: async () => parsePage<ApiShop>(await adminApi.shops(status, page, pageSize)),
   });
 }
 
-export function useAdminProducts(status: string) {
+export function useAdminShop(id: string) {
   return useQuery({
-    queryKey: adminKeys.products(status),
-    queryFn: async () => asArray<ApiProduct>(await adminApi.products(status)),
+    queryKey: adminKeys.shop(id),
+    queryFn: async () => {
+      const res = await adminApi.shop(id);
+      return res as ApiShop;
+    },
+    enabled: Boolean(id),
+  });
+}
+
+export function useAdminProducts(status: string, page = 1, pageSize = 20) {
+  return useQuery({
+    queryKey: adminKeys.products(status, page),
+    queryFn: async () => parsePage<ApiProduct>(await adminApi.products(status, page, pageSize)),
   });
 }
 
@@ -78,33 +99,33 @@ export function useApproveShop() {
       invalidate();
       toast.success("Shop approved");
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
+    onError: (e) => toast.error(shopActionError(e)),
   });
 }
 
 export function useRejectShop() {
   const invalidate = useAdminInvalidate();
   return useMutation({
-    mutationFn: ({ id, reason }: { id: string; reason: LocalizedText }) =>
+    mutationFn: ({ id, reason }: { id: string; reason: string }) =>
       adminApi.rejectShop(id, { reason }),
     onSuccess: () => {
       invalidate();
       toast.success("Shop rejected");
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
+    onError: (e) => toast.error(shopActionError(e)),
   });
 }
 
 export function useSuspendShop() {
   const invalidate = useAdminInvalidate();
   return useMutation({
-    mutationFn: ({ id, reason }: { id: string; reason: LocalizedText }) =>
-      adminApi.suspendShop(id, { reason }),
+    mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
+      adminApi.suspendShop(id, reason ? { reason } : undefined),
     onSuccess: () => {
       invalidate();
-      toast.success("Shop suspended");
+      toast.success("Shop locked (violation)");
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
+    onError: (e) => toast.error(shopActionError(e)),
   });
 }
 
@@ -123,7 +144,7 @@ export function useApproveProduct() {
 export function useRejectProduct() {
   const invalidate = useAdminInvalidate();
   return useMutation({
-    mutationFn: ({ id, reason }: { id: string; reason: LocalizedText }) =>
+    mutationFn: ({ id, reason }: { id: string; reason: string }) =>
       adminApi.rejectProduct(id, { reason }),
     onSuccess: () => {
       invalidate();
@@ -142,6 +163,24 @@ export function useHideAdminProduct() {
       toast.success("Product hidden");
     },
     onError: (e) => toast.error(getErrorMessage(e)),
+  });
+}
+
+export function useUnhideAdminProduct() {
+  const invalidate = useAdminInvalidate();
+  return useMutation({
+    mutationFn: (id: string) => adminApi.unhideProduct(id),
+    onSuccess: () => {
+      invalidate();
+      toast.success("Product unhidden — pending review");
+    },
+    onError: (e) => {
+      if (e instanceof ApiError && e.code === "PRODUCT_NOT_HIDDEN") {
+        toast.error("Product is not hidden.");
+        return;
+      }
+      toast.error(getErrorMessage(e));
+    },
   });
 }
 

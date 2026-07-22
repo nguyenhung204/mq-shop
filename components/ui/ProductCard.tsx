@@ -7,6 +7,7 @@ import { BarChart2, Eye, Heart, iconProps } from "@/components/ui/icons";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { SaleCountdown } from "@/components/ui/SaleCountdown";
 import { Product, formatPrice } from "@/lib/data/products";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Stars } from "./shared";
 
 export function ProductCard({
@@ -19,6 +20,13 @@ export function ProductCard({
   priority?: boolean;
 }) {
   const [hovered, setHovered] = useState(false);
+  const { locale } = useLanguage();
+  const watermark =
+    locale?.startsWith("vi")
+      ? product.watermarkText?.vi
+      : locale?.startsWith("zh")
+        ? product.watermarkText?.zh
+        : product.watermarkText?.en;
 
   return (
     <article
@@ -42,6 +50,17 @@ export function ProductCard({
             <span className="absolute top-3 left-3 mq-sale-badge z-10 shadow-sm">
               -{product.salePercent}%
             </span>
+          )}
+
+          {product.displayMode === "OUT_OF_STOCK_WATERMARK" && (
+            <div className="absolute inset-0 z-[5] flex items-center justify-center bg-black/35 rounded-[inherit]">
+              <span className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-white bg-black/70 rounded-[var(--mq-radius-sm)]">
+                {watermark ||
+                  product.watermarkText?.en ||
+                  product.watermarkText?.vi ||
+                  "Out of stock"}
+              </span>
+            </div>
           )}
 
           <div

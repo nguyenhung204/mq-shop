@@ -56,34 +56,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshUser = useCallback(async () => {
-    const token = getAccessToken();
-    if (!token) {
-      setUser(null);
-      return;
+    try {
+      const me = await authApi.me();
+      setUser(me);
+    } catch {
+      // Cookie session may still exist without local token after Phase 3
+      if (!getAccessToken()) setUser(null);
+      else {
+        clearTokens();
+        setUser(null);
+      }
     }
-    const me = await authApi.me();
-    setUser(me);
   }, [setUser]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const token = getAccessToken();
-      if (!token) {
-        if (!cancelled) {
-          setUserState(null);
-          setLoading(false);
-        }
-        return;
-      }
       const cached = readCachedUser();
       if (cached && !cancelled) setUserState(cached);
       try {
         const me = await authApi.me();
         if (!cancelled) setUser(me);
       } catch {
-        clearTokens();
-        if (!cancelled) setUser(null);
+        // Not signed in (no cookie / no bearer)
+        if (!cancelled) {
+          if (!getAccessToken()) setUser(null);
+          else {
+            clearTokens();
+            setUser(null);
+          }
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -102,7 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     async (identifier: string, password: string) => {
-      const data = await authApi.login({ identifier, password });
+      const data = await authApi.login({ email: identifier, password });
       setUser(data.user);
       return data.user;
     },
@@ -126,12 +128,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       hasRole: (role) => !!user?.roles?.includes(role),
       hasPermission: (code) => {
         if (!user) return false;
-        if (user.roles?.includes("SUPER_ADMIN")) return true;
+        // Full admin roles have all permissions; staff rely on granted codes.
+        if (user.roles?.includes("SUPER_ADMIN") || user.roles?.includes("ADMIN")) return true;
         return !!user.permissions?.includes(code);
       },
       hasAnyPermission: (codes) => {
         if (!user) return false;
-        if (user.roles?.includes("SUPER_ADMIN")) return true;
+        if (user.roles?.includes("SUPER_ADMIN") || user.roles?.includes("ADMIN")) return true;
         return codes.some((c) => user.permissions?.includes(c));
       },
       login,

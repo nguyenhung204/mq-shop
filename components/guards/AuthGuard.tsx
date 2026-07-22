@@ -22,7 +22,10 @@ export function AuthGuard({
   const allowed =
     isAuthenticated &&
     (!roles || roles.some((r) => hasRole(r))) &&
-    (!permissions || hasAnyPermission(permissions) || hasRole("SUPER_ADMIN"));
+    (!permissions ||
+      hasAnyPermission(permissions) ||
+      hasRole("SUPER_ADMIN") ||
+      hasRole("ADMIN"));
 
   useEffect(() => {
     if (loading) return;

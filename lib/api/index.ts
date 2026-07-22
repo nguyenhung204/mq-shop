@@ -1,31 +1,81 @@
 import { api } from "./client";
 import type {
-  ApiBanner,
+  ApiAuditLog,
   ApiCategory,
-  ApiNotification,
   ApiOrder,
   ApiProduct,
   ApiRma,
   ApiShop,
+  AuthUser,
   Cart,
+  ListingCard,
   LocalizedText,
+  PageMeta,
   Paginated,
   PaymentMethod,
   WalletBalance,
 } from "./types";
+import { asArray, parsePage } from "./utils";
 
 export const catalogApi = {
-  categories: () => api.get<ApiCategory[]>("/categories", { auth: false }),
-  searchProducts: (query: {
+  categories: async () => {
+    const data = await api.get<ApiCategory[] | { items: ApiCategory[] }>("/categories", {
+      auth: false,
+    });
+    return asArray<ApiCategory>(data);
+  },
+  listing: async (query: {
+    q?: string;
+    categoryId?: string;
+    page?: number;
+    pageSize?: number;
+  }) => {
+    const res = await api.get<{ data: ListingCard[]; meta?: PageMeta } | ListingCard[]>(
+      "/products/listing",
+      {
+        auth: false,
+        query: {
+          q: query.q,
+          categoryId: query.categoryId,
+          page: query.page ?? 1,
+          pageSize: query.pageSize ?? 20,
+        },
+        withMeta: true,
+      },
+    );
+    return parsePage<ListingCard>(res);
+  },
+  /** @deprecated prefer listing() */
+  searchProducts: async (query: {
     q?: string;
     categoryId?: string;
     locale?: string;
     page?: number;
     limit?: number;
-  }) => api.get<Paginated<ApiProduct>>("/products/search", { auth: false, query }),
+    pageSize?: number;
+  }) => {
+    try {
+      return await catalogApi.listing({
+        q: query.q,
+        categoryId: query.categoryId,
+        page: query.page,
+        pageSize: query.pageSize ?? query.limit,
+      });
+    } catch {
+      const legacy = await api.get<Paginated<ApiProduct> | ApiProduct[]>("/products/search", {
+        auth: false,
+        query: {
+          q: query.q,
+          categoryId: query.categoryId,
+          locale: query.locale,
+          page: query.page,
+          limit: query.limit ?? query.pageSize,
+        },
+      });
+      return { items: asArray<ApiProduct>(legacy), meta: undefined };
+    }
+  },
   product: (id: string) => api.get<ApiProduct>(`/products/${id}`, { auth: false }),
-  banners: (locale: string) =>
-    api.get<ApiBanner[]>("/banners", { auth: false, query: { locale } }),
 };
 
 export const cartApi = {
@@ -59,27 +109,45 @@ export const orderApi = {
 };
 
 export const shopApi = {
-  apply: (body: {
-    name: string;
-    taxCode: string;
-    countryCode: string;
-    pickupAddress: string;
-    legalDocumentUrl?: string;
-  }) => api.post<ApiShop>("/shops/apply", body),
+  apply: (formData: FormData) => api.postForm<ApiShop>("/shops/apply", formData),
   me: () => api.get<ApiShop>("/shops/me"),
   updateMe: (body: Partial<{ name: string; pickupAddress: string; legalDocumentUrl: string }>) =>
     api.put<ApiShop>("/shops/me", body),
+  /** Multipart field `logo` → MinIO WebP (~512×512). Gate: EDIT_SHOP, APPROVED, not suspended. */
+  uploadLogo: (file: File) => {
+    const fd = new FormData();
+    fd.append("logo", file);
+    return api.postForm<ApiShop>("/shops/me/logo", fd);
+  },
+  /** Multipart field `banner` → MinIO WebP (~1600×400). Gate: EDIT_SHOP, APPROVED, not suspended. */
+  uploadBanner: (file: File) => {
+    const fd = new FormData();
+    fd.append("banner", file);
+    return api.postForm<ApiShop>("/shops/me/banner", fd);
+  },
   listStaff: () => api.get<unknown[]>("/shops/me/staff"),
   addStaff: (body: { userId: string; role?: string }) =>
     api.post("/shops/me/staff", body),
 };
 
 export const sellerApi = {
-  products: () => api.get<ApiProduct[] | Paginated<ApiProduct>>("/seller/products"),
-  createProduct: (body: unknown) => api.post<ApiProduct>("/seller/products", body),
-  updateProduct: (id: string, body: unknown) =>
-    api.put<ApiProduct>(`/seller/products/${id}`, body),
-  hideProduct: (id: string) => api.put(`/seller/products/${id}/hide`, {}),
+  products: (query?: { page?: number; pageSize?: number; status?: string }) =>
+    api.get<ApiProduct[] | { data: ApiProduct[]; meta?: PageMeta } | Paginated<ApiProduct>>(
+      "/products",
+      { query, withMeta: true },
+    ),
+  product: (id: string) => api.get<ApiProduct>(`/products/${id}`),
+  /** Multipart field `images` (1–10 files) → MinIO WebP URLs */
+  uploadImages: (files: File[]) => {
+    const fd = new FormData();
+    files.slice(0, 10).forEach((file) => fd.append("images", file));
+    return api.postForm<{ urls: string[] }>("/products/images", fd);
+  },
+  createProduct: (body: unknown) => api.post<ApiProduct>("/products", body),
+  updateProduct: (id: string, body: unknown) => api.patch<ApiProduct>(`/products/${id}`, body),
+  hideProduct: (id: string) => api.post(`/products/${id}/hide`, {}),
+  /** HIDDEN → PENDING (re-enter admin review queue) */
+  unhideProduct: (id: string) => api.post(`/products/${id}/unhide`, {}),
   orders: () => api.get<ApiOrder[] | Paginated<ApiOrder>>("/seller/orders"),
   rma: () => api.get<ApiRma[] | Paginated<ApiRma>>("/seller/rma"),
   confirmStockReturn: (
@@ -92,44 +160,22 @@ export const sellerApi = {
       note?: string;
     },
   ) => api.put(`/seller/rma/${id}/confirm-stock-return`, body),
-  inventoryRequests: (status?: string) =>
-    api.get("/seller/inventory/requests", { query: { status } }),
-  approveInventory: (id: string) =>
-    api.put(`/seller/inventory/requests/${id}/approve`, {}),
-  rejectInventory: (id: string, body: { reason: string }) =>
-    api.put(`/seller/inventory/requests/${id}/reject`, body),
   landingCost: (productId: string) =>
     api.get("/seller/landing-cost", { query: { product_id: productId, productId } }),
 };
 
-export const inventoryApi = {
-  warehouses: () => api.get("/warehouses"),
-  createWarehouse: (body: {
-    name: string;
-    addressText: string;
-    googleMapsUrl?: string;
-  }) => api.post("/warehouses", body),
-  updateWarehouse: (id: string, body: unknown) => api.put(`/warehouses/${id}`, body),
-  list: (query?: { is_low_stock?: boolean }) => api.get("/inventory", { query }),
-  createRequest: (body: {
-    warehouseId: string;
-    sku: string;
-    quantity: number;
-    requestType: "IN" | "ADJUST_IN" | "ADJUST_OUT";
-    reason?: string;
-    evidenceDocumentUrl?: string;
-  }) => api.post("/inventory/requests", body),
-  requests: () => api.get("/inventory/requests"),
-};
-
-export const notificationApi = {
-  list: (unreadOnly?: boolean) =>
-    api.get<ApiNotification[] | Paginated<ApiNotification>>("/notifications", {
-      query: { unreadOnly },
-    }),
-  markRead: (id: string) => api.put(`/notifications/${id}/read`, {}),
-  markAllRead: () => api.put("/notifications/read-all", {}),
-};
+export { inventoryApi, adminInventoryApi } from "./inventory";
+export type {
+  Warehouse,
+  InventoryVariant,
+  InventorySlip,
+  InventorySlipStatus,
+  InventorySlipType,
+  StockLedgerEntry,
+  CreateWarehouseRequest,
+  CreateVariantRequest,
+  CreateSlipRequest,
+} from "./inventory";
 
 export const walletApi = {
   affiliateLink: () => api.get<{ code: string; link?: string }>("/wallet/affiliate-link"),
@@ -153,24 +199,55 @@ export const walletApi = {
 };
 
 export const adminApi = {
-  lockUser: (id: string) => api.put(`/admin/users/${id}/lock`, {}),
-  unlockUser: (id: string) => api.put(`/admin/users/${id}/unlock`, {}),
+  users: (query?: { page?: number; pageSize?: number; status?: string }) =>
+    api.get<AuthUser[] | { data: AuthUser[]; meta?: PageMeta } | Paginated<AuthUser>>("/admin/users", {
+      query,
+      withMeta: true,
+    }),
+  lockUser: (id: string) => api.post(`/admin/users/${id}/lock`, {}),
+  unlockUser: (id: string) => api.post(`/admin/users/${id}/unlock`, {}),
   deleteUser: (id: string) => api.delete(`/admin/users/${id}`),
   createStaff: (body: unknown) => api.post("/admin/staff-accounts", body),
   assignPermissions: (id: string, body: { permissions: string[] }) =>
     api.put(`/admin/staff-accounts/${id}/permissions`, body),
-  shops: (status?: string) => api.get("/admin/shops", { query: { status } }),
-  shop: (id: string) => api.get(`/admin/shops/${id}`),
-  approveShop: (id: string) => api.put(`/admin/shops/${id}/approve`, {}),
-  rejectShop: (id: string, body: { reason: LocalizedText }) =>
-    api.put(`/admin/shops/${id}/reject`, body),
-  suspendShop: (id: string, body?: { reason?: LocalizedText }) =>
-    api.put(`/admin/shops/${id}/suspend`, body ?? {}),
-  products: (status?: string) => api.get("/admin/products", { query: { status } }),
-  approveProduct: (id: string) => api.put(`/admin/products/${id}/approve`, {}),
-  rejectProduct: (id: string, body: { reason: LocalizedText }) =>
-    api.put(`/admin/products/${id}/reject`, body),
-  hideProduct: (id: string) => api.put(`/admin/products/${id}/hide`, {}),
+  shops: (status?: string, page?: number, pageSize?: number) =>
+    api.get<ApiShop[] | { data: ApiShop[]; meta?: PageMeta } | Paginated<ApiShop>>("/admin/shops", {
+      query: { status, page, pageSize },
+      withMeta: true,
+    }),
+  shop: (id: string) => api.get<ApiShop>(`/admin/shops/${id}`),
+  approveShop: (id: string) => api.post(`/admin/shops/${id}/approve`, {}),
+  rejectShop: (id: string, body: { reason: string } | { reason: LocalizedText }) =>
+    api.post(`/admin/shops/${id}/reject`, body),
+  suspendShop: (id: string, body?: { reason?: string | LocalizedText }) =>
+    api.post(`/admin/shops/${id}/violation-lock`, body ?? {}),
+  products: (status?: string, page?: number, pageSize?: number) =>
+    api.get<ApiProduct[] | { data: ApiProduct[]; meta?: PageMeta } | Paginated<ApiProduct>>(
+      "/admin/products",
+      { query: { status, page, pageSize }, withMeta: true },
+    ),
+  approveProduct: (id: string) => api.post(`/admin/products/${id}/approve`, {}),
+  rejectProduct: (id: string, body: { reason: string } | { reason: LocalizedText }) =>
+    api.post(`/admin/products/${id}/reject`, body),
+  hideProduct: (id: string) => api.post(`/admin/products/${id}/hide`, {}),
+  /** Same seller unhide path — HIDDEN → PENDING */
+  unhideProduct: (id: string) => api.post(`/products/${id}/unhide`, {}),
+  categories: () => catalogApi.categories(),
+  createCategory: (body: {
+    name: string;
+    nameVi?: string;
+    slug?: string;
+    parentId?: string | null;
+  }) => api.post<ApiCategory>("/admin/categories", body),
+  updateCategory: (
+    id: string,
+    body: { name?: string; nameVi?: string | null; parentId?: string | null },
+  ) => api.patch<ApiCategory>(`/admin/categories/${id}`, body),
+  auditLogs: (query?: Record<string, string | number | undefined>) =>
+    api.get<ApiAuditLog[] | { data: ApiAuditLog[]; meta?: PageMeta }>("/admin/audit-logs", {
+      query,
+      withMeta: true,
+    }),
   forceCancelOrder: (id: string, body?: { reason?: string }) =>
     api.put(`/admin/orders/${id}/force-cancel`, body ?? {}),
   confirmCod: (id: string) => api.put(`/admin/orders/${id}/confirm-cod`, {}),

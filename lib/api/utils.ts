@@ -5,7 +5,70 @@ export function asArray<T>(data: unknown): T[] {
     const items = (data as { items?: unknown }).items;
     return Array.isArray(items) ? (items as T[]) : [];
   }
+  if (typeof data === "object" && data !== null && "data" in data) {
+    return asArray<T>((data as { data: unknown }).data);
+  }
   return [];
+}
+
+/** Normalize list GET responses that may include envelope meta or flat Paginated shape. */
+export function parsePage<T>(
+  res: unknown,
+): { items: T[]; meta?: import("./types").PageMeta } {
+  if (Array.isArray(res)) {
+    return { items: res as T[], meta: undefined };
+  }
+  if (!res || typeof res !== "object") {
+    return { items: [], meta: undefined };
+  }
+
+  const o = res as {
+    data?: unknown;
+    items?: unknown;
+    meta?: import("./types").PageMeta;
+    page?: number;
+    pageSize?: number;
+    limit?: number;
+    total?: number;
+    totalPages?: number;
+  };
+
+  const items = asArray<T>(o.data ?? o.items ?? o);
+  if (o.meta && typeof o.meta.totalPages === "number") {
+    return { items, meta: o.meta };
+  }
+
+  if (typeof o.totalPages === "number" || typeof o.total === "number") {
+    const pageSize = Number(o.pageSize ?? o.limit ?? items.length) || 20;
+    const total = Number(o.total ?? items.length);
+    const totalPages =
+      typeof o.totalPages === "number"
+        ? o.totalPages
+        : Math.max(1, Math.ceil(total / pageSize));
+    return {
+      items,
+      meta: {
+        page: Number(o.page) || 1,
+        pageSize,
+        total,
+        totalPages,
+      },
+    };
+  }
+
+  return { items, meta: o.meta };
+}
+
+export function getErrorCode(error: unknown): string | null {
+  if (
+    error &&
+    typeof error === "object" &&
+    "code" in error &&
+    typeof (error as { code: unknown }).code === "string"
+  ) {
+    return (error as { code: string }).code;
+  }
+  return null;
 }
 
 export function formatMoney(value: string | number | undefined | null): string {

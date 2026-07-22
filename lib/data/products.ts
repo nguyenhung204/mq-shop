@@ -17,6 +17,10 @@ export type Product = {
   description: string;
   features: string[];
   inStock: number;
+  displayMode?: "NORMAL" | "OUT_OF_STOCK_WATERMARK";
+  watermarkText?: null | { vi: string; zh: string; en: string };
+  rejectionReason?: string;
+  status?: string;
 };
 
 export const products: Product[] = [

@@ -1,0 +1,19 @@
+---
+description: Enforce Conventional Commits 1.0.0 on every git commit message
+alwaysApply: true
+---
+
+# Conventional Commits (mandatory)
+
+Whenever you create or suggest a git commit message in this project:
+
+1. Read and follow `.cursor/skills/conventional-commits/SKILL.md`
+2. Use format: `<type>[optional scope][!]: <description>`
+3. Types only: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`
+4. Description: lowercase imperative verb, no trailing period, no emojis
+5. One logical change per commit — do not combine unrelated changes
+6. Breaking changes: use `!` after type/scope and/or a `BREAKING CHANGE:` footer
+
+Pass the message to `git commit` via HEREDOC. Do not invent custom commit types.
+
+> Active Cursor copy: `.cursor/rules/conventional-commits.mdc`

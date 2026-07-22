@@ -1,21 +1,63 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  KeyRound,
+  LogOut,
+  Mail,
+  Package,
+  RefreshCw,
+  Store,
+  UserRound,
+  Wallet,
+} from "lucide-react";
 import { authApi } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
-import { isStrongPassword } from "@/lib/api/utils";
+import type { AuthUser } from "@/lib/api/types";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { Container, PageHero } from "@/components/ui/shared";
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import { Container } from "@/components/ui/shared";
+import "./account.css";
+
+type AccountSection = "profile" | "password" | "email" | "links";
+
+function userInitials(user: AuthUser | null | undefined): string {
+  const name = user?.fullName?.trim();
+  if (name) {
+    const parts = name.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      return `${parts[0]![0] ?? ""}${parts[1]![0] ?? ""}`.toUpperCase();
+    }
+    return name.slice(0, 2).toUpperCase();
+  }
+  return (user?.email?.[0] || "U").toUpperCase();
+}
+
+function AccountAvatar({ user, size = "lg" }: { user: AuthUser | null; size?: "sm" | "lg" }) {
+  const className = size === "lg" ? "mq-account-avatar mq-account-avatar-lg" : "mq-account-avatar";
+  if (user?.avatarUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={user.avatarUrl} alt="" className={className} width={72} height={72} />
+    );
+  }
+  return (
+    <span className={`${className} mq-account-avatar-fallback`} aria-hidden="true">
+      {userInitials(user)}
+    </span>
+  );
+}
 
 function AccountInner() {
+  const { t } = useLanguage();
   const { user, logout, refreshUser } = useAuth();
   const router = useRouter();
+  const [section, setSection] = useState<AccountSection>("profile");
   const [fullName, setFullName] = useState(user?.fullName || "");
-  const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || "");
-  const [dateOfBirth, setDob] = useState(user?.dateOfBirth || "");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newEmail, setNewEmail] = useState("");
@@ -24,6 +66,17 @@ function AccountInner() {
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const navItems = useMemo(
+    () =>
+      [
+        { id: "profile" as const, label: t("account.nav.profile"), icon: UserRound },
+        { id: "password" as const, label: t("account.nav.password"), icon: KeyRound },
+        { id: "email" as const, label: t("account.nav.email"), icon: Mail },
+        { id: "links" as const, label: t("account.nav.activity"), icon: Package },
+      ] as const,
+    [t],
+  );
+
   const run = async (fn: () => Promise<void>) => {
     setErr("");
     setMsg("");
@@ -31,110 +84,297 @@ function AccountInner() {
     try {
       await fn();
     } catch (e) {
-      setErr(e instanceof ApiError ? e.message : "Request failed");
+      const code = e instanceof ApiError ? e.code : null;
+      setErr(
+        code
+          ? `${e instanceof ApiError ? e.message : "Request failed"} (${code})`
+          : e instanceof ApiError
+            ? e.message
+            : "Request failed",
+      );
     } finally {
       setBusy(false);
     }
   };
 
+  const selectSection = (next: AccountSection) => {
+    setSection(next);
+    setErr("");
+    setMsg("");
+  };
+
   return (
-    <>
-      <PageHero title="My profile" breadcrumb={[{ label: "Account" }]} />
-      <Container className="py-10 md:py-14 max-w-3xl mx-auto space-y-8">
-        {err && <div className="mq-alert mq-alert-error">{err}</div>}
-        {msg && <div className="mq-alert mq-alert-success">{msg}</div>}
+    <section className="mq-account-page bg-mq-surface-subtle py-7 md:py-10">
+      <Container className="mq-account-shell grid grid-cols-1 gap-5 items-start lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-6">
+        <aside className="mq-account-sidebar lg:sticky lg:top-[calc(var(--mq-header-h)+1rem)]">
+          <div className="mq-account-identity lg:flex-col lg:items-start">
+            <AccountAvatar user={user} />
+            <div className="mq-account-identity-text">
+              <p className="mq-account-kicker">{t("account.myProfile")}</p>
+              <h1 className="mq-account-name">{user?.fullName || user?.email || "—"}</h1>
+              {user?.fullName ? <p className="mq-account-email">{user.email}</p> : null}
+              {user?.roles?.length ? (
+                <p className="mq-account-roles">{user.roles.join(" · ")}</p>
+              ) : null}
+            </div>
+          </div>
 
-        <div className="flex flex-wrap gap-3">
-          <Link href="/orders" className="mq-btn mq-btn-outline text-xs">Orders</Link>
-          <Link href="/rma" className="mq-btn mq-btn-outline text-xs">RMA</Link>
-          <Link href="/wallet" className="mq-btn mq-btn-outline text-xs">Wallet</Link>
-          <Link href="/seller" className="mq-btn mq-btn-outline text-xs">Seller</Link>
-        </div>
-
-        <section className="mq-card p-6 space-y-4">
-          <h2 className="text-lg">Profile</h2>
-          <p className="text-sm text-mq-text-muted">{user?.email}</p>
-          <form
-            className="space-y-3"
-            onSubmit={(e: FormEvent) => {
-              e.preventDefault();
-              void run(async () => {
-                await authApi.updateProfile({
-                  fullName: fullName || undefined,
-                  avatarUrl: avatarUrl || undefined,
-                  dateOfBirth: dateOfBirth || undefined,
-                });
-                await refreshUser();
-                setMsg("Profile updated.");
-              });
-            }}
+          <nav
+            className="mq-account-nav flex flex-row gap-1.5 overflow-x-auto lg:flex-col lg:overflow-visible"
+            aria-label={t("account.myProfile")}
           >
-            <input className="mq-input" placeholder="Full name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-            <input className="mq-input" placeholder="Avatar URL" value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} />
-            <input className="mq-input" type="date" value={dateOfBirth || ""} onChange={(e) => setDob(e.target.value)} />
-            <button className="mq-btn mq-btn-primary" disabled={busy}>Save profile</button>
-          </form>
-        </section>
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const active = section === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`mq-account-nav-item inline-flex shrink-0 items-center gap-2${active ? " is-active" : ""}`}
+                  aria-current={active ? "page" : undefined}
+                  onClick={() => selectSection(item.id)}
+                >
+                  <Icon size={17} strokeWidth={1.75} />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
 
-        <section className="mq-card p-6 space-y-4">
-          <h2 className="text-lg">Change password</h2>
-          <form
-            className="space-y-3"
-            onSubmit={(e: FormEvent) => {
-              e.preventDefault();
-              if (!isStrongPassword(newPassword)) {
-                setErr("Password must be ≥8 with uppercase + digit.");
-                return;
-              }
+          <button
+            type="button"
+            className="mq-account-signout"
+            disabled={busy}
+            onClick={() =>
               void run(async () => {
-                await authApi.changePassword({ currentPassword, newPassword });
                 await logout();
                 router.push("/my-account");
-              });
-            }}
+              })
+            }
           >
-            <input type="password" className="mq-input" placeholder="Current password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
-            <input type="password" className="mq-input" placeholder="New password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
-            <button className="mq-btn mq-btn-primary" disabled={busy}>Update password</button>
-          </form>
-        </section>
+            <LogOut size={16} strokeWidth={1.75} />
+            {t("account.signOut")}
+          </button>
+        </aside>
 
-        <section className="mq-card p-6 space-y-4">
-          <h2 className="text-lg">Change email</h2>
-          <div className="space-y-3">
-            <input type="email" className="mq-input" placeholder="New email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
-            <button
-              type="button"
-              className="mq-btn mq-btn-outline"
-              disabled={busy}
-              onClick={() =>
-                void run(async () => {
-                  await authApi.requestEmailOtp({ newEmail });
-                  setMsg("OTP sent to the new email.");
-                })
-              }
-            >
-              Request OTP
-            </button>
-            <input className="mq-input" placeholder="OTP code" value={emailCode} onChange={(e) => setEmailCode(e.target.value)} />
-            <button
-              type="button"
-              className="mq-btn mq-btn-primary"
-              disabled={busy}
-              onClick={() =>
-                void run(async () => {
-                  await authApi.confirmEmailChange({ code: emailCode });
-                  await refreshUser();
-                  setMsg("Email updated.");
-                })
-              }
-            >
-              Confirm email
-            </button>
-          </div>
-        </section>
+        <div className="mq-account-main flex min-w-0 flex-col gap-3.5">
+          {err ? <div className="mq-alert mq-alert-error">{err}</div> : null}
+          {msg ? <div className="mq-alert mq-alert-success">{msg}</div> : null}
+
+          {section === "profile" ? (
+            <section className="mq-account-panel">
+              <header className="mq-account-panel-head">
+                <h2>{t("account.sections.profileTitle")}</h2>
+                <p>{t("account.sections.profileDesc")}</p>
+              </header>
+              <form
+                className="mq-account-form"
+                onSubmit={(e: FormEvent) => {
+                  e.preventDefault();
+                  void run(async () => {
+                    await authApi.updateProfile({ fullName: fullName || undefined });
+                    if (avatarFile) await authApi.uploadAvatar(avatarFile);
+                    await refreshUser();
+                    setAvatarFile(null);
+                    setMsg(t("account.messages.profileUpdated"));
+                  });
+                }}
+              >
+                <div className="mq-account-avatar-row">
+                  <AccountAvatar user={user} size="sm" />
+                  <div className="mq-account-field">
+                    <label htmlFor="account-avatar">{t("account.fields.avatar")}</label>
+                    <input
+                      id="account-avatar"
+                      className="mq-input"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
+                    />
+                    <p className="mq-account-hint">{t("account.fields.avatarHint")}</p>
+                  </div>
+                </div>
+                <div className="mq-account-field">
+                  <label htmlFor="account-fullname">{t("account.fields.fullName")}</label>
+                  <input
+                    id="account-fullname"
+                    className="mq-input"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    autoComplete="name"
+                  />
+                </div>
+                <div className="mq-account-field">
+                  <label htmlFor="account-email-readonly">{t("account.emailAddress")}</label>
+                  <input
+                    id="account-email-readonly"
+                    className="mq-input"
+                    value={user?.email || ""}
+                    readOnly
+                    disabled
+                  />
+                </div>
+                <button type="submit" className="mq-btn mq-btn-primary" disabled={busy}>
+                  {t("account.actions.saveProfile")}
+                </button>
+              </form>
+            </section>
+          ) : null}
+
+          {section === "password" ? (
+            <section className="mq-account-panel">
+              <header className="mq-account-panel-head">
+                <h2>{t("account.sections.passwordTitle")}</h2>
+                <p>{t("account.sections.passwordDesc")}</p>
+              </header>
+              <form
+                className="mq-account-form"
+                onSubmit={(e: FormEvent) => {
+                  e.preventDefault();
+                  if (newPassword.length < 8) {
+                    setErr(t("account.messages.passwordTooShort"));
+                    return;
+                  }
+                  void run(async () => {
+                    await authApi.changePassword({ currentPassword, newPassword });
+                    await logout();
+                    router.push("/my-account");
+                  });
+                }}
+              >
+                <div className="mq-account-field">
+                  <label htmlFor="account-current-pw">{t("account.fields.currentPassword")}</label>
+                  <input
+                    id="account-current-pw"
+                    type="password"
+                    className="mq-input"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    required
+                    autoComplete="current-password"
+                  />
+                </div>
+                <div className="mq-account-field">
+                  <label htmlFor="account-new-pw">{t("account.fields.newPassword")}</label>
+                  <input
+                    id="account-new-pw"
+                    type="password"
+                    className="mq-input"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    minLength={8}
+                    autoComplete="new-password"
+                  />
+                </div>
+                <button type="submit" className="mq-btn mq-btn-primary" disabled={busy}>
+                  {t("account.actions.updatePassword")}
+                </button>
+              </form>
+            </section>
+          ) : null}
+
+          {section === "email" ? (
+            <section className="mq-account-panel">
+              <header className="mq-account-panel-head">
+                <h2>{t("account.sections.emailTitle")}</h2>
+                <p>{t("account.sections.emailDesc")}</p>
+              </header>
+              <div className="mq-account-form">
+                <div className="mq-account-field">
+                  <label htmlFor="account-new-email">{t("account.fields.newEmail")}</label>
+                  <input
+                    id="account-new-email"
+                    type="email"
+                    className="mq-input"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    autoComplete="email"
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="mq-btn mq-btn-outline"
+                  disabled={busy || !newEmail}
+                  onClick={() =>
+                    void run(async () => {
+                      await authApi.requestEmailOtp({ newEmail });
+                      setMsg(t("account.messages.otpSent"));
+                    })
+                  }
+                >
+                  {t("account.actions.requestOtp")}
+                </button>
+                <div className="mq-account-field">
+                  <label htmlFor="account-email-otp">{t("account.fields.otp")}</label>
+                  <input
+                    id="account-email-otp"
+                    className="mq-input"
+                    value={emailCode}
+                    onChange={(e) => setEmailCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    maxLength={6}
+                    inputMode="numeric"
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="mq-btn mq-btn-primary"
+                  disabled={busy || emailCode.length !== 6}
+                  onClick={() =>
+                    void run(async () => {
+                      await authApi.confirmEmailChange({ email: newEmail, otp: emailCode });
+                      await refreshUser();
+                      setMsg(t("account.messages.emailUpdated"));
+                    })
+                  }
+                >
+                  {t("account.actions.confirmEmail")}
+                </button>
+              </div>
+            </section>
+          ) : null}
+
+          {section === "links" ? (
+            <section className="mq-account-panel">
+              <header className="mq-account-panel-head">
+                <h2>{t("account.sections.activityTitle")}</h2>
+                <p>{t("account.sections.activityDesc")}</p>
+              </header>
+              <div className="mq-account-link-grid">
+                <Link href="/orders" className="mq-account-link-card">
+                  <Package size={20} strokeWidth={1.75} />
+                  <span>
+                    <strong>{t("account.links.orders")}</strong>
+                    <small>{t("account.links.ordersDesc")}</small>
+                  </span>
+                </Link>
+                <Link href="/wallet" className="mq-account-link-card">
+                  <Wallet size={20} strokeWidth={1.75} />
+                  <span>
+                    <strong>{t("account.links.wallet")}</strong>
+                    <small>{t("account.links.walletDesc")}</small>
+                  </span>
+                </Link>
+                <Link href="/rma" className="mq-account-link-card">
+                  <RefreshCw size={20} strokeWidth={1.75} />
+                  <span>
+                    <strong>{t("account.links.rma")}</strong>
+                    <small>{t("account.links.rmaDesc")}</small>
+                  </span>
+                </Link>
+                <Link href="/seller/shop" className="mq-account-link-card">
+                  <Store size={20} strokeWidth={1.75} />
+                  <span>
+                    <strong>{t("account.links.applyShop")}</strong>
+                    <small>{t("account.links.applyShopDesc")}</small>
+                  </span>
+                </Link>
+              </div>
+            </section>
+          ) : null}
+        </div>
       </Container>
-    </>
+    </section>
   );
 }
 
@@ -145,3 +385,5 @@ export function AccountDashboard() {
     </AuthGuard>
   );
 }
+
+export default AccountDashboard;
