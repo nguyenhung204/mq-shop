@@ -1,20 +1,24 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { Eye, EyeOff, Pencil } from "lucide-react";
+import Link from "next/link";
+import { Eye, EyeOff, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/client";
 import { formatMoney } from "@/lib/api/utils";
 import {
+  useAddSellerVariant,
   useCategories,
   useCreateSellerProduct,
+  useDeleteProductImages,
   useHideSellerProduct,
   useSellerProducts,
   useUnhideSellerProduct,
   useUpdateSellerProduct,
+  useUpdateSellerVariant,
   useUploadProductImages,
 } from "@/lib/queries/seller";
-import type { ApiProduct } from "@/lib/api/types";
+import type { ApiProduct, ProductVariant } from "@/lib/api/types";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import {
   AdminActions,
@@ -28,6 +32,14 @@ import { categoryLabel } from "@/lib/api/categoryLabel";
 const MAX_IMAGES = 10;
 const MAX_BYTES = 5 * 1024 * 1024;
 const ACCEPT = "image/jpeg,image/png,image/webp,image/gif";
+
+type VariantDraft = {
+  key: string;
+  id?: string;
+  sku: string;
+  price: string;
+  availableStock?: number;
+};
 
 function reasonText(reason: ApiProduct["rejectionReason"]): string {
   if (!reason) return "";
@@ -72,6 +84,32 @@ function statusBadgeClass(status: ApiProduct["status"]): string {
   }
 }
 
+function priceLabel(p: ApiProduct): string {
+  const min = p.minPrice ?? p.price ?? Number(p.priceUsd);
+  const max = p.maxPrice ?? p.price ?? Number(p.priceUsd);
+  if (min != null && max != null && !Number.isNaN(min) && !Number.isNaN(max) && min !== max) {
+    return `${formatMoney(min)} – ${formatMoney(max)}`;
+  }
+  return formatMoney(min ?? p.priceUsd);
+}
+
+function variantsOf(p: ApiProduct): ProductVariant[] {
+  return Array.isArray(p.variants) ? p.variants : [];
+}
+
+function draftFromVariants(variants: ProductVariant[]): VariantDraft[] {
+  if (!variants.length) {
+    return [{ key: crypto.randomUUID(), sku: "", price: "" }];
+  }
+  return variants.map((v) => ({
+    key: v.id,
+    id: v.id,
+    sku: v.sku,
+    price: String(v.price),
+    availableStock: v.availableStock,
+  }));
+}
+
 function ProductsInner() {
   const { locale } = useLanguage();
   const [status, setStatus] = useState("");
@@ -85,52 +123,47 @@ function ProductsInner() {
   const { data: categories = [] } = useCategories();
   const createProduct = useCreateSellerProduct();
   const updateProduct = useUpdateSellerProduct();
+  const addVariant = useAddSellerVariant();
+  const updateVariant = useUpdateSellerVariant();
   const hideProduct = useHideSellerProduct();
   const unhideProduct = useUnhideSellerProduct();
   const uploadImages = useUploadProductImages();
+  const deleteImages = useDeleteProductImages();
+
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<ApiProduct | null>(null);
   const [formError, setFormError] = useState("");
   const [existingUrls, setExistingUrls] = useState<string[]>([]);
+  const [removedUrls, setRemovedUrls] = useState<string[]>([]);
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [form, setForm] = useState({
     categoryId: "",
     title: "",
     description: "",
-    price: "19.99",
-    stock: "0",
-    sku: "",
   });
+  const [variants, setVariants] = useState<VariantDraft[]>([
+    { key: crypto.randomUUID(), sku: "", price: "19.99" },
+  ]);
 
   const resetForm = () => {
     setShowForm(false);
     setEditing(null);
     setFormError("");
     setExistingUrls([]);
+    setRemovedUrls([]);
     setNewFiles([]);
-    setForm({
-      categoryId: "",
-      title: "",
-      description: "",
-      price: "19.99",
-      stock: "0",
-      sku: "",
-    });
+    setForm({ categoryId: "", title: "", description: "" });
+    setVariants([{ key: crypto.randomUUID(), sku: "", price: "19.99" }]);
   };
 
   const openCreate = () => {
     setEditing(null);
     setFormError("");
     setExistingUrls([]);
+    setRemovedUrls([]);
     setNewFiles([]);
-    setForm({
-      categoryId: "",
-      title: "",
-      description: "",
-      price: "19.99",
-      stock: "0",
-      sku: "",
-    });
+    setForm({ categoryId: "", title: "", description: "" });
+    setVariants([{ key: crypto.randomUUID(), sku: "", price: "19.99" }]);
     setShowForm(true);
   };
 
@@ -138,15 +171,14 @@ function ProductsInner() {
     setEditing(p);
     setFormError("");
     setNewFiles([]);
+    setRemovedUrls([]);
     setExistingUrls(productImages(p).slice(0, MAX_IMAGES));
     setForm({
       categoryId: p.categoryId || "",
       title: p.title || p.name || "",
       description: p.description || "",
-      price: String(p.price ?? p.priceUsd ?? ""),
-      stock: String(p.stock ?? 0),
-      sku: p.sku || "",
     });
+    setVariants(draftFromVariants(variantsOf(p)));
     setShowForm(true);
   };
 
@@ -165,7 +197,10 @@ function ProductsInner() {
         setFormError(`“${file.name}” exceeds 5MB.`);
         return;
       }
-      if (!ACCEPT.split(",").includes(file.type) && !/\.(jpe?g|png|webp|gif)$/i.test(file.name)) {
+      if (
+        !ACCEPT.split(",").includes(file.type) &&
+        !/\.(jpe?g|png|webp|gif)$/i.test(file.name)
+      ) {
         setFormError(`“${file.name}” is not JPEG/PNG/WebP/GIF.`);
         return;
       }
@@ -176,60 +211,116 @@ function ProductsInner() {
 
   const removeExisting = (url: string) => {
     setExistingUrls((prev) => prev.filter((u) => u !== url));
+    setRemovedUrls((prev) => (prev.includes(url) ? prev : [...prev, url]));
   };
 
   const removeNewFile = (index: number) => {
     setNewFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const updateVariantDraft = (key: string, patch: Partial<VariantDraft>) => {
+    setVariants((prev) => prev.map((v) => (v.key === key ? { ...v, ...patch } : v)));
+  };
+
+  const addVariantRow = () => {
+    setVariants((prev) => [...prev, { key: crypto.randomUUID(), sku: "", price: "" }]);
+  };
+
+  const removeVariantRow = (key: string) => {
+    setVariants((prev) => (prev.length <= 1 ? prev : prev.filter((v) => v.key !== key)));
+  };
+
+  const validateVariants = (): { sku: string; price: number }[] | null => {
+    const cleaned: { sku: string; price: number }[] = [];
+    for (const v of variants) {
+      const sku = v.sku.trim();
+      const price = Number(v.price);
+      if (!sku) {
+        setFormError("Each variant needs a SKU.");
+        return null;
+      }
+      if (!Number.isFinite(price) || price < 0) {
+        setFormError(`Invalid sell price for SKU “${sku}”.`);
+        return null;
+      }
+      cleaned.push({ sku, price });
+    }
+    if (!cleaned.length) {
+      setFormError("Add at least one variant (SKU + sell price).");
+      return null;
+    }
+    return cleaned;
+  };
+
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setFormError("");
 
-    const total = existingUrls.length + newFiles.length;
-    if (total < 1) {
-      setFormError("Add at least 1 product image.");
-      return;
-    }
-    if (total > MAX_IMAGES) {
+    const totalImages = existingUrls.length + newFiles.length;
+    if (totalImages > MAX_IMAGES) {
       setFormError(`Maximum ${MAX_IMAGES} images.`);
       return;
     }
 
+    const cleaned = validateVariants();
+    if (!cleaned) return;
+
     try {
-      let uploaded: string[] = [];
-      if (newFiles.length) {
-        const res = await uploadImages.mutateAsync(newFiles);
-        const raw = res?.urls ?? (Array.isArray(res) ? res : []);
-        uploaded = raw
-          .map((item) => (typeof item === "string" ? item : (item as { url?: string })?.url || ""))
-          .map((u) => u.trim())
-          .filter(Boolean);
-        if (!uploaded.length) {
-          setFormError("Image upload did not return URLs. Check MinIO / STORAGE_PUBLIC_URL.");
-          return;
-        }
-      }
-      const images = [...existingUrls, ...uploaded].slice(0, MAX_IMAGES);
-      if (!images.every((u) => /^https?:\/\//i.test(u))) {
-        setFormError(
-          "Image URLs must be absolute http(s) links. Check STORAGE_PUBLIC_URL on the API.",
-        );
-        return;
-      }
-      const body = {
-        title: form.title,
-        description: form.description || form.title,
-        categoryId: form.categoryId,
-        price: Number(form.price),
-        stock: Number(form.stock) || 0,
-        sku: form.sku || undefined,
-        images,
-      };
       if (editing) {
-        await updateProduct.mutateAsync({ id: editing.id, body });
+        await updateProduct.mutateAsync({
+          id: editing.id,
+          body: {
+            title: form.title,
+            description: form.description || form.title,
+            categoryId: form.categoryId,
+          },
+        });
+
+        const original = variantsOf(editing);
+        for (const draft of variants) {
+          const price = Number(draft.price);
+          if (draft.id) {
+            const prev = original.find((o) => o.id === draft.id);
+            if (prev && prev.price !== price) {
+              await updateVariant.mutateAsync({
+                productId: editing.id,
+                variantId: draft.id,
+                body: { price },
+              });
+            }
+          } else if (draft.sku.trim()) {
+            await addVariant.mutateAsync({
+              productId: editing.id,
+              body: { sku: draft.sku.trim(), price },
+            });
+          }
+        }
+
+        if (removedUrls.length) {
+          await deleteImages.mutateAsync({
+            productId: editing.id,
+            urls: removedUrls,
+          });
+        }
+        if (newFiles.length) {
+          await uploadImages.mutateAsync({
+            productId: editing.id,
+            files: newFiles,
+          });
+        }
       } else {
-        await createProduct.mutateAsync(body);
+        const created = await createProduct.mutateAsync({
+          title: form.title,
+          description: form.description || form.title,
+          categoryId: form.categoryId,
+          variants: cleaned,
+        });
+        if (newFiles.length && created?.id) {
+          await uploadImages.mutateAsync({
+            productId: created.id,
+            files: newFiles,
+          });
+        }
       }
       resetForm();
     } catch (err) {
@@ -247,7 +338,12 @@ function ProductsInner() {
   );
 
   const saving =
-    createProduct.isPending || updateProduct.isPending || uploadImages.isPending;
+    createProduct.isPending ||
+    updateProduct.isPending ||
+    addVariant.isPending ||
+    updateVariant.isPending ||
+    uploadImages.isPending ||
+    deleteImages.isPending;
 
   return (
     <div className="space-y-6">
@@ -291,15 +387,16 @@ function ProductsInner() {
           <h2 className="sm:col-span-2 text-lg">
             {editing ? `Edit product (${statusLabel(editing.status)})` : "Create product"}
           </h2>
-          {editing?.status === "REJECTED" && reasonText(editing.rejectionReason) && (
+          {editing?.status === "REJECTED" && reasonText(editing.rejectionReason) ? (
             <p className="sm:col-span-2 text-sm text-mq-accent-pink">
-              Rejection: {reasonText(editing.rejectionReason)} — edit sensitive fields to
-              resubmit.
+              Rejection: {reasonText(editing.rejectionReason)} — edit title, description,
+              category, images, or sell price to resubmit.
             </p>
-          )}
-          {formError && (
+          ) : null}
+          {formError ? (
             <div className="sm:col-span-2 mq-alert mq-alert-error">{formError}</div>
-          )}
+          ) : null}
+
           <select
             className="mq-input"
             value={form.categoryId}
@@ -328,34 +425,71 @@ function ProductsInner() {
             onChange={(e) => setForm({ ...form, description: e.target.value })}
             required
           />
-          <input
-            className="mq-input"
-            type="number"
-            step="0.01"
-            min="0"
-            placeholder="Price"
-            value={form.price}
-            onChange={(e) => setForm({ ...form, price: e.target.value })}
-            required
-          />
-          <input
-            className="mq-input"
-            type="number"
-            min="0"
-            placeholder="Stock"
-            value={form.stock}
-            onChange={(e) => setForm({ ...form, stock: e.target.value })}
-          />
-          <input
-            className="mq-input sm:col-span-2"
-            placeholder="SKU (optional)"
-            value={form.sku}
-            onChange={(e) => setForm({ ...form, sku: e.target.value })}
-          />
 
           <div className="sm:col-span-2 space-y-3 border border-mq-border rounded-[var(--mq-radius)] p-4">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h3 className="text-sm font-semibold">Images</h3>
+              <h3 className="text-sm font-semibold">Variants (SKU + sell price)</h3>
+              <button
+                type="button"
+                className="mq-btn mq-btn-outline text-xs inline-flex items-center gap-1"
+                onClick={addVariantRow}
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Add SKU
+              </button>
+            </div>
+            <p className="text-xs text-mq-text-muted">
+              Sell price lives on each SKU. Stock starts at 0 — adjust via{" "}
+              <Link href="/seller/inventory" className="underline">
+                Inventory slips
+              </Link>
+              .
+            </p>
+            <div className="space-y-2">
+              {variants.map((v) => (
+                <div key={v.key} className="grid sm:grid-cols-[1fr_1fr_auto_auto] gap-2 items-center">
+                  <input
+                    className="mq-input"
+                    placeholder="SKU"
+                    value={v.sku}
+                    maxLength={64}
+                    disabled={!!v.id}
+                    onChange={(e) => updateVariantDraft(v.key, { sku: e.target.value })}
+                    required
+                  />
+                  <input
+                    className="mq-input"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="Sell price"
+                    value={v.price}
+                    onChange={(e) => updateVariantDraft(v.key, { price: e.target.value })}
+                    required
+                  />
+                  <span className="text-xs text-mq-text-muted whitespace-nowrap">
+                    Stock: {v.id ? (v.availableStock ?? 0) : 0}
+                  </span>
+                  {!v.id && variants.length > 1 ? (
+                    <button
+                      type="button"
+                      className="mq-icon-btn text-mq-text-muted"
+                      aria-label="Remove SKU row"
+                      onClick={() => removeVariantRow(v.key)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  ) : (
+                    <span />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="sm:col-span-2 space-y-3 border border-mq-border rounded-[var(--mq-radius)] p-4">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h3 className="text-sm font-semibold">Gallery images</h3>
               <p className="text-xs text-mq-text-muted">
                 {existingUrls.length + newFiles.length}/{MAX_IMAGES} · ≤5MB · JPEG/PNG/WebP/GIF
               </p>
@@ -409,8 +543,8 @@ function ProductsInner() {
               </ul>
             )}
             <p className="text-xs text-mq-text-muted">
-              New files upload to MinIO first, then URLs are saved on the product. Removing an
-              existing URL on save lets the backend delete unused MinIO objects.
+              Images upload to MinIO after the product exists (
+              <code>POST /products/:id/images</code>). Optional on create.
             </p>
           </div>
 
@@ -419,7 +553,7 @@ function ProductsInner() {
               {uploadImages.isPending
                 ? "Uploading images…"
                 : editing
-                  ? updateProduct.isPending
+                  ? saving
                     ? "Saving…"
                     : "Save changes"
                   : createProduct.isPending
@@ -452,69 +586,79 @@ function ProductsInner() {
                     <th className="p-3">Title</th>
                     <th className="p-3">Price</th>
                     <th className="p-3">Stock</th>
+                    <th className="p-3">SKUs</th>
                     <th className="p-3">Status</th>
                     <th className="p-3" />
                   </tr>
                 </thead>
                 <tbody>
-                  {products.map((p) => (
-                    <tr key={p.id} className="border-t border-mq-border">
-                      <td className="p-3">
-                        <div className="flex items-center gap-2">
-                          {productImages(p)[0] ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={productImages(p)[0]}
-                              alt=""
-                              className="w-10 h-10 rounded object-cover border border-mq-border"
-                            />
-                          ) : null}
-                          <div>
-                            <div>{p.title || p.name || p.sku || "—"}</div>
-                            {p.status === "REJECTED" && reasonText(p.rejectionReason) && (
-                              <div className="text-xs text-mq-accent-pink mt-1">
-                                {reasonText(p.rejectionReason)}
-                              </div>
-                            )}
+                  {products.map((p) => {
+                    const imgs = productImages(p);
+                    const vars = variantsOf(p);
+                    return (
+                      <tr key={p.id} className="border-t border-mq-border">
+                        <td className="p-3">
+                          <div className="flex items-center gap-2">
+                            {imgs[0] ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={imgs[0]}
+                                alt=""
+                                className="w-10 h-10 rounded object-cover border border-mq-border"
+                              />
+                            ) : null}
+                            <div>
+                              <div>{p.title || p.name || "—"}</div>
+                              {p.status === "REJECTED" && reasonText(p.rejectionReason) ? (
+                                <div className="text-xs text-mq-accent-pink mt-1">
+                                  {reasonText(p.rejectionReason)}
+                                </div>
+                              ) : null}
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="p-3">{formatMoney(p.price ?? p.priceUsd)}</td>
-                      <td className="p-3">{p.stock ?? "—"}</td>
-                      <td className="p-3">
-                        <span className={statusBadgeClass(p.status)}>
-                          {statusLabel(p.status)}
-                        </span>
-                      </td>
-                      <td className="p-3">
-                        <AdminActions>
-                          <AdminIconButton
-                            label="Edit"
-                            icon={Pencil}
-                            tone="secondary"
-                            onClick={() => startEdit(p)}
-                          />
-                          {p.status === "HIDDEN" ? (
+                        </td>
+                        <td className="p-3">{priceLabel(p)}</td>
+                        <td className="p-3">{p.stock ?? "—"}</td>
+                        <td className="p-3 text-xs text-mq-text-muted">
+                          {vars.length
+                            ? vars.map((v) => v.sku).join(", ")
+                            : p.sku || "—"}
+                        </td>
+                        <td className="p-3">
+                          <span className={statusBadgeClass(p.status)}>
+                            {statusLabel(p.status)}
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          <AdminActions>
                             <AdminIconButton
-                              label="Unhide"
-                              icon={Eye}
-                              tone="approve"
-                              disabled={unhideProduct.isPending}
-                              onClick={() => void unhideProduct.mutateAsync(p.id)}
+                              label="Edit"
+                              icon={Pencil}
+                              tone="secondary"
+                              onClick={() => startEdit(p)}
                             />
-                          ) : (
-                            <AdminIconButton
-                              label="Hide"
-                              icon={EyeOff}
-                              tone="warn"
-                              disabled={hideProduct.isPending}
-                              onClick={() => void hideProduct.mutateAsync(p.id)}
-                            />
-                          )}
-                        </AdminActions>
-                      </td>
-                    </tr>
-                  ))}
+                            {p.status === "HIDDEN" ? (
+                              <AdminIconButton
+                                label="Unhide"
+                                icon={Eye}
+                                tone="approve"
+                                disabled={unhideProduct.isPending}
+                                onClick={() => void unhideProduct.mutateAsync(p.id)}
+                              />
+                            ) : (
+                              <AdminIconButton
+                                label="Hide"
+                                icon={EyeOff}
+                                tone="warn"
+                                disabled={hideProduct.isPending}
+                                onClick={() => void hideProduct.mutateAsync(p.id)}
+                              />
+                            )}
+                          </AdminActions>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

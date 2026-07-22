@@ -56,11 +56,31 @@ export type Paginated<T> = {
 export type ListingCard = {
   id: string;
   title: string;
+  /** Derived min variant price (backward-friendly). */
   price: number;
+  minPrice?: number;
+  maxPrice?: number;
   thumbnailUrl: string | null;
+  /** Sum of variant availableStock. */
   stock: number;
   displayMode: "NORMAL" | "OUT_OF_STOCK_WATERMARK";
   watermarkText: null | { vi: string; zh: string; en: string };
+};
+
+export type ProductVariant = {
+  id: string;
+  productId: string;
+  shopId?: string;
+  sku: string;
+  /** Sell price (source of truth for checkout). */
+  price: number;
+  availableStock: number;
+  options?: Record<string, string> | null;
+  images?: string[];
+  unitPrice?: number | null;
+  isEnrollmentPackage?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type ApiProduct = {
@@ -71,14 +91,20 @@ export type ApiProduct = {
   name?: string;
   description?: string | null;
   categoryId?: string;
+  /** Derived: min(variant.price) — read-only convenience. */
   price?: number;
+  minPrice?: number;
+  maxPrice?: number;
   priceUsd?: string | number;
+  /** Derived: sum(variant.availableStock). */
   stock?: number;
+  /** @deprecated prefer variants[].sku */
   sku?: string | null;
   images?: string[] | { url: string; sortOrder?: number }[];
   attributes?: Record<string, unknown> | null;
   status: "PENDING" | "ACTIVE" | "REJECTED" | "HIDDEN";
   rejectionReason?: string | LocalizedText | null;
+  variants?: ProductVariant[];
   isHidden?: boolean;
   isOutOfStock?: boolean;
   restockingOverlay?: boolean;
@@ -86,6 +112,36 @@ export type ApiProduct = {
   translations?: { locale: string; name: string; description?: string }[];
   createdAt?: string;
   updatedAt?: string;
+};
+
+export type CreateProductRequest = {
+  title: string;
+  description: string;
+  categoryId: string;
+  attributes?: Record<string, unknown>;
+  variants: Array<{
+    sku: string;
+    price: number;
+    options?: Record<string, string>;
+  }>;
+};
+
+export type UpdateProductRequest = {
+  title?: string;
+  description?: string;
+  categoryId?: string;
+  attributes?: Record<string, unknown> | null;
+};
+
+export type AddProductVariantRequest = {
+  sku: string;
+  price: number;
+  options?: Record<string, string>;
+};
+
+export type UpdateProductVariantRequest = {
+  price?: number;
+  options?: Record<string, string> | null;
 };
 
 export type ApiCategory = {

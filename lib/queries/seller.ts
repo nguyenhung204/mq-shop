@@ -4,7 +4,18 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { catalogApi, cmsApi, sellerApi, shopApi } from "@/lib/api";
 import { ApiError } from "@/lib/api/client";
-import type { ApiCategory, ApiOrder, ApiProduct, ApiRma, ApiShop, PageMeta } from "@/lib/api/types";
+import type {
+  AddProductVariantRequest,
+  ApiCategory,
+  ApiOrder,
+  ApiProduct,
+  ApiRma,
+  ApiShop,
+  CreateProductRequest,
+  PageMeta,
+  UpdateProductRequest,
+  UpdateProductVariantRequest,
+} from "@/lib/api/types";
 import { asArray, parsePage } from "@/lib/api/utils";
 import { getErrorMessage } from "@/lib/queries/utils";
 
@@ -14,6 +25,7 @@ export const sellerKeys = {
   all: ["seller"] as const,
   products: (status: string, page: number) =>
     [...sellerKeys.all, "products", status, page] as const,
+  product: (id: string) => [...sellerKeys.all, "product", id] as const,
   categories: () => [...sellerKeys.all, "categories"] as const,
   orders: () => [...sellerKeys.all, "orders"] as const,
   rma: () => [...sellerKeys.all, "rma"] as const,
@@ -93,6 +105,7 @@ function productImageErrorMessage(e: unknown, fallback: string): string {
       case "INVALID_PRODUCT_IMAGE":
         return "Invalid image type. Use JPEG, PNG, WebP, or GIF.";
       case "PRODUCT_IMAGE_TOO_LARGE":
+      case "FILE_TOO_LARGE":
         return "Each image must be ≤ 5MB.";
       case "SHOP_NOT_ELIGIBLE":
         return "Shop must be APPROVED and not suspended.";
@@ -103,35 +116,110 @@ function productImageErrorMessage(e: unknown, fallback: string): string {
   return getErrorMessage(e, fallback);
 }
 
+function productErrorMessage(e: unknown, fallback: string): string {
+  if (e instanceof ApiError) {
+    switch (e.code) {
+      case "SHOP_NOT_ELIGIBLE":
+        return "Shop must be APPROVED and not suspended.";
+      case "CATEGORY_NOT_FOUND":
+        return "Category not found.";
+      case "VARIANT_SKU_TAKEN":
+        return "SKU already exists in this shop.";
+      case "PRODUCT_NOT_FOUND":
+        return "Product not found.";
+      case "FORBIDDEN":
+        return "You do not have permission for this action.";
+      default:
+        break;
+    }
+  }
+  return productImageErrorMessage(e, fallback);
+}
+
 export function useUploadProductImages() {
+  const invalidate = useSellerInvalidate();
   return useMutation({
-    mutationFn: (files: File[]) => sellerApi.uploadImages(files),
+    mutationFn: ({ productId, files }: { productId: string; files: File[] }) =>
+      sellerApi.uploadProductImages(productId, files),
+    onSuccess: () => {
+      invalidate();
+    },
     onError: (e) => toast.error(productImageErrorMessage(e, "Image upload failed")),
+  });
+}
+
+export function useDeleteProductImages() {
+  const invalidate = useSellerInvalidate();
+  return useMutation({
+    mutationFn: ({ productId, urls }: { productId: string; urls: string[] }) =>
+      sellerApi.deleteProductImages(productId, urls),
+    onSuccess: () => {
+      invalidate();
+    },
+    onError: (e) => toast.error(productImageErrorMessage(e, "Remove images failed")),
   });
 }
 
 export function useCreateSellerProduct() {
   const invalidate = useSellerInvalidate();
   return useMutation({
-    mutationFn: (body: unknown) => sellerApi.createProduct(body),
+    mutationFn: (body: CreateProductRequest) => sellerApi.createProduct(body),
     onSuccess: () => {
       invalidate();
       toast.success("Product created — Pending review");
     },
-    onError: (e) => toast.error(getErrorMessage(e, "Create failed")),
+    onError: (e) => toast.error(productErrorMessage(e, "Create failed")),
   });
 }
 
 export function useUpdateSellerProduct() {
   const invalidate = useSellerInvalidate();
   return useMutation({
-    mutationFn: ({ id, body }: { id: string; body: unknown }) =>
+    mutationFn: ({ id, body }: { id: string; body: UpdateProductRequest }) =>
       sellerApi.updateProduct(id, body),
     onSuccess: () => {
       invalidate();
       toast.success("Product updated");
     },
-    onError: (e) => toast.error(getErrorMessage(e, "Update failed")),
+    onError: (e) => toast.error(productErrorMessage(e, "Update failed")),
+  });
+}
+
+export function useAddSellerVariant() {
+  const invalidate = useSellerInvalidate();
+  return useMutation({
+    mutationFn: ({
+      productId,
+      body,
+    }: {
+      productId: string;
+      body: AddProductVariantRequest;
+    }) => sellerApi.addVariant(productId, body),
+    onSuccess: () => {
+      invalidate();
+      toast.success("SKU added");
+    },
+    onError: (e) => toast.error(productErrorMessage(e, "Add SKU failed")),
+  });
+}
+
+export function useUpdateSellerVariant() {
+  const invalidate = useSellerInvalidate();
+  return useMutation({
+    mutationFn: ({
+      productId,
+      variantId,
+      body,
+    }: {
+      productId: string;
+      variantId: string;
+      body: UpdateProductVariantRequest;
+    }) => sellerApi.updateVariant(productId, variantId, body),
+    onSuccess: () => {
+      invalidate();
+      toast.success("SKU updated");
+    },
+    onError: (e) => toast.error(productErrorMessage(e, "Update SKU failed")),
   });
 }
 

@@ -6,13 +6,18 @@ import type {
   ApiProduct,
   ApiRma,
   ApiShop,
+  AddProductVariantRequest,
   AuthUser,
   Cart,
+  CreateProductRequest,
   ListingCard,
   LocalizedText,
   PageMeta,
   Paginated,
   PaymentMethod,
+  ProductVariant,
+  UpdateProductRequest,
+  UpdateProductVariantRequest,
   WalletBalance,
 } from "./types";
 import { asArray, parsePage } from "./utils";
@@ -137,14 +142,36 @@ export const sellerApi = {
       { query, withMeta: true },
     ),
   product: (id: string) => api.get<ApiProduct>(`/products/${id}`),
-  /** Multipart field `images` (1–10 files) → MinIO WebP URLs */
-  uploadImages: (files: File[]) => {
+  createProduct: (body: CreateProductRequest) => api.post<ApiProduct>("/products", body),
+  updateProduct: (id: string, body: UpdateProductRequest) =>
+    api.patch<ApiProduct>(`/products/${id}`, body),
+  /** Multipart field `images` (1–10) after product exists → MinIO WebP URLs on product */
+  uploadProductImages: (productId: string, files: File[]) => {
     const fd = new FormData();
     files.slice(0, 10).forEach((file) => fd.append("images", file));
-    return api.postForm<{ urls: string[] }>("/products/images", fd);
+    return api.postForm<ApiProduct>(`/products/${productId}/images`, fd);
   },
-  createProduct: (body: unknown) => api.post<ApiProduct>("/products", body),
-  updateProduct: (id: string, body: unknown) => api.patch<ApiProduct>(`/products/${id}`, body),
+  deleteProductImages: (productId: string, urls: string[]) =>
+    api.delete<ApiProduct>(`/products/${productId}/images`, { body: { urls } }),
+  addVariant: (productId: string, body: AddProductVariantRequest) =>
+    api.post<ProductVariant>(`/products/${productId}/variants`, body),
+  updateVariant: (
+    productId: string,
+    variantId: string,
+    body: UpdateProductVariantRequest,
+  ) => api.patch<ProductVariant>(`/products/${productId}/variants/${variantId}`, body),
+  uploadVariantImages: (productId: string, variantId: string, files: File[]) => {
+    const fd = new FormData();
+    files.slice(0, 10).forEach((file) => fd.append("images", file));
+    return api.postForm<ProductVariant>(
+      `/products/${productId}/variants/${variantId}/images`,
+      fd,
+    );
+  },
+  deleteVariantImages: (productId: string, variantId: string, urls: string[]) =>
+    api.delete<ProductVariant>(`/products/${productId}/variants/${variantId}/images`, {
+      body: { urls },
+    }),
   hideProduct: (id: string) => api.post(`/products/${id}/hide`, {}),
   /** HIDDEN → PENDING (re-enter admin review queue) */
   unhideProduct: (id: string) => api.post(`/products/${id}/unhide`, {}),
