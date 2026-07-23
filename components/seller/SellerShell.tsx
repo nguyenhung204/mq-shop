@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import {
+  BadgeDollarSign,
   Boxes,
   FolderOpen,
   LayoutDashboard,
@@ -22,6 +23,12 @@ const links = [
   { href: "/seller/products", label: "Products", icon: Package, sellerOnly: true },
   { href: "/seller/inventory", label: "Inventory", icon: Boxes, sellerOnly: false },
   { href: "/seller/orders", label: "Orders", icon: ShoppingBag, sellerOnly: true },
+  {
+    href: "/seller/settlements",
+    label: "Settlements",
+    icon: BadgeDollarSign,
+    sellerOnly: true,
+  },
   { href: "/seller/rma", label: "RMA", icon: RotateCcw, sellerOnly: true },
   { href: "/seller/materials", label: "Materials", icon: FolderOpen, sellerOnly: true },
 ] as const;
@@ -41,6 +48,12 @@ function titleFromPath(pathname: string): { title: string; desc?: string } {
   }
   if (pathname.startsWith("/seller/orders")) {
     return { title: "Sales orders", desc: "Orders placed for your shop." };
+  }
+  if (pathname.startsWith("/seller/settlements")) {
+    return {
+      title: "Settlements",
+      desc: "Pending reconcile revenue from delivered orders.",
+    };
   }
   if (pathname.startsWith("/seller/rma")) {
     return { title: "RMA", desc: "Confirm returned stock." };

@@ -13,10 +13,11 @@ import {
 import { toast } from "sonner";
 import { getApiHost } from "@/lib/api/client";
 import { notificationApi } from "@/lib/api/notifications";
-import type { ApiNotification } from "@/lib/api/types";
+import type { ApiNotification, PageMeta } from "@/lib/api/types";
 import { useAuth } from "./AuthProvider";
 
-const MAX_ITEMS = 50;
+/** Page size for the header dropdown. */
+export const NOTIF_PAGE_SIZE = 8;
 
 type StreamStatus = "idle" | "live" | "reconnecting" | "offline";
 
@@ -24,8 +25,11 @@ type NotificationContextValue = {
   items: ApiNotification[];
   unreadCount: number;
   loading: boolean;
+  page: number;
+  meta: PageMeta | null;
   streamStatus: StreamStatus;
-  refresh: () => Promise<void>;
+  refresh: (page?: number) => Promise<void>;
+  setPage: (page: number) => void;
   markRead: (id: string) => Promise<void>;
   markAllRead: () => Promise<void>;
   clear: () => void;
@@ -33,46 +37,65 @@ type NotificationContextValue = {
 
 const NotificationContext = createContext<NotificationContextValue | null>(null);
 
-function countUnread(list: ApiNotification[]) {
-  return list.reduce((n, item) => n + (item.readAt ? 0 : 1), 0);
-}
-
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated, loading: authLoading } = useAuth();
   const [items, setItems] = useState<ApiNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [page, setPageState] = useState(1);
+  const [meta, setMeta] = useState<PageMeta | null>(null);
   const [streamStatus, setStreamStatus] = useState<StreamStatus>("idle");
   const seenIds = useRef<Set<string>>(new Set());
   const itemsRef = useRef(items);
+  const pageRef = useRef(page);
   itemsRef.current = items;
+  pageRef.current = page;
 
-  const refresh = useCallback(async () => {
-    if (!isAuthenticated) return;
-    setLoading(true);
-    try {
-      const result = await notificationApi.list({ page: 1, pageSize: MAX_ITEMS });
-      setItems(result.items.slice(0, MAX_ITEMS));
-      setUnreadCount(result.unreadCount);
-      seenIds.current = new Set(result.items.map((n) => n.id));
-    } catch {
-      /* keep current inbox on transient failure */
-    } finally {
-      setLoading(false);
-    }
-  }, [isAuthenticated]);
+  const refresh = useCallback(
+    async (nextPage?: number) => {
+      if (!isAuthenticated) return;
+      const target = nextPage ?? pageRef.current;
+      setLoading(true);
+      try {
+        const result = await notificationApi.list({
+          page: target,
+          pageSize: NOTIF_PAGE_SIZE,
+        });
+        setItems(result.items);
+        setUnreadCount(result.unreadCount);
+        setMeta(result.meta ?? null);
+        setPageState(result.meta?.page ?? target);
+        seenIds.current = new Set(result.items.map((n) => n.id));
+      } catch {
+        /* keep current inbox on transient failure */
+      } finally {
+        setLoading(false);
+      }
+    },
+    [isAuthenticated],
+  );
 
-  // REST history on login — admin/buyer do not depend on SSE for inbox
+  const setPage = useCallback(
+    (next: number) => {
+      setPageState(next);
+      void refresh(next);
+    },
+    [refresh],
+  );
+
+  // REST history on login
   useEffect(() => {
     if (authLoading) return;
     if (!isAuthenticated) {
       setItems([]);
       setUnreadCount(0);
+      setMeta(null);
+      setPageState(1);
       seenIds.current.clear();
       setStreamStatus("idle");
       return;
     }
-    void refresh();
+    void refresh(1);
   }, [authLoading, isAuthenticated, refresh]);
 
   // SSE — live events only while the tab is open
@@ -99,8 +122,29 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         seenIds.current.add(n.id);
 
         const incoming: ApiNotification = { ...n, readAt: n.readAt ?? null };
-        setItems((prev) => [incoming, ...prev.filter((x) => x.id !== incoming.id)].slice(0, MAX_ITEMS));
         if (!incoming.readAt) setUnreadCount((c) => c + 1);
+
+        // Only prepend onto page 1 so pagination stays consistent.
+        if (pageRef.current === 1) {
+          setItems((prev) =>
+            [incoming, ...prev.filter((x) => x.id !== incoming.id)].slice(
+              0,
+              NOTIF_PAGE_SIZE,
+            ),
+          );
+          setMeta((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  total: prev.total + 1,
+                  totalPages: Math.max(
+                    1,
+                    Math.ceil((prev.total + 1) / (prev.pageSize || NOTIF_PAGE_SIZE)),
+                  ),
+                }
+              : prev,
+          );
+        }
 
         toast.info(incoming.title || "Notification", {
           description: incoming.body || undefined,
@@ -138,8 +182,9 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const markAllRead = useCallback(async () => {
+    if (unreadCount === 0) return;
     const snapshot = itemsRef.current;
-    if (countUnread(snapshot) === 0) return;
+    const prevUnread = unreadCount;
 
     const now = new Date().toISOString();
     setItems((prev) => prev.map((n) => ({ ...n, readAt: n.readAt ?? now })));
@@ -149,13 +194,15 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       await notificationApi.markAllRead();
     } catch {
       setItems(snapshot);
-      setUnreadCount(countUnread(snapshot));
+      setUnreadCount(prevUnread);
     }
-  }, []);
+  }, [unreadCount]);
 
   const clear = useCallback(() => {
     setItems([]);
     setUnreadCount(0);
+    setMeta(null);
+    setPageState(1);
     seenIds.current.clear();
   }, []);
 
@@ -164,13 +211,28 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       items,
       unreadCount,
       loading,
+      page,
+      meta,
       streamStatus,
       refresh,
+      setPage,
       markRead,
       markAllRead,
       clear,
     }),
-    [items, unreadCount, loading, streamStatus, refresh, markRead, markAllRead, clear],
+    [
+      items,
+      unreadCount,
+      loading,
+      page,
+      meta,
+      streamStatus,
+      refresh,
+      setPage,
+      markRead,
+      markAllRead,
+      clear,
+    ],
   );
 
   return (

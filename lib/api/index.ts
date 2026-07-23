@@ -43,6 +43,16 @@ export type {
   AdminListOrdersParams,
   UpdateOrderStatusRequest,
 } from "./orders";
+export { settlementApi, adminSettlementApi } from "./settlements";
+export type {
+  SettlementStatus,
+  SettlementView,
+  SettlementSummary,
+  SettlementListResult,
+  SettlementPageMeta,
+  ListSettlementsParams,
+  AdminListSettlementsParams,
+} from "./settlements";
 
 export const catalogApi = {
   categories: async () => {

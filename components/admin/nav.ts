@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Package,
   RotateCcw,
+  Scale,
   Settings,
   ShoppingBag,
   Store,
@@ -87,6 +88,13 @@ export const adminNavItems: AdminNavItem[] = [
     label: "RMA",
     icon: RotateCcw,
     permissions: ["MANAGE_RMA"],
+    group: "commerce",
+  },
+  {
+    href: "/admin/settlements",
+    label: "Settlements",
+    icon: Scale,
+    permissions: ["VIEW_TRANSACT"],
     group: "commerce",
   },
   {

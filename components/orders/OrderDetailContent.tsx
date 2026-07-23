@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { FormEvent, useState } from "react";
@@ -12,6 +13,8 @@ import { nextFulfillmentStatus } from "@/lib/api/orders";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { Container, PageHero } from "@/components/ui/shared";
 import { OrderDetailSkeleton } from "@/components/ui/Skeleton";
+
+const FALLBACK_IMAGE = "/images/products/1.jpg";
 
 function formatAddress(addr: {
   fullName: string;
@@ -107,12 +110,31 @@ function OrderDetailInner() {
             ) : null}
             <ul className="divide-y divide-mq-border">
               {(order.items || []).map((item) => (
-                <li key={item.id} className="py-3 flex justify-between text-sm">
-                  <span>
-                    {item.titleSnapshot || item.sku} × {item.quantity}
-                    <span className="block text-xs text-mq-text-muted">{item.sku}</span>
-                  </span>
-                  <span>{formatMoney(item.lineTotal)}</span>
+                <li key={item.id} className="py-3 flex items-center gap-3 text-sm">
+                  <Link
+                    href={`/product/${item.productId}`}
+                    className="relative w-14 h-14 shrink-0 overflow-hidden rounded-[var(--mq-radius-sm)] mq-product-image-bg mq-product-media"
+                  >
+                    <Image
+                      src={item.imageSnapshot || FALLBACK_IMAGE}
+                      alt={item.titleSnapshot || item.sku}
+                      fill
+                      className="mq-product-media-img object-cover"
+                      sizes="56px"
+                    />
+                  </Link>
+                  <div className="flex-1 min-w-0">
+                    <Link
+                      href={`/product/${item.productId}`}
+                      className="line-clamp-2 font-medium hover:text-mq-gold transition-colors"
+                    >
+                      {item.titleSnapshot || item.sku}
+                    </Link>
+                    <p className="text-xs text-mq-text-muted mt-0.5">
+                      {item.sku} × {item.quantity}
+                    </p>
+                  </div>
+                  <span className="shrink-0 font-medium">{formatMoney(item.lineTotal)}</span>
                 </li>
               ))}
             </ul>

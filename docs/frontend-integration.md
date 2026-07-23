@@ -290,7 +290,7 @@ Unknown actions: BE fallback humanize (`custom.thing_done` → readable title) +
 
 | UI | Method | Path | Ghi chú |
 |----|--------|------|---------|
-| List + badge | `GET` | `/notifications` | Lịch sử gần đây (tối đa 50) + `unreadCount` |
+| List + badge | `GET` | `/notifications?page=&pageSize=` | Paginated inbox + global `unreadCount` |
 | Đánh dấu 1 đã đọc | `POST` | `/notifications/:id/read` | |
 | Đánh dấu tất cả đã đọc | `POST` | `/notifications/read-all` | |
 | Realtime | `GET` (SSE) | `/notifications/stream` | **Không** replay lịch sử |
@@ -300,7 +300,8 @@ Unknown actions: BE fallback humanize (`custom.thing_done` → readable title) +
 ```ts
 {
   items: Array<{ id, userId, title, body, readAt, createdAt }>,
-  unreadCount: number
+  meta: { page, pageSize, total, totalPages },
+  unreadCount: number // total unread across all pages (not scoped to current page)
 }
 ```
 
@@ -310,7 +311,7 @@ SSE event payload (khi có noti **mới** trong lúc đang connect):
 { id, userId, title, body, readAt, createdAt }
 ```
 
-**FE gợi ý:** login → `GET /notifications` (badge + list) → mở `EventSource` `/notifications/stream` (with credentials) để toast realtime.
+**FE gợi ý:** login → `GET /notifications?page=1&pageSize=8` (badge + dropdown pager) → mở `EventSource` `/notifications/stream` (with credentials) để toast realtime.
 
 Shop apply gửi noti tới user `ACTIVE` có role `ADMIN` hoặc `SUPER_ADMIN`.
 

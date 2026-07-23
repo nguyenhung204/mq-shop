@@ -65,6 +65,8 @@ export type OrderItemView = {
   productId: string;
   sku: string;
   titleSnapshot: string;
+  /** First variant/product image at checkout time; null on legacy rows. */
+  imageSnapshot: string | null;
   unitPrice: number;
   quantity: number;
   lineTotal: number;

@@ -226,6 +226,53 @@ PATCH /orders/:orderId/status
 
 Chỉ cho phép **tiến tới** đúng transition (không nhảy cóc — matrix cứng trên BE).
 
+### Doanh thu chờ đối soát (MVP — read-only)
+
+```
+GET /settlements?status=PENDING_RECONCILE&page=&pageSize=
+GET /admin/settlements?shopId=&status=&page=&pageSize=
+```
+
+| Actor | Path | Scope |
+|-------|------|-------|
+| Seller | `GET /settlements` | `VIEW_TRANSACT` **SHOP** — chỉ shop mình |
+| Admin / Accountant | `GET /admin/settlements` | `VIEW_TRANSACT` **ALL** — optional `shopId` |
+
+- Default `status` = `PENDING_RECONCILE`
+- Chưa có API đánh dấu đã đối soát / payout
+
+**Wire sau ResponseInterceptor** (giống orders — `summary` sibling bị flatten mất, nên tổng nằm trên `meta`):
+
+```ts
+{
+  statusCode: number;
+  message: string;
+  data: SettlementView[];
+  meta: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+    pendingTotal: number; // tổng mọi trang cùng filter
+    status: 'PENDING_RECONCILE';
+    currency: 'USD';
+  };
+}
+
+interface SettlementView {
+  id: string;
+  shopId: string;
+  orderId: string;
+  orderCode: string | null;
+  amount: number;
+  currency: 'USD';
+  status: 'PENDING_RECONCILE';
+  createdAt: string;
+}
+```
+
+**FE:** đọc `meta.pendingTotal` (fallback shape cũ `{ items, meta, summary }` nếu cần).
+
 ---
 
 ## 5. Cancel (Flow 03)
@@ -308,6 +355,7 @@ POST /admin/rma/:rmaId/reject    { "note": "…" }
 | Force cancel | `POST` | `/admin/orders/:orderId/cancel` |
 | RMA inbox | `GET` | `/admin/rma?status=` |
 | Approve / reject RMA | `POST` | `/admin/rma/:id/approve\|reject` |
+| Settlements (pending reconcile) | `GET` | `/admin/settlements?shopId&status&page&pageSize` — `meta.pendingTotal` |
 
 ### Admin tạo đơn hộ khách
 
@@ -433,6 +481,8 @@ interface OrderItemView {
   productId: string;
   sku: string;
   titleSnapshot: string;
+  /** Snapshot at checkout: variant.images[0] → product.images[0] → null */
+  imageSnapshot: string | null;
   unitPrice: number;
   quantity: number;
   lineTotal: number;

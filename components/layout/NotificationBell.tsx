@@ -18,17 +18,21 @@ export function NotificationBell() {
     items,
     unreadCount,
     loading,
+    page,
+    meta,
     streamStatus,
     refresh,
+    setPage,
     markRead,
     markAllRead,
   } = useNotifications();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const totalPages = meta?.totalPages ?? 0;
 
   useEffect(() => {
     if (!open) return;
-    void refresh();
+    void refresh(1);
     const onPointer = (e: MouseEvent) => {
       if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
     };
@@ -78,7 +82,7 @@ export function NotificationBell() {
               Mark all read
             </button>
           </div>
-          <ul className="max-h-80 overflow-y-auto">
+          <ul className="max-h-72 overflow-y-auto">
             {loading && items.length === 0 && (
               <li className="px-4 py-6 text-sm text-mq-text-muted text-center">Loading…</li>
             )}
@@ -119,6 +123,30 @@ export function NotificationBell() {
               </li>
             ))}
           </ul>
+          {totalPages > 1 ? (
+            <div className="flex items-center justify-between gap-2 px-3 py-2 border-t border-mq-border bg-mq-surface-subtle">
+              <button
+                type="button"
+                className="text-xs px-2 py-1 rounded-md text-mq-text-muted hover:text-mq-text disabled:opacity-40"
+                disabled={page <= 1 || loading}
+                onClick={() => setPage(page - 1)}
+              >
+                Prev
+              </button>
+              <span className="text-[11px] text-mq-text-muted tabular-nums">
+                {page}/{totalPages}
+                {typeof meta?.total === "number" ? ` · ${meta.total}` : ""}
+              </span>
+              <button
+                type="button"
+                className="text-xs px-2 py-1 rounded-md text-mq-text-muted hover:text-mq-text disabled:opacity-40"
+                disabled={page >= totalPages || loading}
+                onClick={() => setPage(page + 1)}
+              >
+                Next
+              </button>
+            </div>
+          ) : null}
         </div>
       )}
     </div>
