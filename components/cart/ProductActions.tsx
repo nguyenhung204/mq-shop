@@ -15,12 +15,14 @@ export function ProductActions({ product }: { product: Product }) {
   const router = useRouter();
 
   const handleAdd = (e: MouseEvent<HTMLButtonElement>) => {
-    addItem(product);
+    const ok = addItem(product);
+    if (!ok) return;
     flyToCart(product.image, e.currentTarget);
   };
 
   const handleBuyNow = (e: MouseEvent<HTMLButtonElement>) => {
-    addItem(product);
+    const ok = addItem(product);
+    if (!ok) return;
     flyToCart(product.image, e.currentTarget);
     toast.success(t("cart.added"), { description: product.name });
     router.push("/checkout");

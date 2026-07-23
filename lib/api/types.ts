@@ -64,6 +64,7 @@ export type Paginated<T> = {
 
 export type ListingCard = {
   id: string;
+  shopId?: string;
   title: string;
   /** Derived min variant price (backward-friendly). */
   price: number;
@@ -220,41 +221,62 @@ export type Cart = {
   items: CartItem[];
 };
 
+/** @deprecated Prefer OrderView / PaymentMethod from `@/lib/api/orders`. */
 export type OrderStatus =
   | "PENDING"
+  | "PAID"
   | "CONFIRMED"
-  | "PROCESSING"
+  | "PACKED"
   | "SHIPPED"
   | "DELIVERED"
   | "CANCELLED"
+  | "REFUND_APPROVED"
+  | "REFUNDED"
+  | "PROCESSING"
   | "EXPIRED";
 
 export type PaymentStatus = "UNPAID" | "PAID" | "FAILED" | "REFUND_PENDING";
-export type PaymentMethod = "COD" | "BANK_TRANSFER" | "CARD";
+/** @deprecated Prefer COD | MOCK from `@/lib/api/orders`. */
+export type PaymentMethod = "COD" | "MOCK" | "BANK_TRANSFER" | "CARD";
 
+/** @deprecated Prefer OrderView from `@/lib/api/orders`. */
 export type ApiOrder = {
   id: string;
+  code?: string;
   shopId: string;
+  buyerId?: string;
   status: OrderStatus;
   paymentMethod: PaymentMethod;
-  paymentStatus: PaymentStatus;
-  totalAmountUsd: string | number;
+  paymentStatus?: PaymentStatus;
+  total?: number;
+  totalAmountUsd?: string | number;
+  subtotal?: number;
+  shippingFee?: number;
   shippingFeeUsd?: string | number;
-  shippingAddress: string;
+  currency?: string;
+  shippingAddress: string | Record<string, unknown>;
   createdAt: string;
+  deliveredAt?: string | null;
   items?: {
+    id?: string;
     sku: string;
     quantity: number;
-    unitPriceUsd: string | number;
+    unitPrice?: number;
+    unitPriceUsd?: string | number;
+    titleSnapshot?: string;
     productId?: string;
     name?: string;
+    lineTotal?: number;
+    variantId?: string;
   }[];
 };
 
 export type RmaStatus =
-  | "REQUESTED"
+  | "PENDING"
   | "APPROVED"
   | "REJECTED"
+  | "CLOSED"
+  | "REQUESTED"
   | "STOCK_RETURNED"
   | "WITHDRAWN";
 
@@ -264,8 +286,15 @@ export type ApiRma = {
   status: RmaStatus;
   reason: string;
   evidenceUrls?: string[];
+  bankInfo?: {
+    bankName: string;
+    accountNumber: string;
+    accountName: string;
+  };
+  reviewNote?: string | null;
   autoApproveAt?: string;
   requestedAt?: string;
+  createdAt?: string;
 };
 
 export type ShopStatus = "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED";

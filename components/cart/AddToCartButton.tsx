@@ -26,7 +26,8 @@ export function AddToCartButton({
   const buttonLabel = label ?? t("common.addToCart");
 
   const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
-    addItem(product);
+    const ok = addItem(product);
+    if (!ok) return;
     flyToCart(product.image, e.currentTarget);
 
     if (buyNow) {

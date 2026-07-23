@@ -1,22 +1,93 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { orderApi } from "@/lib/api";
-import type { ApiOrder, ApiRma } from "@/lib/api/types";
-import { asArray } from "@/lib/api/utils";
+import { toast } from "sonner";
+import { ApiError } from "@/lib/api/client";
+import {
+  adminOrdersApi,
+  orderApi,
+  type AdminListOrdersParams,
+  type CheckoutRequest,
+  type CreateRmaRequest,
+  type ListOrdersParams,
+  type OrderView,
+  type RmaView,
+  type ShippingQuoteRequest,
+  type UpdateOrderStatusRequest,
+} from "@/lib/api/orders";
+import { parsePage } from "@/lib/api/utils";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 export const orderKeys = {
   all: ["orders"] as const,
-  mine: () => [...orderKeys.all, "me"] as const,
-  detail: (id: string) => [...orderKeys.all, id] as const,
-  rma: () => [...orderKeys.all, "rma"] as const,
+  list: (params: ListOrdersParams = {}) =>
+    [
+      ...orderKeys.all,
+      "list",
+      params.status ?? "",
+      params.page ?? 1,
+      params.pageSize ?? 20,
+    ] as const,
+  detail: (id: string) => [...orderKeys.all, "detail", id] as const,
+  adminList: (params: AdminListOrdersParams = {}) =>
+    [
+      ...orderKeys.all,
+      "admin",
+      params.status ?? "",
+      params.shopId ?? "",
+      params.page ?? 1,
+      params.pageSize ?? 20,
+    ] as const,
+  adminRma: (status?: string) => [...orderKeys.all, "admin-rma", status ?? ""] as const,
 };
 
-export function useMyOrders() {
+function orderErrorMessage(e: unknown, fallback: string): string {
+  if (e instanceof ApiError) {
+    switch (e.code) {
+      case "ORDER_MULTI_SHOP":
+        return "Cart items must belong to a single shop.";
+      case "ORDER_OWN_SHOP_FORBIDDEN":
+        return "You cannot buy from your own shop.";
+      case "INSUFFICIENT_STOCK":
+        return "Not enough stock for one or more items.";
+      case "ORDER_NOT_CANCELLABLE":
+        return "This order can no longer be cancelled.";
+      case "ORDER_INVALID_TRANSITION":
+        return "Invalid status transition.";
+      case "RMA_WINDOW_EXPIRED":
+        return "RMA window expired (7 days after delivery).";
+      case "RMA_NOT_ALLOWED":
+        return "RMA is only allowed after delivery.";
+      case "RMA_ALREADY_EXISTS":
+        return "An active RMA already exists for this order.";
+      case "ORDER_NOT_FOUND":
+        return "Order not found.";
+      case "USER_NOT_FOUND":
+        return "Buyer not found.";
+      case "VARIANT_NOT_FOUND":
+        return "One or more SKUs were not found.";
+      default:
+        break;
+    }
+  }
+  return getErrorMessage(e, fallback);
+}
+
+export function useOrders(params: ListOrdersParams = {}) {
+  const page = params.page ?? 1;
+  const pageSize = params.pageSize ?? 20;
+  const status = params.status;
   return useQuery({
-    queryKey: orderKeys.mine(),
-    queryFn: async () => asArray<ApiOrder>(await orderApi.myOrders()),
+    queryKey: orderKeys.list({ page, pageSize, status }),
+    queryFn: async () =>
+      parsePage<OrderView>(await orderApi.list({ page, pageSize, status })),
+    placeholderData: (prev) => prev,
   });
+}
+
+/** Alias for buyer list. */
+export function useMyOrders(params: ListOrdersParams = {}) {
+  return useOrders(params);
 }
 
 export function useOrder(id: string) {
@@ -27,32 +98,160 @@ export function useOrder(id: string) {
   });
 }
 
-export function useMyRma() {
-  return useQuery({
-    queryKey: orderKeys.rma(),
-    queryFn: async () => asArray<ApiRma>(await orderApi.myRma()),
+export function useShippingQuote() {
+  return useMutation({
+    mutationFn: (body: ShippingQuoteRequest) => orderApi.shippingQuote(body),
+  });
+}
+
+export function useCheckout() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CheckoutRequest) => orderApi.checkout(body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: orderKeys.all });
+    },
+    onError: (e) => toast.error(orderErrorMessage(e, "Checkout failed")),
   });
 }
 
 export function useCancelOrder(orderId: string) {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (reason: string) => orderApi.cancel(orderId, { reason }),
-    onSuccess: (order: ApiOrder) => {
+    onSuccess: (order) => {
       queryClient.setQueryData(orderKeys.detail(orderId), order);
-      void queryClient.invalidateQueries({ queryKey: orderKeys.mine() });
+      void queryClient.invalidateQueries({ queryKey: orderKeys.all });
+      toast.success("Order cancelled");
     },
+    onError: (e) => toast.error(orderErrorMessage(e, "Cancel failed")),
   });
 }
 
-export function useWithdrawRma() {
+export function useUpdateOrderStatus() {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: (id: string) => orderApi.withdrawRma(id),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: orderKeys.rma() });
+    mutationFn: ({
+      orderId,
+      body,
+    }: {
+      orderId: string;
+      body: UpdateOrderStatusRequest;
+    }) => orderApi.updateStatus(orderId, body),
+    onSuccess: (order) => {
+      queryClient.setQueryData(orderKeys.detail(order.id), order);
+      void queryClient.invalidateQueries({ queryKey: orderKeys.all });
+      toast.success(`Order → ${order.status}`);
     },
+    onError: (e) => toast.error(orderErrorMessage(e, "Status update failed")),
+  });
+}
+
+export function useCreateRma(orderId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      body,
+      evidence,
+    }: {
+      body: CreateRmaRequest;
+      evidence?: File[];
+    }) => {
+      const rma = await orderApi.createRma(orderId, body);
+      if (evidence?.length) {
+        return orderApi.uploadRmaEvidence(rma.id, evidence);
+      }
+      return rma;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: orderKeys.detail(orderId) });
+      toast.success("RMA submitted");
+    },
+    onError: (e) => toast.error(orderErrorMessage(e, "RMA failed")),
+  });
+}
+
+export function useAdminOrders(params: AdminListOrdersParams = {}) {
+  const page = params.page ?? 1;
+  const pageSize = params.pageSize ?? 20;
+  const status = params.status;
+  const shopId = params.shopId;
+  return useQuery({
+    queryKey: orderKeys.adminList({ page, pageSize, status, shopId }),
+    queryFn: async () =>
+      parsePage<OrderView>(
+        await adminOrdersApi.list({ page, pageSize, status, shopId }),
+      ),
+    placeholderData: (prev) => prev,
+  });
+}
+
+export function useAdminCancelOrder() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ orderId, reason }: { orderId: string; reason: string }) =>
+      adminOrdersApi.cancel(orderId, { reason }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: orderKeys.all });
+      toast.success("Order cancelled");
+    },
+    onError: (e) => toast.error(orderErrorMessage(e, "Cancel failed")),
+  });
+}
+
+export function useAdminCheckout() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: adminOrdersApi.checkout,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: orderKeys.all });
+      toast.success("Order placed on behalf of buyer");
+    },
+    onError: (e) => toast.error(orderErrorMessage(e, "Admin checkout failed")),
+  });
+}
+
+export function useAdminShippingQuote() {
+  return useMutation({
+    mutationFn: adminOrdersApi.shippingQuote,
+  });
+}
+
+export function useAdminRma(status?: string) {
+  return useQuery({
+    queryKey: orderKeys.adminRma(status),
+    queryFn: async () =>
+      parsePage<RmaView>(
+        await adminOrdersApi.listRma({
+          status: status as RmaView["status"] | undefined,
+          page: 1,
+          pageSize: 50,
+        }),
+      ),
+  });
+}
+
+export function useAdminRmaDecision() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      decision,
+      note,
+    }: {
+      id: string;
+      decision: "APPROVED" | "REJECTED";
+      note?: string;
+    }) => {
+      if (decision === "APPROVED") {
+        return adminOrdersApi.approveRma(id, { note });
+      }
+      return adminOrdersApi.rejectRma(id, { note: note || "Rejected" });
+    },
+    onSuccess: (_d, vars) => {
+      void queryClient.invalidateQueries({ queryKey: orderKeys.all });
+      toast.success(vars.decision === "APPROVED" ? "RMA approved" : "RMA rejected");
+    },
+    onError: (e) => toast.error(orderErrorMessage(e, "RMA decision failed")),
   });
 }

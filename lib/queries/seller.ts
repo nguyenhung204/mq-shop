@@ -7,9 +7,7 @@ import { ApiError } from "@/lib/api/client";
 import type {
   AddProductVariantRequest,
   ApiCategory,
-  ApiOrder,
   ApiProduct,
-  ApiRma,
   ApiShop,
   CreateProductRequest,
   PageMeta,
@@ -18,6 +16,7 @@ import type {
 } from "@/lib/api/types";
 import { asArray, parsePage } from "@/lib/api/utils";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { useOrders } from "@/lib/queries/orders";
 
 export { useWarehouses } from "@/lib/queries/inventory";
 
@@ -27,8 +26,6 @@ export const sellerKeys = {
     [...sellerKeys.all, "products", status, page, pageSize] as const,
   product: (id: string) => [...sellerKeys.all, "product", id] as const,
   categories: () => [...sellerKeys.all, "categories"] as const,
-  orders: () => [...sellerKeys.all, "orders"] as const,
-  rma: () => [...sellerKeys.all, "rma"] as const,
   shop: () => [...sellerKeys.all, "shop"] as const,
   materials: () => [...sellerKeys.all, "materials"] as const,
 };
@@ -63,17 +60,15 @@ export function useCategories() {
   });
 }
 
-export function useSellerOrders() {
-  return useQuery({
-    queryKey: sellerKeys.orders(),
-    queryFn: async () => asArray<ApiOrder>(await sellerApi.orders()),
-  });
-}
-
-export function useSellerRma() {
-  return useQuery({
-    queryKey: sellerKeys.rma(),
-    queryFn: async () => asArray<ApiRma>(await sellerApi.rma()),
+export function useSellerOrders(params: {
+  status?: import("@/lib/api/orders").OrderStatus;
+  page?: number;
+  pageSize?: number;
+} = {}) {
+  return useOrders({
+    page: params.page ?? 1,
+    pageSize: params.pageSize ?? 20,
+    status: params.status,
   });
 }
 
@@ -302,30 +297,6 @@ export function useUnhideSellerProduct() {
       }
       toast.error(getErrorMessage(e));
     },
-  });
-}
-
-export function useConfirmStockReturn() {
-  const invalidate = useSellerInvalidate();
-  return useMutation({
-    mutationFn: ({
-      id,
-      body,
-    }: {
-      id: string;
-      body: {
-        warehouseId: string;
-        sku: string;
-        quantity: number;
-        kind: "RETURNED" | "NEW";
-        note?: string;
-      };
-    }) => sellerApi.confirmStockReturn(id, body),
-    onSuccess: () => {
-      invalidate();
-      toast.success("Stock return confirmed");
-    },
-    onError: (e) => toast.error(getErrorMessage(e, "Confirm failed")),
   });
 }
 

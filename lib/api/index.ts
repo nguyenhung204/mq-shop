@@ -2,19 +2,15 @@ import { api } from "./client";
 import type {
   ApiAuditLog,
   ApiCategory,
-  ApiOrder,
   ApiProduct,
-  ApiRma,
   ApiShop,
   AddProductVariantRequest,
   AuthUser,
-  Cart,
   CreateProductRequest,
   ListingCard,
   LocalizedText,
   PageMeta,
   Paginated,
-  PaymentMethod,
   ProductVariant,
   PublicProductDetail,
   UpdateProductRequest,
@@ -22,6 +18,31 @@ import type {
   WalletBalance,
 } from "./types";
 import { asArray, parsePage } from "./utils";
+
+export {
+  orderApi,
+  adminOrdersApi,
+  nextFulfillmentStatus,
+  canCancelOrder,
+  canRequestRma,
+} from "./orders";
+export type {
+  OrderStatus,
+  PaymentMethod,
+  RmaStatus,
+  ShippingAddress,
+  ShippingQuoteRequest,
+  ShippingQuoteView,
+  CheckoutRequest,
+  AdminCheckoutRequest,
+  OrderView,
+  OrderItemView,
+  RmaView,
+  CreateRmaRequest,
+  ListOrdersParams,
+  AdminListOrdersParams,
+  UpdateOrderStatusRequest,
+} from "./orders";
 
 export const catalogApi = {
   categories: async () => {
@@ -88,36 +109,6 @@ export const catalogApi = {
   product: (id: string) => api.get<ApiProduct>(`/products/${id}`, { auth: false }),
 };
 
-export const cartApi = {
-  get: () => api.get<Cart>("/cart"),
-  addItem: (body: { productId: string; quantity: number }) =>
-    api.post<Cart>("/cart/items", body),
-  updateItem: (id: string, body: { quantity: number }) =>
-    api.put<Cart>(`/cart/items/${id}`, body),
-  removeItem: (id: string) => api.delete<Cart>(`/cart/items/${id}`),
-  clear: () => api.delete<Cart>("/cart"),
-};
-
-export const orderApi = {
-  checkout: (body: {
-    paymentMethod: PaymentMethod;
-    shippingAddress: string;
-    shippingCountry?: string;
-    cartItemIds?: string[];
-  }) => api.post<ApiOrder>("/checkout", body),
-  myOrders: () => api.get<ApiOrder[] | Paginated<ApiOrder>>("/orders/me"),
-  get: (id: string) => api.get<ApiOrder>(`/orders/${id}`),
-  cancel: (id: string, body: { reason: string }) =>
-    api.put<ApiOrder>(`/orders/${id}/cancel`, body),
-  createRma: (
-    orderId: string,
-    body: { reason: string; evidenceUrls?: string[]; refundAccountInfo?: string },
-  ) => api.post<ApiRma>(`/orders/${orderId}/rma`, body),
-  myRma: () => api.get<ApiRma[] | Paginated<ApiRma>>("/rma/me"),
-  getRma: (id: string) => api.get<ApiRma>(`/rma/${id}`),
-  withdrawRma: (id: string) => api.put<ApiRma>(`/rma/${id}/withdraw`, {}),
-};
-
 export const shopApi = {
   apply: (formData: FormData) => api.postForm<ApiShop>("/shops/apply", formData),
   me: () => api.get<ApiShop>("/shops/me"),
@@ -180,18 +171,6 @@ export const sellerApi = {
   hideProduct: (id: string) => api.post(`/products/${id}/hide`, {}),
   /** HIDDEN → PENDING (re-enter admin review queue) */
   unhideProduct: (id: string) => api.post(`/products/${id}/unhide`, {}),
-  orders: () => api.get<ApiOrder[] | Paginated<ApiOrder>>("/seller/orders"),
-  rma: () => api.get<ApiRma[] | Paginated<ApiRma>>("/seller/rma"),
-  confirmStockReturn: (
-    id: string,
-    body: {
-      warehouseId: string;
-      sku: string;
-      quantity: number;
-      kind: "RETURNED" | "NEW";
-      note?: string;
-    },
-  ) => api.put(`/seller/rma/${id}/confirm-stock-return`, body),
   landingCost: (productId: string) =>
     api.get("/seller/landing-cost", { query: { product_id: productId, productId } }),
 };
@@ -287,13 +266,7 @@ export const adminApi = {
       query,
       withMeta: true,
     }),
-  forceCancelOrder: (id: string, body?: { reason?: string }) =>
-    api.put(`/admin/orders/${id}/force-cancel`, body ?? {}),
-  confirmCod: (id: string) => api.put(`/admin/orders/${id}/confirm-cod`, {}),
   dailyRefundReport: () => api.get("/admin/finance/daily-refund-report"),
-  rma: () => api.get("/admin/rma"),
-  rmaDecision: (id: string, body: { decision: "APPROVED" | "REJECTED"; reason?: string }) =>
-    api.put(`/admin/rma/${id}/decision`, body),
   commissionOverride: (shopId: string, body: { commissionRate: number }) =>
     api.put(`/admin/shops/${shopId}/commission-override`, body),
   createGateway: (body: unknown) => api.post("/admin/payment-gateway-configs", body),

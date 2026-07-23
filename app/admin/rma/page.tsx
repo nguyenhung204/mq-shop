@@ -1,26 +1,38 @@
 "use client";
 
+import { useState } from "react";
 import { Check, X } from "lucide-react";
-import { useAdminRma, useAdminRmaDecision } from "@/lib/queries/admin";
+import type { RmaStatus } from "@/lib/api/orders";
+import { useAdminRma, useAdminRmaDecision } from "@/lib/queries/orders";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 
 function RmaInner() {
-  const { data: items = [], isLoading, isError, error } = useAdminRma();
+  const [status, setStatus] = useState<RmaStatus | "">("PENDING");
+  const { data, isLoading, isError, error } = useAdminRma(status || undefined);
+  const items = data?.items ?? [];
   const rmaDecision = useAdminRmaDecision();
 
   return (
     <>
       <AdminPageHeader
         title="RMA"
-        description="Approve or reject return requests."
+        description="Approve or reject return requests. Approve → order REFUND_APPROVED (payout outside system)."
       />
       <div className="space-y-4">
-        <p className="text-sm text-mq-text-muted">
-          Admin can decide anytime while REQUESTED (no need to wait 3 days).
-        </p>
+        <select
+          className="mq-input max-w-[12rem]"
+          value={status}
+          onChange={(e) => setStatus(e.target.value as RmaStatus | "")}
+        >
+          <option value="">All</option>
+          <option value="PENDING">Pending</option>
+          <option value="APPROVED">Approved</option>
+          <option value="REJECTED">Rejected</option>
+          <option value="CLOSED">Closed</option>
+        </select>
         {isError && (
           <div className="mq-alert mq-alert-error">
             {error instanceof Error ? error.message : "Failed"}
@@ -31,18 +43,31 @@ function RmaInner() {
           <div key={r.id} className="mq-card p-4 flex flex-wrap justify-between gap-3 text-sm">
             <div>
               <p>
-                {r.orderId.slice(0, 8)}… · {r.status}
+                Order {r.orderId.slice(0, 8)}… ·{" "}
+                <span className="mq-badge mq-badge-pink">{r.status}</span>
               </p>
-              <p className="text-xs text-mq-text-muted line-clamp-2">{r.reason}</p>
+              <p className="text-xs text-mq-text-muted line-clamp-2 mt-1">{r.reason}</p>
+              {r.bankInfo ? (
+                <p className="text-xs text-mq-text-muted mt-1">
+                  {r.bankInfo.bankName} · {r.bankInfo.accountNumber} · {r.bankInfo.accountName}
+                </p>
+              ) : null}
+              {(r.evidenceUrls?.length ?? 0) > 0 ? (
+                <p className="text-xs text-mq-text-muted mt-1">
+                  {r.evidenceUrls.length} evidence image(s)
+                </p>
+              ) : null}
             </div>
-            {r.status === "REQUESTED" && (
+            {r.status === "PENDING" ? (
               <AdminActions>
                 <AdminIconButton
                   label="Approve"
                   icon={Check}
                   tone="approve"
                   disabled={rmaDecision.isPending}
-                  onClick={() => void rmaDecision.mutateAsync({ id: r.id, decision: "APPROVED" })}
+                  onClick={() =>
+                    void rmaDecision.mutateAsync({ id: r.id, decision: "APPROVED" })
+                  }
                 />
                 <AdminIconButton
                   label="Reject"
@@ -53,14 +78,17 @@ function RmaInner() {
                     void rmaDecision.mutateAsync({
                       id: r.id,
                       decision: "REJECTED",
-                      reason: "Not eligible",
+                      note: "Not eligible",
                     })
                   }
                 />
               </AdminActions>
-            )}
+            ) : null}
           </div>
         ))}
+        {!isLoading && items.length === 0 ? (
+          <p className="text-sm text-mq-text-muted">No RMA for this filter.</p>
+        ) : null}
       </div>
     </>
   );
@@ -68,7 +96,7 @@ function RmaInner() {
 
 export default function AdminRmaPage() {
   return (
-    <AuthGuard roles={["ADMIN", "SUPER_ADMIN"]} permissions={["MANAGE_RMA"]}>
+    <AuthGuard roles={["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"]} permissions={["MANAGE_RMA"]}>
       <RmaInner />
     </AuthGuard>
   );

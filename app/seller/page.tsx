@@ -43,7 +43,7 @@ export default function SellerPage() {
         ["/seller/products", "Manage products"],
         ["/seller/inventory", "Warehouses, SKUs & slips"],
         ["/seller/orders", "Sales orders"],
-        ["/seller/rma", "Confirm RMA stock"],
+        ["/seller/rma", "RMA restock links"],
         ["/seller/materials", "Marketing materials"],
       ].map(([href, label]) => (
         <Link

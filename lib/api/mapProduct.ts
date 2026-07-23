@@ -49,6 +49,7 @@ export function mapListingCard(p: BeListing, categorySlug = "all"): Product {
     inStock: Math.max(0, p.stock),
     displayMode: p.displayMode,
     watermarkText: p.watermarkText,
+    shopId: p.shopId,
   };
 }
 
@@ -91,6 +92,7 @@ export function mapPublicProductDetail(p: PublicProductDetail): Product {
     watermarkText: p.watermarkText,
     variants,
     selectedVariantId: firstInStock?.id,
+    shopId: p.shopId,
   };
 }
 
@@ -138,5 +140,6 @@ export function mapApiProduct(p: BeProduct, locale = "vi"): Product {
     status: p.status,
     variants,
     selectedVariantId: variants[0]?.id,
+    shopId: p.shopId,
   };
 }

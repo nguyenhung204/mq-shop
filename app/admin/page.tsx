@@ -69,8 +69,8 @@ const cards: {
   {
     href: "/admin/orders",
     label: "Orders",
-    desc: "Confirm COD payments or force-cancel",
-    permissions: ["FORCE_CANCEL_ORDER", "CONFIRM_ORDER"],
+    desc: "Cross-shop inbox, cancel, create on behalf of buyers",
+    permissions: ["VIEW_ORDER", "CREATE_ORDER"],
     icon: ShoppingBag,
   },
   {

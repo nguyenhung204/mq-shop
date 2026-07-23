@@ -4,16 +4,24 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { adminApi, adminStaffApi, financeApi } from "@/lib/api";
 import { ApiError } from "@/lib/api/client";
-import type { ApiBanner, ApiProduct, ApiRma, ApiShop, AuthUser, StaffPoolRole, StaffRole } from "@/lib/api/types";
+import type { ApiBanner, ApiProduct, ApiShop, AuthUser, StaffPoolRole, StaffRole } from "@/lib/api/types";
 import { asArray, parsePage } from "@/lib/api/utils";
 import { getErrorMessage } from "@/lib/queries/utils";
+
+export {
+  useAdminRma,
+  useAdminRmaDecision,
+  useAdminOrders,
+  useAdminCancelOrder,
+  useAdminCheckout,
+  useAdminShippingQuote,
+} from "@/lib/queries/orders";
 
 export const adminKeys = {
   all: ["admin"] as const,
   shops: (status: string, page: number) => [...adminKeys.all, "shops", status, page] as const,
   shop: (id: string) => [...adminKeys.all, "shop", id] as const,
   products: (status: string, page: number) => [...adminKeys.all, "products", status, page] as const,
-  rma: () => [...adminKeys.all, "rma"] as const,
   finance: () => [...adminKeys.all, "finance"] as const,
   banners: () => [...adminKeys.all, "banners"] as const,
 };
@@ -52,13 +60,6 @@ export function useAdminProducts(status: string, page = 1, pageSize = 20) {
   return useQuery({
     queryKey: adminKeys.products(status, page),
     queryFn: async () => parsePage<ApiProduct>(await adminApi.products(status, page, pageSize)),
-  });
-}
-
-export function useAdminRma() {
-  return useQuery({
-    queryKey: adminKeys.rma(),
-    queryFn: async () => asArray<ApiRma>(await adminApi.rma()),
   });
 }
 
@@ -194,26 +195,6 @@ export function useUnhideAdminProduct() {
       }
       toast.error(getErrorMessage(e));
     },
-  });
-}
-
-export function useAdminRmaDecision() {
-  const invalidate = useAdminInvalidate();
-  return useMutation({
-    mutationFn: ({
-      id,
-      decision,
-      reason,
-    }: {
-      id: string;
-      decision: "APPROVED" | "REJECTED";
-      reason?: string;
-    }) => adminApi.rmaDecision(id, { decision, reason }),
-    onSuccess: (_, { decision }) => {
-      invalidate();
-      toast.success(decision === "APPROVED" ? "RMA approved" : "RMA rejected");
-    },
-    onError: (e) => toast.error(getErrorMessage(e)),
   });
 }
 
@@ -460,27 +441,6 @@ export function useStaffAccountAction() {
           : vars.kind === "unlock"
             ? "Staff unlocked"
             : "Staff deleted",
-      );
-    },
-    onError: (e) => toast.error(getErrorMessage(e)),
-  });
-}
-
-export function useAdminOrderAction() {
-  return useMutation({
-    mutationFn: async ({
-      action,
-      orderId,
-    }: {
-      action: "confirmCod" | "forceCancel";
-      orderId: string;
-    }) => {
-      if (action === "confirmCod") return adminApi.confirmCod(orderId);
-      return adminApi.forceCancelOrder(orderId, { reason: "Admin force cancel" });
-    },
-    onSuccess: (_, { action }) => {
-      toast.success(
-        action === "confirmCod" ? "COD confirmed" : "Force cancelled (audit logged on BE)",
       );
     },
     onError: (e) => toast.error(getErrorMessage(e)),

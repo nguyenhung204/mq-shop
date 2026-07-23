@@ -3,77 +3,102 @@
 import { useMemo } from "react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { toast } from "sonner";
 import { Product, formatPrice } from "@/lib/data/products";
 
-export type CartItem = {
+export type CartLine = {
+  variantId: string;
   productId: string;
-  slug: string;
+  shopId: string;
+  sku: string;
   name: string;
-  price: number;
+  unitPrice: number;
   image: string;
   quantity: number;
+  slug?: string;
 };
 
+/** @deprecated Use CartLine */
+export type CartItem = CartLine;
+
 type CartActions = {
-  addItem: (product: Product, quantity?: number) => void;
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  /** Add from PDP Product (uses selectedVariantId). Returns false if blocked (multi-shop). */
+  addItem: (product: Product, quantity?: number) => boolean;
+  removeItem: (variantId: string) => void;
+  updateQuantity: (variantId: string, quantity: number) => void;
   clearCart: () => void;
 };
 
 type CartState = {
-  items: CartItem[];
+  items: CartLine[];
 } & CartActions;
+
+function resolveLine(product: Product, quantity: number): CartLine | null {
+  const variantId = product.selectedVariantId || product.variants?.[0]?.id;
+  if (!variantId) return null;
+  const variant = product.variants?.find((v) => v.id === variantId);
+  const shopId = product.shopId?.trim();
+  if (!shopId) return null;
+  return {
+    variantId,
+    productId: product.id,
+    shopId,
+    sku: variant?.sku || product.id.slice(0, 8),
+    name: product.name,
+    unitPrice: variant?.price ?? product.price,
+    image: variant?.images?.[0] || product.image,
+    quantity,
+    slug: product.slug,
+  };
+}
 
 export const useCartStore = create<CartState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       items: [],
 
       addItem: (product, quantity = 1) => {
-        set((state) => {
-          const existing = state.items.find((i) => i.productId === product.id);
-          if (existing) {
-            return {
-              items: state.items.map((i) =>
-                i.productId === product.id
-                  ? { ...i, quantity: i.quantity + quantity }
-                  : i,
-              ),
-            };
-          }
-          return {
-            items: [
-              ...state.items,
-              {
-                productId: product.id,
-                slug: product.slug,
-                name: product.name,
-                price: product.price,
-                image: product.image,
-                quantity,
-              },
-            ],
-          };
-        });
+        const line = resolveLine(product, quantity);
+        if (!line) {
+          toast.error("Select a variant before adding to cart.");
+          return false;
+        }
+        const { items } = get();
+        if (items.length > 0 && items[0].shopId !== line.shopId) {
+          toast.error("Cart is limited to one shop. Clear the cart or finish checkout first.");
+          return false;
+        }
+        const existing = items.find((i) => i.variantId === line.variantId);
+        if (existing) {
+          set({
+            items: items.map((i) =>
+              i.variantId === line.variantId
+                ? { ...i, quantity: i.quantity + quantity }
+                : i,
+            ),
+          });
+        } else {
+          set({ items: [...items, line] });
+        }
+        return true;
       },
 
-      removeItem: (productId) => {
+      removeItem: (variantId) => {
         set((state) => ({
-          items: state.items.filter((i) => i.productId !== productId),
+          items: state.items.filter((i) => i.variantId !== variantId),
         }));
       },
 
-      updateQuantity: (productId, quantity) => {
+      updateQuantity: (variantId, quantity) => {
         if (quantity < 1) {
           set((state) => ({
-            items: state.items.filter((i) => i.productId !== productId),
+            items: state.items.filter((i) => i.variantId !== variantId),
           }));
           return;
         }
         set((state) => ({
           items: state.items.map((i) =>
-            i.productId === productId ? { ...i, quantity } : i,
+            i.variantId === variantId ? { ...i, quantity } : i,
           ),
         }));
       },
@@ -81,8 +106,9 @@ export const useCartStore = create<CartState>()(
       clearCart: () => set({ items: [] }),
     }),
     {
-      name: "mq-cart",
+      name: "mq-cart-v2",
       skipHydration: true,
+      partialize: (state) => ({ items: state.items }),
     },
   ),
 );
@@ -100,9 +126,11 @@ export function useCart() {
   );
 
   const subtotal = useMemo(
-    () => items.reduce((sum, i) => sum + i.price * i.quantity, 0),
+    () => items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0),
     [items],
   );
+
+  const shopId = items[0]?.shopId ?? null;
 
   return {
     items,
@@ -112,6 +140,9 @@ export function useCart() {
     clearCart,
     itemCount,
     subtotal,
+    shopId,
     formatSubtotal: () => formatPrice(subtotal),
+    checkoutItems: () =>
+      items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
   };
 }

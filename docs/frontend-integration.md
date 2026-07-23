@@ -833,6 +833,17 @@ Admin **sàn** (không phải seller) tạo/gán NV kho / CSKH / kế toán gắ
 |----|--------|------|------------|
 | Tạo NV | `POST` | `/admin/staff` | `MANAGE_STAFF` body `{ email, fullName?, role, shopId }` → `{ user, temporaryPassword }` |
 | List NV | `GET` | `/admin/staff?shopId&role&page&pageSize` | `MANAGE_STAFF` |
+
+`GET /admin/staff` trả về pool gán quyền:
+- **BUYER** (không có `SELLER`) — ứng viên chưa/không phải chủ shop
+- **WAREHOUSE** / **CS** / **ACCOUNTANT** — staff đã gán
+- **Không** lấy user có role `SELLER` (chủ shop)
+
+`role` filter: `BUYER` | `WAREHOUSE` | `CS` | `ACCOUNTANT`.  
+`shopId` filter: staff thuộc shop đó **hoặc** BUYER chưa có `shopId` (ứng viên).
+
+Gán role cho BUYER có sẵn: `PATCH /admin/staff/:userId/roles` `{ roles: ["WAREHOUSE"], shopId }` (không cần `POST` tạo user mới).
+
 | Gán/đổi role | `PATCH` | `/admin/staff/:userId/roles` | `ASSIGN_ROLES` `{ roles, shopId? }` |
 | Lock | `POST` | `/admin/staff/:userId/lock` | `MANAGE_STAFF` |
 | Unlock | `POST` | `/admin/staff/:userId/unlock` | `MANAGE_STAFF` |
@@ -947,5 +958,22 @@ Shop **Seed Electronics Store**: mouse/keyboard/tee/lamp + `KHO-HN`/`KHO-HCM` + 
 - Delete product / delete variant
 - Update / delete warehouse
 - Public shop storefront page
-- Cart / order (`005`)
 - Auto-delete / export CSV audit files
+
+## 9. Order Flow (`005`)
+
+Cart **không** có trên BE — FE giữ Zustand local và gửi `items[]` lúc checkout.
+
+Chi tiết contract: [`docs/fe-guide-order-flow.md`](./fe-guide-order-flow.md) (BE `feat/006-order-flow`).
+
+| UI | Method | Path |
+|----|--------|------|
+| Quote ship | `POST` | `/orders/shipping-quote` |
+| Checkout | `POST` | `/orders/checkout` |
+| List / detail | `GET` | `/orders` · `/orders/:orderId` |
+| Status (seller) | `PATCH` | `/orders/:orderId/status` |
+| Cancel | `POST` | `/orders/:orderId/cancel` |
+| RMA | `POST` | `/orders/:orderId/rma` · evidence multipart `/rma/:rmaId/evidence` |
+| Admin inbox | `GET` | `/admin/orders` |
+| Admin checkout hộ | `POST` | `/admin/orders/checkout` · `/admin/orders/shipping-quote` |
+| Admin cancel / RMA | `POST` | `/admin/orders/:id/cancel` · `/admin/rma/:id/approve\|reject` |

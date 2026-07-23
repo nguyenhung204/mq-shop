@@ -34,6 +34,7 @@ export type Product = {
     images: string[];
   }>;
   selectedVariantId?: string;
+  shopId?: string;
 };
 
 export const products: Product[] = [
