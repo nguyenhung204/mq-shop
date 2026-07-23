@@ -107,10 +107,28 @@ export type PublicProductVariant = {
   isEnrollmentPackage?: boolean;
 };
 
+/** GET /shops/:shopId/storefront */
+export type ShopStorefront = {
+  id: string;
+  name: string;
+  logoUrl: string | null;
+  bannerUrl: string | null;
+  countryCode: string;
+};
+
+/** Nested on PDP — GET /products/listing/:productId */
+export type ProductShopSummary = {
+  id: string;
+  name: string;
+  logoUrl: string | null;
+};
+
 /** GET /products/listing/:productId */
 export type PublicProductDetail = {
   id: string;
   shopId?: string;
+  /** Present when shop is public; otherwise null (shopId still set). */
+  shop?: ProductShopSummary | null;
   title: string;
   description?: string | null;
   categoryId?: string;

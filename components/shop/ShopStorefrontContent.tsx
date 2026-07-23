@@ -1,18 +1,21 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState, useTransition } from "react";
-import { Search, X } from "lucide-react";
+import { Search, Store, X } from "lucide-react";
 import { categoryLabel } from "@/lib/api/categoryLabel";
 import {
   rootCategories,
   useCatalogCategories,
   useCatalogListingPage,
+  useShopStorefront,
 } from "@/lib/queries/catalog";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { PaginationBar } from "@/components/ui/PaginationBar";
-import { Container, PageHero } from "@/components/ui/shared";
+import { Container } from "@/components/ui/shared";
 
 function parseOptionalNumber(value: string | null): number | undefined {
   if (value == null || value === "") return undefined;
@@ -20,8 +23,10 @@ function parseOptionalNumber(value: string | null): number | undefined {
   return Number.isFinite(n) && n >= 0 ? n : undefined;
 }
 
-export function ShopContent() {
+export function ShopStorefrontContent() {
   const { t, locale } = useLanguage();
+  const params = useParams<{ id: string }>();
+  const shopId = params.id;
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -42,20 +47,24 @@ export function ShopContent() {
     maxPrice != null ? String(maxPrice) : "",
   );
 
+  // Keep controlled drafts in sync when navigating via chips / back-forward.
   useEffect(() => {
     setSearchDraft(q);
     setMinDraft(minPrice != null ? String(minPrice) : "");
     setMaxDraft(maxPrice != null ? String(maxPrice) : "");
   }, [q, minPrice, maxPrice]);
 
+  const shopQuery = useShopStorefront(shopId);
   const categoriesQuery = useCatalogCategories();
   const listingQuery = useCatalogListingPage({
+    shopId,
     q: q || undefined,
     categoryId,
     minPrice,
     maxPrice,
     page,
     pageSize: 24,
+    enabled: Boolean(shopId) && !shopQuery.isError,
   });
 
   const categories = useMemo(
@@ -106,26 +115,95 @@ export function ShopContent() {
     startTransition(() => router.push(pathname));
   };
 
-  const activeCategory = categories.find((c) => c.id === categoryId);
-  const pageTitle = activeCategory
-    ? locale
-      ? categoryLabel(activeCategory, locale)
-      : activeCategory.name || activeCategory.slug
-    : t("nav.shop");
+  const shop = shopQuery.data;
   const hasFilters = Boolean(q || categoryId || minPrice != null || maxPrice != null);
 
+  if (shopQuery.isError) {
+    return (
+      <Container className="py-20 text-center">
+        <Store size={36} className="mx-auto text-mq-text-muted mb-4" strokeWidth={1.25} />
+        <h1 className="text-xl text-mq-text mb-2">{t("storefront.notFound")}</h1>
+        <p className="text-sm text-mq-text-muted mb-6">{t("storefront.notFoundHint")}</p>
+        <Link href="/shop" className="mq-btn mq-btn-primary">
+          {t("storefront.browseMarketplace")}
+        </Link>
+      </Container>
+    );
+  }
+
   return (
-    <>
-      <PageHero title={pageTitle} breadcrumb={[{ label: t("nav.shop") }]} />
+    <div className="mq-storefront">
+      <section className="mq-storefront-hero">
+        <div className="mq-storefront-banner">
+          {shop?.bannerUrl ? (
+            <Image
+              src={shop.bannerUrl}
+              alt=""
+              fill
+              priority
+              className="object-cover"
+              sizes="100vw"
+            />
+          ) : (
+            <div className="mq-storefront-banner-fallback" aria-hidden />
+          )}
+          <div className="mq-storefront-banner-scrim" />
+        </div>
+
+        <Container className="relative z-[1] pb-8 md:pb-10">
+          <nav className="pt-6 mb-8 text-xs text-white/70">
+            <Link href="/shop" className="hover:text-white transition-colors">
+              {t("nav.shop")}
+            </Link>
+            <span className="mx-2 opacity-50">/</span>
+            <span className="text-white">{shop?.name ?? "…"}</span>
+          </nav>
+
+          <div className="flex flex-col sm:flex-row sm:items-end gap-5 sm:gap-6">
+            <div className="mq-storefront-logo">
+              {shop?.logoUrl ? (
+                <Image
+                  src={shop.logoUrl}
+                  alt=""
+                  fill
+                  className="object-cover"
+                  sizes="96px"
+                />
+              ) : (
+                <Store size={32} strokeWidth={1.5} className="text-mq-text-muted" />
+              )}
+            </div>
+            <div className="min-w-0 flex-1 pb-1">
+              <p className="text-[11px] uppercase tracking-[0.18em] text-white/65 mb-1.5">
+                {t("storefront.officialShop")}
+              </p>
+              <h1 className="text-2xl md:text-4xl font-medium text-white tracking-tight truncate">
+                {shopQuery.isLoading ? t("storefront.loading") : shop?.name}
+              </h1>
+              {shop?.countryCode ? (
+                <p className="text-sm text-white/70 mt-1.5">
+                  {t("storefront.shipsFrom")} {shop.countryCode}
+                </p>
+              ) : null}
+            </div>
+            <p className="text-sm text-white/75 sm:pb-2 shrink-0">
+              {listingQuery.isLoading
+                ? "…"
+                : `${listingQuery.data?.meta?.total ?? products.length} ${t("shop.products")}`}
+            </p>
+          </div>
+        </Container>
+      </section>
+
       <Container className="py-8 md:py-12">
-        <div className="mq-storefront-toolbar mb-8">
+        <div className="mq-storefront-toolbar">
           <form onSubmit={onSearch} className="mq-storefront-search">
             <Search size={16} strokeWidth={1.75} className="text-mq-text-muted shrink-0" />
             <input
               value={searchDraft}
               onChange={(e) => setSearchDraft(e.target.value)}
-              placeholder={t("nav.searchPlaceholder")}
-              aria-label={t("nav.searchPlaceholder")}
+              placeholder={t("storefront.searchPlaceholder")}
+              aria-label={t("storefront.searchPlaceholder")}
               className="mq-storefront-search-input"
             />
             {searchDraft ? (
@@ -143,12 +221,6 @@ export function ShopContent() {
             ) : null}
           </form>
 
-          <span className="text-sm text-mq-text-muted whitespace-nowrap">
-            {listingQuery.isLoading
-              ? "…"
-              : `${listingQuery.data?.meta?.total ?? products.length} ${t("shop.products")}`}
-          </span>
-
           <select
             className="mq-input mq-storefront-sort"
             value={sort}
@@ -161,7 +233,7 @@ export function ShopContent() {
           </select>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)] gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)] gap-8 mt-8">
           <aside className="mq-storefront-filters">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-mq-text">
@@ -284,6 +356,6 @@ export function ShopContent() {
           </div>
         </div>
       </Container>
-    </>
+    </div>
   );
 }
