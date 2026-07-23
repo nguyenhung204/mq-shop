@@ -34,7 +34,10 @@ type CartState = {
 } & CartActions;
 
 function resolveLine(product: Product, quantity: number): CartLine | null {
-  const variantId = product.selectedVariantId || product.variants?.[0]?.id;
+  const variantId =
+    product.selectedVariantId ||
+    product.variants?.find((v) => v.availableStock > 0)?.id ||
+    product.variants?.[0]?.id;
   if (!variantId) return null;
   const variant = product.variants?.find((v) => v.id === variantId);
   const shopId = product.shopId?.trim();
@@ -52,6 +55,18 @@ function resolveLine(product: Product, quantity: number): CartLine | null {
   };
 }
 
+export type AddItemFailReason = "no_variant" | "no_shop" | "multi_shop";
+
+export function explainAddItemFailure(product: Product): AddItemFailReason | null {
+  const variantId =
+    product.selectedVariantId ||
+    product.variants?.find((v) => v.availableStock > 0)?.id ||
+    product.variants?.[0]?.id;
+  if (!variantId) return "no_variant";
+  if (!product.shopId?.trim()) return "no_shop";
+  return null;
+}
+
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
@@ -60,7 +75,12 @@ export const useCartStore = create<CartState>()(
       addItem: (product, quantity = 1) => {
         const line = resolveLine(product, quantity);
         if (!line) {
-          toast.error("Select a variant before adding to cart.");
+          const reason = explainAddItemFailure(product);
+          toast.error(
+            reason === "no_shop"
+              ? "Could not resolve shop for this product."
+              : "This product has no available SKU to add.",
+          );
           return false;
         }
         const { items } = get();

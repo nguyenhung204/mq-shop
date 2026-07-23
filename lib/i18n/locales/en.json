@@ -152,7 +152,9 @@
     "total": "Total",
     "proceedCheckout": "Proceed to Checkout",
     "continueShopping": "Continue shopping",
-    "added": "Added!"
+    "added": "Added!",
+    "viewAll": "View all",
+    "moreInCart": "more in cart"
   },
   "checkout": {
     "title": "Checkout",

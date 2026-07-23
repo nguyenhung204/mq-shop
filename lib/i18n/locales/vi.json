@@ -152,7 +152,9 @@
     "total": "Tổng cộng",
     "proceedCheckout": "Thanh toán",
     "continueShopping": "Tiếp tục mua sắm",
-    "added": "Đã thêm!"
+    "added": "Đã thêm!",
+    "viewAll": "Xem tất cả",
+    "moreInCart": "sản phẩm nữa trong giỏ"
   },
   "checkout": {
     "title": "Thanh toán",

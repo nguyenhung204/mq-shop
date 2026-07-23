@@ -152,7 +152,9 @@
     "total": "總計",
     "proceedCheckout": "前往結帳",
     "continueShopping": "繼續購物",
-    "added": "已加入！"
+    "added": "已加入！",
+    "viewAll": "查看全部",
+    "moreInCart": "件商品在購物車"
   },
   "checkout": {
     "title": "結帳",

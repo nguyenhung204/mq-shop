@@ -10,10 +10,10 @@ import { products } from "@/lib/data/products";
 import { ProductCardMini } from "@/components/ui/ProductCard";
 import { ProductCarousel } from "@/components/ui/ProductCarousel";
 import { useTheme } from "@/components/providers/ThemeProvider";
-import { useCart } from "@/components/providers/CartProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { NotificationBell } from "@/components/layout/NotificationBell";
+import { CartMenu } from "@/components/layout/CartMenu";
 import { RoleSwitcher } from "@/components/layout/RoleSwitcher";
 import { TopBar } from "@/components/layout/TopBar";
 import { UserMenu } from "@/components/layout/UserMenu";
@@ -32,7 +32,6 @@ export function Header() {
   const [query, setQuery] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
   const { dark, toggle } = useTheme();
-  const { itemCount } = useCart();
   const { t } = useLanguage();
   const router = useRouter();
 
@@ -125,9 +124,9 @@ export function Header() {
 
         <TopBar />
 
-        <header className="relative z-50 bg-mq-surface border-b border-mq-border">
+        <header className="relative z-50 overflow-visible bg-mq-surface border-b border-mq-border">
           <div
-            className="mq-container flex items-center gap-3 lg:gap-4 xl:gap-6"
+            className="mq-container flex items-center gap-3 lg:gap-4 xl:gap-6 overflow-visible"
             style={{ height: "var(--mq-header-h)" }}
           >
             <div className="flex items-center gap-3 xl:gap-4 shrink-0 min-w-0">
@@ -196,18 +195,7 @@ export function Header() {
             >
               <NotificationBell />
               <UserMenu />
-              <Link
-                id="mq-cart-target"
-                href="/cart"
-                className="mq-icon-btn relative text-mq-text hover:text-mq-gold transition-colors"
-                aria-label="Cart"
-                onClick={closeMega}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
-                {itemCount > 0 && <span className="mq-count-badge">{itemCount}</span>}
-              </Link>
+              <CartMenu onNavigate={closeMega} />
               <Link
                 href="/wishlist"
                 className="hidden sm:inline-flex mq-icon-btn relative text-mq-text hover:text-mq-gold transition-colors"

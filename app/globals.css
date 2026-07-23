@@ -1159,6 +1159,148 @@ h1, h2, h3, h4, h5, h6 {
   transform: none;
 }
 
+.mq-cart-menu {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  vertical-align: middle;
+}
+
+.mq-cart-menu-trigger {
+  width: 44px;
+  height: 44px;
+}
+
+.mq-cart-menu-dropdown {
+  position: absolute;
+  top: calc(100% - 4px);
+  right: 0;
+  z-index: 70;
+  box-sizing: border-box;
+  width: min(20rem, calc(100vw - 1.5rem));
+  padding: 0.75rem;
+  border: 1px solid var(--mq-border);
+  border-radius: 14px;
+  background: var(--mq-surface);
+  box-shadow: var(--mq-shadow);
+  display: none;
+}
+
+.mq-cart-menu:hover .mq-cart-menu-dropdown,
+.mq-cart-menu.is-open .mq-cart-menu-dropdown {
+  display: block;
+}
+
+.mq-cart-menu-empty {
+  padding: 0.75rem 0.35rem 0.35rem;
+  text-align: center;
+}
+
+.mq-cart-menu-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.15rem 0.25rem 0.65rem;
+  border-bottom: 1px solid var(--mq-border);
+  margin-bottom: 0.5rem;
+}
+
+.mq-cart-menu-count {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--mq-text-muted);
+}
+
+.mq-cart-menu-subtotal {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--mq-text-secondary);
+}
+
+.mq-cart-menu-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-height: 18rem;
+  overflow-y: auto;
+}
+
+.mq-cart-menu-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.4rem;
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 140ms ease;
+}
+
+.mq-cart-menu-row:hover {
+  background: var(--mq-surface-subtle);
+}
+
+.mq-cart-menu-thumb {
+  position: relative;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.mq-cart-menu-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.mq-cart-menu-name {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--mq-text);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mq-cart-menu-sku {
+  font-size: 0.7rem;
+  color: var(--mq-text-muted);
+}
+
+.mq-cart-menu-price {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--mq-text);
+}
+
+.mq-cart-menu-more {
+  margin: 0.4rem 0 0;
+  padding: 0 0.25rem;
+  font-size: 0.7rem;
+  color: var(--mq-text-muted);
+}
+
+.mq-cart-menu-actions {
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--mq-border);
+}
+
 .mq-user-menu-meta {
   padding: 0.55rem 0.65rem 0.45rem;
   border-bottom: 1px solid var(--mq-border);
