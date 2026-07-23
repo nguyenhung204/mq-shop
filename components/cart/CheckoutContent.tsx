@@ -7,25 +7,36 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { formatPrice } from "@/lib/data/products";
+import { splitStoredPhone, toE164 } from "@/lib/data/phone";
 import { ApiError } from "@/lib/api/client";
 import {
   checkoutSchema,
   type CheckoutFormValues,
 } from "@/lib/validations/checkout";
+import { useCartStore } from "@/lib/stores/cart-store";
 import { useCheckout, useShippingQuote } from "@/lib/queries/orders";
 import { useCart } from "@/components/providers/CartProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { CountrySelect } from "@/components/ui/CountrySelect";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 import { Container, PageHero } from "@/components/ui/shared";
 
 export function CheckoutContent() {
   const { t } = useLanguage();
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { items, itemCount, subtotal, clearCart, checkoutItems } = useCart();
+  const [cartReady, setCartReady] = useState(() =>
+    typeof window === "undefined" ? false : useCartStore.persist.hasHydrated(),
+  );
   const [placed, setPlaced] = useState<{ id: string; code: string; total: number } | null>(
     null,
   );
   const [shippingFee, setShippingFee] = useState<number | null>(null);
+  const [profileSeeded, setProfileSeeded] = useState(false);
+  const [nationalPhone, setNationalPhone] = useState("");
+  const [dialCountry, setDialCountry] = useState("VN");
+  const [dialTouched, setDialTouched] = useState(false);
   const quote = useShippingQuote();
   const checkout = useCheckout();
 
@@ -33,6 +44,8 @@ export function CheckoutContent() {
     register,
     handleSubmit,
     watch,
+    reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -52,8 +65,46 @@ export function CheckoutContent() {
     },
   });
 
+  useEffect(() => {
+    setCartReady(useCartStore.persist.hasHydrated());
+    return useCartStore.persist.onFinishHydration(() => setCartReady(true));
+  }, []);
+
+  // Prefill contact fields from the signed-in profile once.
+  useEffect(() => {
+    if (!user || profileSeeded) return;
+    const shipCountry = "VN";
+    const national = splitStoredPhone(user.phone, shipCountry);
+    setDialCountry(shipCountry);
+    setNationalPhone(national);
+    reset({
+      shippingAddress: {
+        fullName: user.fullName?.trim() || "",
+        phone: national ? toE164(shipCountry, national) : "",
+        line1: "",
+        line2: "",
+        city: "",
+        district: "",
+        postalCode: "",
+        country: shipCountry,
+      },
+      paymentMethod: "MOCK",
+      note: "",
+    });
+    setProfileSeeded(true);
+  }, [user, profileSeeded, reset]);
+
   const address = watch("shippingAddress");
   const lineItems = useMemo(() => checkoutItems(), [items]);
+
+  const syncPhone = (nextDialCountry: string, nextNational: string) => {
+    setNationalPhone(nextNational);
+    setValue(
+      "shippingAddress.phone",
+      nextNational ? toE164(nextDialCountry, nextNational) : "",
+      { shouldValidate: true, shouldDirty: true },
+    );
+  };
 
   useEffect(() => {
     if (!isAuthenticated || lineItems.length === 0) return;
@@ -86,14 +137,25 @@ export function CheckoutContent() {
     address?.country,
   ]);
 
+  if (authLoading || !cartReady) {
+    return (
+      <>
+        <PageHero title={t("checkout.title")} breadcrumb={[{ label: t("checkout.title") }]} />
+        <Container className="py-16">
+          <div className="h-40 rounded-[var(--mq-radius-lg)] bg-mq-surface-subtle animate-pulse" />
+        </Container>
+      </>
+    );
+  }
+
   if (!isAuthenticated) {
     return (
       <>
         <PageHero title={t("checkout.title")} breadcrumb={[{ label: t("checkout.title") }]} />
         <Container className="py-16 text-center">
-          <p className="text-mq-text-secondary mb-6">Please sign in to checkout.</p>
+          <p className="text-mq-text-secondary mb-6">{t("checkout.signInRequired")}</p>
           <Link href="/my-account" className="mq-btn mq-btn-primary">
-            Sign in
+            {t("account.logIn")}
           </Link>
         </Container>
       </>
@@ -121,14 +183,13 @@ export function CheckoutContent() {
         <Container className="py-16 text-center max-w-lg mx-auto">
           <h2 className="text-2xl text-mq-text mb-3">{t("checkout.thankYou")}</h2>
           <p className="text-mq-text-secondary mb-2">
-            Order <strong>{placed.code}</strong> · {formatPrice(placed.total)} USD
+            {t("checkout.orderLabel")} <strong>{placed.code}</strong> · {formatPrice(placed.total)}{" "}
+            USD
           </p>
-          <p className="text-sm text-mq-text-muted mb-8">
-            Payment is stubbed (COD → PENDING, MOCK → PAID). No PSP redirect.
-          </p>
+          <p className="text-sm text-mq-text-muted mb-8">{t("checkout.paymentStubNote")}</p>
           <div className="flex flex-wrap gap-3 justify-center">
             <Link href={`/orders/${placed.id}`} className="mq-btn mq-btn-primary">
-              View order
+              {t("checkout.viewOrder")}
             </Link>
             <Link href="/shop" className="mq-btn mq-btn-outline">
               {t("cart.continueShopping")}
@@ -143,10 +204,15 @@ export function CheckoutContent() {
 
   const onSubmit = async (values: CheckoutFormValues) => {
     try {
+      const phone = toE164(
+        dialCountry,
+        nationalPhone || values.shippingAddress.phone,
+      );
       const order = await checkout.mutateAsync({
         items: checkoutItems(),
         shippingAddress: {
           ...values.shippingAddress,
+          phone,
           country: values.shippingAddress.country || "VN",
         },
         paymentMethod: values.paymentMethod,
@@ -159,7 +225,7 @@ export function CheckoutContent() {
       });
     } catch (err) {
       if (!(err instanceof ApiError)) {
-        toast.error("Checkout failed");
+        toast.error(t("checkout.failed"));
       }
     }
   };
@@ -176,21 +242,39 @@ export function CheckoutContent() {
       <Container className="py-10 md:py-16">
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-10"
+          className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-10"
         >
-          <div className="space-y-6">
-            <fieldset className="border border-mq-border p-6 rounded-[var(--mq-radius-lg)] shadow-[var(--mq-shadow-sm)]">
-              <legend className="text-sm font-semibold uppercase tracking-wider px-2">
-                Shipping
-              </legend>
-              <div className="grid sm:grid-cols-2 gap-4 mt-4">
+          <div className="space-y-6 min-w-0">
+            <section className="border border-mq-border bg-mq-surface p-6 rounded-[var(--mq-radius-lg)] shadow-[var(--mq-shadow-sm)]">
+              <h2 className="text-lg font-semibold text-mq-text mb-1">
+                {t("checkout.customerDetails")}
+              </h2>
+              <p className="text-sm text-mq-text-muted mb-5">{t("checkout.customerDetailsHint")}</p>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block text-sm mb-1.5" htmlFor="email">
+                    {t("checkout.email")}
+                  </label>
+                  <input
+                    id="email"
+                    className="mq-input"
+                    type="email"
+                    value={user?.email ?? ""}
+                    readOnly
+                    disabled
+                  />
+                </div>
+
                 <div className="sm:col-span-2">
                   <label className="block text-sm mb-1.5" htmlFor="fullName">
-                    Full name
+                    {t("checkout.fullName")}
                   </label>
                   <input
                     id="fullName"
                     className="mq-input"
+                    autoComplete="name"
+                    placeholder={t("checkout.fullNamePlaceholder")}
                     {...register("shippingAddress.fullName")}
                   />
                   {errors.shippingAddress?.fullName && (
@@ -199,97 +283,175 @@ export function CheckoutContent() {
                     </p>
                   )}
                 </div>
+              </div>
+            </section>
+
+            <section className="border border-mq-border bg-mq-surface p-6 rounded-[var(--mq-radius-lg)] shadow-[var(--mq-shadow-sm)]">
+              <h2 className="text-lg font-semibold text-mq-text mb-1">
+                {t("checkout.shippingDetails")}
+              </h2>
+              <p className="text-sm text-mq-text-muted mb-5">{t("checkout.shippingDetailsHint")}</p>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block text-sm mb-1.5" htmlFor="country">
+                    {t("checkout.country")}
+                  </label>
+                  <CountrySelect
+                    id="country"
+                    {...register("shippingAddress.country", {
+                      onChange: (e) => {
+                        const next = String(e.target.value || "VN").toUpperCase();
+                        // Soft-default dial to shipping country until user picks a dial manually.
+                        if (!dialTouched) {
+                          setDialCountry(next);
+                          syncPhone(next, nationalPhone);
+                        }
+                      },
+                    })}
+                  />
+                  {errors.shippingAddress?.country && (
+                    <p className="text-xs text-mq-accent-orange mt-1.5">
+                      {errors.shippingAddress.country.message}
+                    </p>
+                  )}
+                </div>
+
                 <div>
                   <label className="block text-sm mb-1.5" htmlFor="phone">
-                    Phone
+                    {t("checkout.phone")}
                   </label>
-                  <input id="phone" className="mq-input" {...register("shippingAddress.phone")} />
+                  <PhoneInput
+                    id="phone"
+                    dialCountry={dialCountry}
+                    onDialCountryChange={(code) => {
+                      setDialTouched(true);
+                      setDialCountry(code);
+                      syncPhone(code, nationalPhone);
+                    }}
+                    value={nationalPhone}
+                    onChange={(national) => syncPhone(dialCountry, national)}
+                    aria-invalid={Boolean(errors.shippingAddress?.phone)}
+                  />
+                  <p className="text-xs text-mq-text-muted mt-1.5">
+                    {t("checkout.phoneHint")}
+                  </p>
                   {errors.shippingAddress?.phone && (
                     <p className="text-xs text-mq-accent-orange mt-1.5">
                       {errors.shippingAddress.phone.message}
                     </p>
                   )}
                 </div>
-                <div>
-                  <label className="block text-sm mb-1.5" htmlFor="country">
-                    Country
-                  </label>
-                  <input
-                    id="country"
-                    className="mq-input"
-                    maxLength={2}
-                    {...register("shippingAddress.country", {
-                      onChange: (e) => {
-                        e.target.value = e.target.value.toUpperCase();
-                      },
-                    })}
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-sm mb-1.5" htmlFor="line1">
-                    Address
-                  </label>
-                  <input id="line1" className="mq-input" {...register("shippingAddress.line1")} />
-                  {errors.shippingAddress?.line1 && (
-                    <p className="text-xs text-mq-accent-orange mt-1.5">
-                      {errors.shippingAddress.line1.message}
-                    </p>
-                  )}
-                </div>
+
                 <div>
                   <label className="block text-sm mb-1.5" htmlFor="city">
-                    City
+                    {t("checkout.city")}
                   </label>
-                  <input id="city" className="mq-input" {...register("shippingAddress.city")} />
+                  <input
+                    id="city"
+                    className="mq-input"
+                    autoComplete="address-level1"
+                    {...register("shippingAddress.city")}
+                  />
                   {errors.shippingAddress?.city && (
                     <p className="text-xs text-mq-accent-orange mt-1.5">
                       {errors.shippingAddress.city.message}
                     </p>
                   )}
                 </div>
+
                 <div>
                   <label className="block text-sm mb-1.5" htmlFor="district">
-                    District
+                    {t("checkout.district")}
                   </label>
                   <input
                     id="district"
                     className="mq-input"
+                    autoComplete="address-level2"
                     {...register("shippingAddress.district")}
                   />
                 </div>
+
+                <div>
+                  <label className="block text-sm mb-1.5" htmlFor="postalCode">
+                    {t("checkout.postalCode")}
+                  </label>
+                  <input
+                    id="postalCode"
+                    className="mq-input"
+                    autoComplete="postal-code"
+                    {...register("shippingAddress.postalCode")}
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-sm mb-1.5" htmlFor="line1">
+                    {t("checkout.address")}
+                  </label>
+                  <input
+                    id="line1"
+                    className="mq-input"
+                    autoComplete="street-address"
+                    placeholder={t("checkout.addressPlaceholder")}
+                    {...register("shippingAddress.line1")}
+                  />
+                  {errors.shippingAddress?.line1 && (
+                    <p className="text-xs text-mq-accent-orange mt-1.5">
+                      {errors.shippingAddress.line1.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            <section className="border border-mq-border bg-mq-surface p-6 rounded-[var(--mq-radius-lg)] shadow-[var(--mq-shadow-sm)]">
+              <h2 className="text-lg font-semibold text-mq-text mb-5">
+                {t("checkout.paymentMethod")}
+              </h2>
+              <div className="grid sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
                   <label className="block text-sm mb-1.5" htmlFor="paymentMethod">
-                    Payment method
+                    {t("checkout.paymentMethod")}
                   </label>
                   <select
                     id="paymentMethod"
                     className="mq-input"
                     {...register("paymentMethod")}
                   >
-                    <option value="MOCK">MOCK (instant PAID — dev)</option>
-                    <option value="COD">COD (PENDING until paid outside)</option>
+                    <option value="MOCK">{t("checkout.paymentMock")}</option>
+                    <option value="COD">{t("checkout.paymentCod")}</option>
                   </select>
-                  <p className="text-xs text-mq-text-muted mt-2">
-                    Currency USD. Shipping fee from `POST /orders/shipping-quote` (stub).
-                  </p>
+                  <p className="text-xs text-mq-text-muted mt-2">{t("checkout.paymentHint")}</p>
                 </div>
                 <div className="sm:col-span-2">
                   <label className="block text-sm mb-1.5" htmlFor="note">
-                    Note (optional)
+                    {t("checkout.note")}
                   </label>
-                  <textarea id="note" className="mq-textarea" {...register("note")} />
+                  <textarea
+                    id="note"
+                    className="mq-textarea"
+                    rows={3}
+                    placeholder={t("checkout.notePlaceholder")}
+                    {...register("note")}
+                  />
                 </div>
               </div>
-            </fieldset>
+            </section>
           </div>
 
-          <aside className="border border-mq-border p-6 h-fit bg-mq-surface-subtle rounded-[var(--mq-radius-lg)] shadow-[var(--mq-shadow-sm)]">
+          <aside className="border border-mq-border p-6 h-fit bg-mq-surface-subtle rounded-[var(--mq-radius-lg)] shadow-[var(--mq-shadow-sm)] lg:sticky lg:top-24">
             <h2 className="text-lg mb-4">{t("checkout.yourOrder")}</h2>
             <ul className="space-y-3 mb-4 max-h-48 overflow-y-auto">
               {items.map((item) => (
                 <li key={item.variantId} className="flex gap-3 text-sm">
                   <div className="relative w-12 h-12 shrink-0 mq-product-image-bg mq-product-media">
-                    <Image src={item.image} alt="" fill className="mq-product-media-img" sizes="48px" />
+                    <Image
+                      src={item.image}
+                      alt=""
+                      fill
+                      className="mq-product-media-img"
+                      sizes="48px"
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="line-clamp-1">{item.name}</p>
@@ -312,12 +474,12 @@ export function CheckoutContent() {
                   {shippingFee == null
                     ? quote.isPending
                       ? "…"
-                      : "—"
+                      : t("checkout.shippingPending")
                     : formatPrice(shippingFee)}
                 </span>
               </div>
               <div className="flex justify-between font-medium text-base pt-2">
-                <span>{t("cart.total")} (est.)</span>
+                <span>{t("cart.total")}</span>
                 <span>{formatPrice(previewTotal)}</span>
               </div>
             </div>
@@ -326,7 +488,9 @@ export function CheckoutContent() {
               className="mq-btn mq-btn-primary w-full mt-6"
               disabled={isSubmitting || checkout.isPending}
             >
-              {isSubmitting || checkout.isPending ? "Placing…" : t("checkout.placeOrder")}
+              {isSubmitting || checkout.isPending
+                ? t("checkout.placing")
+                : t("checkout.placeOrder")}
             </button>
           </aside>
         </form>

@@ -15,8 +15,11 @@ import { useAdminShops } from "@/lib/queries/admin";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
+import { CountrySelect } from "@/components/ui/CountrySelect";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
+import { isValidNationalPhone, toE164 } from "@/lib/data/phone";
 
 function OrdersInner() {
   const [status, setStatus] = useState<OrderStatus | "">("PENDING");
@@ -41,22 +44,50 @@ function OrdersInner() {
   const [variantId, setVariantId] = useState("");
   const [qty, setQty] = useState("1");
   const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [line1, setLine1] = useState("");
+  const [phoneNational, setPhoneNational] = useState("");
+  const [phoneDialCountry, setPhoneDialCountry] = useState("VN");
+  const [country, setCountry] = useState("VN");
   const [city, setCity] = useState("");
+  const [line1, setLine1] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"COD" | "MOCK">("COD");
   const [quoteFee, setQuoteFee] = useState<number | null>(null);
   const adminQuote = useAdminShippingQuote();
   const adminCheckout = useAdminCheckout();
 
   const quoteBody = useMemo(() => {
-    if (!buyerId || !variantId || !fullName || !phone || !line1 || !city) return null;
+    if (
+      !buyerId ||
+      !variantId ||
+      !fullName ||
+      !phoneNational ||
+      !line1 ||
+      !city ||
+      !isValidNationalPhone(phoneDialCountry, phoneNational)
+    ) {
+      return null;
+    }
     return {
       buyerId,
       items: [{ variantId, quantity: Number(qty) || 1 }],
-      shippingAddress: { fullName, phone, line1, city, country: "VN" },
+      shippingAddress: {
+        fullName,
+        phone: toE164(phoneDialCountry, phoneNational),
+        line1,
+        city,
+        country,
+      },
     };
-  }, [buyerId, variantId, qty, fullName, phone, line1, city]);
+  }, [
+    buyerId,
+    variantId,
+    qty,
+    fullName,
+    phoneNational,
+    phoneDialCountry,
+    line1,
+    city,
+    country,
+  ]);
 
   useEffect(() => {
     if (!quoteBody) {
@@ -137,11 +168,27 @@ function OrdersInner() {
             onChange={(e) => setFullName(e.target.value)}
             required
           />
+          <CountrySelect
+            className="mq-input"
+            value={country}
+            onValueChange={setCountry}
+            required
+            aria-label="Country"
+          />
+          <div className="sm:col-span-2">
+            <PhoneInput
+              dialCountry={phoneDialCountry}
+              onDialCountryChange={setPhoneDialCountry}
+              value={phoneNational}
+              onChange={setPhoneNational}
+              required
+            />
+          </div>
           <input
             className="mq-input"
-            placeholder="Phone"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            placeholder="City"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
             required
           />
           <input
@@ -149,13 +196,6 @@ function OrdersInner() {
             placeholder="Address line"
             value={line1}
             onChange={(e) => setLine1(e.target.value)}
-            required
-          />
-          <input
-            className="mq-input"
-            placeholder="City"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
             required
           />
           <p className="text-sm text-mq-text-muted self-center">

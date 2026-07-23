@@ -75,6 +75,8 @@ export type ListingCard = {
   stock: number;
   displayMode: "NORMAL" | "OUT_OF_STOCK_WATERMARK";
   watermarkText: null | { vi: string; zh: string; en: string };
+  /** ISO-8601 — present when BE listing includes it. */
+  createdAt?: string;
 };
 
 export type ProductVariant = {

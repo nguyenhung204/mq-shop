@@ -35,6 +35,8 @@ export type Product = {
   }>;
   selectedVariantId?: string;
   shopId?: string;
+  /** ISO-8601 from listing/PDP when available. */
+  createdAt?: string;
 };
 
 export const products: Product[] = [

@@ -65,7 +65,17 @@ export function HomePageContent() {
     () => listing.filter((p) => p.inStock > 0 && p.displayMode !== "OUT_OF_STOCK_WATERMARK"),
     [listing],
   );
-  const newest = useMemo(() => listing.slice(0, 12), [listing]);
+  const newest = useMemo(
+    () =>
+      [...listing]
+        .sort((a, b) => {
+          const ta = a.createdAt ? Date.parse(a.createdAt) : 0;
+          const tb = b.createdAt ? Date.parse(b.createdAt) : 0;
+          return tb - ta;
+        })
+        .slice(0, 12),
+    [listing],
+  );
   const featured = useMemo(() => {
     const sorted = [...listing].sort((a, b) => b.price - a.price);
     return sorted.slice(0, 12);

@@ -50,6 +50,7 @@ export function mapListingCard(p: BeListing, categorySlug = "all"): Product {
     displayMode: p.displayMode,
     watermarkText: p.watermarkText,
     shopId: p.shopId,
+    createdAt: p.createdAt,
   };
 }
 
@@ -93,6 +94,7 @@ export function mapPublicProductDetail(p: PublicProductDetail): Product {
     variants,
     selectedVariantId: firstInStock?.id,
     shopId: p.shopId,
+    createdAt: p.createdAt,
   };
 }
 

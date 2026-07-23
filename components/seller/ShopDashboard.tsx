@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { FileText, ImageIcon, LayoutDashboard, Store } from "lucide-react";
 import { useApplyShop, useSellerShop } from "@/lib/queries/seller";
 import { ShopBrandingUpload } from "@/components/seller/ShopBrandingUpload";
+import { CountrySelect } from "@/components/ui/CountrySelect";
 import { ShopCardSkeleton } from "@/components/ui/Skeleton";
 import "./shop.css";
 
@@ -313,16 +314,11 @@ export function ShopDashboard({ initialSection }: Props) {
               />
             </div>
             <div className="mq-shop-field">
-              <label htmlFor="shop-country">Country code</label>
-              <input
+              <label htmlFor="shop-country">Country</label>
+              <CountrySelect
                 id="shop-country"
-                className="mq-input"
-                placeholder="VN"
                 value={form.countryCode}
-                onChange={(e) =>
-                  setForm({ ...form, countryCode: e.target.value.toUpperCase() })
-                }
-                maxLength={2}
+                onValueChange={(countryCode) => setForm({ ...form, countryCode })}
                 required
               />
             </div>

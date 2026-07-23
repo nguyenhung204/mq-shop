@@ -248,6 +248,110 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: var(--mq-focus-ring);
 }
 
+.mq-phone-field {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  border: 1px solid var(--mq-border);
+  border-radius: var(--mq-radius-sm);
+  background: var(--mq-surface);
+  overflow: hidden;
+  transition:
+    border-color var(--mq-transition),
+    box-shadow var(--mq-transition);
+}
+
+.mq-phone-field:focus-within {
+  border-color: var(--mq-text-muted);
+  box-shadow: var(--mq-focus-ring);
+}
+
+.mq-phone-dial {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 0 0.85rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--mq-text-secondary);
+  background: var(--mq-surface-subtle);
+  border-right: 1px solid var(--mq-border);
+  font-variant-numeric: tabular-nums;
+}
+
+.mq-phone-dial-select {
+  flex: 0 0 auto;
+  width: auto;
+  max-width: 8.5rem;
+  min-width: 6.75rem;
+  border: none;
+  border-right: 1px solid var(--mq-border);
+  border-radius: 0;
+  background: var(--mq-surface-subtle);
+  color: var(--mq-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  padding: 0.625rem 0.35rem 0.625rem 0.65rem;
+  outline: none;
+  cursor: pointer;
+  accent-color: var(--mq-text);
+  color-scheme: inherit;
+}
+
+.mq-phone-dial-select:hover,
+.mq-phone-dial-select:focus {
+  background: var(--mq-surface);
+  outline: none;
+  box-shadow: none;
+}
+
+.mq-phone-dial-select option,
+select.mq-input option,
+.mq-select option {
+  background-color: var(--mq-surface);
+  color: var(--mq-text);
+}
+
+.mq-phone-dial-select option:checked,
+.mq-phone-dial-select option:hover,
+select.mq-input option:checked,
+select.mq-input option:hover,
+.mq-select option:checked,
+.mq-select option:hover {
+  /* linear-gradient overrides native blue highlight in Firefox */
+  background-color: var(--mq-surface-subtle);
+  background-image: linear-gradient(
+    0deg,
+    var(--mq-surface-subtle) 0%,
+    var(--mq-surface-subtle) 100%
+  );
+  color: var(--mq-text);
+}
+
+select.mq-input,
+.mq-select,
+.mq-phone-dial-select {
+  accent-color: var(--mq-text);
+  color-scheme: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mq-phone-national {
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  min-width: 0;
+  flex: 1;
+}
+
+.mq-phone-national:hover,
+.mq-phone-national:focus {
+  border: none !important;
+  box-shadow: none !important;
+}
+
 .dark .mq-input,
 .dark .mq-select,
 .dark .mq-textarea {
