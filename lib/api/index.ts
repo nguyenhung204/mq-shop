@@ -41,6 +41,7 @@ export type {
   OrderView,
   OrderItemView,
   RmaView,
+  AdminRmaDetailView,
   CreateRmaRequest,
   ListOrdersParams,
   AdminListOrdersParams,

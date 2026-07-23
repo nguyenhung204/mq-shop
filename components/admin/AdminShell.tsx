@@ -15,7 +15,16 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const visible = adminNavItems.filter((i) => {
     if (i.sa) return hasRole("SUPER_ADMIN");
     if (!i.permissions) return true;
-    return hasAnyPermission(i.permissions) || hasRole("ADMIN") || hasRole("SUPER_ADMIN");
+    if (hasAnyPermission(i.permissions) || hasRole("ADMIN") || hasRole("SUPER_ADMIN")) {
+      return true;
+    }
+    // Accountant: /me often omits permissions[]; show commerce/audit items they own.
+    if (hasRole("ACCOUNTANT")) {
+      return i.permissions.some((p) =>
+        ["PROCESS_RMA", "MANAGE_RMA", "VIEW_TRANSACT"].includes(p),
+      );
+    }
+    return false;
   });
 
   const groups: { key: string; label: string; items: typeof visible }[] = [

@@ -335,12 +335,16 @@ Không bắt buộc upload — admin vẫn duyệt được RMA không ảnh.
 
 ```
 GET  /admin/rma?status=PENDING
+GET  /admin/rma/:rmaId           → RmaView + orderCode + orderStatus  (PROCESS_RMA)
 POST /admin/rma/:rmaId/approve   { "note?": "…" }
 POST /admin/rma/:rmaId/reject    { "note": "…" }
+POST /admin/rma/:rmaId/mark-refunded  { "note?": "…" }  (PROCESS_RMA — Accountant)
 ```
 
+- **Detail:** reason, bankInfo, evidenceUrls, orderCode, orderStatus — FE `/admin/rma/[id]`
 - **Approve:** RMA `APPROVED`, order `REFUND_APPROVED` — KT hoàn **ngoài** hệ thống theo `bankInfo`  
 - **Reject:** RMA `REJECTED`  
+- **Mark refunded:** RMA `APPROVED` + order `REFUND_APPROVED` → order `REFUNDED`, RMA `CLOSED`, notify buyer  
 - Seller nhập lại kho bằng **inventory slip** (004)
 
 ---
@@ -354,7 +358,9 @@ POST /admin/rma/:rmaId/reject    { "note": "…" }
 | Orders inbox | `GET` | `/admin/orders?status&shopId&page&pageSize` — cross-shop (`VIEW_ORDER` ALL) |
 | Force cancel | `POST` | `/admin/orders/:orderId/cancel` |
 | RMA inbox | `GET` | `/admin/rma?status=` |
+| RMA detail | `GET` | `/admin/rma/:id` — `RmaView` + `orderCode` + `orderStatus` |
 | Approve / reject RMA | `POST` | `/admin/rma/:id/approve\|reject` |
+| Mark refunded | `POST` | `/admin/rma/:id/mark-refunded` — Accountant after external payout |
 | Settlements (pending reconcile) | `GET` | `/admin/settlements?shopId&status&page&pageSize` — `meta.pendingTotal` |
 
 ### Admin tạo đơn hộ khách

@@ -10,7 +10,9 @@ import { getErrorMessage } from "@/lib/queries/utils";
 
 export {
   useAdminRma,
+  useAdminRmaDetail,
   useAdminRmaDecision,
+  useAdminRmaMarkRefunded,
   useAdminOrders,
   useAdminCancelOrder,
   useAdminCheckout,

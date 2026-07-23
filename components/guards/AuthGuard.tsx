@@ -19,13 +19,16 @@ export function AuthGuard({
   const { user, loading, isAuthenticated, hasRole, hasAnyPermission } = useAuth();
   const router = useRouter();
 
-  const allowed =
-    isAuthenticated &&
-    (!roles || roles.some((r) => hasRole(r))) &&
-    (!permissions ||
-      hasAnyPermission(permissions) ||
-      hasRole("SUPER_ADMIN") ||
-      hasRole("ADMIN"));
+  const roleOk = !roles || roles.some((r) => hasRole(r));
+  const permOk =
+    !permissions ||
+    hasAnyPermission(permissions) ||
+    hasRole("SUPER_ADMIN") ||
+    hasRole("ADMIN");
+  // Staff portal pages pass `roles` — matching a role is enough (BE enforces
+  // fine-grained perms). Requiring permissions[] AND role broke ACCOUNTANT
+  // when /me omits the permissions list. Permissions-only pages still use permOk.
+  const allowed = isAuthenticated && (roles ? roleOk : permOk);
 
   useEffect(() => {
     if (loading) return;

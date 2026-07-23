@@ -86,13 +86,23 @@ export type CreateRmaRequest = {
 export type RmaView = {
   id: string;
   orderId: string;
+  buyerId?: string;
+  shopId?: string;
   status: RmaStatus;
   reason: string;
   evidenceUrls: string[];
   bankInfo: RmaBankInfo;
+  reviewerId?: string | null;
   reviewNote: string | null;
   decidedAt: string | null;
   createdAt: string;
+  updatedAt?: string;
+};
+
+/** GET /admin/rma/:rmaId — PROCESS_RMA review scope. */
+export type AdminRmaDetailView = RmaView & {
+  orderCode: string | null;
+  orderStatus: OrderStatus | null;
 };
 
 export type OrderView = {
@@ -185,11 +195,18 @@ export const adminOrdersApi = {
   listRma: (query?: { status?: RmaStatus; page?: number; pageSize?: number }) =>
     api.get<PageEnvelope<RmaView>>("/admin/rma", { query, withMeta: true }),
 
+  getRma: (rmaId: string) =>
+    api.get<AdminRmaDetailView>(`/admin/rma/${rmaId}`),
+
   approveRma: (rmaId: string, body?: { note?: string }) =>
     api.post<RmaView>(`/admin/rma/${rmaId}/approve`, body ?? {}),
 
   rejectRma: (rmaId: string, body: { note: string }) =>
     api.post<RmaView>(`/admin/rma/${rmaId}/reject`, body),
+
+  /** Accountant: RMA APPROVED + order REFUND_APPROVED → order REFUNDED, RMA CLOSED. */
+  markRmaRefunded: (rmaId: string, body?: { note?: string }) =>
+    api.post<AdminRmaDetailView>(`/admin/rma/${rmaId}/mark-refunded`, body ?? {}),
 };
 
 /** Next status in seller fulfillment pipeline, or null if terminal / not actionable. */

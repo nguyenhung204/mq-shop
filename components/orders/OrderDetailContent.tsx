@@ -119,8 +119,8 @@ function OrderDetailInner() {
               <span className="font-mono text-sm font-medium">{order.code}</span>
               <span className="mq-badge mq-badge-cyan">{order.status}</span>
               <span className="mq-badge mq-badge-teal">{order.paymentMethod}</span>
-              {rmaInfo ? (
-                <span className="mq-badge mq-badge-pink">RMA · {rmaInfo.status}</span>
+              {order.rma ? (
+                <span className="mq-badge mq-badge-pink">RMA · {order.rma.status}</span>
               ) : null}
             </div>
             {rmaInfo ? (

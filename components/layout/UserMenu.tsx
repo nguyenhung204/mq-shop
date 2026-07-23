@@ -44,7 +44,7 @@ function UserAvatar({ user }: { user: AuthUser }) {
 
 export function UserMenu() {
   const { t } = useLanguage();
-  const { user, isAuthenticated, logout, hasRole } = useAuth();
+  const { user, isAuthenticated, logout, hasRole, hasAnyPermission } = useAuth();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -95,6 +95,9 @@ export function UserMenu() {
 
   const showAdmin =
     hasRole("ADMIN") || hasRole("SUPER_ADMIN") || hasRole("ACCOUNTANT");
+  const showAdminRma =
+    showAdmin ||
+    hasAnyPermission(["PROCESS_RMA", "MANAGE_RMA"]);
 
   return (
     <div
@@ -180,6 +183,16 @@ export function UserMenu() {
             onClick={() => setOpen(false)}
           >
             Admin
+          </Link>
+        ) : null}
+        {showAdminRma ? (
+          <Link
+            href="/admin/rma"
+            role="menuitem"
+            className="mq-user-menu-item"
+            onClick={() => setOpen(false)}
+          >
+            Admin RMA
           </Link>
         ) : null}
         {hasRole("SUPER_ADMIN") ? (

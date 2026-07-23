@@ -77,7 +77,7 @@ const cards: {
     href: "/admin/rma",
     label: "RMA",
     desc: "Decide return and refund requests",
-    permissions: ["MANAGE_RMA"],
+    permissions: ["PROCESS_RMA", "MANAGE_RMA"],
     icon: RotateCcw,
   },
   {
@@ -97,8 +97,16 @@ const cards: {
 ];
 
 function AdminHome() {
-  const { user, hasAnyPermission } = useAuth();
-  const visible = cards.filter((c) => hasAnyPermission(c.permissions));
+  const { user, hasAnyPermission, hasRole } = useAuth();
+  const visible = cards.filter((c) => {
+    if (hasAnyPermission(c.permissions)) return true;
+    if (hasRole("ACCOUNTANT")) {
+      return c.permissions.some((p) =>
+        ["PROCESS_RMA", "MANAGE_RMA", "VIEW_TRANSACT"].includes(p),
+      );
+    }
+    return false;
+  });
 
   return (
     <>
@@ -133,7 +141,7 @@ function AdminHome() {
 
 export default function AdminPage() {
   return (
-    <AuthGuard roles={["ADMIN", "SUPER_ADMIN"]}>
+    <AuthGuard roles={["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"]}>
       <AdminHome />
     </AuthGuard>
   );

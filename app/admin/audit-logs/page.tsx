@@ -243,7 +243,7 @@ function AuditInner() {
 
 export default function AdminAuditLogsPage() {
   return (
-    <AuthGuard roles={["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"]} permissions={["VIEW_AUDIT_LOG"]}>
+    <AuthGuard roles={["ADMIN", "SUPER_ADMIN"]} permissions={["VIEW_AUDIT_LOG"]}>
       <AuditInner />
     </AuthGuard>
   );

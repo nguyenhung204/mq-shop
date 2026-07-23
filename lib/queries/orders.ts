@@ -40,6 +40,7 @@ export const orderKeys = {
       params.pageSize ?? 20,
     ] as const,
   adminRma: (status?: string) => [...orderKeys.all, "admin-rma", status ?? ""] as const,
+  adminRmaDetail: (id: string) => [...orderKeys.all, "admin-rma-detail", id] as const,
 };
 
 function orderErrorMessage(e: unknown, fallback: string): string {
@@ -237,6 +238,14 @@ export function useAdminRma(status?: string) {
   });
 }
 
+export function useAdminRmaDetail(rmaId: string) {
+  return useQuery({
+    queryKey: orderKeys.adminRmaDetail(rmaId),
+    queryFn: () => adminOrdersApi.getRma(rmaId),
+    enabled: Boolean(rmaId),
+  });
+}
+
 export function useAdminRmaDecision() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -256,8 +265,27 @@ export function useAdminRmaDecision() {
     },
     onSuccess: (_d, vars) => {
       void queryClient.invalidateQueries({ queryKey: orderKeys.all });
+      void queryClient.invalidateQueries({
+        queryKey: orderKeys.adminRmaDetail(vars.id),
+      });
       toast.success(vars.decision === "APPROVED" ? "RMA approved" : "RMA rejected");
     },
     onError: (e) => toast.error(orderErrorMessage(e, "RMA decision failed")),
+  });
+}
+
+export function useAdminRmaMarkRefunded() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, note }: { id: string; note?: string }) =>
+      adminOrdersApi.markRmaRefunded(id, note ? { note } : {}),
+    onSuccess: (_d, vars) => {
+      void queryClient.invalidateQueries({ queryKey: orderKeys.all });
+      void queryClient.invalidateQueries({
+        queryKey: orderKeys.adminRmaDetail(vars.id),
+      });
+      toast.success("Marked as refunded — order REFUNDED, RMA CLOSED");
+    },
+    onError: (e) => toast.error(orderErrorMessage(e, "Mark refunded failed")),
   });
 }

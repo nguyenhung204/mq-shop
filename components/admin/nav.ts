@@ -87,7 +87,7 @@ export const adminNavItems: AdminNavItem[] = [
     href: "/admin/rma",
     label: "RMA",
     icon: RotateCcw,
-    permissions: ["MANAGE_RMA"],
+    permissions: ["PROCESS_RMA", "MANAGE_RMA"],
     group: "commerce",
   },
   {
