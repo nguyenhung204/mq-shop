@@ -7,7 +7,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 const portals = [
   { href: "/", label: "Shop", match: (p: string) => p === "/" || p.startsWith("/shop") || p.startsWith("/product") || p.startsWith("/cart") || p.startsWith("/checkout") || p.startsWith("/orders") },
   { href: "/seller", label: "Seller", role: "SELLER" as const, match: (p: string) => p.startsWith("/seller") },
-  { href: "/admin", label: "Admin", roles: ["ADMIN", "SUPER_ADMIN"] as const, match: (p: string) => p.startsWith("/admin") },
+  { href: "/admin", label: "Admin", roles: ["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"] as const, match: (p: string) => p.startsWith("/admin") },
   { href: "/wallet", label: "Wallet", match: (p: string) => p.startsWith("/wallet") },
   { href: "/super-admin", label: "System", role: "SUPER_ADMIN" as const, match: (p: string) => p.startsWith("/super-admin") },
 ];

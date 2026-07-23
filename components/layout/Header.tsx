@@ -3,10 +3,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
-import { categories } from "@/lib/data/categories";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import { elementPages, mainNav } from "@/lib/data/navigation";
-import { products } from "@/lib/data/products";
 import { ProductCardMini } from "@/components/ui/ProductCard";
 import { ProductCarousel } from "@/components/ui/ProductCarousel";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -17,7 +22,15 @@ import { CartMenu } from "@/components/layout/CartMenu";
 import { RoleSwitcher } from "@/components/layout/RoleSwitcher";
 import { TopBar } from "@/components/layout/TopBar";
 import { UserMenu } from "@/components/layout/UserMenu";
+import { categoryLabel } from "@/lib/api/categoryLabel";
+import {
+  childCategories,
+  rootCategories,
+  useCatalogCategories,
+  useCatalogListing,
+} from "@/lib/queries/catalog";
 import { heroImages } from "@/lib/images";
+import type { Locale } from "@/lib/i18n/types";
 
 function NavBadge({ type }: { type: "sale" | "hot" | "new" }) {
   const { t } = useLanguage();
@@ -28,12 +41,42 @@ function NavBadge({ type }: { type: "sale" | "hot" | "new" }) {
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeMega, setActiveMega] = useState<string | null>(null);
-  const [activeCategory, setActiveCategory] = useState(categories[0].slug);
+  const [activeCategoryId, setActiveCategoryId] = useState("");
   const [query, setQuery] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
   const { dark, toggle } = useTheme();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const router = useRouter();
+
+  const { data: apiCategories = [] } = useCatalogCategories();
+  const roots = useMemo(() => rootCategories(apiCategories), [apiCategories]);
+
+  useEffect(() => {
+    if (!activeCategoryId && roots[0]?.id) {
+      setActiveCategoryId(roots[0].id);
+    }
+  }, [roots, activeCategoryId]);
+
+  const { data: featuredListing = [] } = useCatalogListing({ pageSize: 12 });
+  const { data: categoryListing = [] } = useCatalogListing({
+    categoryId: activeCategoryId || undefined,
+    pageSize: 12,
+    enabled: Boolean(activeCategoryId) && activeMega === "products",
+  });
+
+  const bestSelling = useMemo(() => featuredListing.slice(0, 4), [featuredListing]);
+  const newest = useMemo(
+    () =>
+      [...featuredListing]
+        .sort((a, b) => {
+          const ta = a.createdAt ? Date.parse(a.createdAt) : 0;
+          const tb = b.createdAt ? Date.parse(b.createdAt) : 0;
+          return tb - ta;
+        })
+        .slice(0, 8),
+    [featuredListing],
+  );
+  const productsForMega = categoryListing.length ? categoryListing : featuredListing;
 
   const closeMega = useCallback(() => setActiveMega(null), []);
 
@@ -95,8 +138,7 @@ export function Header() {
     };
   }, [activeMega, closeMega]);
 
-  const dealProducts = products.filter((p) => p.salePercent);
-  const bestSelling = products.slice(0, 4);
+  const loc = (locale ?? "en") as Locale;
 
   return (
     <>
@@ -227,7 +269,6 @@ export function Header() {
                 )}
               </button>
 
-              {/* Wrapper owns lg:hidden — .mq-icon-btn display must not override it */}
               <div className="shrink-0 lg:hidden">
                 <button
                   type="button"
@@ -257,38 +298,53 @@ export function Header() {
               <div className="px-5 md:px-10 py-8">
               {activeMega === "categories" && (
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-10">
-                  <div className="grid grid-cols-3 md:grid-cols-6 gap-x-6 gap-y-4">
-                    {categories.map((cat) => (
-                      <div key={cat.slug}>
-                        <Link
-                          href={`/shop?category=${cat.slug}`}
-                          className="text-sm font-semibold text-mq-text hover:text-mq-gold transition-colors mb-2 block"
-                          onClick={closeMega}
-                        >
-                          {t(`categories.${cat.slug}`)}
-                        </Link>
-                        <ul className="space-y-1">
-                          {cat.subcategories?.map((sub) => (
-                            <li key={sub.slug}>
-                              <Link
-                                href={`/shop?category=${cat.slug}`}
-                                className="text-xs text-mq-text-secondary hover:text-mq-text transition-colors"
-                                onClick={closeMega}
-                              >
-                                {sub.name}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-6 gap-y-4">
+                    {roots.length === 0 ? (
+                      <p className="text-sm text-mq-text-muted col-span-full">
+                        No categories yet.
+                      </p>
+                    ) : (
+                      roots.map((cat) => {
+                        const children = childCategories(apiCategories, cat.id);
+                        return (
+                          <div key={cat.id}>
+                            <Link
+                              href={`/shop?category=${encodeURIComponent(cat.id)}`}
+                              className="text-sm font-semibold text-mq-text hover:text-mq-gold transition-colors mb-2 block"
+                              onClick={closeMega}
+                            >
+                              {categoryLabel(cat, loc)}
+                            </Link>
+                            {children.length > 0 ? (
+                              <ul className="space-y-1">
+                                {children.map((sub) => (
+                                  <li key={sub.id}>
+                                    <Link
+                                      href={`/shop?category=${encodeURIComponent(sub.id)}`}
+                                      className="text-xs text-mq-text-secondary hover:text-mq-text transition-colors"
+                                      onClick={closeMega}
+                                    >
+                                      {categoryLabel(sub, loc)}
+                                    </Link>
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : null}
+                          </div>
+                        );
+                      })
+                    )}
                   </div>
                   <div className="border-l border-mq-border pl-8 hidden lg:block">
                     <h4 className="text-sm font-semibold text-mq-text mb-4">{t("nav.bestSelling")}</h4>
                     <div className="space-y-1">
-                      {bestSelling.map((p) => (
-                        <ProductCardMini key={p.id} product={p} />
-                      ))}
+                      {bestSelling.length === 0 ? (
+                        <p className="text-xs text-mq-text-muted">—</p>
+                      ) : (
+                        bestSelling.map((p) => (
+                          <ProductCardMini key={p.id} product={p} />
+                        ))
+                      )}
                     </div>
                   </div>
                 </div>
@@ -296,25 +352,29 @@ export function Header() {
 
               {activeMega === "products" && (
                 <div>
-                  <div className="flex gap-6 mb-6 border-b border-mq-border pb-3">
-                    {categories.slice(0, 3).map((cat) => (
+                  <div className="flex gap-6 mb-6 border-b border-mq-border pb-3 overflow-x-auto">
+                    {roots.slice(0, 6).map((cat) => (
                       <button
-                        key={cat.slug}
+                        key={cat.id}
                         type="button"
-                        onClick={() => setActiveCategory(cat.slug)}
-                        className={`text-sm font-medium pb-1 border-b-2 transition-colors ${
-                          activeCategory === cat.slug
+                        onClick={() => setActiveCategoryId(cat.id)}
+                        className={`text-sm font-medium pb-1 border-b-2 transition-colors whitespace-nowrap ${
+                          activeCategoryId === cat.id
                             ? "text-mq-gold border-mq-gold"
                             : "text-mq-text-secondary border-transparent hover:text-mq-text"
                         }`}
                       >
-                        {t(`categories.${cat.slug}`)}
+                        {categoryLabel(cat, loc)}
                       </button>
                     ))}
                   </div>
-                  <ProductCarousel
-                    products={products.filter((p) => p.categorySlug === activeCategory)}
-                  />
+                  {productsForMega.length > 0 ? (
+                    <ProductCarousel products={productsForMega} />
+                  ) : (
+                    <p className="text-sm text-mq-text-muted py-6 text-center">
+                      No products in this category yet.
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -323,44 +383,50 @@ export function Header() {
                   <div>
                     <h4 className="text-xs font-semibold uppercase tracking-wider text-mq-text-muted mb-4">{t("mega.productTypes")}</h4>
                     <ul className="space-y-2 text-sm text-mq-text-secondary">
-                      <li><Link href="/shop" className="hover:text-mq-gold">{t("mega.allProducts")}</Link></li>
-                      <li><Link href="/shop?sort=new" className="hover:text-mq-gold">{t("mega.newArrivals")}</Link></li>
-                      <li><Link href="/shop?sort=deals" className="hover:text-mq-gold">{t("mega.onSale")}</Link></li>
+                      <li><Link href="/shop" className="hover:text-mq-gold" onClick={closeMega}>{t("mega.allProducts")}</Link></li>
+                      <li><Link href="/shop?sort=new" className="hover:text-mq-gold" onClick={closeMega}>{t("mega.newArrivals")}</Link></li>
+                      <li><Link href="/shop?sort=deals" className="hover:text-mq-gold" onClick={closeMega}>{t("mega.onSale")}</Link></li>
                     </ul>
                   </div>
                   <div>
                     <h4 className="text-xs font-semibold uppercase tracking-wider text-mq-text-muted mb-4">{t("mega.pages")}</h4>
                     <ul className="space-y-2 text-sm text-mq-text-secondary">
-                      <li><Link href="/cart" className="hover:text-mq-gold">{t("nav.cart")}</Link></li>
-                      <li><Link href="/checkout" className="hover:text-mq-gold">{t("checkout.title")}</Link></li>
-                      <li><Link href="/wishlist" className="hover:text-mq-gold">{t("nav.wishlist")}</Link></li>
+                      <li><Link href="/cart" className="hover:text-mq-gold" onClick={closeMega}>{t("nav.cart")}</Link></li>
+                      <li><Link href="/checkout" className="hover:text-mq-gold" onClick={closeMega}>{t("checkout.title")}</Link></li>
+                      <li><Link href="/orders" className="hover:text-mq-gold" onClick={closeMega}>{t("account.myOrders")}</Link></li>
                     </ul>
                   </div>
                   <div>
                     <h4 className="text-xs font-semibold uppercase tracking-wider text-mq-text-muted mb-4">{t("mega.features")}</h4>
                     <ul className="space-y-2 text-sm text-mq-text-secondary">
-                      <li><Link href="/shop" className="hover:text-mq-gold">{t("mega.quickView")}</Link></li>
-                      <li><Link href="/shop?sort=popular" className="hover:text-mq-gold">{t("mega.bestSellers")}</Link></li>
+                      <li><Link href="/shop" className="hover:text-mq-gold" onClick={closeMega}>{t("mega.quickView")}</Link></li>
+                      <li><Link href="/shop?sort=popular" className="hover:text-mq-gold" onClick={closeMega}>{t("mega.bestSellers")}</Link></li>
                     </ul>
                   </div>
                   <div className="relative h-48 overflow-hidden">
                     <Image src={heroImages.promo1} alt="MQ Collection" fill className="object-cover" sizes="300px" quality={70} />
                     <div className="absolute inset-0 bg-black/45 flex flex-col justify-end p-5">
                       <p className="text-white text-base font-display">{t("nav.newSeason")}</p>
-                      <Link href="/shop" className="mq-btn mq-btn-primary mt-2 w-fit text-xs">{t("nav.shopNow")}</Link>
+                      <Link href="/shop" className="mq-btn mq-btn-primary mt-2 w-fit text-xs" onClick={closeMega}>{t("nav.shopNow")}</Link>
                     </div>
                   </div>
                 </div>
               )}
 
-              {(activeMega === "deals") && (
-                <ProductCarousel products={dealProducts} />
+              {activeMega === "deals" && (
+                newest.length > 0 ? (
+                  <ProductCarousel products={newest} />
+                ) : (
+                  <p className="text-sm text-mq-text-muted py-6 text-center">
+                    No products yet.
+                  </p>
+                )
               )}
 
               {activeMega === "elements" && (
                 <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
                   {elementPages.map((page) => (
-                    <Link key={page.href} href={page.href} className="text-sm text-mq-text-secondary hover:text-mq-gold py-2 border-b border-mq-border transition-colors">
+                    <Link key={page.href} href={page.href} className="text-sm text-mq-text-secondary hover:text-mq-gold py-2 border-b border-mq-border transition-colors" onClick={closeMega}>
                       {t(`nav.${page.key}`)}
                     </Link>
                   ))}
@@ -404,14 +470,14 @@ export function Header() {
                   {t("nav.categories")}
                 </h3>
                 <div className="grid grid-cols-2 gap-2">
-                  {categories.map((cat) => (
+                  {roots.map((cat) => (
                     <Link
-                      key={cat.slug}
-                      href={`/shop?category=${cat.slug}`}
+                      key={cat.id}
+                      href={`/shop?category=${encodeURIComponent(cat.id)}`}
                       className="text-sm text-mq-text-secondary hover:text-mq-gold py-2"
                       onClick={() => setMobileOpen(false)}
                     >
-                      {t(`categories.${cat.slug}`)}
+                      {categoryLabel(cat, loc)}
                     </Link>
                   ))}
                 </div>

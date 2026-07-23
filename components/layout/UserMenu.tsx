@@ -93,6 +93,9 @@ export function UserMenu() {
     router.push("/my-account");
   };
 
+  const showAdmin =
+    hasRole("ADMIN") || hasRole("SUPER_ADMIN") || hasRole("ACCOUNTANT");
+
   return (
     <div
       ref={rootRef}
@@ -125,6 +128,30 @@ export function UserMenu() {
         >
           {t("account.myProfile")}
         </Link>
+        <Link
+          href="/orders"
+          role="menuitem"
+          className="mq-user-menu-item"
+          onClick={() => setOpen(false)}
+        >
+          {t("account.myOrders")}
+        </Link>
+        <Link
+          href="/wallet"
+          role="menuitem"
+          className="mq-user-menu-item"
+          onClick={() => setOpen(false)}
+        >
+          {t("account.links.wallet")}
+        </Link>
+        <Link
+          href="/rma"
+          role="menuitem"
+          className="mq-user-menu-item"
+          onClick={() => setOpen(false)}
+        >
+          {t("account.links.rma")}
+        </Link>
         {hasRole("SELLER") ? (
           <Link
             href="/seller"
@@ -143,6 +170,26 @@ export function UserMenu() {
             onClick={() => setOpen(false)}
           >
             Inventory
+          </Link>
+        ) : null}
+        {showAdmin ? (
+          <Link
+            href="/admin"
+            role="menuitem"
+            className="mq-user-menu-item"
+            onClick={() => setOpen(false)}
+          >
+            Admin
+          </Link>
+        ) : null}
+        {hasRole("SUPER_ADMIN") ? (
+          <Link
+            href="/super-admin"
+            role="menuitem"
+            className="mq-user-menu-item"
+            onClick={() => setOpen(false)}
+          >
+            System
           </Link>
         ) : null}
         <button

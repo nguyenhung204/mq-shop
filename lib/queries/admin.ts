@@ -21,7 +21,8 @@ export const adminKeys = {
   all: ["admin"] as const,
   shops: (status: string, page: number) => [...adminKeys.all, "shops", status, page] as const,
   shop: (id: string) => [...adminKeys.all, "shop", id] as const,
-  products: (status: string, page: number) => [...adminKeys.all, "products", status, page] as const,
+  products: (status: string, page: number, pageSize = 20) =>
+    [...adminKeys.all, "products", status, page, pageSize] as const,
   finance: () => [...adminKeys.all, "finance"] as const,
   banners: () => [...adminKeys.all, "banners"] as const,
 };
@@ -58,7 +59,7 @@ export function useAdminShop(id: string) {
 
 export function useAdminProducts(status: string, page = 1, pageSize = 20) {
   return useQuery({
-    queryKey: adminKeys.products(status, page),
+    queryKey: adminKeys.products(status, page, pageSize),
     queryFn: async () => parsePage<ApiProduct>(await adminApi.products(status, page, pageSize)),
   });
 }
