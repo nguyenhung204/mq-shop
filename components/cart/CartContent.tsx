@@ -2,12 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { ShoppingBag, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatPrice } from "@/lib/data/products";
 import { useCart } from "@/components/providers/CartProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Container, PageHero } from "@/components/ui/shared";
+import { QuantityStepper } from "@/components/ui/QuantityStepper";
 
 export function CartContent() {
   const { t } = useLanguage();
@@ -82,25 +83,11 @@ export function CartContent() {
                       {formatPrice(item.unitPrice)}
                     </p>
                     <div className="flex items-center gap-3 mt-3">
-                      <div className="flex items-center border border-mq-border">
-                        <button
-                          type="button"
-                          className="w-8 h-8 flex items-center justify-center hover:bg-mq-surface-subtle"
-                          onClick={() => updateQuantity(item.variantId, item.quantity - 1)}
-                          aria-label="Decrease quantity"
-                        >
-                          <Minus size={14} />
-                        </button>
-                        <span className="w-8 text-center text-sm">{item.quantity}</span>
-                        <button
-                          type="button"
-                          className="w-8 h-8 flex items-center justify-center hover:bg-mq-surface-subtle"
-                          onClick={() => updateQuantity(item.variantId, item.quantity + 1)}
-                          aria-label="Increase quantity"
-                        >
-                          <Plus size={14} />
-                        </button>
-                      </div>
+                      <QuantityStepper
+                        value={item.quantity}
+                        min={1}
+                        onChange={(next) => updateQuantity(item.variantId, next)}
+                      />
                       <button
                         type="button"
                         onClick={() => removeItem(item.variantId)}

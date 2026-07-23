@@ -1145,6 +1145,77 @@ select.mq-input,
   align-items: stretch;
 }
 
+.mq-category-static {
+  justify-content: space-between;
+}
+
+/* Homepage category marquee — scrolls right → left */
+.mq-category-marquee {
+  overflow: hidden;
+  width: 100%;
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 3%,
+    #000 97%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 3%,
+    #000 97%,
+    transparent
+  );
+}
+
+.mq-category-marquee-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: mq-category-marquee 200s linear infinite;
+}
+
+.mq-category-marquee:hover .mq-category-marquee-track,
+.mq-category-marquee:focus-within .mq-category-marquee-track {
+  animation-play-state: paused;
+}
+
+.mq-category-marquee-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.75rem;
+  padding: 4px 0.875rem 12px;
+  flex-shrink: 0;
+}
+
+@keyframes mq-category-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mq-category-marquee {
+    mask-image: none;
+    -webkit-mask-image: none;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .mq-category-marquee-track {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .mq-category-marquee-group[aria-hidden="true"] {
+    display: none;
+  }
+}
+
 .mq-carousel-track::-webkit-scrollbar {
   display: none;
 }
@@ -1333,23 +1404,38 @@ select.mq-input,
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  max-height: 18rem;
+  max-height: 20rem;
   overflow-y: auto;
+}
+
+.mq-cart-menu-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.35rem 0.4rem 0.5rem;
+  border-radius: 10px;
+}
+
+.mq-cart-menu-item:hover {
+  background: var(--mq-surface-subtle);
 }
 
 .mq-cart-menu-row {
   display: flex;
   align-items: center;
   gap: 0.65rem;
-  padding: 0.4rem;
-  border-radius: 10px;
   text-decoration: none;
   color: inherit;
-  transition: background 140ms ease;
 }
 
 .mq-cart-menu-row:hover {
-  background: var(--mq-surface-subtle);
+  background: transparent;
+}
+
+.mq-cart-menu-qty {
+  display: flex;
+  justify-content: flex-end;
+  padding-left: 3.4rem;
 }
 
 .mq-cart-menu-thumb {

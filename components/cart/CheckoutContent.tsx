@@ -21,12 +21,13 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { CountrySelect } from "@/components/ui/CountrySelect";
 import { PhoneInput } from "@/components/ui/PhoneInput";
 import { AddressRegionFields } from "@/components/ui/AddressRegionFields";
+import { QuantityStepper } from "@/components/ui/QuantityStepper";
 import { Container, PageHero } from "@/components/ui/shared";
 
 export function CheckoutContent() {
   const { t } = useLanguage();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
-  const { items, itemCount, subtotal, clearCart, checkoutItems } = useCart();
+  const { items, itemCount, subtotal, clearCart, checkoutItems, updateQuantity } = useCart();
   const [cartReady, setCartReady] = useState(() =>
     typeof window === "undefined" ? false : useCartStore.persist.hasHydrated(),
   );
@@ -433,25 +434,43 @@ export function CheckoutContent() {
 
           <aside className="border border-mq-border p-6 h-fit bg-mq-surface-subtle rounded-[var(--mq-radius-lg)] shadow-[var(--mq-shadow-sm)] lg:sticky lg:top-24">
             <h2 className="text-lg mb-4">{t("checkout.yourOrder")}</h2>
-            <ul className="space-y-3 mb-4 max-h-48 overflow-y-auto">
+            <ul className="space-y-4 mb-4 max-h-72 overflow-y-auto">
               {items.map((item) => (
                 <li key={item.variantId} className="flex gap-3 text-sm">
-                  <div className="relative w-12 h-12 shrink-0 mq-product-image-bg mq-product-media">
+                  <Link
+                    href={`/product/${item.productId}`}
+                    className="relative w-12 h-12 shrink-0 mq-product-image-bg mq-product-media"
+                  >
                     <Image
                       src={item.image}
-                      alt=""
+                      alt={item.name}
                       fill
                       className="mq-product-media-img"
                       sizes="48px"
                     />
+                  </Link>
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <div className="flex gap-2 justify-between">
+                      <div className="min-w-0">
+                        <Link
+                          href={`/product/${item.productId}`}
+                          className="line-clamp-1 font-medium hover:text-mq-gold transition-colors"
+                        >
+                          {item.name}
+                        </Link>
+                        <p className="text-mq-text-muted text-xs">{item.sku}</p>
+                      </div>
+                      <span className="shrink-0 tabular-nums">
+                        {formatPrice(item.unitPrice * item.quantity)}
+                      </span>
+                    </div>
+                    <QuantityStepper
+                      size="sm"
+                      value={item.quantity}
+                      min={1}
+                      onChange={(next) => updateQuantity(item.variantId, next)}
+                    />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="line-clamp-1">{item.name}</p>
-                    <p className="text-mq-text-muted text-xs">
-                      {item.sku} × {item.quantity}
-                    </p>
-                  </div>
-                  <span>{formatPrice(item.unitPrice * item.quantity)}</span>
                 </li>
               ))}
             </ul>
@@ -459,6 +478,12 @@ export function CheckoutContent() {
               <div className="flex justify-between">
                 <span>{t("cart.subtotal")}</span>
                 <span>{formatPrice(subtotal)}</span>
+              </div>
+              <div className="flex justify-between text-mq-text-muted text-xs">
+                <span>{t("cart.quantity")}</span>
+                <span className="tabular-nums">
+                  {itemCount} {itemCount === 1 ? t("cart.item") : t("cart.items")}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>{t("cart.shipping")}</span>

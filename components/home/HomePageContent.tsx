@@ -1,17 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { CreditCard, Headphones, RotateCcw, ShieldCheck, Star } from "lucide-react";
 import { catalogApi } from "@/lib/api";
-import { categoryLabel } from "@/lib/api/categoryLabel";
 import { mapListingCard } from "@/lib/api/mapProduct";
 import type { ApiCategory } from "@/lib/api/types";
 import type { Product } from "@/lib/data/products";
 import { categoryImages, miscImages } from "@/lib/images";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { HeroSlider } from "@/components/home/HeroSlider";
-import { CategoryCard } from "@/components/ui/ProductCard";
+import { CategoryMarquee } from "@/components/home/CategoryMarquee";
 import { ProductCarousel } from "@/components/ui/ProductCarousel";
 import { Container, SectionHeading } from "@/components/ui/shared";
 
@@ -82,6 +81,11 @@ export function HomePageContent() {
   }, [listing]);
   const picks = useMemo(() => (inStock.length ? inStock : listing).slice(0, 12), [inStock, listing]);
 
+  const categoryImage = useCallback(
+    (slug: string) => FALLBACK_CATEGORY_IMAGES[slug] || categoryImages.accessories,
+    [],
+  );
+
   const trustIcons = [
     { title: t("home.trustPayment"), desc: t("home.trustPaymentDesc"), Icon: CreditCard },
     { title: t("home.trustSupport"), desc: t("home.trustSupportDesc"), Icon: Headphones },
@@ -113,19 +117,11 @@ export function HomePageContent() {
           ) : categories.length === 0 ? (
             <p className="text-sm text-mq-text-muted text-center py-8">No categories yet.</p>
           ) : (
-            <div className="mq-carousel-track" style={{ justifyContent: "space-between" }}>
-              {categories.map((cat, i) => (
-                <CategoryCard
-                  key={cat.id}
-                  name={locale ? categoryLabel(cat, locale) : cat.name || cat.slug}
-                  slug={cat.id}
-                  image={
-                    FALLBACK_CATEGORY_IMAGES[cat.slug] || categoryImages.accessories
-                  }
-                  priority={i < 4}
-                />
-              ))}
-            </div>
+            <CategoryMarquee
+              categories={categories}
+              locale={locale}
+              imageFor={categoryImage}
+            />
           )}
         </Container>
       </section>

@@ -5,11 +5,17 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { formatMoney } from "@/lib/api/utils";
-import { canCancelOrder, canRequestRma } from "@/lib/api/orders";
+import {
+  canCancelOrder,
+  canRequestRma,
+  hasBlockingRma,
+  nextFulfillmentStatus,
+  rmaStatusLabel,
+  type RmaStatus,
+} from "@/lib/api/orders";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useCancelOrder, useOrder, useUpdateOrderStatus } from "@/lib/queries/orders";
 import { useSellerShop } from "@/lib/queries/seller";
-import { nextFulfillmentStatus } from "@/lib/api/orders";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { Container, PageHero } from "@/components/ui/shared";
 import { OrderDetailSkeleton } from "@/components/ui/Skeleton";
@@ -37,6 +43,31 @@ function formatAddress(addr: {
     .join(" · ");
 }
 
+function resolveRmaInfo(order: {
+  status: string;
+  rma?: {
+    status: RmaStatus;
+    reason?: string;
+    reviewNote?: string | null;
+  } | null;
+}): {
+  status: RmaStatus | "REFUND_APPROVED" | "REFUNDED";
+  reason?: string;
+  note?: string | null;
+} | null {
+  if (order.rma) {
+    return {
+      status: order.rma.status,
+      reason: order.rma.reason,
+      note: order.rma.reviewNote,
+    };
+  }
+  if (order.status === "REFUND_APPROVED" || order.status === "REFUNDED") {
+    return { status: order.status };
+  }
+  return null;
+}
+
 function OrderDetailInner() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
@@ -61,6 +92,7 @@ function OrderDetailInner() {
   const canCancel =
     Boolean(order && canCancelOrder(order.status) && (isBuyer || isShopOrder));
   const showRma = Boolean(order && isBuyer && canRequestRma(order));
+  const rmaInfo = order ? resolveRmaInfo(order) : null;
 
   const onCancel = async (e: FormEvent) => {
     e.preventDefault();
@@ -87,10 +119,30 @@ function OrderDetailInner() {
               <span className="font-mono text-sm font-medium">{order.code}</span>
               <span className="mq-badge mq-badge-cyan">{order.status}</span>
               <span className="mq-badge mq-badge-teal">{order.paymentMethod}</span>
+              {rmaInfo ? (
+                <span className="mq-badge mq-badge-pink">RMA · {rmaInfo.status}</span>
+              ) : null}
             </div>
-            {order.status === "REFUND_APPROVED" ? (
-              <div className="mq-alert mq-alert-error text-sm">
-                Refund approved — waiting for accountant payout outside the system.
+            {rmaInfo ? (
+              <div className="rounded-[var(--mq-radius-sm)] border border-mq-border bg-mq-surface-subtle p-4 space-y-1.5 text-sm">
+                <p className="font-medium">
+                  {rmaInfo.status === "REFUNDED"
+                    ? "Refund completed"
+                    : rmaInfo.status === "REFUND_APPROVED"
+                      ? "Refund approved — waiting for accountant payout outside the system."
+                      : rmaStatusLabel(rmaInfo.status)}
+                </p>
+                {rmaInfo.reason ? (
+                  <p className="text-mq-text-secondary">Reason: {rmaInfo.reason}</p>
+                ) : null}
+                {rmaInfo.note ? (
+                  <p className="text-xs text-mq-text-muted">Note: {rmaInfo.note}</p>
+                ) : null}
+                {hasBlockingRma(order) && !showRma ? (
+                  <p className="text-xs text-mq-text-muted pt-1">
+                    A return request is already open for this order.
+                  </p>
+                ) : null}
               </div>
             ) : null}
             <p className="text-sm">
@@ -158,7 +210,10 @@ function OrderDetailInner() {
             ) : null}
 
             {canCancel && (
-              <form onSubmit={(e) => void onCancel(e)} className="space-y-3 pt-4 border-t border-mq-border">
+              <form
+                onSubmit={(e) => void onCancel(e)}
+                className="space-y-3 pt-4 border-t border-mq-border"
+              >
                 <h3 className="text-sm font-medium">Cancel order</h3>
                 <input
                   className="mq-input"
@@ -176,11 +231,11 @@ function OrderDetailInner() {
                 </button>
               </form>
             )}
-            {showRma && (
+            {showRma ? (
               <Link href={`/orders/${id}/rma`} className="mq-btn mq-btn-primary inline-flex">
                 Request return (RMA)
               </Link>
-            )}
+            ) : null}
           </div>
         )}
       </Container>

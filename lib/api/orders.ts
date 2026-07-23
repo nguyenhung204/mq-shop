@@ -72,26 +72,6 @@ export type OrderItemView = {
   lineTotal: number;
 };
 
-export type OrderView = {
-  id: string;
-  code: string;
-  buyerId: string;
-  shopId: string;
-  status: OrderStatus;
-  subtotal: number;
-  shippingFee: number;
-  total: number;
-  currency: "USD";
-  paymentMethod: PaymentMethod;
-  shippingAddress: ShippingAddress;
-  items: OrderItemView[];
-  cancelReason: string | null;
-  paidAt: string | null;
-  deliveredAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-};
-
 export type RmaBankInfo = {
   bankName: string;
   accountNumber: string;
@@ -113,6 +93,28 @@ export type RmaView = {
   reviewNote: string | null;
   decidedAt: string | null;
   createdAt: string;
+};
+
+export type OrderView = {
+  id: string;
+  code: string;
+  buyerId: string;
+  shopId: string;
+  status: OrderStatus;
+  subtotal: number;
+  shippingFee: number;
+  total: number;
+  currency: "USD";
+  paymentMethod: PaymentMethod;
+  shippingAddress: ShippingAddress;
+  items: OrderItemView[];
+  cancelReason: string | null;
+  paidAt: string | null;
+  deliveredAt: string | null;
+  /** Latest RMA for this order when BE includes it; null/undefined if none. */
+  rma?: RmaView | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type OrderListView = "buyer" | "shop";
@@ -217,11 +219,43 @@ export function canCancelOrder(status: OrderStatus): boolean {
   );
 }
 
-/** RMA window: DELIVERED and within 7 days of deliveredAt. */
-export function canRequestRma(order: Pick<OrderView, "status" | "deliveredAt">): boolean {
+const BLOCKING_RMA_STATUSES: RmaStatus[] = ["PENDING", "APPROVED", "CLOSED"];
+
+/** Hide Request return when RMA is PENDING | APPROVED | CLOSED. REJECTED may retry. */
+export function hasBlockingRma(order: Pick<OrderView, "rma">): boolean {
+  const status = order.rma?.status;
+  return Boolean(status && BLOCKING_RMA_STATUSES.includes(status));
+}
+
+/** @deprecated use hasBlockingRma */
+export function hasActiveRma(order: Pick<OrderView, "rma" | "status">): boolean {
+  return hasBlockingRma(order);
+}
+
+/** RMA window: DELIVERED, within 7 days, and no blocking return request. */
+export function canRequestRma(
+  order: Pick<OrderView, "status" | "deliveredAt" | "rma">,
+): boolean {
+  // REJECTED does not block; PENDING|APPROVED|CLOSED does.
+  if (hasBlockingRma(order)) return false;
   if (order.status !== "DELIVERED" || !order.deliveredAt) return false;
   const delivered = new Date(order.deliveredAt).getTime();
   if (Number.isNaN(delivered)) return false;
   const sevenDays = 7 * 24 * 60 * 60 * 1000;
   return Date.now() - delivered <= sevenDays;
+}
+
+export function rmaStatusLabel(status: RmaStatus): string {
+  switch (status) {
+    case "PENDING":
+      return "Return pending review";
+    case "APPROVED":
+      return "Return approved";
+    case "REJECTED":
+      return "Return rejected";
+    case "CLOSED":
+      return "Return closed";
+    default:
+      return status;
+  }
 }

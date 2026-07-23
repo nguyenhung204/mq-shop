@@ -83,6 +83,9 @@ function OrdersInner() {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="mq-badge mq-badge-cyan">{o.status}</span>
+                  {o.status === "REFUND_APPROVED" || o.status === "REFUNDED" ? (
+                    <span className="mq-badge mq-badge-pink">{o.status}</span>
+                  ) : null}
                   <span className="text-sm font-medium">
                     {formatMoney(o.total)} {o.currency}
                   </span>

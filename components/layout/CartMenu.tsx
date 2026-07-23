@@ -6,12 +6,13 @@ import { useEffect, useId, useRef, useState } from "react";
 import { formatPrice } from "@/lib/data/products";
 import { useCart } from "@/components/providers/CartProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { QuantityStepper } from "@/components/ui/QuantityStepper";
 
 const PREVIEW_LIMIT = 5;
 
 export function CartMenu({ onNavigate }: { onNavigate?: () => void }) {
   const { t } = useLanguage();
-  const { items, itemCount, formatSubtotal } = useCart();
+  const { items, itemCount, formatSubtotal, updateQuantity } = useCart();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
@@ -89,7 +90,7 @@ export function CartMenu({ onNavigate }: { onNavigate?: () => void }) {
             </div>
             <ul className="mq-cart-menu-list">
               {preview.map((item) => (
-                <li key={item.variantId}>
+                <li key={item.variantId} className="mq-cart-menu-item">
                   <Link
                     href={`/product/${item.productId}`}
                     className="mq-cart-menu-row"
@@ -106,14 +107,20 @@ export function CartMenu({ onNavigate }: { onNavigate?: () => void }) {
                     </span>
                     <span className="mq-cart-menu-meta">
                       <span className="mq-cart-menu-name">{item.name}</span>
-                      <span className="mq-cart-menu-sku">
-                        {item.sku} · ×{item.quantity}
-                      </span>
+                      <span className="mq-cart-menu-sku">{item.sku}</span>
                     </span>
                     <span className="mq-cart-menu-price">
                       {formatPrice(item.unitPrice * item.quantity)}
                     </span>
                   </Link>
+                  <div className="mq-cart-menu-qty">
+                    <QuantityStepper
+                      size="sm"
+                      value={item.quantity}
+                      min={1}
+                      onChange={(next) => updateQuantity(item.variantId, next)}
+                    />
+                  </div>
                 </li>
               ))}
             </ul>

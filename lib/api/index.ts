@@ -25,6 +25,9 @@ export {
   nextFulfillmentStatus,
   canCancelOrder,
   canRequestRma,
+  hasActiveRma,
+  hasBlockingRma,
+  rmaStatusLabel,
 } from "./orders";
 export type {
   OrderStatus,

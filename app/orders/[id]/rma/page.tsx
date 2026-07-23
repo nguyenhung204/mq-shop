@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { useCreateRma, useOrder } from "@/lib/queries/orders";
-import { canRequestRma } from "@/lib/api/orders";
+import { canRequestRma, hasBlockingRma, rmaStatusLabel } from "@/lib/api/orders";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { Container, PageHero } from "@/components/ui/shared";
 
@@ -21,6 +21,7 @@ function CreateRmaInner() {
   const [error, setError] = useState("");
 
   const allowed = order ? canRequestRma(order) : false;
+  const blockedByExisting = order ? hasBlockingRma(order) : false;
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -57,9 +58,15 @@ function CreateRmaInner() {
         {!order ? (
           <p className="text-sm text-mq-text-muted">Loading order…</p>
         ) : !allowed ? (
-          <div className="mq-alert mq-alert-error">
-            RMA is only available within 7 days after delivery.
-            <Link href={`/orders/${id}`} className="underline ml-2">
+          <div className="mq-alert mq-alert-error space-y-2">
+            <p>
+              {blockedByExisting
+                ? order.rma
+                  ? `${rmaStatusLabel(order.rma.status)}. You cannot submit another return for this order.`
+                  : "A return / refund is already in progress for this order."
+                : "RMA is only available within 7 days after delivery."}
+            </p>
+            <Link href={`/orders/${id}`} className="underline">
               Back to order
             </Link>
           </div>

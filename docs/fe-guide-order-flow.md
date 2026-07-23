@@ -504,6 +504,8 @@ interface OrderView {
   cancelReason: string | null;
   paidAt: string | null;
   deliveredAt: string | null;
+  /** Latest RMA on detail only; list keeps `null` (no N+1). */
+  rma: RmaView | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -524,6 +526,13 @@ interface RmaView {
   createdAt: string;
 }
 ```
+
+**FE gợi ý**
+
+- Hiện trạng thái hoàn / RMA từ `order.rma` (+ `status === REFUND_APPROVED`)
+- Ẩn **Request return** khi `rma?.status ∈ PENDING | APPROVED | CLOSED`
+- `REJECTED` → vẫn cho tạo lại (đúng rule BE)
+- List `GET /orders` để `rma: null` (tránh N+1); dùng **detail** để quyết định nút
 
 ---
 
