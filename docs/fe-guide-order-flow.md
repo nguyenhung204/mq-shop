@@ -123,9 +123,17 @@ POST /orders/shipping-quote
 
 ```
 POST /orders/checkout
+Header: Idempotency-Key: <uuid-v4>
 ```
 
 **Permission:** `CREATE_ORDER` (BUYER)
+
+**Idempotency (bắt buộc):**
+- Mỗi lần user **bấm Place Order** với body mới (đổi giỏ / địa chỉ / `paymentMethod` / `note`): FE tạo **UUID mới** → header `Idempotency-Key`.
+- **Retry** cùng request (timeout / mạng): giữ nguyên key + body → BE trả response đã lưu, **không** tạo đơn / reserve stock lần 2.
+- Cùng key + body khác → `422 IDEMPOTENCY_KEY_REUSE_MISMATCH` (FE invalidate key rồi cho đặt lại).
+- Request trùng đang chạy → `409 IDEMPOTENCY_REQUEST_IN_PROGRESS`.
+- Thiếu / key invalid → `400 IDEMPOTENCY_KEY_REQUIRED`.
 
 ```json
 {
@@ -193,6 +201,9 @@ POST /orders/checkout
 | 403 | `ORDER_OWN_SHOP_FORBIDDEN` | Buyer là owner / staff (`shopId`) của shop đó |
 | 400 | `INSUFFICIENT_STOCK` | Không đủ `availableStock` (**chỉ checkout**) |
 | 404 | `VARIANT_NOT_FOUND` | SKU không tồn tại |
+| 400 | `IDEMPOTENCY_KEY_REQUIRED` | Thiếu / invalid `Idempotency-Key` (**chỉ checkout**) |
+| 409 | `IDEMPOTENCY_REQUEST_IN_PROGRESS` | Cùng key đang xử lý |
+| 422 | `IDEMPOTENCY_KEY_REUSE_MISMATCH` | Cùng key nhưng body khác |
 
 ---
 
@@ -367,9 +378,10 @@ POST /admin/rma/:rmaId/mark-refunded  { "note?": "…" }  (PROCESS_RMA — Accou
 
 ```
 POST /admin/orders/checkout
+Header: Idempotency-Key: <uuid-v4>
 ```
 
-**Permission:** `CREATE_ORDER` với scope **ALL** (Admin / Super Admin). Buyer thường gọi `/orders/checkout` — **không** gửi `buyerId`.
+**Permission:** `CREATE_ORDER` với scope **ALL** (Admin / Super Admin). Buyer thường gọi `/orders/checkout` — **không** gửi `buyerId`. Idempotency giống buyer checkout.
 
 ```json
 {
@@ -563,7 +575,7 @@ interface RmaView {
 ## 10. FE checklist
 
 - [ ] Checkout UI: gọi `POST /orders/shipping-quote` khi đổi địa chỉ / items (debounce); hiện `shippingFee` + tổng tạm
-- [ ] Đặt hàng: `POST /orders/checkout` — dùng `data.total` / `data.shippingFee` từ response (không tin preview cứng)
+- [ ] Đặt hàng: `POST /orders/checkout` + header `Idempotency-Key` (UUID mới khi đổi giỏ/địa chỉ/payment; giữ key khi retry) — dùng `data.total` / `data.shippingFee` từ response (không tin preview cứng)
 - [ ] Checkout: validate 1 shop trước khi gọi API (UX); vẫn handle `ORDER_MULTI_SHOP` / `ORDER_OWN_SHOP_FORBIDDEN`
 - [ ] Chọn `COD` vs `MOCK` (dev); currency hiển thị **USD**
 - [ ] Buyer order list + detail + cancel button theo status

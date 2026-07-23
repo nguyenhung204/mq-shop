@@ -152,8 +152,10 @@ export const orderApi = {
   shippingQuote: (body: ShippingQuoteRequest) =>
     api.post<ShippingQuoteView>("/orders/shipping-quote", body),
 
-  checkout: (body: CheckoutRequest) =>
-    api.post<OrderView>("/orders/checkout", body),
+  checkout: (body: CheckoutRequest, idempotencyKey: string) =>
+    api.post<OrderView>("/orders/checkout", body, {
+      headers: { "Idempotency-Key": idempotencyKey },
+    }),
 
   list: (query?: ListOrdersParams) =>
     api.get<PageEnvelope<OrderView>>("/orders", { query, withMeta: true }),
@@ -186,8 +188,10 @@ export const adminOrdersApi = {
   shippingQuote: (body: AdminShippingQuoteRequest) =>
     api.post<ShippingQuoteView>("/admin/orders/shipping-quote", body),
 
-  checkout: (body: AdminCheckoutRequest) =>
-    api.post<OrderView>("/admin/orders/checkout", body),
+  checkout: (body: AdminCheckoutRequest, idempotencyKey: string) =>
+    api.post<OrderView>("/admin/orders/checkout", body, {
+      headers: { "Idempotency-Key": idempotencyKey },
+    }),
 
   cancel: (orderId: string, body: { reason: string }) =>
     api.post<OrderView>(`/admin/orders/${orderId}/cancel`, body),

@@ -1,11 +1,14 @@
 "use client";
 
+import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/client";
+import { createIdempotencyKeyStore } from "@/lib/api/idempotency";
 import {
   adminOrdersApi,
   orderApi,
+  type AdminCheckoutRequest,
   type AdminListOrdersParams,
   type CheckoutRequest,
   type CreateRmaRequest,
@@ -68,6 +71,12 @@ function orderErrorMessage(e: unknown, fallback: string): string {
         return "Buyer not found.";
       case "VARIANT_NOT_FOUND":
         return "One or more SKUs were not found.";
+      case "IDEMPOTENCY_KEY_REQUIRED":
+        return "Missing checkout idempotency key. Please try again.";
+      case "IDEMPOTENCY_KEY_REUSE_MISMATCH":
+        return "Checkout data changed with a reused key. Please place the order again.";
+      case "IDEMPOTENCY_REQUEST_IN_PROGRESS":
+        return "This order is already being placed. Please wait a moment.";
       default:
         break;
     }
@@ -113,12 +122,20 @@ export function useShippingQuote() {
 
 export function useCheckout() {
   const queryClient = useQueryClient();
+  const idempotency = useMemo(() => createIdempotencyKeyStore(), []);
   return useMutation({
-    mutationFn: (body: CheckoutRequest) => orderApi.checkout(body),
+    mutationFn: (body: CheckoutRequest) =>
+      orderApi.checkout(body, idempotency.keyFor(body)),
     onSuccess: () => {
+      idempotency.invalidate();
       void queryClient.invalidateQueries({ queryKey: orderKeys.all });
     },
-    onError: (e) => toast.error(orderErrorMessage(e, "Checkout failed")),
+    onError: (e) => {
+      if (e instanceof ApiError && e.code === "IDEMPOTENCY_KEY_REUSE_MISMATCH") {
+        idempotency.invalidate();
+      }
+      toast.error(orderErrorMessage(e, "Checkout failed"));
+    },
   });
 }
 
@@ -208,13 +225,21 @@ export function useAdminCancelOrder() {
 
 export function useAdminCheckout() {
   const queryClient = useQueryClient();
+  const idempotency = useMemo(() => createIdempotencyKeyStore(), []);
   return useMutation({
-    mutationFn: adminOrdersApi.checkout,
+    mutationFn: (body: AdminCheckoutRequest) =>
+      adminOrdersApi.checkout(body, idempotency.keyFor(body)),
     onSuccess: () => {
+      idempotency.invalidate();
       void queryClient.invalidateQueries({ queryKey: orderKeys.all });
       toast.success("Order placed on behalf of buyer");
     },
-    onError: (e) => toast.error(orderErrorMessage(e, "Admin checkout failed")),
+    onError: (e) => {
+      if (e instanceof ApiError && e.code === "IDEMPOTENCY_KEY_REUSE_MISMATCH") {
+        idempotency.invalidate();
+      }
+      toast.error(orderErrorMessage(e, "Admin checkout failed"));
+    },
   });
 }
 
