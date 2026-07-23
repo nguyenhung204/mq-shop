@@ -24,6 +24,7 @@ export const orderKeys = {
     [
       ...orderKeys.all,
       "list",
+      params.view ?? "",
       params.status ?? "",
       params.page ?? 1,
       params.pageSize ?? 20,
@@ -77,17 +78,22 @@ export function useOrders(params: ListOrdersParams = {}) {
   const page = params.page ?? 1;
   const pageSize = params.pageSize ?? 20;
   const status = params.status;
+  const view = params.view;
   return useQuery({
-    queryKey: orderKeys.list({ page, pageSize, status }),
+    queryKey: orderKeys.list({ page, pageSize, status, view }),
     queryFn: async () =>
-      parsePage<OrderView>(await orderApi.list({ page, pageSize, status })),
+      parsePage<OrderView>(
+        await orderApi.list({ page, pageSize, status, view }),
+      ),
     placeholderData: (prev) => prev,
   });
 }
 
-/** Alias for buyer list. */
-export function useMyOrders(params: ListOrdersParams = {}) {
-  return useOrders(params);
+/** Buyer purchases inbox. */
+export function useMyOrders(
+  params: Omit<ListOrdersParams, "view"> = {},
+) {
+  return useOrders({ ...params, view: "buyer" });
 }
 
 export function useOrder(id: string) {

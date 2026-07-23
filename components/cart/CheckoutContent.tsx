@@ -20,6 +20,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { CountrySelect } from "@/components/ui/CountrySelect";
 import { PhoneInput } from "@/components/ui/PhoneInput";
+import { AddressRegionFields } from "@/components/ui/AddressRegionFields";
 import { Container, PageHero } from "@/components/ui/shared";
 
 export function CheckoutContent() {
@@ -307,6 +308,8 @@ export function CheckoutContent() {
                           setDialCountry(next);
                           syncPhone(next, nationalPhone);
                         }
+                        setValue("shippingAddress.city", "");
+                        setValue("shippingAddress.district", "");
                       },
                     })}
                   />
@@ -343,34 +346,23 @@ export function CheckoutContent() {
                   )}
                 </div>
 
-                <div>
-                  <label className="block text-sm mb-1.5" htmlFor="city">
-                    {t("checkout.city")}
-                  </label>
-                  <input
-                    id="city"
-                    className="mq-input"
-                    autoComplete="address-level1"
-                    {...register("shippingAddress.city")}
-                  />
-                  {errors.shippingAddress?.city && (
-                    <p className="text-xs text-mq-accent-orange mt-1.5">
-                      {errors.shippingAddress.city.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm mb-1.5" htmlFor="district">
-                    {t("checkout.district")}
-                  </label>
-                  <input
-                    id="district"
-                    className="mq-input"
-                    autoComplete="address-level2"
-                    {...register("shippingAddress.district")}
-                  />
-                </div>
+                <AddressRegionFields
+                  countryCode={address?.country || "VN"}
+                  city={address?.city || ""}
+                  district={address?.district || ""}
+                  onCityChange={(next) =>
+                    setValue("shippingAddress.city", next, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    })
+                  }
+                  onDistrictChange={(next) =>
+                    setValue("shippingAddress.district", next, {
+                      shouldDirty: true,
+                    })
+                  }
+                  cityError={errors.shippingAddress?.city?.message}
+                />
 
                 <div>
                   <label className="block text-sm mb-1.5" htmlFor="postalCode">

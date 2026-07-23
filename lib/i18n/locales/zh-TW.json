@@ -182,6 +182,11 @@
     "addressPlaceholder": "街道、門牌、里…",
     "city": "縣／市",
     "district": "區／鄉鎮",
+    "selectCity": "選擇縣／市",
+    "selectDistrict": "選擇區／鄉鎮／城市",
+    "selectCityFirst": "請先選擇縣／市",
+    "loadingRegions": "載入中…",
+    "noDistricts": "尚無列表，可先留空",
     "postalCode": "郵遞區號",
     "country": "國家",
     "paymentMethod": "付款方式",
@@ -289,7 +294,9 @@
       "rma": "RMA",
       "rmaDesc": "退貨與換貨",
       "applyShop": "申請開店",
-      "applyShopDesc": "開始在 MQ 販售"
+      "applyShopDesc": "開始在 MQ 販售",
+      "myShop": "我的商店",
+      "myShopDesc": "管理您的 MQ 商店"
     },
     "otp": {
       "timeRemaining": "剩餘時間",

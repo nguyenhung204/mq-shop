@@ -69,6 +69,7 @@ export function useSellerOrders(params: {
     page: params.page ?? 1,
     pageSize: params.pageSize ?? 20,
     status: params.status,
+    view: "shop",
   });
 }
 

@@ -19,6 +19,7 @@ import type { AuthUser } from "@/lib/api/types";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useSellerShop } from "@/lib/queries/seller";
 import { Container } from "@/components/ui/shared";
 import "./account.css";
 
@@ -55,6 +56,8 @@ function AccountInner() {
   const { t } = useLanguage();
   const { user, logout, refreshUser } = useAuth();
   const router = useRouter();
+  const { data: shop } = useSellerShop();
+  const hasShop = Boolean(shop);
   const [section, setSection] = useState<AccountSection>("profile");
   const [fullName, setFullName] = useState(user?.fullName || "");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -365,8 +368,14 @@ function AccountInner() {
                 <Link href="/seller/shop" className="mq-account-link-card">
                   <Store size={20} strokeWidth={1.75} />
                   <span>
-                    <strong>{t("account.links.applyShop")}</strong>
-                    <small>{t("account.links.applyShopDesc")}</small>
+                    <strong>
+                      {hasShop ? t("account.links.myShop") : t("account.links.applyShop")}
+                    </strong>
+                    <small>
+                      {hasShop
+                        ? t("account.links.myShopDesc")
+                        : t("account.links.applyShopDesc")}
+                    </small>
                   </span>
                 </Link>
               </div>

@@ -7,6 +7,7 @@ import { formatMoney } from "@/lib/api/utils";
 import { canCancelOrder, canRequestRma } from "@/lib/api/orders";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useCancelOrder, useOrder, useUpdateOrderStatus } from "@/lib/queries/orders";
+import { useSellerShop } from "@/lib/queries/seller";
 import { nextFulfillmentStatus } from "@/lib/api/orders";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { Container, PageHero } from "@/components/ui/shared";
@@ -37,18 +38,26 @@ function OrderDetailInner() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const { data: order, isLoading, isError, error } = useOrder(id);
+  const { data: shop } = useSellerShop();
   const cancelOrder = useCancelOrder(id);
   const updateStatus = useUpdateOrderStatus();
   const [reason, setReason] = useState("");
 
   const roles = user?.roles ?? [];
-  const isSellerSide =
-    roles.includes("SELLER") ||
-    roles.includes("WAREHOUSE") ||
-    roles.includes("CS");
+  const myShopId = user?.shopId || shop?.id || null;
+  const isBuyer = Boolean(order && user && order.buyerId === user.id);
+  const isShopOrder = Boolean(order && myShopId && order.shopId === myShopId);
+  const canFulfill =
+    isShopOrder &&
+    (roles.includes("SELLER") ||
+      roles.includes("WAREHOUSE") ||
+      roles.includes("CS") ||
+      roles.includes("ADMIN") ||
+      roles.includes("SUPER_ADMIN"));
   const nextStatus = order ? nextFulfillmentStatus(order.status) : null;
-  const canCancel = order ? canCancelOrder(order.status) : false;
-  const showRma = order ? canRequestRma(order) : false;
+  const canCancel =
+    Boolean(order && canCancelOrder(order.status) && (isBuyer || isShopOrder));
+  const showRma = Boolean(order && isBuyer && canRequestRma(order));
 
   const onCancel = async (e: FormEvent) => {
     e.preventDefault();
@@ -108,7 +117,7 @@ function OrderDetailInner() {
               ))}
             </ul>
 
-            {isSellerSide && nextStatus ? (
+            {canFulfill && nextStatus ? (
               <div className="pt-4 border-t border-mq-border">
                 <button
                   type="button"

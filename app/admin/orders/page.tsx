@@ -17,6 +17,7 @@ import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { CountrySelect } from "@/components/ui/CountrySelect";
 import { PhoneInput } from "@/components/ui/PhoneInput";
+import { AddressRegionFields } from "@/components/ui/AddressRegionFields";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { isValidNationalPhone, toE164 } from "@/lib/data/phone";
@@ -48,6 +49,7 @@ function OrdersInner() {
   const [phoneDialCountry, setPhoneDialCountry] = useState("VN");
   const [country, setCountry] = useState("VN");
   const [city, setCity] = useState("");
+  const [district, setDistrict] = useState("");
   const [line1, setLine1] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"COD" | "MOCK">("COD");
   const [quoteFee, setQuoteFee] = useState<number | null>(null);
@@ -74,6 +76,7 @@ function OrdersInner() {
         phone: toE164(phoneDialCountry, phoneNational),
         line1,
         city,
+        district: district || undefined,
         country,
       },
     };
@@ -86,6 +89,7 @@ function OrdersInner() {
     phoneDialCountry,
     line1,
     city,
+    district,
     country,
   ]);
 
@@ -171,7 +175,11 @@ function OrdersInner() {
           <CountrySelect
             className="mq-input"
             value={country}
-            onValueChange={setCountry}
+            onValueChange={(next) => {
+              setCountry(next);
+              setCity("");
+              setDistrict("");
+            }}
             required
             aria-label="Country"
           />
@@ -184,12 +192,12 @@ function OrdersInner() {
               required
             />
           </div>
-          <input
-            className="mq-input"
-            placeholder="City"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            required
+          <AddressRegionFields
+            countryCode={country}
+            city={city}
+            district={district}
+            onCityChange={setCity}
+            onDistrictChange={setDistrict}
           />
           <input
             className="mq-input sm:col-span-2"

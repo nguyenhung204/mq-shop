@@ -182,6 +182,11 @@
     "addressPlaceholder": "Street, building, ward…",
     "city": "City / Province",
     "district": "District",
+    "selectCity": "Select province / city",
+    "selectDistrict": "Select district / city",
+    "selectCityFirst": "Select province first",
+    "loadingRegions": "Loading…",
+    "noDistricts": "No districts listed — leave blank or pick later",
     "postalCode": "Postal code",
     "country": "Country",
     "paymentMethod": "Payment",
@@ -289,7 +294,9 @@
       "rma": "RMA",
       "rmaDesc": "Returns and exchanges",
       "applyShop": "Apply shop",
-      "applyShopDesc": "Start selling on MQ"
+      "applyShopDesc": "Start selling on MQ",
+      "myShop": "My shop",
+      "myShopDesc": "Manage your shop on MQ"
     },
     "otp": {
       "timeRemaining": "Time remaining",

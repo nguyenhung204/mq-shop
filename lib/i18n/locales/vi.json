@@ -182,6 +182,11 @@
     "addressPlaceholder": "Số nhà, đường, phường…",
     "city": "Tỉnh / Thành phố",
     "district": "Quận / Huyện",
+    "selectCity": "Chọn tỉnh / thành phố",
+    "selectDistrict": "Chọn quận / huyện / thành phố",
+    "selectCityFirst": "Chọn tỉnh / thành trước",
+    "loadingRegions": "Đang tải…",
+    "noDistricts": "Chưa có danh sách — có thể bỏ trống",
     "postalCode": "Mã bưu điện",
     "country": "Quốc gia",
     "paymentMethod": "Thanh toán",
@@ -289,7 +294,9 @@
       "rma": "RMA",
       "rmaDesc": "Đổi trả và hoàn hàng",
       "applyShop": "Mở gian hàng",
-      "applyShopDesc": "Bắt đầu bán trên MQ"
+      "applyShopDesc": "Bắt đầu bán trên MQ",
+      "myShop": "Gian hàng của tôi",
+      "myShopDesc": "Quản lý gian hàng trên MQ"
     },
     "otp": {
       "timeRemaining": "Thời gian còn lại",

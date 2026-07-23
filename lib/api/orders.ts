@@ -113,10 +113,14 @@ export type RmaView = {
   createdAt: string;
 };
 
+export type OrderListView = "buyer" | "shop";
+
 export type ListOrdersParams = {
   status?: OrderStatus;
   page?: number;
   pageSize?: number;
+  /** buyer = purchases; shop = seller inbox. */
+  view?: OrderListView;
 };
 
 export type AdminListOrdersParams = ListOrdersParams & {
