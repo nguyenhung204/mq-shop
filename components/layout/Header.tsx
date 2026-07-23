@@ -43,7 +43,10 @@ export function Header() {
   const [activeMega, setActiveMega] = useState<string | null>(null);
   const [activeCategoryId, setActiveCategoryId] = useState("");
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [suggestOpen, setSuggestOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLFormElement>(null);
   const { dark, toggle } = useTheme();
   const { t, locale } = useLanguage();
   const router = useRouter();
@@ -57,12 +60,23 @@ export function Header() {
     }
   }, [roots, activeCategoryId]);
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedQuery(query.trim()), 280);
+    return () => window.clearTimeout(timer);
+  }, [query]);
+
   const { data: featuredListing = [] } = useCatalogListing({ pageSize: 12 });
   const { data: categoryListing = [] } = useCatalogListing({
     categoryId: activeCategoryId || undefined,
     pageSize: 12,
     enabled: Boolean(activeCategoryId) && activeMega === "products",
   });
+  const { data: searchSuggestions = [], isFetching: suggestLoading } =
+    useCatalogListing({
+      q: debouncedQuery,
+      pageSize: 6,
+      enabled: debouncedQuery.length >= 2,
+    });
 
   const bestSelling = useMemo(() => featuredListing.slice(0, 4), [featuredListing]);
   const newest = useMemo(
@@ -77,15 +91,19 @@ export function Header() {
     [featuredListing],
   );
   const productsForMega = categoryListing.length ? categoryListing : featuredListing;
+  const showSuggestions =
+    suggestOpen && debouncedQuery.length >= 2 && !mobileOpen && !activeMega;
 
   const closeMega = useCallback(() => setActiveMega(null), []);
+  const closeSuggestions = useCallback(() => setSuggestOpen(false), []);
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
-    const q = query.trim();
+    const next = query.trim();
     closeMega();
+    closeSuggestions();
     setMobileOpen(false);
-    router.push(q ? `/shop?q=${encodeURIComponent(q)}` : "/shop");
+    router.push(next ? `/shop?q=${encodeURIComponent(next)}` : "/shop");
   };
 
   useEffect(() => {
@@ -137,6 +155,31 @@ export function Header() {
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [activeMega, closeMega]);
+
+  useEffect(() => {
+    if (!showSuggestions) return;
+
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target;
+      if (
+        searchRef.current &&
+        (!(target instanceof Node) || !searchRef.current.contains(target))
+      ) {
+        closeSuggestions();
+      }
+    };
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeSuggestions();
+    };
+
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [showSuggestions, closeSuggestions]);
 
   const loc = (locale ?? "en") as Locale;
 
@@ -210,8 +253,9 @@ export function Header() {
             </div>
 
             <form
+              ref={searchRef}
               onSubmit={handleSearch}
-              className="flex-1 min-w-0 max-w-[420px] xl:max-w-[480px] mx-auto"
+              className="relative flex-1 min-w-0 max-w-[420px] xl:max-w-[480px] mx-auto"
               onMouseEnter={closeMega}
             >
               <label className="relative block">
@@ -223,12 +267,67 @@ export function Header() {
                 <input
                   type="search"
                   value={query}
-                  onChange={(e) => setQuery(e.target.value)}
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                    setSuggestOpen(true);
+                    closeMega();
+                  }}
+                  onFocus={() => {
+                    setSuggestOpen(true);
+                    closeMega();
+                  }}
                   placeholder={t("nav.searchPlaceholder")}
                   className="w-full h-10 pl-10 pr-4 rounded-full border border-mq-border bg-mq-surface-subtle text-sm text-mq-text placeholder:text-mq-text-muted outline-none transition-colors focus:border-mq-text-muted focus:bg-mq-surface"
                   aria-label={t("nav.search")}
+                  aria-autocomplete="list"
+                  aria-expanded={showSuggestions}
+                  autoComplete="off"
                 />
               </label>
+
+              {showSuggestions ? (
+                <div
+                  role="listbox"
+                  className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-[60] overflow-hidden rounded-[var(--mq-radius-lg)] border border-mq-border bg-mq-surface shadow-[var(--mq-shadow-lg)]"
+                >
+                  {suggestLoading && searchSuggestions.length === 0 ? (
+                    <p className="px-4 py-3 text-xs text-mq-text-muted">
+                      {t("nav.searching") || "Searching…"}
+                    </p>
+                  ) : searchSuggestions.length === 0 ? (
+                    <p className="px-4 py-3 text-xs text-mq-text-muted">
+                      {t("nav.noSearchResults") || "No products found."}
+                    </p>
+                  ) : (
+                    <ul className="max-h-[min(22rem,70vh)] overflow-y-auto py-1 px-2">
+                      {searchSuggestions.map((product) => (
+                        <li key={product.id} role="option">
+                          <ProductCardMini
+                            product={product}
+                            onNavigate={() => {
+                              closeSuggestions();
+                              closeMega();
+                              setMobileOpen(false);
+                              setQuery("");
+                              setDebouncedQuery("");
+                            }}
+                          />
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <Link
+                    href={`/shop?q=${encodeURIComponent(debouncedQuery)}`}
+                    className="block border-t border-mq-border px-4 py-2.5 text-xs font-medium text-mq-text-secondary hover:text-mq-gold hover:bg-mq-surface-subtle transition-colors"
+                    onClick={() => {
+                      closeSuggestions();
+                      closeMega();
+                    }}
+                  >
+                    {t("nav.viewAllResults") || "View all results"} →
+                  </Link>
+                </div>
+              ) : null}
             </form>
 
             <div

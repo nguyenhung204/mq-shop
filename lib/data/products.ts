@@ -35,6 +35,12 @@ export type Product = {
   }>;
   selectedVariantId?: string;
   shopId?: string;
+  /** From PDP `data.shop` when shop is public. */
+  shop?: {
+    id: string;
+    name: string;
+    logoUrl: string | null;
+  } | null;
   /** ISO-8601 from listing/PDP when available. */
   createdAt?: string;
 };

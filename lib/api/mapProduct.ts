@@ -94,6 +94,15 @@ export function mapPublicProductDetail(p: PublicProductDetail): Product {
     variants,
     selectedVariantId: firstInStock?.id,
     shopId: p.shopId,
+    shop: p.shop
+      ? {
+          id: p.shop.id,
+          name: p.shop.name,
+          logoUrl: p.shop.logoUrl ?? null,
+        }
+      : p.shop === null
+        ? null
+        : undefined,
     createdAt: p.createdAt,
   };
 }

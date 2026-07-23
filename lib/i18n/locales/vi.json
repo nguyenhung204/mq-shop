@@ -32,6 +32,9 @@
     "cart": "Giỏ hàng",
     "search": "Tìm kiếm",
     "searchPlaceholder": "Tìm trong bộ sưu tập...",
+    "searching": "Đang tìm…",
+    "noSearchResults": "Không tìm thấy sản phẩm.",
+    "viewAllResults": "Xem tất cả kết quả",
     "shopNow": "Mua ngay",
     "newSeason": "Mùa mới",
     "bestSelling": "Bán chạy",
@@ -136,6 +139,23 @@
     "sortPriceLow": "Giá: Thấp đến cao",
     "sortPriceHigh": "Giá: Cao đến thấp"
   },
+  "storefront": {
+    "officialShop": "Gian hàng chính thức",
+    "shipsFrom": "Giao từ",
+    "searchPlaceholder": "Tìm trong gian hàng…",
+    "priceRange": "Khoảng giá (USD)",
+    "minPrice": "Từ",
+    "maxPrice": "Đến",
+    "applyPrice": "Áp dụng giá",
+    "clearFilters": "Xóa bộ lọc",
+    "loading": "Đang tải gian hàng…",
+    "loadingProducts": "Đang tải sản phẩm…",
+    "empty": "Không có sản phẩm phù hợp.",
+    "loadFailed": "Không tải được sản phẩm.",
+    "notFound": "Gian hàng không khả dụng",
+    "notFoundHint": "Gian hàng này không còn công khai hoặc đã tạm khóa.",
+    "browseMarketplace": "Xem sàn mua sắm"
+  },
   "cart": {
     "title": "Giỏ hàng",
     "emptyTitle": "Giỏ hàng trống",
@@ -227,7 +247,10 @@
     "badgeOriginal": "Chính hãng 100%",
     "badgeBestPrice": "Giá tốt nhất",
     "badgeFreeShipping": "Freeship",
-    "buyNow": "Mua ngay"
+    "buyNow": "Mua ngay",
+    "soldBy": "Bán bởi",
+    "visitShop": "Xem gian hàng & thêm sản phẩm",
+    "sellerShop": "Gian hàng người bán"
   },
   "wishlist": {
     "emptyTitle": "Danh sách yêu thích trống",

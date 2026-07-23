@@ -32,6 +32,9 @@
     "cart": "Cart",
     "search": "Search",
     "searchPlaceholder": "Search our collection...",
+    "searching": "Searching…",
+    "noSearchResults": "No products found.",
+    "viewAllResults": "View all results",
     "shopNow": "Shop Now",
     "newSeason": "New Season",
     "bestSelling": "Best Selling",
@@ -136,6 +139,23 @@
     "sortPriceLow": "Price: Low to High",
     "sortPriceHigh": "Price: High to Low"
   },
+  "storefront": {
+    "officialShop": "Official shop",
+    "shipsFrom": "Ships from",
+    "searchPlaceholder": "Search in this shop…",
+    "priceRange": "Price range (USD)",
+    "minPrice": "Min",
+    "maxPrice": "Max",
+    "applyPrice": "Apply price",
+    "clearFilters": "Clear filters",
+    "loading": "Loading shop…",
+    "loadingProducts": "Loading products…",
+    "empty": "No products match your filters.",
+    "loadFailed": "Could not load products.",
+    "notFound": "Shop not available",
+    "notFoundHint": "This shop is unavailable or no longer public.",
+    "browseMarketplace": "Browse marketplace"
+  },
   "cart": {
     "title": "Shopping Cart",
     "emptyTitle": "Your cart is empty",
@@ -227,7 +247,10 @@
     "badgeOriginal": "100% Original",
     "badgeBestPrice": "Best Price",
     "badgeFreeShipping": "Free Shipping",
-    "buyNow": "Buy now"
+    "buyNow": "Buy now",
+    "soldBy": "Sold by",
+    "visitShop": "View shop & more products",
+    "sellerShop": "Seller shop"
   },
   "wishlist": {
     "emptyTitle": "Your wishlist is empty",

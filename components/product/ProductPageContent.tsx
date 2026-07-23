@@ -7,6 +7,7 @@ import { Check } from "lucide-react";
 import { Product, formatPrice } from "@/lib/data/products";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { ProductActions } from "@/components/cart/ProductActions";
+import { ProductShopCard } from "@/components/product/ProductShopCard";
 import { ProductCarousel } from "@/components/ui/ProductCarousel";
 import { Container, PageHero, Stars } from "@/components/ui/shared";
 
@@ -111,7 +112,7 @@ export function ProductPageContent({
               <span className="mq-badge mq-badge-teal">{t("product.badgeFreeShipping")}</span>
             </div>
             <p className="text-xs text-mq-text-muted uppercase tracking-[0.15em] mb-2">
-              {product.brand}
+              {product.shop?.name || product.brand}
             </p>
             <h1 className="text-2xl md:text-[26px] font-sans text-mq-text mb-3">{product.name}</h1>
             <div className="flex items-center gap-3 mb-4">
@@ -194,7 +195,23 @@ export function ProductPageContent({
               <ProductActions product={cartProduct} />
             )}
 
-            <div className="flex gap-6 text-sm text-mq-text-secondary mb-8">
+            {product.shop ? (
+              <div className="mt-8 mb-2">
+                <ProductShopCard shop={product.shop} />
+              </div>
+            ) : product.shopId ? (
+              <div className="mt-8 mb-2">
+                <ProductShopCard
+                  shop={{
+                    id: product.shopId,
+                    name: t("product.sellerShop"),
+                    logoUrl: null,
+                  }}
+                />
+              </div>
+            ) : null}
+
+            <div className="flex gap-6 text-sm text-mq-text-secondary mb-8 mt-6">
               <button type="button" className="hover:text-mq-text">
                 {t("product.compare")}
               </button>

@@ -32,6 +32,9 @@
     "cart": "購物車",
     "search": "搜尋",
     "searchPlaceholder": "搜尋我們的精選系列...",
+    "searching": "搜尋中…",
+    "noSearchResults": "找不到商品。",
+    "viewAllResults": "查看全部結果",
     "shopNow": "立即選購",
     "newSeason": "新季節",
     "bestSelling": "熱銷商品",
@@ -136,6 +139,23 @@
     "sortPriceLow": "價格：低到高",
     "sortPriceHigh": "價格：高到低"
   },
+  "storefront": {
+    "officialShop": "官方商店",
+    "shipsFrom": "出貨地",
+    "searchPlaceholder": "在本店搜尋…",
+    "priceRange": "價格區間 (USD)",
+    "minPrice": "最低",
+    "maxPrice": "最高",
+    "applyPrice": "套用價格",
+    "clearFilters": "清除篩選",
+    "loading": "載入商店中…",
+    "loadingProducts": "載入商品中…",
+    "empty": "沒有符合條件的商品。",
+    "loadFailed": "無法載入商品。",
+    "notFound": "商店無法使用",
+    "notFoundHint": "此商店未公開或已暫停。",
+    "browseMarketplace": "瀏覽商城"
+  },
   "cart": {
     "title": "購物車",
     "emptyTitle": "購物車是空的",
@@ -227,7 +247,10 @@
     "badgeOriginal": "100% 正品",
     "badgeBestPrice": "最優價格",
     "badgeFreeShipping": "免運費",
-    "buyNow": "立即購買"
+    "buyNow": "立即購買",
+    "soldBy": "賣家",
+    "visitShop": "查看商店與更多商品",
+    "sellerShop": "賣家商店"
   },
   "wishlist": {
     "emptyTitle": "願望清單是空的",

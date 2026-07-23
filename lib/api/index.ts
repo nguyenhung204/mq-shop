@@ -13,6 +13,7 @@ import type {
   Paginated,
   ProductVariant,
   PublicProductDetail,
+  ShopStorefront,
   UpdateProductRequest,
   UpdateProductVariantRequest,
   WalletBalance,
@@ -68,6 +69,9 @@ export const catalogApi = {
   listing: async (query: {
     q?: string;
     categoryId?: string;
+    shopId?: string;
+    minPrice?: number;
+    maxPrice?: number;
     page?: number;
     pageSize?: number;
   }) => {
@@ -78,6 +82,9 @@ export const catalogApi = {
         query: {
           q: query.q,
           categoryId: query.categoryId,
+          shopId: query.shopId,
+          minPrice: query.minPrice,
+          maxPrice: query.maxPrice,
           page: query.page ?? 1,
           pageSize: query.pageSize ?? 20,
         },
@@ -89,6 +96,11 @@ export const catalogApi = {
   /** Public PDP — ACTIVE products of approved shops only. */
   productDetail: (productId: string) =>
     api.get<PublicProductDetail>(`/products/listing/${productId}`, { auth: false }),
+
+  /** Public shop profile — APPROVED + not suspended. */
+  shopStorefront: (shopId: string) =>
+    api.get<ShopStorefront>(`/shops/${shopId}/storefront`, { auth: false }),
+
   /** @deprecated prefer listing() */
   searchProducts: async (query: {
     q?: string;
