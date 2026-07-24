@@ -217,14 +217,17 @@ export type ApiCategory = {
   parentId?: string | null;
 };
 
+/** @deprecated Prefer `Banner` from `@/lib/api/promotions`. */
 export type ApiBanner = {
   id: string;
-  imageUrl: string;
-  targetUrl: string;
-  locale: string;
   title: string;
-  displayOrder: number;
+  imageUrl: string;
+  linkUrl: string | null;
+  lang: "VI" | "EN";
+  sortOrder: number;
   isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type CartItem = {

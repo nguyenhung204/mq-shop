@@ -1,4 +1,5 @@
 import { api } from "./client";
+import { bannerApi, marketingApi } from "./promotions";
 import type {
   ApiAuditLog,
   ApiCategory,
@@ -224,6 +225,30 @@ export type {
   ListStaffParams,
 } from "./staff";
 
+export {
+  promotionApi,
+  adminPromotionApi,
+  bannerApi,
+  marketingApi,
+} from "./promotions";
+export type {
+  PromotionType,
+  PromotionScope,
+  PromotionStatus,
+  BannerLang,
+  Promotion,
+  CreatePromotionBody,
+  UpdatePromotionBody,
+  ListPromotionsParams,
+  Banner,
+  ListBannersParams,
+  MarketingFolder,
+  MarketingAsset,
+  MarketingFolderDetail,
+  CreateMarketingFolderBody,
+  UpdateMarketingFolderBody,
+} from "./promotions";
+
 export const walletApi = {
   affiliateLink: () => api.get<{ code: string; link?: string }>("/wallet/affiliate-link"),
   networkTree: () => api.get("/wallet/network-tree"),
@@ -296,10 +321,12 @@ export const adminApi = {
   commissionOverride: (shopId: string, body: { commissionRate: number }) =>
     api.put(`/admin/shops/${shopId}/commission-override`, body),
   createGateway: (body: unknown) => api.post("/admin/payment-gateway-configs", body),
-  banners: () => api.get("/admin/banners"),
-  createBanner: (body: unknown) => api.post("/admin/banners", body),
-  updateBanner: (id: string, body: unknown) => api.put(`/admin/banners/${id}`, body),
-  createMaterial: (body: unknown) => api.post("/admin/marketing-materials", body),
+  /** Prefer `bannerApi` from `@/lib/api/promotions`. */
+  banners: (query?: { lang?: string; page?: number; pageSize?: number }) =>
+    bannerApi.adminList(query as Parameters<typeof bannerApi.adminList>[0]),
+  createBanner: (formData: FormData) => bannerApi.adminCreate(formData),
+  updateBanner: (id: string, formData: FormData) => bannerApi.adminUpdate(id, formData),
+  deleteBanner: (id: string) => bannerApi.adminDelete(id),
 };
 
 export const financeApi = {
@@ -323,11 +350,11 @@ export const financeApi = {
     api.put(`/finance/withdraw-requests/${id}/mark-completed`, {}),
 };
 
+/** Prefer `marketingApi` from `@/lib/api/promotions`. */
 export const cmsApi = {
-  materials: (folder?: string) =>
-    api.get("/marketing-materials", { query: { folder } }),
-  downloadMaterials: (folder: string) =>
-    api.get("/marketing-materials/download", { query: { folder } }),
+  folders: (query?: { page?: number; pageSize?: number }) => marketingApi.folders(query),
+  folder: (folderId: string) => marketingApi.folder(folderId),
+  downloadFolderZip: (folderId: string) => marketingApi.downloadZip(folderId),
 };
 
 export const systemApi = {

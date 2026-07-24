@@ -30,7 +30,22 @@ export const sellerKeys = {
   materials: () => [...sellerKeys.all, "materials"] as const,
 };
 
-export type MarketingMaterial = { folderPath?: string; fileName?: string; fileUrl?: string };
+export type MarketingMaterialFolder = {
+  id: string;
+  name: string;
+  description: string | null;
+  assetCount: number;
+};
+
+export function useMarketingMaterials(page = 1, pageSize = 20) {
+  return useQuery({
+    queryKey: [...sellerKeys.materials(), page, pageSize] as const,
+    queryFn: async () =>
+      parsePage<import("@/lib/api/promotions").MarketingFolder>(
+        await cmsApi.folders({ page, pageSize }),
+      ),
+  });
+}
 
 function useSellerInvalidate() {
   const queryClient = useQueryClient();
@@ -85,13 +100,6 @@ export function useSellerShop() {
       }
     },
     retry: (count, e) => !(e instanceof ApiError && e.status === 404) && count < 1,
-  });
-}
-
-export function useMarketingMaterials() {
-  return useQuery({
-    queryKey: sellerKeys.materials(),
-    queryFn: async () => asArray<MarketingMaterial>(await cmsApi.materials()),
   });
 }
 
@@ -359,10 +367,20 @@ export function useUploadShopBanner() {
   });
 }
 
+/** @deprecated Prefer `useDownloadMarketingFolder` from `@/lib/queries/promotions`. */
 export function useDownloadMaterials() {
   return useMutation({
-    mutationFn: (folder: string) => cmsApi.downloadMaterials(folder),
-    onSuccess: () => toast.success("Download info loaded"),
+    mutationFn: async (folderId: string) => {
+      const blob = await cmsApi.downloadFolderZip(folderId);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `marketing-${folderId}.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+      return folderId;
+    },
+    onSuccess: () => toast.success("Download started"),
     onError: (e) => toast.error(getErrorMessage(e, "Download failed")),
   });
 }

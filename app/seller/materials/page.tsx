@@ -1,15 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import { useDownloadMaterials, useMarketingMaterials } from "@/lib/queries/seller";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 
+/** Temporary list until Phase 2 materials rewrite. */
 function MaterialsInner() {
-  const { data: items = [], isLoading, isError, error } = useMarketingMaterials();
+  const { data, isLoading, isError, error } = useMarketingMaterials();
+  const items = data?.items ?? [];
   const downloadMaterials = useDownloadMaterials();
-  const [folder, setFolder] = useState("");
-  const [downloadInfo, setDownloadInfo] = useState("");
 
   return (
     <div className="space-y-4">
@@ -18,47 +17,36 @@ function MaterialsInner() {
           {error instanceof Error ? error.message : "Failed (need VIEW_MKT_MAT)"}
         </div>
       )}
-      {downloadInfo && <div className="mq-alert mq-alert-success">{downloadInfo}</div>}
-      <div className="flex gap-2">
-        <input
-          className="mq-input"
-          placeholder="Folder path"
-          value={folder}
-          onChange={(e) => setFolder(e.target.value)}
-        />
-        <button
-          type="button"
-          className="mq-btn mq-btn-outline"
-          disabled={downloadMaterials.isPending}
-          onClick={() =>
-            void downloadMaterials
-              .mutateAsync(folder)
-              .then((res) => setDownloadInfo(JSON.stringify(res)))
-          }
-        >
-          {downloadMaterials.isPending ? "Loading…" : "Download folder"}
-        </button>
-      </div>
       {isLoading && <AdminCardListSkeleton count={4} />}
-      {items.map((m, i) => (
-        <div key={i} className="mq-card p-4 text-sm flex justify-between gap-3">
-          <span>
-            {m.folderPath}/{m.fileName}
-          </span>
-          {m.fileUrl && (
-            <a href={m.fileUrl} className="text-xs underline" target="_blank" rel="noreferrer">
-              Open
-            </a>
-          )}
+      {items.map((folder) => (
+        <div key={folder.id} className="mq-card p-4 text-sm flex justify-between gap-3 items-center">
+          <div>
+            <p className="font-medium">{folder.name}</p>
+            <p className="text-xs text-mq-text-muted">
+              {folder.assetCount} file{folder.assetCount === 1 ? "" : "s"}
+              {folder.description ? ` · ${folder.description}` : ""}
+            </p>
+          </div>
+          <button
+            type="button"
+            className="mq-btn mq-btn-outline text-xs"
+            disabled={downloadMaterials.isPending || folder.assetCount === 0}
+            onClick={() => void downloadMaterials.mutateAsync(folder.id)}
+          >
+            {downloadMaterials.isPending ? "…" : "Download ZIP"}
+          </button>
         </div>
       ))}
+      {!isLoading && items.length === 0 && (
+        <p className="text-sm text-mq-text-muted">No marketing folders yet.</p>
+      )}
     </div>
   );
 }
 
 export default function SellerMaterialsPage() {
   return (
-    <AuthGuard>
+    <AuthGuard permissions={["VIEW_MKT_MAT"]}>
       <MaterialsInner />
     </AuthGuard>
   );

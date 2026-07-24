@@ -4,9 +4,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { adminApi, adminStaffApi, financeApi } from "@/lib/api";
 import { ApiError } from "@/lib/api/client";
-import type { ApiBanner, ApiProduct, ApiShop, AuthUser, StaffPoolRole, StaffRole } from "@/lib/api/types";
+import type { Banner } from "@/lib/api/promotions";
+import type { ApiProduct, ApiShop, AuthUser, StaffPoolRole, StaffRole } from "@/lib/api/types";
 import { asArray, parsePage } from "@/lib/api/utils";
 import { getErrorMessage } from "@/lib/queries/utils";
+import {
+  useCreateBannerMultipart,
+  useDeleteBanner,
+  useUpdateBannerMultipart,
+} from "@/lib/queries/promotions";
 
 export {
   useAdminRma,
@@ -27,6 +33,8 @@ export const adminKeys = {
     [...adminKeys.all, "products", status, page, pageSize] as const,
   finance: () => [...adminKeys.all, "finance"] as const,
   banners: () => [...adminKeys.all, "banners"] as const,
+  bannersLang: (lang: string, page: number) =>
+    [...adminKeys.all, "banners", lang, page] as const,
 };
 
 export type FinanceBatch = { id: string; status?: string; netAmountUsd?: string | number };
@@ -84,10 +92,17 @@ export function useAdminFinance() {
   });
 }
 
-export function useAdminBanners() {
+export function useAdminBanners(lang?: string, page = 1, pageSize = 20) {
   return useQuery({
-    queryKey: adminKeys.banners(),
-    queryFn: async () => asArray<ApiBanner>(await adminApi.banners()),
+    queryKey: adminKeys.bannersLang(lang ?? "", page),
+    queryFn: async () =>
+      parsePage<Banner>(
+        await adminApi.banners({
+          lang,
+          page,
+          pageSize,
+        }),
+      ),
   });
 }
 
@@ -309,30 +324,30 @@ export function useDailyRefundReport() {
   });
 }
 
+/** @deprecated Prefer `useCreateBannerMultipart` from `@/lib/queries/promotions`. */
 export function useCreateBanner() {
-  const invalidate = useAdminInvalidate();
-  return useMutation({
-    mutationFn: (body: unknown) => adminApi.createBanner(body),
-    onSuccess: () => {
-      invalidate();
-      toast.success("Banner created");
-    },
-    onError: (e) => toast.error(getErrorMessage(e)),
-  });
+  return useCreateBannerMultipart();
 }
 
+/** Toggle active via multipart PATCH (no image). */
 export function useToggleBanner() {
-  const invalidate = useAdminInvalidate();
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
-      adminApi.updateBanner(id, { isActive }),
+    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) => {
+      const fd = new FormData();
+      fd.append("isActive", String(isActive));
+      return adminApi.updateBanner(id, fd);
+    },
     onSuccess: () => {
-      invalidate();
+      void qc.invalidateQueries({ queryKey: adminKeys.all });
+      void qc.invalidateQueries({ queryKey: ["banners"] });
       toast.success("Banner updated");
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
 }
+
+export { useDeleteBanner, useUpdateBannerMultipart };
 
 export function useAdminUserAction() {
   return useMutation({
