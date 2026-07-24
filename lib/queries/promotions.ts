@@ -331,7 +331,8 @@ export function useDownloadMarketingFolder() {
 export function useAdminMarketingFolders(page = 1, pageSize = 20) {
   return useQuery({
     queryKey: marketingKeys.adminFolders(page, pageSize),
-    queryFn: async () => parsePage(await marketingApi.adminFolders({ page, pageSize })),
+    queryFn: async () =>
+      parsePage<MarketingFolder>(await marketingApi.adminFolders({ page, pageSize })),
   });
 }
 

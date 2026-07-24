@@ -6,6 +6,7 @@ import {
   BadgePercent,
   Boxes,
   ClipboardList,
+  FolderOpen,
   FolderTree,
   ImageIcon,
   Package,
@@ -101,6 +102,13 @@ const cards: {
     desc: "Homepage and promo CMS creatives",
     permissions: ["MANAGE_CONTENT"],
     icon: ImageIcon,
+  },
+  {
+    href: "/admin/marketing",
+    label: "Marketing",
+    desc: "Upload seller marketing kits and assets",
+    permissions: ["MANAGE_CONTENT"],
+    icon: FolderOpen,
   },
 ];
 
