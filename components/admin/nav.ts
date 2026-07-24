@@ -9,6 +9,7 @@ import {
   ImageIcon,
   LayoutDashboard,
   Package,
+  Percent,
   RotateCcw,
   Scale,
   Settings,
@@ -17,6 +18,7 @@ import {
   UserCog,
   Users,
 } from "lucide-react";
+import type { Role } from "@/lib/api/types";
 
 export type AdminNavItem = {
   href: string;
@@ -24,6 +26,8 @@ export type AdminNavItem = {
   labelKey: string;
   icon: LucideIcon;
   permissions?: string[];
+  /** When set, user must have at least one of these roles (in addition to permissions). */
+  roles?: Role[];
   sa?: boolean;
   group?: "ops" | "commerce" | "system";
 };
@@ -105,6 +109,14 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.finance",
     icon: BadgeDollarSign,
     permissions: ["MANAGE_PAYOUT", "MANAGE_WALLET_WITHDRAW", "REVIEW_PAYMENT_GATEWAY", "VIEW_REFUND_REPORT"],
+    group: "commerce",
+  },
+  {
+    href: "/admin/finance/configs",
+    labelKey: "admin.nav.financeConfigs",
+    icon: Percent,
+    permissions: ["CONFIG_FEE"],
+    roles: ["SUPER_ADMIN", "ACCOUNTANT"],
     group: "commerce",
   },
   {

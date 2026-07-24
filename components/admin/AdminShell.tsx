@@ -16,17 +16,33 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 
   const visible = adminNavItems.filter((i) => {
     if (i.sa) return hasRole("SUPER_ADMIN");
+    if (i.roles?.length && !i.roles.some((r) => hasRole(r))) return false;
     if (!i.permissions) return true;
     if (hasAnyPermission(i.permissions) || hasRole("ADMIN") || hasRole("SUPER_ADMIN")) {
       return true;
     }
     if (hasRole("ACCOUNTANT")) {
       return i.permissions.some((p) =>
-        ["PROCESS_RMA", "MANAGE_RMA", "VIEW_TRANSACT"].includes(p),
+        ["PROCESS_RMA", "MANAGE_RMA", "VIEW_TRANSACT", "CONFIG_FEE", "PAYOUT_SELLER"].includes(
+          p,
+        ),
       );
     }
     return false;
   });
+
+  /** Prefer a more specific sibling href so `/admin/finance` is not active on `/admin/finance/configs`. */
+  const isActive = (href: string) => {
+    if (pathname === href) return true;
+    if (href === "/admin") return false;
+    if (!pathname.startsWith(`${href}/`)) return false;
+    return !visible.some(
+      (o) =>
+        o.href !== href &&
+        o.href.startsWith(`${href}/`) &&
+        (pathname === o.href || pathname.startsWith(`${o.href}/`)),
+    );
+  };
 
   const groups: { key: string; labelKey: string; items: typeof visible }[] = [
     { key: "ops", labelKey: "admin.groups.ops", items: visible.filter((i) => i.group === "ops") },
@@ -49,9 +65,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
           <p className="mq-admin-nav-label">{t(g.labelKey)}</p>
           <ul>
             {g.items.map((item) => {
-              const active =
-                pathname === item.href ||
-                (item.href !== "/admin" && pathname.startsWith(`${item.href}/`));
+              const active = isActive(item.href);
               const Icon = item.icon;
               return (
                 <li key={item.href}>
