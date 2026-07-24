@@ -257,6 +257,7 @@ export function useCreateBannerMultipart() {
     mutationFn: (formData: FormData) => bannerApi.adminCreate(formData),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: bannerKeys.all });
+      void qc.invalidateQueries({ queryKey: ["admin", "banners"] });
       toast.success("Banner created");
     },
     onError: (e) => toast.error(bannerErrorMessage(e, "Failed to create banner")),
@@ -270,6 +271,7 @@ export function useUpdateBannerMultipart() {
       bannerApi.adminUpdate(id, formData),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: bannerKeys.all });
+      void qc.invalidateQueries({ queryKey: ["admin", "banners"] });
       toast.success("Banner updated");
     },
     onError: (e) => toast.error(bannerErrorMessage(e, "Failed to update banner")),
@@ -282,6 +284,7 @@ export function useDeleteBanner() {
     mutationFn: (id: string) => bannerApi.adminDelete(id),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: bannerKeys.all });
+      void qc.invalidateQueries({ queryKey: ["admin", "banners"] });
       toast.success("Banner deleted");
     },
     onError: (e) => toast.error(bannerErrorMessage(e, "Failed to delete banner")),
