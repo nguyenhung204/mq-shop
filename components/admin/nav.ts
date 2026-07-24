@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   BadgeDollarSign,
+  BadgePercent,
   Boxes,
   ClipboardList,
   FolderTree,
@@ -105,10 +106,17 @@ export const adminNavItems: AdminNavItem[] = [
     group: "commerce",
   },
   {
+    href: "/admin/promotions",
+    label: "Promotions",
+    icon: BadgePercent,
+    permissions: ["APPROVE_PROMO", "MANAGE_PROMO"],
+    group: "commerce",
+  },
+  {
     href: "/admin/banners",
     label: "Banners",
     icon: ImageIcon,
-    permissions: ["MANAGE_BANNERS"],
+    permissions: ["MANAGE_CONTENT"],
     group: "commerce",
   },
   { href: "/super-admin", label: "System", icon: Settings, sa: true, group: "system" },

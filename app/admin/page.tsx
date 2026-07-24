@@ -3,6 +3,7 @@
 import Link from "next/link";
 import {
   BadgeDollarSign,
+  BadgePercent,
   Boxes,
   ClipboardList,
   FolderTree,
@@ -88,10 +89,17 @@ const cards: {
     icon: BadgeDollarSign,
   },
   {
+    href: "/admin/promotions",
+    label: "Promotions",
+    desc: "Approve seller campaigns and create platform promos",
+    permissions: ["APPROVE_PROMO", "MANAGE_PROMO"],
+    icon: BadgePercent,
+  },
+  {
     href: "/admin/banners",
     label: "Banners",
     desc: "Homepage and promo CMS creatives",
-    permissions: ["MANAGE_BANNERS"],
+    permissions: ["MANAGE_CONTENT"],
     icon: ImageIcon,
   },
 ];
