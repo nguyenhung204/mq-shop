@@ -337,7 +337,7 @@ function PayoutsInner() {
             >
               {STATUSES.map((s) => (
                 <option key={s || "all"} value={s}>
-                  {s || t("admin.common.allStatuses")}
+                  {s ? t(`admin.payouts.status.${s}`) : t("admin.common.allStatuses")}
                 </option>
               ))}
             </select>
@@ -390,7 +390,9 @@ function PayoutsInner() {
                   >
                     {payout.id.slice(0, 8)}…
                   </Link>
-                  <span className={statusBadgeClass(payout.status)}>{payout.status}</span>
+                  <span className={statusBadgeClass(payout.status)}>
+                    {t(`admin.payouts.status.${payout.status}`)}
+                  </span>
                 </div>
                 <p>
                   {shopName(payout.shopId)}

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { LogOut, Menu, Store, X } from "lucide-react";
-import { adminNavItems } from "@/components/admin/nav";
+import { adminNavItems, ACCOUNTANT_COMMERCE_PERMS } from "@/components/admin/nav";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -23,15 +23,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
     }
     if (hasRole("ACCOUNTANT")) {
       return i.permissions.some((p) =>
-        [
-          "PROCESS_RMA",
-          "MANAGE_RMA",
-          "VIEW_TRANSACT",
-          "CONFIG_FEE",
-          "PAYOUT_SELLER",
-          "CALC_LAND_COST",
-          "EXPORT_REPORT",
-        ].includes(p),
+        (ACCOUNTANT_COMMERCE_PERMS as readonly string[]).includes(p),
       );
     }
     return false;

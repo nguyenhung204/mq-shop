@@ -23,6 +23,16 @@ import {
 } from "lucide-react";
 import type { Role } from "@/lib/api/types";
 
+/** Commerce permissions accountants may access when `/me` omits a full grant list. */
+export const ACCOUNTANT_COMMERCE_PERMS = [
+  "PROCESS_RMA",
+  "MANAGE_RMA",
+  "VIEW_TRANSACT",
+  "CONFIG_FEE",
+  "PAYOUT_SELLER",
+  "CALC_LAND_COST",
+] as const;
+
 export type AdminNavItem = {
   href: string;
   /** i18n key under admin.nav.* */

@@ -263,7 +263,9 @@ export function TransactionsReport({
           >
             <div className="space-y-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <span className={typeBadgeClass(row.type)}>{row.type}</span>
+                <span className={typeBadgeClass(row.type)}>
+                  {t(`transactions.types.${row.type}`)}
+                </span>
                 {detail}
                 <span className="mq-badge mq-badge-muted">{row.status}</span>
               </div>

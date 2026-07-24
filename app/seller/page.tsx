@@ -45,6 +45,10 @@ export default function SellerPage() {
           ["/seller/products", "seller.overview.manageProducts"],
           ["/seller/inventory", "seller.overview.inventoryCard"],
           ["/seller/orders", "seller.overview.ordersCard"],
+          ["/seller/settlements", "seller.overview.settlementsCard"],
+          ["/seller/transactions", "seller.overview.transactionsCard"],
+          ["/seller/landing-cost", "seller.overview.landingCostCard"],
+          ["/seller/promotions", "seller.overview.promotionsCard"],
           ["/seller/rma", "seller.overview.rmaCard"],
           ["/seller/materials", "seller.overview.materialsCard"],
         ] as const

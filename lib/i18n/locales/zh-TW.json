@@ -379,7 +379,7 @@
       "transactions": "交易",
       "payouts": "賣家撥款",
       "landingCost": "落地成本",
-      "finance": "財務",
+      "finance": "財務（舊版）",
       "financeConfigs": "費用設定",
       "promotions": "促銷",
       "banners": "橫幅",
@@ -461,11 +461,17 @@
         "audit": "追蹤後台操作紀錄",
         "orders": "跨店訂單匣、取消、代客下單",
         "rma": "處理退換貨／退款申請",
-        "finance": "撥款、提領與金流審核",
+        "settlements": "追蹤結算：待對帳到已撥款",
+        "transactions": "瀏覽 ORDER／PAYOUT；匯出報表",
+        "payouts": "建立並核准賣家撥款單",
+        "landingCost": "依行項目與費用計算落地成本",
+        "financeConfigs": "雙重控管平台費與閘道設定",
+        "finance": "舊版：錢包提領、批次與金流審核",
         "promotions": "審核賣家活動並建立平台促銷",
         "banners": "首頁／促銷 CMS 橫幅",
         "marketing": "上傳賣家行銷素材包"
-      }
+      },
+      "noModules": "此帳號沒有可用的管理模組。請檢查角色與權限。"
     },
     "banners": {
       "title": "橫幅",
@@ -630,11 +636,16 @@
       "completedAt": "完成於 {when}",
       "itemsTitle": "行項目（{count}）",
       "itemsEmpty": "此撥款沒有行項目。",
-      "settlementId": "結算"
+      "settlementId": "結算",
+      "status": {
+        "PENDING": "待處理",
+        "COMPLETED": "已完成",
+        "REJECTED": "已拒絕"
+      }
     },
     "finance": {
-      "title": "財務",
-      "description": "撥款、提領與金流審核。"
+      "title": "財務（舊版）",
+      "description": "錢包提領、撥款批次與金流審核。007 請改用賣家撥款。"
     },
     "financeConfigs": {
       "title": "費用設定",
@@ -663,7 +674,12 @@
       "rejectionReason": "已拒絕：{reason}",
       "rejectTitle": "拒絕財務設定",
       "rejectDesc": "拒絕平台費 {fee}% 的設定。送出者將看到此原因。",
-      "rejectBtn": "拒絕設定"
+      "rejectBtn": "拒絕設定",
+      "status": {
+        "PENDING_APPROVAL": "待審核",
+        "ACTIVE": "啟用中",
+        "REJECTED": "已拒絕"
+      }
     },
     "productsPage": {
       "pendingReview": "待審核",
@@ -734,7 +750,11 @@
       "paymentGateways": "金流閘道",
       "loadRefundReport": "載入每日退款報告",
       "invalidBank": "銀行無效",
-      "invalid": "無效"
+      "invalid": "無效",
+      "createBatch": "建立批次",
+      "markCompletedHint": "標記完成 = 已在系統外付款。無銀行 API。",
+      "legacyHint": "此為舊版頁面（錢包／批次／金流審核）。賣家撥款單請至賣家撥款。",
+      "openSellerPayouts": "開啟賣家撥款"
     },
     "categoriesPage": {
       "create": "建立分類",
@@ -875,6 +895,8 @@
       "inventoryCard": "倉庫、SKU 與單據",
       "ordersCard": "銷售訂單",
       "settlementsCard": "結算",
+      "transactionsCard": "交易",
+      "landingCostCard": "落地成本",
       "promotionsCard": "促銷",
       "rmaCard": "RMA",
       "materialsCard": "行銷素材"

@@ -159,7 +159,9 @@ function FinanceConfigsInner() {
             </p>
             {active ? (
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                <span className={statusBadgeClass("ACTIVE")}>ACTIVE</span>
+                <span className={statusBadgeClass("ACTIVE")}>
+                  {t("admin.financeConfigs.status.ACTIVE")}
+                </span>
                 <span>
                   {t("admin.financeConfigs.platformFee")}:{" "}
                   <strong>{active.platformFeePercent}%</strong>
@@ -198,7 +200,9 @@ function FinanceConfigsInner() {
         >
           {STATUSES.map((s) => (
             <option key={s || "all"} value={s}>
-              {s || t("admin.common.allStatuses")}
+              {s
+                ? t(`admin.financeConfigs.status.${s}`)
+                : t("admin.common.allStatuses")}
             </option>
           ))}
         </select>
@@ -309,7 +313,9 @@ function FinanceConfigsInner() {
             >
               <div className="space-y-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className={statusBadgeClass(cfg.status)}>{cfg.status}</span>
+                  <span className={statusBadgeClass(cfg.status)}>
+                    {t(`admin.financeConfigs.status.${cfg.status}`)}
+                  </span>
                   <span className="font-mono text-xs text-mq-text-muted">
                     {cfg.id.slice(0, 8)}…
                   </span>

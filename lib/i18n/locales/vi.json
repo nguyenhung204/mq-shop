@@ -378,8 +378,8 @@
       "settlements": "Đối soát",
       "transactions": "Giao dịch",
       "payouts": "Chi trả seller",
-      "landingCost": "Landing cost",
-      "finance": "Tài chính",
+      "landingCost": "Chi phí landing",
+      "finance": "Tài chính (cũ)",
       "financeConfigs": "Cấu hình phí",
       "promotions": "Khuyến mãi",
       "banners": "Banner",
@@ -461,11 +461,17 @@
         "audit": "Theo dõi thao tác admin trên hệ thống",
         "orders": "Hộp thư đơn, huỷ, tạo hộ người mua",
         "rma": "Xử lý yêu cầu đổi trả / hoàn tiền",
-        "finance": "Chi trả, rút điểm và duyệt cổng thanh toán",
+        "settlements": "Theo dõi đối soát từ chờ duyệt đến đã chi",
+        "transactions": "Xem ORDER và PAYOUT; xuất báo cáo",
+        "payouts": "Tạo và duyệt phiếu chi trả seller",
+        "landingCost": "Tính landing cost từ dòng hàng và phí",
+        "financeConfigs": "Cấu hình phí dual-control (SA gửi, Acc duyệt)",
+        "finance": "Legacy: rút ví, lô chi trả và duyệt cổng",
         "promotions": "Duyệt KM seller và tạo KM nền tảng",
         "banners": "Banner CMS trang chủ / khuyến mãi",
         "marketing": "Upload bộ tài liệu marketing cho seller"
-      }
+      },
+      "noModules": "Không có module admin cho tài khoản này. Kiểm tra role/permission."
     },
     "banners": {
       "title": "Banner",
@@ -583,7 +589,7 @@
       "description": "Theo dõi settlement từ chờ đối soát đến đã chi trả."
     },
     "landingCost": {
-      "title": "Landing cost",
+      "title": "Chi phí landing",
       "description": "Máy tính stateless cho dòng hàng, phí và giảm promo."
     },
     "transactions": {
@@ -630,11 +636,16 @@
       "completedAt": "Hoàn tất {when}",
       "itemsTitle": "Dòng ({count})",
       "itemsEmpty": "Phiếu này không có dòng nào.",
-      "settlementId": "Settlement"
+      "settlementId": "Settlement",
+      "status": {
+        "PENDING": "Chờ duyệt",
+        "COMPLETED": "Hoàn tất",
+        "REJECTED": "Từ chối"
+      }
     },
     "finance": {
-      "title": "Tài chính",
-      "description": "Chi trả, rút điểm và duyệt cổng thanh toán."
+      "title": "Tài chính (cũ)",
+      "description": "Rút ví, lô chi trả và duyệt cổng. Nên dùng Chi trả seller cho module 007."
     },
     "financeConfigs": {
       "title": "Cấu hình phí",
@@ -663,7 +674,12 @@
       "rejectionReason": "Từ chối: {reason}",
       "rejectTitle": "Từ chối cấu hình phí",
       "rejectDesc": "Từ chối cấu hình phí nền tảng {fee}%. Người gửi sẽ thấy lý do này.",
-      "rejectBtn": "Từ chối"
+      "rejectBtn": "Từ chối",
+      "status": {
+        "PENDING_APPROVAL": "Chờ duyệt",
+        "ACTIVE": "Đang ACTIVE",
+        "REJECTED": "Từ chối"
+      }
     },
     "productsPage": {
       "pendingReview": "Chờ duyệt",
@@ -734,7 +750,11 @@
       "paymentGateways": "Cổng thanh toán",
       "loadRefundReport": "Tải báo cáo hoàn tiền ngày",
       "invalidBank": "Ngân hàng không hợp lệ",
-      "invalid": "Không hợp lệ"
+      "invalid": "Không hợp lệ",
+      "createBatch": "Tạo lô",
+      "markCompletedHint": "Đánh dấu hoàn tất = đã thanh toán ngoài hệ thống. Không có bank API.",
+      "legacyHint": "Trang legacy (ví / lô / duyệt cổng). Phiếu chi trả seller nằm ở Chi trả seller.",
+      "openSellerPayouts": "Mở chi trả seller"
     },
     "categoriesPage": {
       "create": "Tạo danh mục",
@@ -781,7 +801,7 @@
       "orders": "Đơn hàng",
       "settlements": "Đối soát",
       "transactions": "Giao dịch",
-      "landingCost": "Landing cost",
+      "landingCost": "Chi phí landing",
       "promotions": "Khuyến mãi",
       "rma": "RMA",
       "materials": "Tài liệu"
@@ -801,7 +821,7 @@
       "settlementsDesc": "Doanh thu chờ đối soát từ đơn đã giao.",
       "transactions": "Giao dịch",
       "transactionsDesc": "Lịch sử ORDER và PAYOUT của shop, có thể xuất báo cáo.",
-      "landingCost": "Landing cost",
+      "landingCost": "Chi phí landing",
       "landingCostDesc": "Ước tính chi phí cuối từ dòng hàng, phí và giảm giá.",
       "promotions": "Khuyến mãi",
       "promotionsDesc": "Tạo KM shop — gửi admin duyệt.",
@@ -875,6 +895,8 @@
       "inventoryCard": "Kho, SKU & phiếu",
       "ordersCard": "Đơn bán",
       "settlementsCard": "Đối soát",
+      "transactionsCard": "Giao dịch",
+      "landingCostCard": "Chi phí landing",
       "promotionsCard": "Khuyến mãi",
       "rmaCard": "RMA",
       "materialsCard": "Tài liệu marketing"
@@ -987,35 +1009,35 @@
     "unitPrice": "Đơn giá",
     "quantity": "SL",
     "lineDiscount": "Giảm theo dòng",
-    "shippingFee": "Shipping",
-    "vatAmount": "VAT",
-    "packagingFee": "Đóng gói",
-    "promoDiscount": "Giảm promo",
-    "calculate": "Tính",
-    "calculating": "Đang tính…",
-    "formError": "Số phải ≥ 0. Số lượng phải là số nguyên ≥ 1.",
-    "resultHeading": "Kết quả",
-    "itemsSubtotal": "Tạm tính hàng",
-    "finalAmount": "Tổng cuối"
-  },
-  "transactions": {
-    "intro": "Lọc theo khoảng ngày và loại. Xuất sẽ mở file báo cáo.",
-    "startDate": "Từ ngày",
-    "endDate": "Đến ngày",
-    "type": "Loại",
-    "format": "Định dạng",
-    "export": "Xuất",
-    "exporting": "Đang xuất…",
-    "exportHint": "MVP: XLSX vẫn là nội dung CSV với đuôi .xlsx.",
-    "periodInvalid": "Chọn khoảng ngày hợp lệ (ngày kết thúc ≥ ngày bắt đầu).",
-    "empty": "Không có giao dịch trong bộ lọc này.",
-    "types": {
-      "ALL": "Tất cả",
-      "ORDER": "Đơn hàng",
-      "PAYOUT": "Chi trả"
-    }
-  },
-  "toast": {
+      "shippingFee": "Vận chuyển",
+      "vatAmount": "VAT",
+      "packagingFee": "Đóng gói",
+      "promoDiscount": "Giảm promo",
+      "calculate": "Tính",
+      "calculating": "Đang tính…",
+      "formError": "Số phải ≥ 0. Số lượng phải là số nguyên ≥ 1.",
+      "resultHeading": "Kết quả",
+      "itemsSubtotal": "Tạm tính hàng",
+      "finalAmount": "Tổng cuối"
+    },
+    "transactions": {
+      "intro": "Lọc theo khoảng ngày và loại. Xuất sẽ mở file báo cáo.",
+      "startDate": "Từ ngày",
+      "endDate": "Đến ngày",
+      "type": "Loại",
+      "format": "Định dạng",
+      "export": "Xuất",
+      "exporting": "Đang xuất…",
+      "exportHint": "MVP: XLSX vẫn là nội dung CSV với đuôi .xlsx.",
+      "periodInvalid": "Chọn khoảng ngày hợp lệ (ngày kết thúc ≥ ngày bắt đầu).",
+      "empty": "Không có giao dịch trong bộ lọc này.",
+      "types": {
+        "ALL": "Tất cả",
+        "ORDER": "Đơn hàng",
+        "PAYOUT": "Chi trả"
+      }
+    },
+    "toast": {
     "somethingWentWrong": "Đã xảy ra lỗi",
     "promoSubmitted": "Đã gửi khuyến mãi chờ duyệt",
     "promoCreated": "Đã tạo khuyến mãi",

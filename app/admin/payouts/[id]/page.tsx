@@ -79,7 +79,9 @@ function PayoutDetailInner({ payoutId }: { payoutId: string }) {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-mono font-medium">{payout.id}</span>
-                  <span className={statusBadgeClass(payout.status)}>{payout.status}</span>
+                  <span className={statusBadgeClass(payout.status)}>
+                    {t(`admin.payouts.status.${payout.status}`)}
+                  </span>
                 </div>
                 {payout.status === "PENDING" ? (
                   <AdminActions>

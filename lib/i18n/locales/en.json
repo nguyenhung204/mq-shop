@@ -379,7 +379,7 @@
       "transactions": "Transactions",
       "payouts": "Seller payouts",
       "landingCost": "Landing cost",
-      "finance": "Finance",
+      "finance": "Finance (legacy)",
       "financeConfigs": "Fee config",
       "promotions": "Promotions",
       "banners": "Banners",
@@ -461,11 +461,17 @@
         "audit": "Trace admin actions across the platform",
         "orders": "Cross-shop inbox, cancel, create on behalf of buyers",
         "rma": "Decide return and refund requests",
-        "finance": "Payouts, withdraws, and gateway reviews",
+        "settlements": "Track settlements from reconcile through payout",
+        "transactions": "Browse ORDER and PAYOUT rows; export reports",
+        "payouts": "Create and approve seller payout slips",
+        "landingCost": "Calculate landing cost from line items and fees",
+        "financeConfigs": "Dual-control platform fee and gateway config",
+        "finance": "Legacy wallet withdraws, batches, and gateway reviews",
         "promotions": "Approve seller campaigns and create platform promos",
         "banners": "Homepage and promo CMS creatives",
         "marketing": "Upload seller marketing kits and assets"
-      }
+      },
+      "noModules": "No admin modules available for this account. Check roles and permissions."
     },
     "banners": {
       "title": "Banners",
@@ -630,11 +636,16 @@
       "completedAt": "Completed {when}",
       "itemsTitle": "Line items ({count})",
       "itemsEmpty": "No line items on this payout.",
-      "settlementId": "Settlement"
+      "settlementId": "Settlement",
+      "status": {
+        "PENDING": "Pending",
+        "COMPLETED": "Completed",
+        "REJECTED": "Rejected"
+      }
     },
     "finance": {
-      "title": "Finance",
-      "description": "Payouts, withdraws, and gateway reviews."
+      "title": "Finance (legacy)",
+      "description": "Wallet withdraws, payout batches, and gateway reviews. Prefer Seller payouts for 007."
     },
     "financeConfigs": {
       "title": "Fee configuration",
@@ -663,7 +674,12 @@
       "rejectionReason": "Rejected: {reason}",
       "rejectTitle": "Reject finance config",
       "rejectDesc": "Reject config with platform fee {fee}%. The submitter will see this reason.",
-      "rejectBtn": "Reject config"
+      "rejectBtn": "Reject config",
+      "status": {
+        "PENDING_APPROVAL": "Pending approval",
+        "ACTIVE": "Active",
+        "REJECTED": "Rejected"
+      }
     },
     "productsPage": {
       "pendingReview": "Pending review",
@@ -734,7 +750,11 @@
       "paymentGateways": "Payment gateways",
       "loadRefundReport": "Load daily refund report",
       "invalidBank": "Invalid bank",
-      "invalid": "Invalid"
+      "invalid": "Invalid",
+      "createBatch": "Create batch",
+      "markCompletedHint": "Mark completed = paid outside the system. No bank API.",
+      "legacyHint": "This page is legacy (wallet / batches / gateway review). Seller payout slips live under Seller payouts.",
+      "openSellerPayouts": "Open seller payouts"
     },
     "categoriesPage": {
       "create": "Create category",
@@ -875,6 +895,8 @@
       "inventoryCard": "Warehouses, SKUs & slips",
       "ordersCard": "Sales orders",
       "settlementsCard": "Settlements",
+      "transactionsCard": "Transactions",
+      "landingCostCard": "Landing cost",
       "promotionsCard": "Promotions",
       "rmaCard": "RMA",
       "materialsCard": "Marketing materials"
