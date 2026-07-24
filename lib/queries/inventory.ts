@@ -23,6 +23,7 @@ import {
   type Warehouse,
 } from "@/lib/api/inventory";
 import { asArray, parsePage } from "@/lib/api/utils";
+import { tt } from "@/lib/i18n/tt";
 import { getErrorMessage } from "@/lib/queries/utils";
 
 export const inventoryKeys = {
@@ -200,9 +201,9 @@ export function useCreateWarehouse() {
     mutationFn: (body: CreateWarehouseRequest) => inventoryApi.createWarehouse(body),
     onSuccess: () => {
       invalidate();
-      toast.success("Warehouse created");
+      toast.success(tt("toast.warehouseCreated"));
     },
-    onError: (e) => toast.error(inventoryErrorMessage(e, "Create warehouse failed")),
+    onError: (e) => toast.error(inventoryErrorMessage(e, tt("toast.createWarehouseFailed"))),
   });
 }
 
@@ -212,9 +213,9 @@ export function useCreateVariant() {
     mutationFn: (body: CreateVariantRequest) => inventoryApi.createVariant(body),
     onSuccess: () => {
       invalidate();
-      toast.success("SKU created");
+      toast.success(tt("toast.skuCreated"));
     },
-    onError: (e) => toast.error(inventoryErrorMessage(e, "Create SKU failed")),
+    onError: (e) => toast.error(inventoryErrorMessage(e, tt("toast.createSkuFailed"))),
   });
 }
 
@@ -236,11 +237,11 @@ export function useCreateSlip() {
     onSuccess: () => {
       idempotency.invalidate();
       invalidate();
-      toast.success("Slip created (pending approval)");
+      toast.success(tt("toast.slipCreated"));
     },
     onError: (e) => {
       onIdempotencyError(e, idempotency);
-      toast.error(inventoryErrorMessage(e, "Create slip failed"));
+      toast.error(inventoryErrorMessage(e, tt("toast.createSlipFailed")));
     },
   });
 }
@@ -254,11 +255,11 @@ export function useApproveSlip() {
     onSuccess: () => {
       idempotency.invalidate();
       invalidate();
-      toast.success("Slip approved — stock updated");
+      toast.success(tt("toast.slipApproved"));
     },
     onError: (e) => {
       onIdempotencyError(e, idempotency);
-      toast.error(inventoryErrorMessage(e, "Approve failed"));
+      toast.error(inventoryErrorMessage(e, tt("toast.approveFailed")));
     },
   });
 }
@@ -269,9 +270,9 @@ export function useRejectSlip() {
     mutationFn: (slipId: string) => inventoryApi.rejectSlip(slipId),
     onSuccess: () => {
       invalidate();
-      toast.success("Slip rejected");
+      toast.success(tt("toast.slipRejected"));
     },
-    onError: (e) => toast.error(inventoryErrorMessage(e, "Reject failed")),
+    onError: (e) => toast.error(inventoryErrorMessage(e, tt("toast.rejectFailed"))),
   });
 }
 
@@ -334,11 +335,11 @@ export function useAdminApproveSlip() {
     onSuccess: () => {
       idempotency.invalidate();
       invalidate();
-      toast.success("Slip approved — stock updated");
+      toast.success(tt("toast.slipApproved"));
     },
     onError: (e) => {
       onIdempotencyError(e, idempotency);
-      toast.error(inventoryErrorMessage(e, "Approve failed"));
+      toast.error(inventoryErrorMessage(e, tt("toast.approveFailed")));
     },
   });
 }
@@ -349,9 +350,9 @@ export function useAdminRejectSlip() {
     mutationFn: (slipId: string) => adminInventoryApi.rejectSlip(slipId),
     onSuccess: () => {
       invalidate();
-      toast.success("Slip rejected");
+      toast.success(tt("toast.slipRejected"));
     },
-    onError: (e) => toast.error(inventoryErrorMessage(e, "Reject failed")),
+    onError: (e) => toast.error(inventoryErrorMessage(e, tt("toast.rejectFailed"))),
   });
 }
 

@@ -8,13 +8,13 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 const ACCEPT = "image/jpeg,image/png,image/webp,image/gif";
 const MAX_BYTES = 5 * 1024 * 1024;
 
-function validateFile(file: File): boolean {
+function validateFile(file: File, t: (key: string) => string): boolean {
   if (!ACCEPT.split(",").includes(file.type)) {
-    toast.error("Invalid image type. Use JPEG, PNG, WebP, or GIF.");
+    toast.error(t("toast.invalidImageType"));
     return false;
   }
   if (file.size > MAX_BYTES) {
-    toast.error("Image must be ≤ 5MB.");
+    toast.error(t("toast.imageTooLarge"));
     return false;
   }
   return true;
@@ -36,14 +36,14 @@ export function ShopBrandingUpload({ logoUrl, bannerUrl, canEdit }: Props) {
   const onLogoChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
-    if (!file || !validateFile(file)) return;
+    if (!file || !validateFile(file, t)) return;
     void uploadLogo.mutateAsync(file);
   };
 
   const onBannerChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
-    if (!file || !validateFile(file)) return;
+    if (!file || !validateFile(file, t)) return;
     void uploadBanner.mutateAsync(file);
   };
 

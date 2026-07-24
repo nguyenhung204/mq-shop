@@ -19,6 +19,7 @@ import {
 } from "@/lib/api/promotions";
 import { ApiError } from "@/lib/api/client";
 import { asArray, parsePage } from "@/lib/api/utils";
+import { tt } from "@/lib/i18n/tt";
 import { getErrorMessage } from "@/lib/queries/utils";
 
 export const promotionKeys = {
@@ -52,25 +53,25 @@ function promoErrorMessage(e: unknown, fallback: string): string {
   if (e instanceof ApiError) {
     switch (e.code) {
       case "PROMO_INVALID_SKU":
-        return "One or more SKUs are invalid for this shop.";
+        return tt("toast.promoInvalidSku");
       case "PROMO_INVALID_SCOPE":
-        return "Invalid scope: TARGETED needs SKUs or categories; PLATFORM cannot include them.";
+        return tt("toast.promoInvalidScope");
       case "PROMO_INVALID_WINDOW":
-        return "End date must be after start date.";
+        return tt("toast.promoInvalidWindow");
       case "PROMO_CODE_REQUIRED":
-        return "Voucher code is required.";
+        return tt("toast.promoCodeRequired");
       case "PROMO_CODE_TAKEN":
-        return "This voucher code is already in use.";
+        return tt("toast.promoCodeTaken");
       case "PROMO_DISCOUNT_REQUIRED":
-        return "Discount value is required for this promotion type.";
+        return tt("toast.promoDiscountRequired");
       case "PROMO_NOT_FOUND":
-        return "Promotion not found.";
+        return tt("toast.promoNotFound");
       case "PROMO_NOT_PENDING":
-        return "Only PENDING promotions can be updated or reviewed.";
+        return tt("toast.promoNotPending");
       case "SHOP_NOT_APPROVED":
-        return "Shop must be APPROVED and not suspended.";
+        return tt("toast.shopNotApproved");
       case "CATEGORY_NOT_FOUND":
-        return "One or more categories were not found.";
+        return tt("toast.categoryNotFound");
       default:
         break;
     }
@@ -82,11 +83,11 @@ function bannerErrorMessage(e: unknown, fallback: string): string {
   if (e instanceof ApiError) {
     switch (e.code) {
       case "BANNER_NOT_FOUND":
-        return "Banner not found.";
+        return tt("toast.bannerNotFound");
       case "INVALID_BANNER_IMAGE":
-        return "Invalid image. Use JPEG, PNG, WebP, or GIF.";
+        return tt("toast.invalidBannerImage");
       case "BANNER_IMAGE_TOO_LARGE":
-        return "Banner image must be ≤ 5MB.";
+        return tt("toast.bannerImageTooLarge");
       default:
         break;
     }
@@ -98,17 +99,17 @@ function mediaErrorMessage(e: unknown, fallback: string): string {
   if (e instanceof ApiError) {
     switch (e.code) {
       case "MEDIA_FOLDER_NOT_FOUND":
-        return "Folder not found.";
+        return tt("toast.mediaFolderNotFound");
       case "MEDIA_ASSET_NOT_FOUND":
-        return "Asset not found.";
+        return tt("toast.mediaAssetNotFound");
       case "MEDIA_FOLDER_EMPTY":
-        return "Folder is empty — nothing to download.";
+        return tt("toast.mediaFolderEmpty");
       case "INVALID_MEDIA_ASSET":
-        return "Invalid file. Check type and try again.";
+        return tt("toast.invalidMediaAsset");
       case "MEDIA_ASSET_TOO_LARGE":
-        return "File must be ≤ 20MB.";
+        return tt("toast.mediaAssetTooLarge");
       case "FORBIDDEN":
-        return "You do not have permission to access marketing materials.";
+        return tt("toast.forbidden");
       default:
         break;
     }
@@ -142,9 +143,9 @@ export function useCreateSellerPromotion() {
     mutationFn: (body: CreatePromotionBody) => promotionApi.create(body),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: promotionKeys.all });
-      toast.success("Promotion submitted for review");
+      toast.success(tt("toast.promoSubmitted"));
     },
-    onError: (e) => toast.error(promoErrorMessage(e, "Failed to create promotion")),
+    onError: (e) => toast.error(promoErrorMessage(e, tt("toast.promoCreateFailed"))),
   });
 }
 
@@ -155,9 +156,9 @@ export function useUpdateSellerPromotion() {
       promotionApi.update(id, body),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: promotionKeys.all });
-      toast.success("Promotion updated");
+      toast.success(tt("toast.promoUpdated"));
     },
-    onError: (e) => toast.error(promoErrorMessage(e, "Failed to update promotion")),
+    onError: (e) => toast.error(promoErrorMessage(e, tt("toast.promoUpdateFailed"))),
   });
 }
 
@@ -187,9 +188,9 @@ export function useCreateAdminPromotion() {
     mutationFn: (body: CreatePromotionBody) => adminPromotionApi.create(body),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: promotionKeys.all });
-      toast.success("Promotion created");
+      toast.success(tt("toast.promoCreated"));
     },
-    onError: (e) => toast.error(promoErrorMessage(e, "Failed to create promotion")),
+    onError: (e) => toast.error(promoErrorMessage(e, tt("toast.promoCreateFailed"))),
   });
 }
 
@@ -200,9 +201,9 @@ export function useUpdateAdminPromotion() {
       adminPromotionApi.update(id, body),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: promotionKeys.all });
-      toast.success("Promotion updated");
+      toast.success(tt("toast.promoUpdated"));
     },
-    onError: (e) => toast.error(promoErrorMessage(e, "Failed to update promotion")),
+    onError: (e) => toast.error(promoErrorMessage(e, tt("toast.promoUpdateFailed"))),
   });
 }
 
@@ -212,9 +213,9 @@ export function useApprovePromotion() {
     mutationFn: (id: string) => adminPromotionApi.approve(id),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: promotionKeys.all });
-      toast.success("Promotion approved");
+      toast.success(tt("toast.promoApproved"));
     },
-    onError: (e) => toast.error(promoErrorMessage(e, "Failed to approve")),
+    onError: (e) => toast.error(promoErrorMessage(e, tt("toast.promoApproveFailed"))),
   });
 }
 
@@ -225,9 +226,9 @@ export function useRejectPromotion() {
       adminPromotionApi.reject(id, { reason }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: promotionKeys.all });
-      toast.success("Promotion rejected");
+      toast.success(tt("toast.promoRejected"));
     },
-    onError: (e) => toast.error(promoErrorMessage(e, "Failed to reject")),
+    onError: (e) => toast.error(promoErrorMessage(e, tt("toast.promoRejectFailed"))),
   });
 }
 
@@ -265,11 +266,11 @@ export function useCreateBannerMultipart() {
       const lang = formData.get("lang");
       toast.success(
         typeof lang === "string"
-          ? `Banner created (${lang}) — switch homepage to that language to see it`
-          : "Banner created",
+          ? tt("toast.bannerCreated", { lang })
+          : tt("toast.bannerCreatedSimple"),
       );
     },
-    onError: (e) => toast.error(bannerErrorMessage(e, "Failed to create banner")),
+    onError: (e) => toast.error(bannerErrorMessage(e, tt("toast.bannerCreateFailed"))),
   });
 }
 
@@ -281,9 +282,9 @@ export function useUpdateBannerMultipart() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: bannerKeys.all });
       void qc.invalidateQueries({ queryKey: ["admin", "banners"] });
-      toast.success("Banner updated");
+      toast.success(tt("toast.bannerUpdated"));
     },
-    onError: (e) => toast.error(bannerErrorMessage(e, "Failed to update banner")),
+    onError: (e) => toast.error(bannerErrorMessage(e, tt("toast.bannerUpdateFailed"))),
   });
 }
 
@@ -294,9 +295,9 @@ export function useDeleteBanner() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: bannerKeys.all });
       void qc.invalidateQueries({ queryKey: ["admin", "banners"] });
-      toast.success("Banner deleted");
+      toast.success(tt("toast.bannerDeleted"));
     },
-    onError: (e) => toast.error(bannerErrorMessage(e, "Failed to delete banner")),
+    onError: (e) => toast.error(bannerErrorMessage(e, tt("toast.bannerDeleteFailed"))),
   });
 }
 
@@ -331,9 +332,9 @@ export function useDownloadMarketingFolder() {
       a.download = `marketing-${folderId}.zip`;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success("Download started");
+      toast.success(tt("toast.downloadStarted"));
     },
-    onError: (e) => toast.error(mediaErrorMessage(e, "Download failed")),
+    onError: (e) => toast.error(mediaErrorMessage(e, tt("toast.downloadFailed"))),
   });
 }
 
@@ -359,9 +360,9 @@ export function useCreateMarketingFolder() {
     mutationFn: (body: CreateMarketingFolderBody) => marketingApi.adminCreateFolder(body),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: marketingKeys.all });
-      toast.success("Folder created");
+      toast.success(tt("toast.folderCreated"));
     },
-    onError: (e) => toast.error(mediaErrorMessage(e, "Failed to create folder")),
+    onError: (e) => toast.error(mediaErrorMessage(e, tt("toast.folderCreateFailed"))),
   });
 }
 
@@ -372,9 +373,9 @@ export function useUpdateMarketingFolder() {
       marketingApi.adminUpdateFolder(id, body),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: marketingKeys.all });
-      toast.success("Folder updated");
+      toast.success(tt("toast.folderUpdated"));
     },
-    onError: (e) => toast.error(mediaErrorMessage(e, "Failed to update folder")),
+    onError: (e) => toast.error(mediaErrorMessage(e, tt("toast.folderUpdateFailed"))),
   });
 }
 
@@ -388,9 +389,9 @@ export function useUploadMarketingAsset() {
     },
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: marketingKeys.all });
-      toast.success("File uploaded");
+      toast.success(tt("toast.fileUploaded"));
     },
-    onError: (e) => toast.error(mediaErrorMessage(e, "Upload failed")),
+    onError: (e) => toast.error(mediaErrorMessage(e, tt("toast.uploadFailed"))),
   });
 }
 
@@ -400,8 +401,8 @@ export function useDeleteMarketingAsset() {
     mutationFn: (assetId: string) => marketingApi.adminDeleteAsset(assetId),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: marketingKeys.all });
-      toast.success("Asset deleted");
+      toast.success(tt("toast.assetDeleted"));
     },
-    onError: (e) => toast.error(mediaErrorMessage(e, "Failed to delete asset")),
+    onError: (e) => toast.error(mediaErrorMessage(e, tt("toast.assetDeleteFailed"))),
   });
 }

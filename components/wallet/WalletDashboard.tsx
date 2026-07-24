@@ -5,10 +5,12 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useWalletDashboard } from "@/lib/queries/wallet";
 import { AuthGuard } from "@/components/guards/AuthGuard";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Container, PageHero } from "@/components/ui/shared";
 import { WalletSkeleton } from "@/components/ui/Skeleton";
 
 function WalletInner() {
+  const { t } = useLanguage();
   const { data, isLoading, isError, error } = useWalletDashboard();
   const [copied, setCopied] = useState(false);
 
@@ -27,7 +29,7 @@ function WalletInner() {
     if (!link) return;
     await navigator.clipboard.writeText(link);
     setCopied(true);
-    toast.success("Affiliate link copied");
+    toast.success(t("toast.affiliateCopied"));
     setTimeout(() => setCopied(false), 2000);
   };
 

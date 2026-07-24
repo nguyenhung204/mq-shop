@@ -19,6 +19,7 @@ import {
   type UpdateOrderStatusRequest,
 } from "@/lib/api/orders";
 import { parsePage } from "@/lib/api/utils";
+import { tt } from "@/lib/i18n/tt";
 import { getErrorMessage } from "@/lib/queries/utils";
 
 export const orderKeys = {
@@ -134,7 +135,7 @@ export function useCheckout() {
       if (e instanceof ApiError && e.code === "IDEMPOTENCY_KEY_REUSE_MISMATCH") {
         idempotency.invalidate();
       }
-      toast.error(orderErrorMessage(e, "Checkout failed"));
+      toast.error(orderErrorMessage(e, tt("toast.checkoutFailed")));
     },
   });
 }
@@ -146,9 +147,9 @@ export function useCancelOrder(orderId: string) {
     onSuccess: (order) => {
       queryClient.setQueryData(orderKeys.detail(orderId), order);
       void queryClient.invalidateQueries({ queryKey: orderKeys.all });
-      toast.success("Order cancelled");
+      toast.success(tt("toast.orderCancelled"));
     },
-    onError: (e) => toast.error(orderErrorMessage(e, "Cancel failed")),
+    onError: (e) => toast.error(orderErrorMessage(e, tt("toast.cancelFailed"))),
   });
 }
 
@@ -165,9 +166,9 @@ export function useUpdateOrderStatus() {
     onSuccess: (order) => {
       queryClient.setQueryData(orderKeys.detail(order.id), order);
       void queryClient.invalidateQueries({ queryKey: orderKeys.all });
-      toast.success(`Order → ${order.status}`);
+      toast.success(tt("toast.orderStatus", { status: order.status }));
     },
-    onError: (e) => toast.error(orderErrorMessage(e, "Status update failed")),
+    onError: (e) => toast.error(orderErrorMessage(e, tt("toast.statusUpdateFailed"))),
   });
 }
 
@@ -189,9 +190,9 @@ export function useCreateRma(orderId: string) {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: orderKeys.detail(orderId) });
-      toast.success("RMA submitted");
+      toast.success(tt("toast.rmaSubmitted"));
     },
-    onError: (e) => toast.error(orderErrorMessage(e, "RMA failed")),
+    onError: (e) => toast.error(orderErrorMessage(e, tt("toast.rmaFailed"))),
   });
 }
 
@@ -217,9 +218,9 @@ export function useAdminCancelOrder() {
       adminOrdersApi.cancel(orderId, { reason }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: orderKeys.all });
-      toast.success("Order cancelled");
+      toast.success(tt("toast.orderCancelled"));
     },
-    onError: (e) => toast.error(orderErrorMessage(e, "Cancel failed")),
+    onError: (e) => toast.error(orderErrorMessage(e, tt("toast.cancelFailed"))),
   });
 }
 
@@ -232,13 +233,13 @@ export function useAdminCheckout() {
     onSuccess: () => {
       idempotency.invalidate();
       void queryClient.invalidateQueries({ queryKey: orderKeys.all });
-      toast.success("Order placed on behalf of buyer");
+      toast.success(tt("toast.orderPlacedBehalf"));
     },
     onError: (e) => {
       if (e instanceof ApiError && e.code === "IDEMPOTENCY_KEY_REUSE_MISMATCH") {
         idempotency.invalidate();
       }
-      toast.error(orderErrorMessage(e, "Admin checkout failed"));
+      toast.error(orderErrorMessage(e, tt("toast.adminCheckoutFailed")));
     },
   });
 }
@@ -293,9 +294,11 @@ export function useAdminRmaDecision() {
       void queryClient.invalidateQueries({
         queryKey: orderKeys.adminRmaDetail(vars.id),
       });
-      toast.success(vars.decision === "APPROVED" ? "RMA approved" : "RMA rejected");
+      toast.success(
+        vars.decision === "APPROVED" ? tt("toast.rmaApproved") : tt("toast.rmaRejected"),
+      );
     },
-    onError: (e) => toast.error(orderErrorMessage(e, "RMA decision failed")),
+    onError: (e) => toast.error(orderErrorMessage(e, tt("toast.rmaDecisionFailed"))),
   });
 }
 
@@ -309,8 +312,8 @@ export function useAdminRmaMarkRefunded() {
       void queryClient.invalidateQueries({
         queryKey: orderKeys.adminRmaDetail(vars.id),
       });
-      toast.success("Marked as refunded — order REFUNDED, RMA CLOSED");
+      toast.success(tt("toast.markedRefunded"));
     },
-    onError: (e) => toast.error(orderErrorMessage(e, "Mark refunded failed")),
+    onError: (e) => toast.error(orderErrorMessage(e, tt("toast.markRefundedFailed"))),
   });
 }

@@ -7,6 +7,7 @@ import { ApiError } from "@/lib/api/client";
 import type { Banner } from "@/lib/api/promotions";
 import type { ApiProduct, ApiShop, AuthUser, StaffPoolRole, StaffRole } from "@/lib/api/types";
 import { asArray, parsePage } from "@/lib/api/utils";
+import { tt } from "@/lib/i18n/tt";
 import { getErrorMessage } from "@/lib/queries/utils";
 import {
   useCreateBannerMultipart,
@@ -43,8 +44,8 @@ export type FinanceGateway = { id: string; gatewayName?: string; status?: string
 
 function shopActionError(e: unknown): string {
   if (e instanceof ApiError) {
-    if (e.code === "SHOP_NOT_PENDING") return "Shop is not PENDING — cannot approve/reject.";
-    if (e.code === "SHOP_NOT_APPROVED") return "Shop is not APPROVED — cannot violation-lock.";
+    if (e.code === "SHOP_NOT_PENDING") return tt("toast.shopNotPending");
+    if (e.code === "SHOP_NOT_APPROVED") return tt("toast.shopNotApprovedLock");
   }
   return getErrorMessage(e);
 }
@@ -117,7 +118,7 @@ export function useApproveShop() {
     mutationFn: (id: string) => adminApi.approveShop(id),
     onSuccess: () => {
       invalidate();
-      toast.success("Shop approved");
+      toast.success(tt("toast.shopApproved"));
     },
     onError: (e) => toast.error(shopActionError(e)),
   });
@@ -130,7 +131,7 @@ export function useRejectShop() {
       adminApi.rejectShop(id, { reason }),
     onSuccess: () => {
       invalidate();
-      toast.success("Shop rejected");
+      toast.success(tt("toast.shopRejected"));
     },
     onError: (e) => toast.error(shopActionError(e)),
   });
@@ -143,7 +144,7 @@ export function useSuspendShop() {
       adminApi.suspendShop(id, reason ? { reason } : undefined),
     onSuccess: () => {
       invalidate();
-      toast.success("Shop locked (violation)");
+      toast.success(tt("toast.shopLocked"));
     },
     onError: (e) => toast.error(shopActionError(e)),
   });
@@ -152,10 +153,10 @@ export function useSuspendShop() {
 function productActionError(e: unknown): string {
   if (e instanceof ApiError) {
     if (e.code === "PRODUCT_NOT_PENDING") {
-      return "Product is not PENDING — cannot approve/reject.";
+      return tt("toast.productNotPending");
     }
     if (e.code === "PRODUCT_NOT_HIDDEN") {
-      return "Product is not hidden.";
+      return tt("toast.productNotHidden");
     }
   }
   return getErrorMessage(e);
@@ -167,7 +168,7 @@ export function useApproveProduct() {
     mutationFn: (id: string) => adminApi.approveProduct(id),
     onSuccess: () => {
       invalidate();
-      toast.success("Product approved");
+      toast.success(tt("toast.productApproved"));
     },
     onError: (e) => toast.error(productActionError(e)),
   });
@@ -180,7 +181,7 @@ export function useRejectProduct() {
       adminApi.rejectProduct(id, { reason }),
     onSuccess: () => {
       invalidate();
-      toast.success("Product rejected");
+      toast.success(tt("toast.productRejected"));
     },
     onError: (e) => toast.error(productActionError(e)),
   });
@@ -192,7 +193,7 @@ export function useHideAdminProduct() {
     mutationFn: (id: string) => adminApi.hideProduct(id),
     onSuccess: () => {
       invalidate();
-      toast.success("Product hidden");
+      toast.success(tt("toast.productHidden"));
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
@@ -204,11 +205,11 @@ export function useUnhideAdminProduct() {
     mutationFn: (id: string) => adminApi.unhideProduct(id),
     onSuccess: () => {
       invalidate();
-      toast.success("Product unhidden — pending review");
+      toast.success(tt("toast.productUnhidden"));
     },
     onError: (e) => {
       if (e instanceof ApiError && e.code === "PRODUCT_NOT_HIDDEN") {
-        toast.error("Product is not hidden.");
+        toast.error(tt("toast.productNotHidden"));
         return;
       }
       toast.error(getErrorMessage(e));
@@ -222,7 +223,7 @@ export function useCreatePayoutBatch() {
     mutationFn: () => financeApi.createPayoutBatch({}),
     onSuccess: () => {
       invalidate();
-      toast.success("Payout batch created");
+      toast.success(tt("toast.payoutBatchCreated"));
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
@@ -234,7 +235,7 @@ export function useApprovePayout() {
     mutationFn: (id: string) => financeApi.approvePayout(id),
     onSuccess: () => {
       invalidate();
-      toast.success("Payout approved");
+      toast.success(tt("toast.payoutApproved"));
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
@@ -246,7 +247,7 @@ export function useRejectPayout() {
     mutationFn: (id: string) => financeApi.rejectPayout(id, { reason: "Invalid" }),
     onSuccess: () => {
       invalidate();
-      toast.success("Payout rejected");
+      toast.success(tt("toast.payoutRejected"));
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
@@ -258,7 +259,7 @@ export function useCompletePayout() {
     mutationFn: (id: string) => financeApi.completePayout(id),
     onSuccess: () => {
       invalidate();
-      toast.success("Payout marked completed");
+      toast.success(tt("toast.payoutCompleted"));
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
@@ -278,7 +279,9 @@ export function useWithdrawDecision() {
     }) => financeApi.withdrawDecision(id, { decision, reason }),
     onSuccess: (_, { decision }) => {
       invalidate();
-      toast.success(decision === "APPROVED" ? "Withdraw approved" : "Withdraw rejected");
+      toast.success(
+        decision === "APPROVED" ? tt("toast.withdrawApproved") : tt("toast.withdrawRejected"),
+      );
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
@@ -290,7 +293,7 @@ export function useCompleteWithdraw() {
     mutationFn: (id: string) => financeApi.completeWithdraw(id),
     onSuccess: () => {
       invalidate();
-      toast.success("Withdraw marked paid");
+      toast.success(tt("toast.withdrawPaid"));
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
@@ -310,7 +313,9 @@ export function useReviewGateway() {
     }) => financeApi.reviewGateway(id, { decision, reason }),
     onSuccess: (_, { decision }) => {
       invalidate();
-      toast.success(decision === "APPROVED" ? "Gateway approved" : "Gateway rejected");
+      toast.success(
+        decision === "APPROVED" ? tt("toast.gatewayApproved") : tt("toast.gatewayRejected"),
+      );
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
@@ -319,7 +324,7 @@ export function useReviewGateway() {
 export function useDailyRefundReport() {
   return useMutation({
     mutationFn: () => adminApi.dailyRefundReport(),
-    onSuccess: () => toast.success("Refund report loaded"),
+    onSuccess: () => toast.success(tt("toast.refundReportLoaded")),
     onError: (e) => toast.error(getErrorMessage(e)),
   });
 }
@@ -341,7 +346,7 @@ export function useToggleBanner() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: adminKeys.all });
       void qc.invalidateQueries({ queryKey: ["banners"] });
-      toast.success("Banner updated");
+      toast.success(tt("toast.bannerUpdated"));
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
@@ -363,7 +368,11 @@ export function useAdminUserAction() {
       return adminApi.deleteUser(userId);
     },
     onSuccess: (_, { action }) => {
-      const labels = { lock: "User locked", unlock: "User unlocked", delete: "User soft-deleted" };
+      const labels = {
+        lock: tt("toast.userLocked"),
+        unlock: tt("toast.userUnlocked"),
+        delete: tt("toast.userDeleted"),
+      };
       toast.success(labels[action]);
     },
     onError: (e) => toast.error(getErrorMessage(e)),
@@ -381,7 +390,7 @@ export function useCreateStaff() {
     }) => adminStaffApi.create(body),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["admin", "staff"] });
-      toast.success("Staff created");
+      toast.success(tt("toast.staffCreated"));
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
@@ -431,7 +440,7 @@ export function useUpdateStaffRoles() {
     }) => adminStaffApi.updateRoles(userId, body),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["admin", "staff"] });
-      toast.success("Staff roles updated");
+      toast.success(tt("toast.staffRolesUpdated"));
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
@@ -455,10 +464,10 @@ export function useStaffAccountAction() {
       void queryClient.invalidateQueries({ queryKey: ["admin", "staff"] });
       toast.success(
         vars.kind === "lock"
-          ? "Staff locked"
+          ? tt("toast.staffLocked")
           : vars.kind === "unlock"
-            ? "Staff unlocked"
-            : "Staff deleted",
+            ? tt("toast.staffUnlocked")
+            : tt("toast.staffDeleted"),
       );
     },
     onError: (e) => toast.error(getErrorMessage(e)),
