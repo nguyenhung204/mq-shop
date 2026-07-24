@@ -11,6 +11,7 @@ import {
   type CreateSellerPayoutBody,
   type ExportFinanceReportBody,
   type FinanceConfig,
+  type FinanceTransaction,
   type LandingCostRequest,
   type ListFinanceConfigsParams,
   type ListFinanceTransactionsParams,
@@ -227,7 +228,9 @@ export function useFinanceTransactions(params: ListFinanceTransactionsParams = {
   return useQuery({
     queryKey: financeKeys.transactions({ ...params, page, pageSize }),
     queryFn: async () =>
-      parsePage(await financeReportApi.transactions({ ...params, page, pageSize })),
+      parsePage<FinanceTransaction>(
+        await financeReportApi.transactions({ ...params, page, pageSize }),
+      ),
   });
 }
 

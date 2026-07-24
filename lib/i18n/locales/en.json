@@ -376,6 +376,7 @@
       "orders": "Orders",
       "rma": "RMA",
       "settlements": "Settlements",
+      "transactions": "Transactions",
       "payouts": "Seller payouts",
       "landingCost": "Landing cost",
       "finance": "Finance",
@@ -585,6 +586,10 @@
       "title": "Landing cost",
       "description": "Stateless calculator for line items, fees, and promo discount."
     },
+    "transactions": {
+      "title": "Transactions",
+      "description": "Browse ORDER and PAYOUT rows, then export CSV/XLSX reports."
+    },
     "payouts": {
       "title": "Seller payouts",
       "description": "Bundle pending settlements into a payout slip, then approve (stub gateway) or reject.",
@@ -775,6 +780,7 @@
       "inventory": "Inventory",
       "orders": "Orders",
       "settlements": "Settlements",
+      "transactions": "Transactions",
       "landingCost": "Landing cost",
       "promotions": "Promotions",
       "rma": "RMA",
@@ -793,6 +799,8 @@
       "ordersDesc": "Orders placed for your shop.",
       "settlements": "Settlements",
       "settlementsDesc": "Pending reconcile revenue from delivered orders.",
+      "transactions": "Transactions",
+      "transactionsDesc": "Shop ORDER and PAYOUT history with optional export.",
       "landingCost": "Landing cost",
       "landingCostDesc": "Estimate final cost from line items, fees, and discounts.",
       "promotions": "Promotions",
@@ -989,6 +997,23 @@
     "resultHeading": "Result",
     "itemsSubtotal": "Items subtotal",
     "finalAmount": "Final amount"
+  },
+  "transactions": {
+    "intro": "Filter by date range and type. Export opens the generated report file.",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "type": "Type",
+    "format": "Format",
+    "export": "Export",
+    "exporting": "Exporting…",
+    "exportHint": "MVP: XLSX still downloads CSV content with an .xlsx extension.",
+    "periodInvalid": "Choose a valid start and end date (end on or after start).",
+    "empty": "No transactions in this filter.",
+    "types": {
+      "ALL": "All types",
+      "ORDER": "Orders",
+      "PAYOUT": "Payouts"
+    }
   },
   "toast": {
     "somethingWentWrong": "Something went wrong",

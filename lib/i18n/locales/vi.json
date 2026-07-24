@@ -376,6 +376,7 @@
       "orders": "Đơn hàng",
       "rma": "RMA",
       "settlements": "Đối soát",
+      "transactions": "Giao dịch",
       "payouts": "Chi trả seller",
       "landingCost": "Landing cost",
       "finance": "Tài chính",
@@ -585,6 +586,10 @@
       "title": "Landing cost",
       "description": "Máy tính stateless cho dòng hàng, phí và giảm promo."
     },
+    "transactions": {
+      "title": "Giao dịch",
+      "description": "Xem ORDER và PAYOUT, xuất báo cáo CSV/XLSX."
+    },
     "payouts": {
       "title": "Chi trả seller",
       "description": "Gom settlement chờ đối soát thành phiếu chi trả, rồi duyệt (stub gateway) hoặc từ chối.",
@@ -775,6 +780,7 @@
       "inventory": "Kho",
       "orders": "Đơn hàng",
       "settlements": "Đối soát",
+      "transactions": "Giao dịch",
       "landingCost": "Landing cost",
       "promotions": "Khuyến mãi",
       "rma": "RMA",
@@ -793,6 +799,8 @@
       "ordersDesc": "Đơn hàng của shop bạn.",
       "settlements": "Đối soát",
       "settlementsDesc": "Doanh thu chờ đối soát từ đơn đã giao.",
+      "transactions": "Giao dịch",
+      "transactionsDesc": "Lịch sử ORDER và PAYOUT của shop, có thể xuất báo cáo.",
       "landingCost": "Landing cost",
       "landingCostDesc": "Ước tính chi phí cuối từ dòng hàng, phí và giảm giá.",
       "promotions": "Khuyến mãi",
@@ -989,6 +997,23 @@
     "resultHeading": "Kết quả",
     "itemsSubtotal": "Tạm tính hàng",
     "finalAmount": "Tổng cuối"
+  },
+  "transactions": {
+    "intro": "Lọc theo khoảng ngày và loại. Xuất sẽ mở file báo cáo.",
+    "startDate": "Từ ngày",
+    "endDate": "Đến ngày",
+    "type": "Loại",
+    "format": "Định dạng",
+    "export": "Xuất",
+    "exporting": "Đang xuất…",
+    "exportHint": "MVP: XLSX vẫn là nội dung CSV với đuôi .xlsx.",
+    "periodInvalid": "Chọn khoảng ngày hợp lệ (ngày kết thúc ≥ ngày bắt đầu).",
+    "empty": "Không có giao dịch trong bộ lọc này.",
+    "types": {
+      "ALL": "Tất cả",
+      "ORDER": "Đơn hàng",
+      "PAYOUT": "Chi trả"
+    }
   },
   "toast": {
     "somethingWentWrong": "Đã xảy ra lỗi",

@@ -376,6 +376,7 @@
       "orders": "訂單",
       "rma": "RMA",
       "settlements": "結算",
+      "transactions": "交易",
       "payouts": "賣家撥款",
       "landingCost": "落地成本",
       "finance": "財務",
@@ -585,6 +586,10 @@
       "title": "落地成本",
       "description": "無狀態計算器：行項目、費用與促銷折抵。"
     },
+    "transactions": {
+      "title": "交易",
+      "description": "瀏覽 ORDER 與 PAYOUT，並匯出 CSV/XLSX 報表。"
+    },
     "payouts": {
       "title": "賣家撥款",
       "description": "將待對帳結算彙總為撥款單，再核准（stub gateway）或拒絕。",
@@ -775,6 +780,7 @@
       "inventory": "庫存",
       "orders": "訂單",
       "settlements": "結算",
+      "transactions": "交易",
       "landingCost": "落地成本",
       "promotions": "促銷",
       "rma": "RMA",
@@ -793,6 +799,8 @@
       "ordersDesc": "商店收到的訂單。",
       "settlements": "結算",
       "settlementsDesc": "已配達訂單待對帳營收。",
+      "transactions": "交易",
+      "transactionsDesc": "商店 ORDER 與 PAYOUT 紀錄，可匯出報表。",
       "landingCost": "落地成本",
       "landingCostDesc": "依行項目、費用與折扣估算最終成本。",
       "promotions": "促銷",
@@ -989,6 +997,23 @@
     "resultHeading": "結果",
     "itemsSubtotal": "商品小計",
     "finalAmount": "最終金額"
+  },
+  "transactions": {
+    "intro": "依日期與類型篩選。匯出會開啟報表檔案。",
+    "startDate": "開始日期",
+    "endDate": "結束日期",
+    "type": "類型",
+    "format": "格式",
+    "export": "匯出",
+    "exporting": "匯出中…",
+    "exportHint": "MVP：XLSX 仍為 CSV 內容，副檔名 .xlsx。",
+    "periodInvalid": "請選擇有效日期區間（結束日 ≥ 開始日）。",
+    "empty": "此篩選條件無交易。",
+    "types": {
+      "ALL": "全部",
+      "ORDER": "訂單",
+      "PAYOUT": "撥款"
+    }
   },
   "toast": {
     "somethingWentWrong": "發生錯誤",
