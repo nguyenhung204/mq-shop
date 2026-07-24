@@ -377,6 +377,7 @@
       "rma": "RMA",
       "settlements": "結算",
       "payouts": "賣家撥款",
+      "landingCost": "落地成本",
       "finance": "財務",
       "financeConfigs": "費用設定",
       "promotions": "促銷",
@@ -580,6 +581,10 @@
       "title": "結算",
       "description": "追蹤商店結算：待對帳、撥款中、已撥款。"
     },
+    "landingCost": {
+      "title": "落地成本",
+      "description": "無狀態計算器：行項目、費用與促銷折抵。"
+    },
     "payouts": {
       "title": "賣家撥款",
       "description": "將待對帳結算彙總為撥款單，再核准（stub gateway）或拒絕。",
@@ -770,6 +775,7 @@
       "inventory": "庫存",
       "orders": "訂單",
       "settlements": "結算",
+      "landingCost": "落地成本",
       "promotions": "促銷",
       "rma": "RMA",
       "materials": "素材"
@@ -787,6 +793,8 @@
       "ordersDesc": "商店收到的訂單。",
       "settlements": "結算",
       "settlementsDesc": "已配達訂單待對帳營收。",
+      "landingCost": "落地成本",
+      "landingCostDesc": "依行項目、費用與折扣估算最終成本。",
       "promotions": "促銷",
       "promotionsDesc": "建立商店促銷 — 送交後台審核。",
       "rma": "RMA",
@@ -962,6 +970,25 @@
       "openInventory": "開啟庫存",
       "restockHint": "確認退貨後請以庫存單補回 SKU。"
     }
+  },
+  "landingCost": {
+    "intro": "請手動輸入行價。促銷折抵不會從促銷 API 載入 — 請自行填數字。",
+    "itemsHeading": "行項目",
+    "addLine": "新增行",
+    "removeLine": "移除行",
+    "unitPrice": "單價",
+    "quantity": "數量",
+    "lineDiscount": "行折扣",
+    "shippingFee": "運費",
+    "vatAmount": "VAT",
+    "packagingFee": "包裝費",
+    "promoDiscount": "促銷折抵",
+    "calculate": "計算",
+    "calculating": "計算中…",
+    "formError": "金額須 ≥ 0。數量須為整數 ≥ 1。",
+    "resultHeading": "結果",
+    "itemsSubtotal": "商品小計",
+    "finalAmount": "最終金額"
   },
   "toast": {
     "somethingWentWrong": "發生錯誤",

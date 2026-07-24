@@ -3,6 +3,7 @@ import {
   BadgeDollarSign,
   BadgePercent,
   Boxes,
+  Calculator,
   ClipboardList,
   FolderOpen,
   FolderTree,
@@ -110,6 +111,13 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.payouts",
     icon: HandCoins,
     permissions: ["PAYOUT_SELLER"],
+    group: "commerce",
+  },
+  {
+    href: "/admin/landing-cost",
+    labelKey: "admin.nav.landingCost",
+    icon: Calculator,
+    permissions: ["CALC_LAND_COST"],
     group: "commerce",
   },
   {

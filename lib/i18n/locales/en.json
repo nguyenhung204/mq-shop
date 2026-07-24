@@ -377,6 +377,7 @@
       "rma": "RMA",
       "settlements": "Settlements",
       "payouts": "Seller payouts",
+      "landingCost": "Landing cost",
       "finance": "Finance",
       "financeConfigs": "Fee config",
       "promotions": "Promotions",
@@ -580,6 +581,10 @@
       "title": "Settlements",
       "description": "Track shop settlements from pending reconcile through payout."
     },
+    "landingCost": {
+      "title": "Landing cost",
+      "description": "Stateless calculator for line items, fees, and promo discount."
+    },
     "payouts": {
       "title": "Seller payouts",
       "description": "Bundle pending settlements into a payout slip, then approve (stub gateway) or reject.",
@@ -770,6 +775,7 @@
       "inventory": "Inventory",
       "orders": "Orders",
       "settlements": "Settlements",
+      "landingCost": "Landing cost",
       "promotions": "Promotions",
       "rma": "RMA",
       "materials": "Materials"
@@ -787,6 +793,8 @@
       "ordersDesc": "Orders placed for your shop.",
       "settlements": "Settlements",
       "settlementsDesc": "Pending reconcile revenue from delivered orders.",
+      "landingCost": "Landing cost",
+      "landingCostDesc": "Estimate final cost from line items, fees, and discounts.",
       "promotions": "Promotions",
       "promotionsDesc": "Create shop promotions — submitted for admin review.",
       "rma": "RMA",
@@ -962,6 +970,25 @@
       "openInventory": "Open inventory",
       "restockHint": "Restock SKUs via inventory slips after confirming returns."
     }
+  },
+  "landingCost": {
+    "intro": "Enter line prices manually. Promo discounts are not loaded from the promotion API — fill numbers yourself.",
+    "itemsHeading": "Line items",
+    "addLine": "Add line",
+    "removeLine": "Remove line",
+    "unitPrice": "Unit price",
+    "quantity": "Qty",
+    "lineDiscount": "Line discount",
+    "shippingFee": "Shipping",
+    "vatAmount": "VAT",
+    "packagingFee": "Packaging",
+    "promoDiscount": "Promo discount",
+    "calculate": "Calculate",
+    "calculating": "Calculating…",
+    "formError": "Use non-negative amounts. Quantity must be a whole number ≥ 1.",
+    "resultHeading": "Result",
+    "itemsSubtotal": "Items subtotal",
+    "finalAmount": "Final amount"
   },
   "toast": {
     "somethingWentWrong": "Something went wrong",

@@ -377,6 +377,7 @@
       "rma": "RMA",
       "settlements": "Đối soát",
       "payouts": "Chi trả seller",
+      "landingCost": "Landing cost",
       "finance": "Tài chính",
       "financeConfigs": "Cấu hình phí",
       "promotions": "Khuyến mãi",
@@ -580,6 +581,10 @@
       "title": "Đối soát",
       "description": "Theo dõi settlement từ chờ đối soát đến đã chi trả."
     },
+    "landingCost": {
+      "title": "Landing cost",
+      "description": "Máy tính stateless cho dòng hàng, phí và giảm promo."
+    },
     "payouts": {
       "title": "Chi trả seller",
       "description": "Gom settlement chờ đối soát thành phiếu chi trả, rồi duyệt (stub gateway) hoặc từ chối.",
@@ -770,6 +775,7 @@
       "inventory": "Kho",
       "orders": "Đơn hàng",
       "settlements": "Đối soát",
+      "landingCost": "Landing cost",
       "promotions": "Khuyến mãi",
       "rma": "RMA",
       "materials": "Tài liệu"
@@ -787,6 +793,8 @@
       "ordersDesc": "Đơn hàng của shop bạn.",
       "settlements": "Đối soát",
       "settlementsDesc": "Doanh thu chờ đối soát từ đơn đã giao.",
+      "landingCost": "Landing cost",
+      "landingCostDesc": "Ước tính chi phí cuối từ dòng hàng, phí và giảm giá.",
       "promotions": "Khuyến mãi",
       "promotionsDesc": "Tạo KM shop — gửi admin duyệt.",
       "rma": "RMA",
@@ -962,6 +970,25 @@
       "openInventory": "Mở kho",
       "restockHint": "Nhập lại SKU qua phiếu kho sau khi xác nhận hàng hoàn."
     }
+  },
+  "landingCost": {
+    "intro": "Nhập giá dòng thủ công. Giảm promo không lấy từ API khuyến mãi — tự điền số.",
+    "itemsHeading": "Dòng hàng",
+    "addLine": "Thêm dòng",
+    "removeLine": "Xóa dòng",
+    "unitPrice": "Đơn giá",
+    "quantity": "SL",
+    "lineDiscount": "Giảm theo dòng",
+    "shippingFee": "Shipping",
+    "vatAmount": "VAT",
+    "packagingFee": "Đóng gói",
+    "promoDiscount": "Giảm promo",
+    "calculate": "Tính",
+    "calculating": "Đang tính…",
+    "formError": "Số phải ≥ 0. Số lượng phải là số nguyên ≥ 1.",
+    "resultHeading": "Kết quả",
+    "itemsSubtotal": "Tạm tính hàng",
+    "finalAmount": "Tổng cuối"
   },
   "toast": {
     "somethingWentWrong": "Đã xảy ra lỗi",

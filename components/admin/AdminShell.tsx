@@ -23,7 +23,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
     }
     if (hasRole("ACCOUNTANT")) {
       return i.permissions.some((p) =>
-        ["PROCESS_RMA", "MANAGE_RMA", "VIEW_TRANSACT", "CONFIG_FEE", "PAYOUT_SELLER"].includes(
+        ["PROCESS_RMA", "MANAGE_RMA", "VIEW_TRANSACT", "CONFIG_FEE", "PAYOUT_SELLER", "CALC_LAND_COST"].includes(
           p,
         ),
       );

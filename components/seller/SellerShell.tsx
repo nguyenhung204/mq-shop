@@ -7,6 +7,7 @@ import {
   BadgeDollarSign,
   BadgePercent,
   Boxes,
+  Calculator,
   FolderOpen,
   LayoutDashboard,
   Package,
@@ -29,6 +30,12 @@ const links = [
     href: "/seller/settlements",
     labelKey: "seller.nav.settlements",
     icon: BadgeDollarSign,
+    sellerOnly: true,
+  },
+  {
+    href: "/seller/landing-cost",
+    labelKey: "seller.nav.landingCost",
+    icon: Calculator,
     sellerOnly: true,
   },
   {
@@ -61,6 +68,9 @@ function titleKeysFromPath(pathname: string): { titleKey: string; descKey?: stri
   }
   if (pathname.startsWith("/seller/settlements")) {
     return { titleKey: "seller.titles.settlements", descKey: "seller.titles.settlementsDesc" };
+  }
+  if (pathname.startsWith("/seller/landing-cost")) {
+    return { titleKey: "seller.titles.landingCost", descKey: "seller.titles.landingCostDesc" };
   }
   if (pathname.startsWith("/seller/promotions")) {
     return { titleKey: "seller.titles.promotions", descKey: "seller.titles.promotionsDesc" };
