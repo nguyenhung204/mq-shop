@@ -94,11 +94,13 @@ export function useFinanceConfigs(params: ListFinanceConfigsParams = {}) {
   });
 }
 
-export function useActiveFinanceConfig() {
+export function useActiveFinanceConfig(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: financeKeys.activeConfig(),
     queryFn: () => financeConfigApi.active(),
     staleTime: 60_000,
+    enabled: options?.enabled ?? true,
+    retry: false,
   });
 }
 

@@ -39,7 +39,10 @@ export function useSellerSettlements(params: ListSettlementsParams = {}) {
   });
 }
 
-export function useAdminSettlements(params: AdminListSettlementsParams = {}) {
+export function useAdminSettlements(
+  params: AdminListSettlementsParams = {},
+  options?: { enabled?: boolean },
+) {
   const page = params.page ?? 1;
   const pageSize = params.pageSize ?? 20;
   const status = params.status ?? "PENDING_RECONCILE";
@@ -47,5 +50,6 @@ export function useAdminSettlements(params: AdminListSettlementsParams = {}) {
   return useQuery({
     queryKey: settlementKeys.admin({ status, shopId, page, pageSize }),
     queryFn: () => adminSettlementApi.list({ status, shopId, page, pageSize }),
+    enabled: options?.enabled ?? true,
   });
 }

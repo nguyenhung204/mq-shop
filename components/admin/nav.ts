@@ -6,6 +6,7 @@ import {
   ClipboardList,
   FolderOpen,
   FolderTree,
+  HandCoins,
   ImageIcon,
   LayoutDashboard,
   Package,
@@ -102,6 +103,13 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.settlements",
     icon: Scale,
     permissions: ["VIEW_TRANSACT"],
+    group: "commerce",
+  },
+  {
+    href: "/admin/payouts",
+    labelKey: "admin.nav.payouts",
+    icon: HandCoins,
+    permissions: ["PAYOUT_SELLER"],
     group: "commerce",
   },
   {
