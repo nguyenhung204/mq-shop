@@ -292,7 +292,7 @@
       "emailTitle": "Đổi email",
       "emailDesc": "Chúng tôi sẽ gửi mã OTP tới email mới.",
       "activityTitle": "Hoạt động của bạn",
-      "activityDesc": "Đến đơn hàng, ví, đổi trả hoặc mở gian hàng."
+      "activityDesc": "Đến đơn hàng, giao dịch, ví, đổi trả hoặc mở gian hàng."
     },
     "fields": {
       "fullName": "Họ và tên",
@@ -318,6 +318,8 @@
     "links": {
       "orders": "Đơn hàng",
       "ordersDesc": "Theo dõi mua sắm và giao hàng",
+      "transactions": "Giao dịch",
+      "transactionsDesc": "Lịch sử thanh toán đơn hàng của bạn",
       "wallet": "Ví",
       "walletDesc": "Số dư, chuyển khoản và rút tiền",
       "rma": "RMA",
@@ -1021,7 +1023,9 @@
       "finalAmount": "Tổng cuối"
     },
     "transactions": {
+      "title": "Giao dịch",
       "intro": "Lọc theo khoảng ngày và loại. Xuất sẽ mở file báo cáo.",
+      "introBuyer": "Thanh toán đơn hàng của bạn. Lọc theo khoảng ngày.",
       "startDate": "Từ ngày",
       "endDate": "Đến ngày",
       "type": "Loại",
@@ -1031,6 +1035,9 @@
       "exportHint": "MVP: XLSX vẫn là nội dung CSV với đuôi .xlsx.",
       "periodInvalid": "Chọn khoảng ngày hợp lệ (ngày kết thúc ≥ ngày bắt đầu).",
       "empty": "Không có giao dịch trong bộ lọc này.",
+      "shop": "Shop",
+      "shopOwner": "Chủ shop",
+      "buyer": "Buyer",
       "types": {
         "ALL": "Tất cả",
         "ORDER": "Đơn hàng",

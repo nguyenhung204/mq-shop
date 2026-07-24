@@ -292,7 +292,7 @@
       "emailTitle": "Change email",
       "emailDesc": "We will send a one-time code to your new email address.",
       "activityTitle": "Your activity",
-      "activityDesc": "Jump to orders, wallet, returns, or open a shop."
+      "activityDesc": "Jump to orders, transactions, wallet, returns, or open a shop."
     },
     "fields": {
       "fullName": "Full name",
@@ -318,6 +318,8 @@
     "links": {
       "orders": "Orders",
       "ordersDesc": "Track purchases and delivery",
+      "transactions": "Transactions",
+      "transactionsDesc": "Your order payment history",
       "wallet": "Wallet",
       "walletDesc": "Balance, transfers, and payouts",
       "rma": "RMA",
@@ -1021,7 +1023,9 @@
     "finalAmount": "Final amount"
   },
   "transactions": {
+    "title": "Transactions",
     "intro": "Filter by date range and type. Export opens the generated report file.",
+    "introBuyer": "Your order payments. Filter by date range.",
     "startDate": "Start date",
     "endDate": "End date",
     "type": "Type",
@@ -1031,6 +1035,9 @@
     "exportHint": "MVP: XLSX still downloads CSV content with an .xlsx extension.",
     "periodInvalid": "Choose a valid start and end date (end on or after start).",
     "empty": "No transactions in this filter.",
+    "shop": "Shop",
+    "shopOwner": "Owner",
+    "buyer": "Buyer",
     "types": {
       "ALL": "All types",
       "ORDER": "Orders",

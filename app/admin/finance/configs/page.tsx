@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { Check, Plus, X } from "lucide-react";
 import type { CreateFinanceConfigBody, FinanceConfig, FinanceConfigStatus } from "@/lib/api/finance";
+import { formatPercent } from "@/lib/api/utils";
 import {
   useActiveFinanceConfig,
   useApproveFinanceConfig,
@@ -164,11 +165,11 @@ function FinanceConfigsInner() {
                 </span>
                 <span>
                   {t("admin.financeConfigs.platformFee")}:{" "}
-                  <strong>{active.platformFeePercent}%</strong>
+                  <strong>{formatPercent(active.platformFeePercent)}</strong>
                 </span>
                 <span>
                   {t("admin.financeConfigs.commission")}:{" "}
-                  <strong>{active.commissionPercent}%</strong>
+                  <strong>{formatPercent(active.commissionPercent)}</strong>
                 </span>
                 {active.gatewayName ? (
                   <span>
@@ -322,10 +323,10 @@ function FinanceConfigsInner() {
                 </div>
                 <p>
                   {t("admin.financeConfigs.platformFee")}:{" "}
-                  <strong>{cfg.platformFeePercent}%</strong>
+                  <strong>{formatPercent(cfg.platformFeePercent)}</strong>
                   {" · "}
                   {t("admin.financeConfigs.commission")}:{" "}
-                  <strong>{cfg.commissionPercent}%</strong>
+                  <strong>{formatPercent(cfg.commissionPercent)}</strong>
                 </p>
                 <p className="text-mq-text-muted">
                   {cfg.gatewayName
@@ -385,7 +386,7 @@ function FinanceConfigsInner() {
         description={
           rejectTarget
             ? t("admin.financeConfigs.rejectDesc", {
-                fee: rejectTarget.platformFeePercent,
+                fee: formatPercent(rejectTarget.platformFeePercent).replace(/%$/, ""),
               })
             : undefined
         }

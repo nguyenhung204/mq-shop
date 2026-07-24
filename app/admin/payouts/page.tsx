@@ -4,7 +4,7 @@ import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 import { Check, Plus, X } from "lucide-react";
 import type { PayoutStatus, SellerPayout } from "@/lib/api/finance";
-import { formatMoney } from "@/lib/api/utils";
+import { formatMoney, formatPercent } from "@/lib/api/utils";
 import {
   useActiveFinanceConfig,
   useAdminPayouts,
@@ -196,10 +196,10 @@ function PayoutsInner() {
           {active ? (
             <p className="text-sm">
               {t("admin.payouts.platformFee")}:{" "}
-              <strong>{active.platformFeePercent}%</strong>
+              <strong>{formatPercent(active.platformFeePercent)}</strong>
               {" · "}
               {t("admin.payouts.commission")}:{" "}
-              <strong>{active.commissionPercent}%</strong>
+              <strong>{formatPercent(active.commissionPercent)}</strong>
               {active.gatewayName ? ` · ${active.gatewayName}` : ""}
             </p>
           ) : (
@@ -325,10 +325,10 @@ function PayoutsInner() {
         )}
 
         <div className="flex flex-wrap gap-3 items-end">
-          <label className="block text-sm">
+          <label className="flex flex-col gap-1 text-sm">
             <span className="text-mq-text-muted text-xs">{t("admin.common.filterStatus")}</span>
             <select
-              className="mq-input mt-1 !w-[11rem] max-w-full"
+              className="mq-input !w-[11rem] max-w-full"
               value={status}
               onChange={(e) => {
                 setStatus(e.target.value as PayoutStatus | "");
@@ -342,10 +342,10 @@ function PayoutsInner() {
               ))}
             </select>
           </label>
-          <label className="block text-sm">
+          <label className="flex flex-col gap-1 text-sm">
             <span className="text-mq-text-muted text-xs">{t("admin.common.shop")}</span>
             <select
-              className="mq-input mt-1 min-w-[14rem]"
+              className="mq-input min-w-[14rem]"
               value={listShopId}
               onChange={(e) => {
                 setListShopId(e.target.value);

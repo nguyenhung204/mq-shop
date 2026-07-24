@@ -47,7 +47,7 @@ Matrix (GUEST…SUPER_ADMIN): xem `role-permission.matrix.ts`.
 | `CONFIG_FEE` | Super Admin submit; Accountant approve/reject | SA=`ALL`, Accountant=`APPROVE`, **Admin=`NONE`** |
 | `PAYOUT_SELLER` | Accountant/Admin tạo + duyệt payout | Accountant=`ALL`, Admin=`APPROVE`, Seller=`SHOP` |
 | `VIEW_TRANSACT` | List TX + admin settlements | Buyer=`SELF`, Seller=`SHOP`, Acc/Admin/SA=`ALL` |
-| `EXPORT_REPORT` | Export CSV/XLSX | Seller=`SHOP`, Acc/Admin/SA=`ALL` |
+| `EXPORT_REPORT` | Export CSV/XLSX | Seller=`SHOP`, Acc/Admin/SA=`ALL` · **Buyer=`NONE`** |
 | `CALC_LAND_COST` | Calculator landing cost | Buyer=`SELF`, Seller=`SHOP`, CS+staff=`ALL` |
 
 ### UI gate gợi ý
@@ -58,7 +58,8 @@ Matrix (GUEST…SUPER_ADMIN): xem `role-permission.matrix.ts`.
 | Approve / reject config | `accountant@example.com` |
 | Create / list / approve payouts | Accountant (+ Admin approve) |
 | Landing cost tool | Seller / Accountant / Admin |
-| Transactions / export | Seller (shop mình) · Accountant/Admin (all) |
+| Transactions list | Buyer (`/transactions`, SELF, no export) · Seller shop · Acc/Admin all |
+| Transactions export | Seller / Accountant / Admin / SA (`EXPORT_REPORT`) — **not Buyer** |
 | Settlements pending | Seller `GET /settlements` · Admin `GET /admin/settlements` |
 
 ---
@@ -325,9 +326,17 @@ Row:
 
 Isolation:
 
-- Buyer → chỉ ORDER của mình (không thấy PAYOUT)
-- Seller → ORDER + PAYOUT của shop
-- Acc/Admin → all (+ optional `shopId`)
+- Buyer → chỉ ORDER của mình (không thấy PAYOUT); **không** `EXPORT_REPORT`
+- Seller → ORDER + PAYOUT của shop; export shop scope
+- Acc/Admin/SA → all (+ optional `shopId`); export all
+
+FE routes:
+
+| Route | Ai | Export UI |
+|-------|-----|-----------|
+| `/transactions` | Buyer (SELF) | ❌ |
+| `/seller/transactions` | Seller (SHOP) | ✅ nếu `EXPORT_REPORT` |
+| `/admin/transactions` | Acc / Admin / SA (ALL) | ✅ |
 
 ### Export
 
@@ -422,7 +431,10 @@ type FinanceTransaction = {
   type: "ORDER" | "PAYOUT";
   id: string;
   shopId: string | null;
+  shopName?: string | null;
+  shopOwnerName?: string | null;
   buyerId: string | null;
+  buyerName?: string | null;
   amount: string;
   currency: string;
   status: string;

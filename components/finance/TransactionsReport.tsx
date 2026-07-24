@@ -53,18 +53,33 @@ function typeBadgeClass(type: FinanceTransaction["type"]): string {
 type TransactionsReportProps = {
   /** Admin can filter by shop; seller is scoped by BE. */
   showShopFilter?: boolean;
+  /**
+   * Buyer SELF scope: ORDER-only filter options, never show export
+   * (Buyer has VIEW_TRANSACT but not EXPORT_REPORT).
+   */
+  buyerMode?: boolean;
   /** Link payout rows to admin payout detail. */
   payoutDetailHref?: (id: string) => string;
 };
 
 export function TransactionsReport({
   showShopFilter = false,
+  buyerMode = false,
   payoutDetailHref,
 }: TransactionsReportProps) {
   const { t } = useLanguage();
   const { hasPermission, hasRole } = useAuth();
+  // BE: EXPORT_REPORT = Seller SHOP · Acc/Admin/SA ALL · Buyer none
   const canExport =
-    hasPermission("EXPORT_REPORT") || hasRole("ADMIN") || hasRole("SUPER_ADMIN");
+    !buyerMode &&
+    (hasPermission("EXPORT_REPORT") ||
+      hasRole("SELLER") ||
+      hasRole("ACCOUNTANT") ||
+      hasRole("ADMIN") ||
+      hasRole("SUPER_ADMIN"));
+  const typeOptions: FinanceTransactionType[] = buyerMode
+    ? ["ALL", "ORDER"]
+    : TYPES;
   const bounds = monthBounds();
 
   const [startDate, setStartDate] = useState(bounds.start);
@@ -121,7 +136,9 @@ export function TransactionsReport({
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-mq-text-muted">{t("transactions.intro")}</p>
+      <p className="text-sm text-mq-text-muted">
+        {t(buyerMode ? "transactions.introBuyer" : "transactions.intro")}
+      </p>
 
       <div className="mq-card p-4 space-y-3">
         {filterError ? <div className="mq-alert mq-alert-error">{filterError}</div> : null}
@@ -160,7 +177,7 @@ export function TransactionsReport({
                 setPage(1);
               }}
             >
-              {TYPES.map((txType) => (
+              {typeOptions.map((txType) => (
                 <option key={txType} value={txType}>
                   {t(`transactions.types.${txType}`)}
                 </option>
@@ -271,8 +288,28 @@ export function TransactionsReport({
               </div>
               <p className="text-xs text-mq-text-muted">
                 {formatWhen(row.occurredAt)}
-                {showShopFilter ? ` · ${shopName(row.shopId)}` : ""}
               </p>
+              {(showShopFilter || row.shopName || (!buyerMode && row.shopOwnerName)) && (
+                <p className="text-xs text-mq-text-muted">
+                  {t("transactions.shop")}:{" "}
+                  <span className="text-mq-text">
+                    {row.shopName ?? shopName(row.shopId)}
+                  </span>
+                  {!buyerMode && row.shopOwnerName ? (
+                    <>
+                      {" · "}
+                      {t("transactions.shopOwner")}:{" "}
+                      <span className="text-mq-text">{row.shopOwnerName}</span>
+                    </>
+                  ) : null}
+                </p>
+              )}
+              {!buyerMode && row.type === "ORDER" && row.buyerName ? (
+                <p className="text-xs text-mq-text-muted">
+                  {t("transactions.buyer")}:{" "}
+                  <span className="text-mq-text">{row.buyerName}</span>
+                </p>
+              ) : null}
             </div>
             <span className="tabular-nums font-medium">{formatMoney(row.amount)}</span>
           </div>

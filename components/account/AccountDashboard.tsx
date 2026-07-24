@@ -8,6 +8,7 @@ import {
   LogOut,
   Mail,
   Package,
+  Receipt,
   RefreshCw,
   Store,
   UserRound,
@@ -349,6 +350,13 @@ function AccountInner() {
                   <span>
                     <strong>{t("account.links.orders")}</strong>
                     <small>{t("account.links.ordersDesc")}</small>
+                  </span>
+                </Link>
+                <Link href="/transactions" className="mq-account-link-card">
+                  <Receipt size={20} strokeWidth={1.75} />
+                  <span>
+                    <strong>{t("account.links.transactions")}</strong>
+                    <small>{t("account.links.transactionsDesc")}</small>
                   </span>
                 </Link>
                 <Link href="/wallet" className="mq-account-link-card">

@@ -292,7 +292,7 @@
       "emailTitle": "變更電子郵件",
       "emailDesc": "我們會寄送一次性驗證碼至新的電子郵件。",
       "activityTitle": "您的活動",
-      "activityDesc": "前往訂單、錢包、退換貨或申請開店。"
+      "activityDesc": "前往訂單、交易、錢包、退換貨或申請開店。"
     },
     "fields": {
       "fullName": "全名",
@@ -318,6 +318,8 @@
     "links": {
       "orders": "訂單",
       "ordersDesc": "追蹤購買與配送",
+      "transactions": "交易",
+      "transactionsDesc": "您的訂單付款紀錄",
       "wallet": "錢包",
       "walletDesc": "餘額、轉帳與提領",
       "rma": "RMA",
@@ -1021,7 +1023,9 @@
     "finalAmount": "最終金額"
   },
   "transactions": {
+    "title": "交易",
     "intro": "依日期與類型篩選。匯出會開啟報表檔案。",
+    "introBuyer": "您的訂單付款。可依日期篩選。",
     "startDate": "開始日期",
     "endDate": "結束日期",
     "type": "類型",
@@ -1031,6 +1035,9 @@
     "exportHint": "MVP：XLSX 仍為 CSV 內容，副檔名 .xlsx。",
     "periodInvalid": "請選擇有效日期區間（結束日 ≥ 開始日）。",
     "empty": "此篩選條件無交易。",
+    "shop": "商店",
+    "shopOwner": "店主",
+    "buyer": "買家",
     "types": {
       "ALL": "全部",
       "ORDER": "訂單",

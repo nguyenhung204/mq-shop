@@ -119,7 +119,13 @@ export type FinanceTransaction = {
   type: "ORDER" | "PAYOUT";
   id: string;
   shopId: string | null;
+  /** Shop display name (list + export). */
+  shopName?: string | null;
+  /** Shop owner fullName, fallback email. */
+  shopOwnerName?: string | null;
   buyerId: string | null;
+  /** Buyer display name on ORDER rows (fullName, fallback email). */
+  buyerName?: string | null;
   amount: string;
   currency: string;
   status: string;
