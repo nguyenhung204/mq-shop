@@ -18,7 +18,7 @@ import {
   type UpdatePromotionBody,
 } from "@/lib/api/promotions";
 import { ApiError } from "@/lib/api/client";
-import { parsePage } from "@/lib/api/utils";
+import { asArray, parsePage } from "@/lib/api/utils";
 import { getErrorMessage } from "@/lib/queries/utils";
 
 export const promotionKeys = {
@@ -233,11 +233,15 @@ export function useRejectPromotion() {
 
 /* ─── Banners ───────────────────────────────────────────────────────── */
 
-export function usePublicBanners(lang: BannerLang = "VI") {
+export function usePublicBanners(lang: BannerLang = "VI", enabled = true) {
   return useQuery({
     queryKey: bannerKeys.public(lang),
-    queryFn: () => bannerApi.publicList(lang),
+    queryFn: async () => {
+      const data = await bannerApi.publicList(lang);
+      return asArray<import("@/lib/api/promotions").Banner>(data);
+    },
     staleTime: 60_000,
+    enabled,
   });
 }
 
@@ -255,10 +259,15 @@ export function useCreateBannerMultipart() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (formData: FormData) => bannerApi.adminCreate(formData),
-    onSuccess: () => {
+    onSuccess: (_data, formData) => {
       void qc.invalidateQueries({ queryKey: bannerKeys.all });
       void qc.invalidateQueries({ queryKey: ["admin", "banners"] });
-      toast.success("Banner created");
+      const lang = formData.get("lang");
+      toast.success(
+        typeof lang === "string"
+          ? `Banner created (${lang}) — switch homepage to that language to see it`
+          : "Banner created",
+      );
     },
     onError: (e) => toast.error(bannerErrorMessage(e, "Failed to create banner")),
   });

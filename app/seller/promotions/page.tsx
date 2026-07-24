@@ -128,7 +128,7 @@ function buildBody(form: FormState): CreatePromotionBody | null {
 }
 
 function PromotionsInner() {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const catLocale = locale ?? "en";
   const [status, setStatus] = useState<PromotionStatus | "">("PENDING");
   const [page, setPage] = useState(1);
@@ -208,9 +208,7 @@ function PromotionsInner() {
     setFormError("");
     const body = buildBody(form);
     if (!body) {
-      setFormError(
-        "Fill required fields. Need at least one SKU or category. Voucher needs a code (3+ chars).",
-      );
+      setFormError(t("seller.promotions.formError"));
       return;
     }
     try {
@@ -235,7 +233,7 @@ function PromotionsInner() {
         <select
           className="mq-input max-w-[11rem]"
           value={status}
-          aria-label="Filter by status"
+          aria-label={t("admin.common.filterStatus")}
           onChange={(e) => {
             setStatus(e.target.value as PromotionStatus | "");
             setPage(1);
@@ -243,13 +241,13 @@ function PromotionsInner() {
         >
           {STATUSES.map((s) => (
             <option key={s || "all"} value={s}>
-              {s || "All statuses"}
+              {s || t("admin.common.allStatuses")}
             </option>
           ))}
         </select>
         <button type="button" className="mq-btn mq-btn-primary" onClick={openCreate}>
           <Plus size={16} aria-hidden />
-          New promotion
+          {t("seller.promotions.newBtn")}
         </button>
       </div>
 
@@ -257,17 +255,19 @@ function PromotionsInner() {
         <form className="mq-card p-5 space-y-4" onSubmit={(e) => void onSubmit(e)}>
           <div className="flex items-center justify-between gap-3">
             <h3 className="font-semibold text-mq-text">
-              {editingId ? "Edit promotion" : "Create promotion"}
+              {editingId
+                ? t("seller.promotions.editTitle")
+                : t("seller.promotions.createTitle")}
             </h3>
             <button type="button" className="mq-btn mq-btn-ghost text-xs" onClick={closeForm}>
-              Cancel
+              {t("seller.promotions.cancel")}
             </button>
           </div>
           {formError && <div className="mq-alert mq-alert-error">{formError}</div>}
 
           <div className="grid sm:grid-cols-2 gap-3">
             <label className="space-y-1 text-sm sm:col-span-2">
-              <span className="text-mq-text-muted">Name</span>
+              <span className="text-mq-text-muted">{t("seller.promotions.name")}</span>
               <input
                 className="mq-input"
                 value={form.name}
@@ -277,7 +277,7 @@ function PromotionsInner() {
             </label>
 
             <label className="space-y-1 text-sm">
-              <span className="text-mq-text-muted">Type</span>
+              <span className="text-mq-text-muted">{t("seller.promotions.type")}</span>
               <select
                 className="mq-input"
                 value={form.type}
@@ -285,9 +285,9 @@ function PromotionsInner() {
                   setForm({ ...form, type: e.target.value as PromotionType })
                 }
               >
-                {TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
+                {TYPES.map((promoType) => (
+                  <option key={promoType} value={promoType}>
+                    {promoType}
                   </option>
                 ))}
               </select>
@@ -296,7 +296,9 @@ function PromotionsInner() {
             {form.type !== "FREE_SHIP" && (
               <label className="space-y-1 text-sm">
                 <span className="text-mq-text-muted">
-                  {form.type === "PERCENT" ? "Discount %" : "Discount amount"}
+                  {form.type === "PERCENT"
+                    ? t("seller.promotions.discountPct")
+                    : t("seller.promotions.discountAmt")}
                 </span>
                 <input
                   className="mq-input"
@@ -310,7 +312,7 @@ function PromotionsInner() {
 
             {form.type === "VOUCHER" && (
               <label className="space-y-1 text-sm">
-                <span className="text-mq-text-muted">Voucher code</span>
+                <span className="text-mq-text-muted">{t("seller.promotions.voucherCode")}</span>
                 <input
                   className="mq-input uppercase"
                   value={form.code}
@@ -324,7 +326,7 @@ function PromotionsInner() {
             )}
 
             <label className="space-y-1 text-sm">
-              <span className="text-mq-text-muted">Budget (optional)</span>
+              <span className="text-mq-text-muted">{t("seller.promotions.budget")}</span>
               <input
                 className="mq-input"
                 value={form.budget}
@@ -334,7 +336,7 @@ function PromotionsInner() {
             </label>
 
             <label className="space-y-1 text-sm">
-              <span className="text-mq-text-muted">Start</span>
+              <span className="text-mq-text-muted">{t("seller.promotions.start")}</span>
               <input
                 className="mq-input"
                 type="datetime-local"
@@ -345,7 +347,7 @@ function PromotionsInner() {
             </label>
 
             <label className="space-y-1 text-sm">
-              <span className="text-mq-text-muted">End</span>
+              <span className="text-mq-text-muted">{t("seller.promotions.end")}</span>
               <input
                 className="mq-input"
                 type="datetime-local"
@@ -357,16 +359,16 @@ function PromotionsInner() {
           </div>
 
           <div className="space-y-2">
-            <p className="text-sm text-mq-text-muted">SKUs (shop variants)</p>
+            <p className="text-sm text-mq-text-muted">{t("seller.promotions.skus")}</p>
             <div className="flex flex-wrap gap-2 items-center">
               <div className="min-w-[14rem] flex-1">
                 <SearchableSelect
                   options={availableSkuOptions}
                   value={skuPick}
                   onChange={addSku}
-                  placeholder="Add SKU…"
-                  searchPlaceholder="Search SKU…"
-                  aria-label="Add SKU"
+                  placeholder={t("seller.promotions.addSku")}
+                  searchPlaceholder={t("seller.promotions.searchSku")}
+                  aria-label={t("seller.promotions.addSku")}
                 />
               </div>
             </div>
@@ -398,7 +400,7 @@ function PromotionsInner() {
           </div>
 
           <div className="space-y-2">
-            <p className="text-sm text-mq-text-muted">Categories (optional)</p>
+            <p className="text-sm text-mq-text-muted">{t("seller.promotions.categories")}</p>
             <div className="max-h-40 overflow-y-auto space-y-1 rounded-md border border-mq-border p-2">
               {categories.map((c) => (
                 <label key={c.id} className="flex items-center gap-2 text-sm">
@@ -411,20 +413,26 @@ function PromotionsInner() {
                 </label>
               ))}
               {categories.length === 0 && (
-                <p className="text-xs text-mq-text-muted">No categories loaded.</p>
+                <p className="text-xs text-mq-text-muted">
+                  {t("seller.promotions.noCategories")}
+                </p>
               )}
             </div>
           </div>
 
           <button type="submit" className="mq-btn mq-btn-primary" disabled={busy}>
-            {busy ? "Saving…" : editingId ? "Save changes" : "Submit for review"}
+            {busy
+              ? t("seller.promotions.saving")
+              : editingId
+                ? t("seller.promotions.save")
+                : t("seller.promotions.submit")}
           </button>
         </form>
       )}
 
       {isError && (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : "Failed to load promotions"}
+          {error instanceof Error ? error.message : t("seller.promotions.loadFailed")}
         </div>
       )}
 
@@ -435,11 +443,11 @@ function PromotionsInner() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-mq-border text-left text-mq-text-muted">
-                <th className="py-2.5 px-3 font-medium">Name</th>
-                <th className="py-2.5 px-3 font-medium">Type</th>
-                <th className="py-2.5 px-3 font-medium">Status</th>
-                <th className="py-2.5 px-3 font-medium">Window</th>
-                <th className="py-2.5 px-3 font-medium">Targets</th>
+                <th className="py-2.5 px-3 font-medium">{t("seller.promotions.name")}</th>
+                <th className="py-2.5 px-3 font-medium">{t("seller.promotions.type")}</th>
+                <th className="py-2.5 px-3 font-medium">{t("seller.common.status")}</th>
+                <th className="py-2.5 px-3 font-medium">{t("seller.promotions.window")}</th>
+                <th className="py-2.5 px-3 font-medium">{t("seller.promotions.targets")}</th>
                 <th className="py-2.5 px-3 font-medium w-16" />
               </tr>
             </thead>
@@ -466,19 +474,31 @@ function PromotionsInner() {
                   </td>
                   <td className="py-2.5 px-3 text-xs text-mq-text-muted whitespace-nowrap">
                     {new Date(p.startAt).toLocaleString()}
-                    <br />→ {new Date(p.endAt).toLocaleString()}
+                    <br />
+                    {t("seller.promotions.windowTo")} {new Date(p.endAt).toLocaleString()}
                   </td>
                   <td className="py-2.5 px-3 text-xs text-mq-text-muted">
-                    {p.skus.length > 0 && <p>SKUs: {p.skus.join(", ")}</p>}
+                    {p.skus.length > 0 && (
+                      <p>{t("seller.promotions.skusLine", { skus: p.skus.join(", ") })}</p>
+                    )}
                     {p.categoryIds.length > 0 && (
-                      <p>Categories: {p.categoryIds.length}</p>
+                      <p>
+                        {t("seller.promotions.categoriesLine", {
+                          cats: p.categoryIds
+                            .map((id) => {
+                              const cat = categories.find((c) => c.id === id);
+                              return cat ? categoryLabel(cat, catLocale) : id;
+                            })
+                            .join(", "),
+                        })}
+                      </p>
                     )}
                   </td>
                   <td className="py-2.5 px-3">
                     {p.status === "PENDING" && (
                       <AdminActions>
                         <AdminIconButton
-                          label="Edit"
+                          label={t("seller.common.edit")}
                           icon={Pencil}
                           onClick={() => openEdit(p)}
                         />
@@ -490,7 +510,7 @@ function PromotionsInner() {
               {items.length === 0 && (
                 <tr>
                   <td colSpan={6} className="py-8 text-center text-mq-text-muted">
-                    No promotions found.
+                    {t("seller.promotions.empty")}
                   </td>
                 </tr>
               )}

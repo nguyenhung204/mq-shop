@@ -5,10 +5,12 @@ import { useState } from "react";
 import { formatMoney } from "@/lib/api/utils";
 import { useSellerSettlements } from "@/lib/queries/settlements";
 import { AuthGuard } from "@/components/guards/AuthGuard";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { OrderListSkeleton } from "@/components/ui/Skeleton";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 
 function SellerSettlementsInner() {
+  const { t } = useLanguage();
   const [page, setPage] = useState(1);
   const { data, isLoading, isError, error } = useSellerSettlements({
     status: "PENDING_RECONCILE",
@@ -21,34 +23,33 @@ function SellerSettlementsInner() {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-mq-text-muted">
-        Revenue from delivered orders awaiting reconcile / payout. Read-only MVP — no mark-paid
-        action yet.
-      </p>
+      <p className="text-sm text-mq-text-muted">{t("seller.settlementsPage.intro")}</p>
 
       <div className="mq-card p-4 flex flex-wrap items-baseline justify-between gap-2">
         <div>
           <p className="text-xs uppercase tracking-wide text-mq-text-muted">
-            Pending reconcile total
+            {t("seller.settlementsPage.pendingTotal")}
           </p>
           <p className="text-xl font-medium tabular-nums mt-1">
             {formatMoney(pendingTotal)}
           </p>
         </div>
         {typeof meta?.total === "number" ? (
-          <p className="text-sm text-mq-text-muted">{meta.total} entries</p>
+          <p className="text-sm text-mq-text-muted">
+            {t("admin.common.items", { count: String(meta.total) })}
+          </p>
         ) : null}
       </div>
 
       {isLoading && <OrderListSkeleton />}
       {isError && (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : "Failed"}
+          {error instanceof Error ? error.message : t("admin.common.failed")}
         </div>
       )}
       {!isLoading && items.length === 0 && !isError && (
         <p className="text-sm text-mq-text-muted py-6 text-center">
-          No pending settlements.
+          {t("seller.settlementsPage.empty")}
         </p>
       )}
       {items.map((s) => (

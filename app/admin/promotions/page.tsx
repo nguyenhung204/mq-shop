@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { Check, Plus, X } from "lucide-react";
 import {
   useAdminPromotions,
@@ -123,7 +123,7 @@ function buildBody(form: FormState): CreatePromotionBody | null {
 }
 
 function PromotionsInner() {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const catLocale = locale ?? "en";
   const [status, setStatus] = useState<PromotionStatus | "">("PENDING");
   const [page, setPage] = useState(1);
@@ -145,6 +145,17 @@ function PromotionsInner() {
   const approvePromo = useApprovePromotion();
   const rejectPromo = useRejectPromotion();
 
+  const categoryNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const c of categories) {
+      map.set(c.id, categoryLabel(c, catLocale));
+    }
+    return map;
+  }, [categories, catLocale]);
+
+  const formatCategories = (ids: string[]) =>
+    ids.map((id) => categoryNameById.get(id) ?? id).join(", ");
+
   const toggleCategory = (id: string) => {
     setForm((f) => ({
       ...f,
@@ -159,9 +170,7 @@ function PromotionsInner() {
     setFormError("");
     const body = buildBody(form);
     if (!body) {
-      setFormError(
-        "Check required fields. TARGETED needs SKUs or categories. Voucher needs a code.",
-      );
+      setFormError(t("admin.promotions.formError"));
       return;
     }
     try {
@@ -178,44 +187,43 @@ function PromotionsInner() {
   return (
     <>
       <AdminPageHeader
-        title="Promotions"
-        description="Approve seller campaigns and create platform or targeted promos."
+        title={t("admin.promotions.title")}
+        description={t("admin.promotions.description")}
         actions={
-          <div className="flex flex-wrap items-center gap-2">
-            <select
-              className="mq-input max-w-[11rem]"
-              value={status}
-              aria-label="Filter by status"
-              onChange={(e) => {
-                setStatus(e.target.value as PromotionStatus | "");
-                setPage(1);
-              }}
-            >
-              {STATUSES.map((s) => (
-                <option key={s || "all"} value={s}>
-                  {s || "All statuses"}
-                </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              className="mq-btn mq-btn-primary"
-              onClick={() => {
-                setShowForm((v) => !v);
-                setFormError("");
-              }}
-            >
-              <Plus size={16} aria-hidden />
-              {showForm ? "Hide form" : "Create"}
-            </button>
-          </div>
+          <button
+            type="button"
+            className="mq-btn mq-btn-primary shrink-0 whitespace-nowrap"
+            onClick={() => {
+              setShowForm((v) => !v);
+              setFormError("");
+            }}
+          >
+            <Plus size={16} aria-hidden />
+            {showForm ? t("admin.common.hideForm") : t("admin.common.create")}
+          </button>
         }
       />
 
       <div className="space-y-5">
+        <select
+          className="mq-input !w-[11rem] max-w-[11rem]"
+          value={status}
+          aria-label={t("admin.common.filterStatus")}
+          onChange={(e) => {
+            setStatus(e.target.value as PromotionStatus | "");
+            setPage(1);
+          }}
+        >
+          {STATUSES.map((s) => (
+            <option key={s || "all"} value={s}>
+              {s || t("admin.common.allStatuses")}
+            </option>
+          ))}
+        </select>
+
         {showForm && (
           <form className="mq-card p-5 space-y-4" onSubmit={(e) => void onSubmit(e)}>
-            <h3 className="font-semibold">Create promotion (goes ACTIVE)</h3>
+            <h3 className="font-semibold">{t("admin.promotions.createHeading")}</h3>
             {formError && <div className="mq-alert mq-alert-error">{formError}</div>}
 
             <div className="flex flex-wrap gap-4 text-sm">
@@ -226,7 +234,7 @@ function PromotionsInner() {
                   checked={form.scopeType === "PLATFORM"}
                   onChange={() => setForm({ ...form, scopeType: "PLATFORM" })}
                 />
-                PLATFORM (all marketplace)
+                {t("admin.promotions.scopePlatform")}
               </label>
               <label className="flex items-center gap-2">
                 <input
@@ -235,13 +243,13 @@ function PromotionsInner() {
                   checked={form.scopeType === "TARGETED"}
                   onChange={() => setForm({ ...form, scopeType: "TARGETED" })}
                 />
-                TARGETED (SKUs / categories)
+                {t("admin.promotions.scopeTargeted")}
               </label>
             </div>
 
             <div className="grid sm:grid-cols-2 gap-3">
               <label className="space-y-1 text-sm sm:col-span-2">
-                <span className="text-mq-text-muted">Name</span>
+                <span className="text-mq-text-muted">{t("admin.promotions.name")}</span>
                 <input
                   className="mq-input"
                   value={form.name}
@@ -251,7 +259,7 @@ function PromotionsInner() {
               </label>
 
               <label className="space-y-1 text-sm">
-                <span className="text-mq-text-muted">Type</span>
+                <span className="text-mq-text-muted">{t("admin.promotions.type")}</span>
                 <select
                   className="mq-input"
                   value={form.type}
@@ -259,9 +267,9 @@ function PromotionsInner() {
                     setForm({ ...form, type: e.target.value as PromotionType })
                   }
                 >
-                  {TYPES.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
+                  {TYPES.map((promoType) => (
+                    <option key={promoType} value={promoType}>
+                      {promoType}
                     </option>
                   ))}
                 </select>
@@ -270,7 +278,9 @@ function PromotionsInner() {
               {form.type !== "FREE_SHIP" && (
                 <label className="space-y-1 text-sm">
                   <span className="text-mq-text-muted">
-                    {form.type === "PERCENT" ? "Discount %" : "Discount amount"}
+                    {form.type === "PERCENT"
+                      ? t("admin.promotions.discountPct")
+                      : t("admin.promotions.discountAmt")}
                   </span>
                   <input
                     className="mq-input"
@@ -283,7 +293,7 @@ function PromotionsInner() {
 
               {form.type === "VOUCHER" && (
                 <label className="space-y-1 text-sm">
-                  <span className="text-mq-text-muted">Voucher code</span>
+                  <span className="text-mq-text-muted">{t("admin.promotions.voucherCode")}</span>
                   <input
                     className="mq-input uppercase"
                     value={form.code}
@@ -296,7 +306,7 @@ function PromotionsInner() {
               )}
 
               <label className="space-y-1 text-sm">
-                <span className="text-mq-text-muted">Budget (optional)</span>
+                <span className="text-mq-text-muted">{t("admin.promotions.budget")}</span>
                 <input
                   className="mq-input"
                   value={form.budget}
@@ -305,7 +315,7 @@ function PromotionsInner() {
               </label>
 
               <label className="space-y-1 text-sm">
-                <span className="text-mq-text-muted">Start</span>
+                <span className="text-mq-text-muted">{t("admin.promotions.start")}</span>
                 <input
                   className="mq-input"
                   type="datetime-local"
@@ -316,7 +326,7 @@ function PromotionsInner() {
               </label>
 
               <label className="space-y-1 text-sm">
-                <span className="text-mq-text-muted">End</span>
+                <span className="text-mq-text-muted">{t("admin.promotions.end")}</span>
                 <input
                   className="mq-input"
                   type="datetime-local"
@@ -330,17 +340,17 @@ function PromotionsInner() {
             {form.scopeType === "TARGETED" && (
               <>
                 <label className="space-y-1 text-sm block">
-                  <span className="text-mq-text-muted">SKUs (comma or space separated)</span>
+                  <span className="text-mq-text-muted">{t("admin.promotions.skus")}</span>
                   <textarea
                     className="mq-input"
                     rows={2}
                     value={form.skusText}
                     onChange={(e) => setForm({ ...form, skusText: e.target.value })}
-                    placeholder="SKU-A SKU-B"
+                    placeholder={t("admin.promotions.skusPh")}
                   />
                 </label>
                 <div className="space-y-2">
-                  <p className="text-sm text-mq-text-muted">Categories</p>
+                  <p className="text-sm text-mq-text-muted">{t("admin.promotions.categories")}</p>
                   <div className="max-h-36 overflow-y-auto space-y-1 rounded-md border border-mq-border p-2">
                     {categories.map((c) => (
                       <label key={c.id} className="flex items-center gap-2 text-sm">
@@ -362,14 +372,16 @@ function PromotionsInner() {
               className="mq-btn mq-btn-primary"
               disabled={createPromo.isPending}
             >
-              {createPromo.isPending ? "Creating…" : "Create promotion"}
+              {createPromo.isPending
+                ? t("admin.promotions.creating")
+                : t("admin.promotions.createBtn")}
             </button>
           </form>
         )}
 
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : "Failed to load"}
+            {error instanceof Error ? error.message : t("admin.common.failed")}
           </div>
         )}
 
@@ -377,56 +389,64 @@ function PromotionsInner() {
           <AdminCardListSkeleton />
         ) : (
           <div className="space-y-3">
-            {items.map((p) => (
-              <div key={p.id} className="mq-card p-4 flex flex-wrap justify-between gap-3">
-                <div className="min-w-0 space-y-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-medium">{p.name}</p>
-                    <span className={statusBadgeClass(p.status)}>{p.status}</span>
-                    <span className="mq-badge mq-badge-muted">{p.scopeType}</span>
-                    <span className="text-xs text-mq-text-muted">{p.type}</span>
+            {items.map((p) => {
+              const metaParts = [
+                p.type !== "FREE_SHIP"
+                  ? t("admin.promotions.discount", { value: p.discountValue })
+                  : null,
+                p.code ? t("admin.promotions.code", { code: p.code }) : null,
+                p.budget ? t("admin.promotions.budgetLine", { budget: p.budget }) : null,
+                `${new Date(p.startAt).toLocaleString()} → ${new Date(p.endAt).toLocaleString()}`,
+              ].filter(Boolean);
+
+              return (
+                <div key={p.id} className="mq-card p-4 flex flex-wrap justify-between gap-3">
+                  <div className="min-w-0 space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-medium">{p.name}</p>
+                      <span className={statusBadgeClass(p.status)}>{p.status}</span>
+                      <span className="mq-badge mq-badge-muted">{p.scopeType}</span>
+                      <span className="text-xs text-mq-text-muted">{p.type}</span>
+                    </div>
+                    <p className="text-xs text-mq-text-muted">{metaParts.join(" · ")}</p>
+                    {(p.skus.length > 0 || p.categoryIds.length > 0) && (
+                      <p className="text-xs text-mq-text-muted">
+                        {p.skus.length > 0 &&
+                          t("admin.promotions.skusLine", { skus: p.skus.join(", ") })}
+                        {p.skus.length > 0 && p.categoryIds.length > 0 ? " · " : ""}
+                        {p.categoryIds.length > 0 &&
+                          t("admin.promotions.categoriesLine", {
+                            cats: formatCategories(p.categoryIds),
+                          })}
+                      </p>
+                    )}
+                    {p.rejectionReason && (
+                      <p className="text-xs text-mq-danger">{p.rejectionReason}</p>
+                    )}
                   </div>
-                  <p className="text-xs text-mq-text-muted">
-                    {p.type !== "FREE_SHIP" && <>Discount {p.discountValue} · </>}
-                    {p.code && <>Code {p.code} · </>}
-                    {p.budget && <>Budget {p.budget} · </>}
-                    {new Date(p.startAt).toLocaleString()} →{" "}
-                    {new Date(p.endAt).toLocaleString()}
-                  </p>
-                  {(p.skus.length > 0 || p.categoryIds.length > 0) && (
-                    <p className="text-xs text-mq-text-muted">
-                      {p.skus.length > 0 && <>SKUs: {p.skus.join(", ")} </>}
-                      {p.categoryIds.length > 0 && (
-                        <>· Categories: {p.categoryIds.length}</>
-                      )}
-                    </p>
-                  )}
-                  {p.rejectionReason && (
-                    <p className="text-xs text-mq-danger">{p.rejectionReason}</p>
+                  {p.status === "PENDING" && (
+                    <AdminActions>
+                      <AdminIconButton
+                        label={t("admin.common.approve")}
+                        icon={Check}
+                        disabled={approvePromo.isPending}
+                        onClick={() => void approvePromo.mutateAsync(p.id)}
+                      />
+                      <AdminIconButton
+                        label={t("admin.common.reject")}
+                        icon={X}
+                        tone="danger"
+                        disabled={rejectPromo.isPending}
+                        onClick={() => setRejectTarget(p)}
+                      />
+                    </AdminActions>
                   )}
                 </div>
-                {p.status === "PENDING" && (
-                  <AdminActions>
-                    <AdminIconButton
-                      label="Approve"
-                      icon={Check}
-                      disabled={approvePromo.isPending}
-                      onClick={() => void approvePromo.mutateAsync(p.id)}
-                    />
-                    <AdminIconButton
-                      label="Reject"
-                      icon={X}
-                      tone="danger"
-                      disabled={rejectPromo.isPending}
-                      onClick={() => setRejectTarget(p)}
-                    />
-                  </AdminActions>
-                )}
-              </div>
-            ))}
+              );
+            })}
             {items.length === 0 && (
               <p className="text-sm text-mq-text-muted py-6 text-center">
-                No promotions in this filter.
+                {t("admin.promotions.empty")}
               </p>
             )}
           </div>
@@ -437,13 +457,13 @@ function PromotionsInner() {
 
       <AdminReasonModal
         open={Boolean(rejectTarget)}
-        title="Reject promotion"
+        title={t("admin.promotions.rejectTitle")}
         description={
           rejectTarget
-            ? `Reject “${rejectTarget.name}”. Seller will see this reason.`
+            ? t("admin.promotions.rejectDesc", { name: rejectTarget.name })
             : undefined
         }
-        confirmLabel="Reject"
+        confirmLabel={t("admin.promotions.rejectBtn")}
         maxLength={500}
         busy={rejectPromo.isPending}
         onClose={() => setRejectTarget(null)}

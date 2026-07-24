@@ -6,11 +6,13 @@ import {
   useMarketingFolders,
 } from "@/lib/queries/promotions";
 import { AuthGuard } from "@/components/guards/AuthGuard";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { useState } from "react";
 
 function MaterialsInner() {
+  const { t } = useLanguage();
   const [page, setPage] = useState(1);
   const { data, isLoading, isError, error } = useMarketingFolders(page, 20);
   const items = data?.items ?? [];
@@ -21,7 +23,7 @@ function MaterialsInner() {
     <div className="space-y-4">
       {isError && (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : "Failed to load materials (need VIEW_MKT_MAT)"}
+          {error instanceof Error ? error.message : t("seller.materials.loadFailed")}
         </div>
       )}
 
@@ -42,7 +44,12 @@ function MaterialsInner() {
                   </p>
                 )}
                 <p className="text-xs text-mq-text-muted mt-1">
-                  {folder.assetCount} file{folder.assetCount === 1 ? "" : "s"}
+                  {t(
+                    folder.assetCount === 1
+                      ? "seller.materials.files"
+                      : "seller.materials.files_plural",
+                    { count: String(folder.assetCount) },
+                  )}
                 </p>
               </div>
             </div>
@@ -53,14 +60,16 @@ function MaterialsInner() {
               onClick={() => void download.mutateAsync(folder.id)}
             >
               <Download size={14} aria-hidden />
-              {download.isPending ? "Downloading…" : "Download ZIP"}
+              {download.isPending
+                ? t("seller.materials.downloading")
+                : t("seller.materials.download")}
             </button>
           </div>
         ))}
       </div>
 
       {!isLoading && items.length === 0 && (
-        <p className="text-sm text-mq-text-muted">No marketing folders available yet.</p>
+        <p className="text-sm text-mq-text-muted">{t("seller.materials.empty")}</p>
       )}
 
       {meta && (

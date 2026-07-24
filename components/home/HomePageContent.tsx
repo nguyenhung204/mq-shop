@@ -55,10 +55,10 @@ export function HomePageContent() {
       })
       .catch((err: unknown) => {
         setListing([]);
-        setError(err instanceof Error ? err.message : "Failed to load products");
+        setError(err instanceof Error ? err.message : t("home.loadProductsFailed"));
       })
       .finally(() => setLoadingProducts(false));
-  }, []);
+  }, [t]);
 
   const inStock = useMemo(
     () => listing.filter((p) => p.inStock > 0 && p.displayMode !== "OUT_OF_STOCK_WATERMARK"),
@@ -115,7 +115,7 @@ export function HomePageContent() {
               ))}
             </div>
           ) : categories.length === 0 ? (
-            <p className="text-sm text-mq-text-muted text-center py-8">No categories yet.</p>
+            <p className="text-sm text-mq-text-muted text-center py-8">{t("home.noCategories")}</p>
           ) : (
             <CategoryMarquee
               categories={categories}

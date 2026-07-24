@@ -7,10 +7,12 @@ import { LogOut, Menu, Store, X } from "lucide-react";
 import { adminNavItems } from "@/components/admin/nav";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { hasAnyPermission, hasRole } = useAuth();
+  const { t } = useLanguage();
 
   const visible = adminNavItems.filter((i) => {
     if (i.sa) return hasRole("SUPER_ADMIN");
@@ -18,7 +20,6 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
     if (hasAnyPermission(i.permissions) || hasRole("ADMIN") || hasRole("SUPER_ADMIN")) {
       return true;
     }
-    // Accountant: /me often omits permissions[]; show commerce/audit items they own.
     if (hasRole("ACCOUNTANT")) {
       return i.permissions.some((p) =>
         ["PROCESS_RMA", "MANAGE_RMA", "VIEW_TRANSACT"].includes(p),
@@ -27,17 +28,25 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
     return false;
   });
 
-  const groups: { key: string; label: string; items: typeof visible }[] = [
-    { key: "ops", label: "Operations", items: visible.filter((i) => i.group === "ops") },
-    { key: "commerce", label: "Commerce", items: visible.filter((i) => i.group === "commerce") },
-    { key: "system", label: "System", items: visible.filter((i) => i.group === "system") },
+  const groups: { key: string; labelKey: string; items: typeof visible }[] = [
+    { key: "ops", labelKey: "admin.groups.ops", items: visible.filter((i) => i.group === "ops") },
+    {
+      key: "commerce",
+      labelKey: "admin.groups.commerce",
+      items: visible.filter((i) => i.group === "commerce"),
+    },
+    {
+      key: "system",
+      labelKey: "admin.groups.system",
+      items: visible.filter((i) => i.group === "system"),
+    },
   ].filter((g) => g.items.length > 0);
 
   return (
     <div className="mq-admin-nav">
       {groups.map((g) => (
         <div key={g.key} className="mq-admin-nav-group">
-          <p className="mq-admin-nav-label">{g.label}</p>
+          <p className="mq-admin-nav-label">{t(g.labelKey)}</p>
           <ul>
             {g.items.map((item) => {
               const active =
@@ -52,7 +61,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
                     onClick={onNavigate}
                   >
                     <Icon size={18} strokeWidth={1.75} aria-hidden />
-                    <span>{item.label}</span>
+                    <span>{t(item.labelKey)}</span>
                   </Link>
                 </li>
               );
@@ -66,6 +75,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
@@ -80,15 +90,15 @@ export function AdminShell({ children }: { children: ReactNode }) {
         <div className="mq-admin-brand">
           <span className="mq-admin-brand-mark">MQ</span>
           <div>
-            <p className="mq-admin-brand-title">Admin</p>
-            <p className="mq-admin-brand-sub">Control center</p>
+            <p className="mq-admin-brand-title">{t("admin.brand")}</p>
+            <p className="mq-admin-brand-sub">{t("admin.brandSub")}</p>
           </div>
         </div>
         <NavLinks />
         <div className="mq-admin-sidebar-foot">
           <Link href="/" className="mq-admin-nav-item">
             <Store size={18} strokeWidth={1.75} aria-hidden />
-            <span>Storefront</span>
+            <span>{t("admin.common.storefront")}</span>
           </Link>
         </div>
       </aside>
@@ -97,7 +107,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         <button
           type="button"
           className="mq-admin-backdrop"
-          aria-label="Close menu"
+          aria-label={t("admin.closeMenu")}
           onClick={() => setOpen(false)}
         />
       )}
@@ -106,14 +116,14 @@ export function AdminShell({ children }: { children: ReactNode }) {
         <div className="mq-admin-brand">
           <span className="mq-admin-brand-mark">MQ</span>
           <div>
-            <p className="mq-admin-brand-title">Admin</p>
-            <p className="mq-admin-brand-sub">Control center</p>
+            <p className="mq-admin-brand-title">{t("admin.brand")}</p>
+            <p className="mq-admin-brand-sub">{t("admin.brandSub")}</p>
           </div>
           <button
             type="button"
             className="mq-admin-icon-btn ml-auto"
             onClick={() => setOpen(false)}
-            aria-label="Close"
+            aria-label={t("admin.common.close")}
           >
             <X size={18} />
           </button>
@@ -128,19 +138,19 @@ export function AdminShell({ children }: { children: ReactNode }) {
               type="button"
               className="mq-admin-icon-btn"
               onClick={() => setOpen(true)}
-              aria-label="Open menu"
+              aria-label={t("admin.openMenu")}
             >
               <Menu size={20} />
             </button>
           </div>
           <div className="mq-admin-topbar-meta">
-            <p className="mq-admin-user-email">{user?.email || "Admin"}</p>
+            <p className="mq-admin-user-email">{user?.email || t("admin.brand")}</p>
             <p className="mq-admin-user-roles">{user?.roles?.join(" · ") || "—"}</p>
           </div>
           <NotificationBell />
           <button type="button" className="mq-admin-logout" onClick={() => void onLogout()}>
             <LogOut size={16} strokeWidth={1.75} />
-            Sign out
+            {t("admin.signOut")}
           </button>
         </header>
         <div className="mq-admin-content">{children}</div>

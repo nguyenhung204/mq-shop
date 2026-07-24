@@ -12,6 +12,7 @@ import {
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminIconButton } from "@/components/admin/AdminIconButton";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 
@@ -21,7 +22,18 @@ function formatBytes(n: number): string {
   return `${(n / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function fileCountLabel(
+  t: (key: string, vars?: Record<string, string>) => string,
+  count: number,
+): string {
+  return t(
+    count === 1 ? "admin.marketing.files" : "admin.marketing.files_plural",
+    { count: String(count) },
+  );
+}
+
 function MarketingInner() {
+  const { t } = useLanguage();
   const [page, setPage] = useState(1);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [name, setName] = useState("");
@@ -60,17 +72,17 @@ function MarketingInner() {
   return (
     <>
       <AdminPageHeader
-        title="Marketing library"
-        description="Create folders and upload assets for sellers to download as ZIP."
+        title={t("admin.marketing.title")}
+        description={t("admin.marketing.description")}
       />
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
         <div className="space-y-4">
           <form className="mq-card p-4 space-y-3" onSubmit={(e) => void onCreate(e)}>
-            <h3 className="font-semibold text-sm">New folder</h3>
+            <h3 className="font-semibold text-sm">{t("admin.marketing.newFolder")}</h3>
             <input
               className="mq-input"
-              placeholder="Folder name"
+              placeholder={t("admin.marketing.folderName")}
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -78,7 +90,7 @@ function MarketingInner() {
             <textarea
               className="mq-input"
               rows={2}
-              placeholder="Description (optional)"
+              placeholder={t("admin.marketing.folderDesc")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
@@ -87,13 +99,15 @@ function MarketingInner() {
               className="mq-btn mq-btn-primary"
               disabled={createFolder.isPending}
             >
-              {createFolder.isPending ? "Creating…" : "Create folder"}
+              {createFolder.isPending
+                ? t("admin.marketing.creating")
+                : t("admin.marketing.createFolder")}
             </button>
           </form>
 
           {isError && (
             <div className="mq-alert mq-alert-error">
-              {error instanceof Error ? error.message : "Failed to load folders"}
+              {error instanceof Error ? error.message : t("admin.marketing.loadFailed")}
             </div>
           )}
 
@@ -118,7 +132,7 @@ function MarketingInner() {
                   <span className="min-w-0">
                     <span className="font-medium block truncate">{f.name}</span>
                     <span className="text-xs text-mq-text-muted">
-                      {f.assetCount} file{f.assetCount === 1 ? "" : "s"}
+                      {fileCountLabel(t, f.assetCount)}
                       {f.description ? ` · ${f.description}` : ""}
                     </span>
                   </span>
@@ -126,7 +140,7 @@ function MarketingInner() {
               ))}
               {folders.length === 0 && (
                 <p className="text-sm text-mq-text-muted py-4 text-center">
-                  No folders yet.
+                  {t("admin.marketing.emptyFolders")}
                 </p>
               )}
             </div>
@@ -138,7 +152,7 @@ function MarketingInner() {
         <div className="mq-card p-4 min-h-[280px]">
           {!selectedId && (
             <p className="text-sm text-mq-text-muted py-12 text-center">
-              Select a folder to manage assets.
+              {t("admin.marketing.selectFolder")}
             </p>
           )}
           {selectedId && folderLoading && <AdminCardListSkeleton count={2} />}
@@ -165,7 +179,9 @@ function MarketingInner() {
                   onClick={() => fileRef.current?.click()}
                 >
                   <Upload size={14} aria-hidden />
-                  {uploadAsset.isPending ? "Uploading…" : "Upload file (≤20MB)"}
+                  {uploadAsset.isPending
+                    ? t("admin.marketing.uploading")
+                    : t("admin.marketing.upload")}
                 </button>
               </div>
 
@@ -189,12 +205,12 @@ function MarketingInner() {
                       </p>
                     </div>
                     <AdminIconButton
-                      label="Delete"
+                      label={t("admin.common.delete")}
                       icon={Trash2}
                       tone="danger"
                       disabled={deleteAsset.isPending}
                       onClick={() => {
-                        if (confirm(`Delete “${a.fileName}”?`)) {
+                        if (confirm(t("admin.marketing.confirmDelete", { name: a.fileName }))) {
                           void deleteAsset.mutateAsync(a.id);
                         }
                       }}
@@ -203,7 +219,7 @@ function MarketingInner() {
                 ))}
                 {(folder.assets ?? []).length === 0 && (
                   <li className="text-sm text-mq-text-muted py-4 text-center">
-                    Folder is empty.
+                    {t("admin.marketing.emptyAssets")}
                   </li>
                 )}
               </ul>

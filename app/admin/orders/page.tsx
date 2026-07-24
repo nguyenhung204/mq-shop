@@ -18,6 +18,7 @@ import { useAdminProducts, useAdminShops } from "@/lib/queries/admin";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { CountrySelect } from "@/components/ui/CountrySelect";
 import { PhoneInput } from "@/components/ui/PhoneInput";
 import { AddressRegionFields } from "@/components/ui/AddressRegionFields";
@@ -51,6 +52,7 @@ function variantOptionLabel(v: ProductVariant): string {
 }
 
 function OrdersInner() {
+  const { t } = useLanguage();
   const [status, setStatus] = useState<OrderStatus | "">("PENDING");
   const [shopId, setShopId] = useState("");
   const [page, setPage] = useState(1);
@@ -200,15 +202,15 @@ function OrdersInner() {
   return (
     <>
       <AdminPageHeader
-        title="Orders"
-        description="Cross-shop inbox, force cancel, and create orders on behalf of buyers."
+        title={t("admin.orders.title")}
+        description={t("admin.orders.description")}
         actions={
           <button
             type="button"
             className="mq-btn mq-btn-primary text-xs"
             onClick={() => setCreateOpen((v) => !v)}
           >
-            {createOpen ? "Close form" : "Create for buyer"}
+            {createOpen ? t("admin.common.closeForm") : t("admin.ordersPage.createForBuyer")}
           </button>
         }
       />
@@ -216,14 +218,14 @@ function OrdersInner() {
       {createOpen ? (
         <form className="mq-admin-panel p-5 mb-6 grid sm:grid-cols-2 gap-3" onSubmit={(e) => void onCreate(e)}>
           <label className="block text-sm sm:col-span-2">
-            <span className="text-xs text-mq-text-muted">Buyer</span>
+            <span className="text-xs text-mq-text-muted">{t("admin.ordersPage.buyer")}</span>
             <div className="mt-1">
               <SearchableSelect
                 options={buyerOptions}
                 value={buyerId}
                 required
-                aria-label="Buyer"
-                placeholder="Search buyer by name or email…"
+                aria-label={t("admin.ordersPage.buyer")}
+                placeholder={t("admin.ordersPage.searchBuyer")}
                 searchPlaceholder="Name or email…"
                 onChange={(id) => {
                   setBuyerId(id);
@@ -234,13 +236,13 @@ function OrdersInner() {
             </div>
           </label>
           <label className="block text-sm sm:col-span-2">
-            <span className="text-xs text-mq-text-muted">Product variant</span>
+            <span className="text-xs text-mq-text-muted">{t("admin.ordersPage.productVariant")}</span>
             <div className="mt-1">
               <SearchableSelect
                 options={variantOptions}
                 value={variantId}
                 required
-                aria-label="Product variant"
+                aria-label={t("admin.ordersPage.productVariant")}
                 placeholder="Search product, SKU, or variant…"
                 searchPlaceholder="Product, SKU, options…"
                 onChange={setVariantId}
@@ -253,7 +255,7 @@ function OrdersInner() {
             min="1"
             value={qty}
             onChange={(e) => setQty(e.target.value)}
-            aria-label="Quantity"
+            aria-label={t("admin.ordersPage.quantity")}
           />
           <select
             className="mq-input"
@@ -266,7 +268,7 @@ function OrdersInner() {
           </select>
           <input
             className="mq-input"
-            placeholder="Full name"
+            placeholder={t("admin.ordersPage.fullName")}
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             required
@@ -280,7 +282,7 @@ function OrdersInner() {
               setDistrict("");
             }}
             required
-            aria-label="Country"
+            aria-label={t("admin.ordersPage.country")}
           />
           <div className="sm:col-span-2">
             <PhoneInput
@@ -300,7 +302,7 @@ function OrdersInner() {
           />
           <input
             className="mq-input sm:col-span-2"
-            placeholder="Address line"
+            placeholder={t("admin.ordersPage.addressLine")}
             value={line1}
             onChange={(e) => setLine1(e.target.value)}
             required
@@ -321,12 +323,13 @@ function OrdersInner() {
         <select
           className="mq-input max-w-[12rem]"
           value={status}
+          aria-label={t("admin.common.filterStatus")}
           onChange={(e) => {
             setStatus(e.target.value as OrderStatus | "");
             setPage(1);
           }}
         >
-          <option value="">All</option>
+          <option value="">{t("admin.common.all")}</option>
           {(
             [
               "PENDING",
@@ -347,12 +350,13 @@ function OrdersInner() {
         <select
           className="mq-input max-w-[16rem]"
           value={shopId}
+          aria-label={t("admin.common.shop")}
           onChange={(e) => {
             setShopId(e.target.value);
             setPage(1);
           }}
         >
-          <option value="">All shops</option>
+          <option value="">{t("admin.common.allShops")}</option>
           {shops.map((s) => (
             <option key={s.id} value={s.id}>
               {s.name}
@@ -364,12 +368,12 @@ function OrdersInner() {
       <div className="space-y-4">
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : "Failed"}
+            {error instanceof Error ? error.message : t("admin.common.failed")}
           </div>
         )}
         {isLoading ? <AdminCardListSkeleton count={4} /> : null}
         {!isLoading && items.length === 0 ? (
-          <p className="text-sm text-mq-text-muted">No orders for this filter.</p>
+          <p className="text-sm text-mq-text-muted">{t("admin.ordersPage.empty")}</p>
         ) : null}
         {items.map((o) => (
           <div
@@ -389,7 +393,7 @@ function OrdersInner() {
             {o.status !== "CANCELLED" && o.status !== "DELIVERED" && o.status !== "REFUND_APPROVED" ? (
               <AdminActions>
                 <AdminIconButton
-                  label="Cancel"
+                  label={t("admin.common.cancel")}
                   icon={Ban}
                   tone="danger"
                   disabled={cancelOrder.isPending}

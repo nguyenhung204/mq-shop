@@ -8,10 +8,12 @@ import { formatMoney } from "@/lib/api/utils";
 import { useSellerOrders } from "@/lib/queries/seller";
 import { useUpdateOrderStatus } from "@/lib/queries/orders";
 import { AuthGuard } from "@/components/guards/AuthGuard";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { OrderListSkeleton } from "@/components/ui/Skeleton";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 
 function SellerOrdersInner() {
+  const { t } = useLanguage();
   const [status, setStatus] = useState<OrderStatus | "">("");
   const [page, setPage] = useState(1);
   const { data, isLoading, isError, error } = useSellerOrders({
@@ -26,23 +28,21 @@ function SellerOrdersInner() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-mq-text-muted">
-        Fulfillment pipeline: PAID → CONFIRMED → PACKED → SHIPPED → DELIVERED. After RMA approve,
-        restock via{" "}
+        {t("seller.ordersPage.help")}{" "}
         <Link href="/seller/inventory" className="underline">
-          Inventory slips
+          {t("seller.ordersPage.inventorySlips")}
         </Link>
-        .
       </p>
       <select
         className="mq-input max-w-[14rem]"
         value={status}
-        aria-label="Filter status"
+        aria-label={t("seller.ordersPage.filterStatus")}
         onChange={(e) => {
           setStatus(e.target.value as OrderStatus | "");
           setPage(1);
         }}
       >
-        <option value="">All</option>
+        <option value="">{t("seller.common.all")}</option>
         {(
           [
             "PENDING",
@@ -64,9 +64,12 @@ function SellerOrdersInner() {
       {isLoading && <OrderListSkeleton />}
       {isError && (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : "Failed"}
+          {error instanceof Error ? error.message : t("admin.common.failed")}
         </div>
       )}
+      {!isLoading && !isError && orders.length === 0 ? (
+        <p className="text-sm text-mq-text-muted">{t("seller.ordersPage.empty")}</p>
+      ) : null}
       {orders.map((o) => {
         const next = nextFulfillmentStatus(o.status);
         return (

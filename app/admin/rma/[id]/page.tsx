@@ -13,9 +13,11 @@ import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 
 function RmaDetailInner({ id }: { id: string }) {
+  const { t } = useLanguage();
   const { data: rma, isLoading, isError, error } = useAdminRmaDetail(id);
   const rmaDecision = useAdminRmaDecision();
   const markRefunded = useAdminRmaMarkRefunded();
@@ -28,7 +30,7 @@ function RmaDetailInner({ id }: { id: string }) {
   return (
     <>
       <AdminPageHeader
-        title={rma?.orderCode ? `RMA · ${rma.orderCode}` : "RMA detail"}
+        title={rma?.orderCode ? `RMA · ${rma.orderCode}` : t("admin.rmaPage.detailTitle")}
         description="Review return reason, bank info, and evidence. Accountant marks refunded after external payout."
       />
       <div className="space-y-6 max-w-3xl">
@@ -38,7 +40,7 @@ function RmaDetailInner({ id }: { id: string }) {
 
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : "Failed to load RMA"}
+            {error instanceof Error ? error.message : t("admin.common.failed")}
           </div>
         )}
         {isLoading && <AdminCardListSkeleton count={3} />}
@@ -51,14 +53,16 @@ function RmaDetailInner({ id }: { id: string }) {
                 <div className="flex flex-wrap gap-2 items-center">
                   <span className="mq-badge mq-badge-pink">{rma.status}</span>
                   {rma.orderStatus ? (
-                    <span className="mq-badge mq-badge-cyan">Order · {rma.orderStatus}</span>
+                    <span className="mq-badge mq-badge-cyan">
+                      {t("admin.rmaPage.order")} · {rma.orderStatus}
+                    </span>
                   ) : null}
                 </div>
               </div>
               {rma.status === "PENDING" ? (
                 <AdminActions>
                   <AdminIconButton
-                    label="Approve"
+                    label={t("admin.common.approve")}
                     icon={Check}
                     tone="approve"
                     disabled={busy}
@@ -67,7 +71,7 @@ function RmaDetailInner({ id }: { id: string }) {
                     }
                   />
                   <AdminIconButton
-                    label="Reject"
+                    label={t("admin.common.reject")}
                     icon={X}
                     tone="reject"
                     disabled={busy}
@@ -78,7 +82,7 @@ function RmaDetailInner({ id }: { id: string }) {
               {canMarkRefunded ? (
                 <AdminActions>
                   <AdminIconButton
-                    label="Mark refunded"
+                    label={t("admin.common.markRefunded")}
                     icon={Banknote}
                     tone="approve"
                     disabled={busy}
@@ -97,7 +101,7 @@ function RmaDetailInner({ id }: { id: string }) {
 
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <dt className="text-xs text-mq-text-muted">Order</dt>
+                <dt className="text-xs text-mq-text-muted">{t("admin.rmaPage.order")}</dt>
                 <dd>
                   {rma.orderId ? (
                     <Link
@@ -117,13 +121,13 @@ function RmaDetailInner({ id }: { id: string }) {
               </div>
               {rma.buyerId ? (
                 <div>
-                  <dt className="text-xs text-mq-text-muted">Buyer</dt>
+                  <dt className="text-xs text-mq-text-muted">{t("admin.rmaPage.buyer")}</dt>
                   <dd className="font-mono text-xs">{rma.buyerId}</dd>
                 </div>
               ) : null}
               {rma.shopId ? (
                 <div>
-                  <dt className="text-xs text-mq-text-muted">Shop</dt>
+                  <dt className="text-xs text-mq-text-muted">{t("admin.rmaPage.shop")}</dt>
                   <dd className="font-mono text-xs">{rma.shopId}</dd>
                 </div>
               ) : null}
@@ -137,7 +141,7 @@ function RmaDetailInner({ id }: { id: string }) {
 
             <div>
               <h3 className="text-xs uppercase tracking-wide text-mq-text-muted mb-1">
-                Reason
+                {t("admin.common.reason")}
               </h3>
               <p className="text-mq-text-secondary whitespace-pre-wrap">{rma.reason}</p>
             </div>
@@ -158,7 +162,7 @@ function RmaDetailInner({ id }: { id: string }) {
                 </h3>
                 <dl className="grid grid-cols-1 sm:grid-cols-3 gap-3 rounded-[var(--mq-radius-sm)] border border-mq-border bg-mq-surface-subtle p-3">
                   <div>
-                    <dt className="text-xs text-mq-text-muted">Bank</dt>
+                    <dt className="text-xs text-mq-text-muted">{t("admin.rmaPage.bank")}</dt>
                     <dd>{rma.bankInfo.bankName}</dd>
                   </div>
                   <div>
@@ -166,7 +170,7 @@ function RmaDetailInner({ id }: { id: string }) {
                     <dd className="font-mono text-xs">{rma.bankInfo.accountNumber}</dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-mq-text-muted">Name</dt>
+                    <dt className="text-xs text-mq-text-muted">{t("admin.common.name")}</dt>
                     <dd>{rma.bankInfo.accountName}</dd>
                   </div>
                 </dl>
@@ -178,7 +182,7 @@ function RmaDetailInner({ id }: { id: string }) {
                 Evidence ({rma.evidenceUrls?.length ?? 0})
               </h3>
               {(rma.evidenceUrls?.length ?? 0) === 0 ? (
-                <p className="text-mq-text-muted text-xs">No evidence images.</p>
+                <p className="text-mq-text-muted text-xs">{t("admin.rmaPage.noEvidence")}</p>
               ) : (
                 <ul className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {rma.evidenceUrls.map((url) => (
@@ -208,9 +212,9 @@ function RmaDetailInner({ id }: { id: string }) {
 
       <AdminReasonModal
         open={rejectOpen}
-        title="Reject RMA"
-        description="Buyer will be notified. Provide a clear reason."
-        confirmLabel="Reject"
+        title={t("admin.rmaPage.rejectTitle")}
+        description={t("admin.rmaPage.rejectDesc")}
+        confirmLabel={t("admin.common.reject")}
         maxLength={500}
         busy={busy}
         onClose={() => setRejectOpen(false)}
@@ -226,9 +230,9 @@ function RmaDetailInner({ id }: { id: string }) {
 
       <AdminReasonModal
         open={refundOpen}
-        title="Mark as refunded"
-        description="Confirm the external bank transfer is done. Order becomes REFUNDED and RMA CLOSED; buyer is notified."
-        confirmLabel="Mark refunded"
+        title={t("admin.rmaPage.markRefundedTitle")}
+        description={t("admin.rmaPage.markRefundedDesc")}
+        confirmLabel={t("admin.common.markRefunded")}
         required={false}
         maxLength={500}
         busy={busy}

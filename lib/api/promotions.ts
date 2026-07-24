@@ -4,7 +4,15 @@ import type { PageMeta, Paginated } from "./types";
 export type PromotionType = "PERCENT" | "FIXED" | "FREE_SHIP" | "VOUCHER";
 export type PromotionScope = "PLATFORM" | "TARGETED";
 export type PromotionStatus = "PENDING" | "ACTIVE" | "REJECTED" | "EXPIRED";
-export type BannerLang = "VI" | "EN";
+export type BannerLang = "VI" | "EN" | "TW";
+
+export const BANNER_LANGS: BannerLang[] = ["VI", "EN", "TW"];
+
+export const BANNER_LANG_LABELS: Record<BannerLang, string> = {
+  VI: "Tiếng Việt",
+  EN: "English",
+  TW: "繁體中文／台灣",
+};
 
 export type Promotion = {
   id: string;

@@ -8,6 +8,7 @@ import type { ApiAuditLog } from "@/lib/api/types";
 import { parsePage } from "@/lib/api/utils";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 
@@ -28,6 +29,7 @@ function outcomeBadgeClass(outcome: ApiAuditLog["outcome"] | undefined): string 
 }
 
 function AuditRow({ log }: { log: ApiAuditLog }) {
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const title = log.title || log.action;
   const outcomeText = log.outcomeLabel || log.outcome;
@@ -80,7 +82,7 @@ function AuditRow({ log }: { log: ApiAuditLog }) {
               ) : null}
               {log.reason ? (
                 <p>
-                  <span className="text-mq-text-muted">Reason: </span>
+                  <span className="text-mq-text-muted">{t("admin.common.reasonPrefix")}</span>
                   {log.reason}
                 </p>
               ) : null}
@@ -99,6 +101,7 @@ function AuditRow({ log }: { log: ApiAuditLog }) {
 }
 
 function AuditInner() {
+  const { t } = useLanguage();
   const [page, setPage] = useState(1);
   const [action, setAction] = useState("");
   const [outcome, setOutcome] = useState("");
@@ -130,20 +133,20 @@ function AuditInner() {
   return (
     <>
       <AdminPageHeader
-        title="Audit logs"
-        description="Human-readable activity trail. Use action code only when filtering."
+        title={t("admin.audit.title")}
+        description={t("admin.audit.description")}
       />
       <div className="space-y-6">
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : "Failed"}
+            {error instanceof Error ? error.message : t("admin.common.failed")}
           </div>
         )}
 
         <div className="mq-admin-panel p-4 flex flex-wrap gap-3">
           <input
             className="mq-input max-w-xs"
-            placeholder="Filter by action code…"
+            placeholder={t("admin.auditPage.filterAction")}
             value={action}
             onChange={(e) => {
               setAction(e.target.value);
@@ -158,10 +161,10 @@ function AuditInner() {
               setPage(1);
             }}
           >
-            <option value="">Any outcome</option>
-            <option value="success">Succeeded</option>
-            <option value="failure">Failed</option>
-            <option value="denied">Denied</option>
+            <option value="">{t("admin.auditPage.anyOutcome")}</option>
+            <option value="success">{t("admin.auditPage.succeeded")}</option>
+            <option value="failure">{t("admin.auditPage.failed")}</option>
+            <option value="denied">{t("admin.auditPage.denied")}</option>
           </select>
           <input
             className="mq-input max-w-xs"
@@ -214,17 +217,25 @@ function AuditInner() {
             <table className="w-full text-sm">
               <thead className="bg-mq-surface-subtle text-left">
                 <tr>
-                  <th className="p-3 font-medium text-xs text-mq-text-muted">Time</th>
-                  <th className="p-3 font-medium text-xs text-mq-text-muted">Event</th>
-                  <th className="p-3 font-medium text-xs text-mq-text-muted">Outcome</th>
-                  <th className="p-3 font-medium text-xs text-mq-text-muted">Actor</th>
+                  <th className="p-3 font-medium text-xs text-mq-text-muted">
+                    {t("admin.auditPage.time")}
+                  </th>
+                  <th className="p-3 font-medium text-xs text-mq-text-muted">
+                    {t("admin.auditPage.event")}
+                  </th>
+                  <th className="p-3 font-medium text-xs text-mq-text-muted">
+                    {t("admin.auditPage.outcome")}
+                  </th>
+                  <th className="p-3 font-medium text-xs text-mq-text-muted">
+                    {t("admin.auditPage.actor")}
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {items.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="p-8 text-center text-sm text-mq-text-muted">
-                      No audit events in this range.
+                      {t("admin.auditPage.empty")}
                     </td>
                   </tr>
                 ) : (

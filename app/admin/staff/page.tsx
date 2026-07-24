@@ -14,6 +14,7 @@ import {
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 
@@ -33,6 +34,7 @@ function primaryStaffRole(u: AuthUser): StaffRole | "" {
 }
 
 function StaffInner() {
+  const { t } = useLanguage();
   const [shopFilter, setShopFilter] = useState("");
   const [roleFilter, setRoleFilter] = useState<StaffPoolRole | "">("BUYER");
   const [page, setPage] = useState(1);
@@ -126,7 +128,7 @@ function StaffInner() {
     e.preventDefault();
     if (!assignOpen) return;
     if (!assignShopId) {
-      toast.error("Shop is required when assigning a staff role.");
+      toast.error(t("admin.staffPage.shopRequired"));
       return;
     }
     try {
@@ -148,7 +150,7 @@ function StaffInner() {
     if (!createdCred) return;
     try {
       await navigator.clipboard.writeText(createdCred.temporaryPassword);
-      toast.success("Password copied");
+      toast.success(t("admin.staffPage.passwordCopied"));
     } catch {
       toast.error("Could not copy");
     }
@@ -157,8 +159,8 @@ function StaffInner() {
   return (
     <>
       <AdminPageHeader
-        title="Shop staff"
-        description="Pool: BUYER candidates (no SELLER) and assigned WAREHOUSE / CS / ACCOUNTANT. Prefer Assign role on an existing BUYER; Create only for a brand-new email."
+        title={t("admin.staff.title")}
+        description={t("admin.staff.description")}
         actions={
           <button
             type="button"
@@ -166,7 +168,7 @@ function StaffInner() {
             onClick={() => setCreateOpen(true)}
           >
             <Plus size={16} strokeWidth={2.25} />
-            Create staff
+            {t("admin.common.create")}
           </button>
         }
       />
@@ -174,7 +176,7 @@ function StaffInner() {
       <div className="space-y-6">
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : "Failed"}
+            {error instanceof Error ? error.message : t("admin.common.failed")}
           </div>
         )}
 
@@ -182,13 +184,13 @@ function StaffInner() {
           <select
             className="mq-input max-w-[16rem]"
             value={shopFilter}
-            aria-label="Filter by shop"
+            aria-label={t("admin.common.shop")}
             onChange={(e) => {
               setShopFilter(e.target.value);
               setPage(1);
             }}
           >
-            <option value="">All shops (+ unassigned BUYER)</option>
+            <option value="">{t("admin.staffPage.allShopsUnassigned")}</option>
             {shops.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
@@ -198,13 +200,13 @@ function StaffInner() {
           <select
             className="mq-input max-w-[11rem]"
             value={roleFilter}
-            aria-label="Filter by role"
+            aria-label={t("admin.staffPage.role")}
             onChange={(e) => {
               setRoleFilter(e.target.value as StaffPoolRole | "");
               setPage(1);
             }}
           >
-            <option value="">All pool</option>
+            <option value="">{t("admin.staffPage.allPool")}</option>
             {POOL_FILTERS.map((r) => (
               <option key={r} value={r}>
                 {r === "BUYER" ? "BUYER (candidates)" : r}
@@ -216,17 +218,17 @@ function StaffInner() {
         {isLoading ? (
           <TableSkeleton rows={6} cols={5} />
         ) : items.length === 0 ? (
-          <p className="text-sm text-mq-text-muted">No users for this filter.</p>
+          <p className="text-sm text-mq-text-muted">{t("admin.staffPage.empty")}</p>
         ) : (
           <div className="mq-table-wrap">
             <table className="w-full text-sm">
               <thead className="bg-mq-surface-subtle text-left">
                 <tr>
-                  <th className="p-3">Email</th>
-                  <th className="p-3">Name</th>
-                  <th className="p-3">Shop</th>
-                  <th className="p-3">Roles</th>
-                  <th className="p-3">Status</th>
+                  <th className="p-3">{t("admin.common.email")}</th>
+                  <th className="p-3">{t("admin.common.name")}</th>
+                  <th className="p-3">{t("admin.common.shop")}</th>
+                  <th className="p-3">{t("admin.common.roles")}</th>
+                  <th className="p-3">{t("admin.common.status")}</th>
                   <th className="p-3" />
                 </tr>
               </thead>
@@ -239,7 +241,7 @@ function StaffInner() {
                       <td className="p-3">{u.fullName || "—"}</td>
                       <td className="p-3 text-xs text-mq-text-secondary">
                         {u.shopId ? shopName(u.shopId) : (
-                          <span className="text-mq-text-muted">Unassigned</span>
+                          <span className="text-mq-text-muted">{t("admin.staffPage.unassigned")}</span>
                         )}
                       </td>
                       <td className="p-3">
@@ -254,7 +256,11 @@ function StaffInner() {
                       <td className="p-3 whitespace-nowrap">
                         <AdminActions>
                           <AdminIconButton
-                            label={candidate ? "Assign role" : "Edit roles"}
+                            label={
+                              candidate
+                                ? t("admin.common.assignRole")
+                                : t("admin.common.editRoles")
+                            }
                             icon={candidate ? UserPlus : Pencil}
                             tone={candidate ? "approve" : "secondary"}
                             disabled={updateRoles.isPending}
@@ -263,7 +269,7 @@ function StaffInner() {
                           {!candidate ? (
                             <>
                               <AdminIconButton
-                                label="Lock"
+                                label={t("admin.common.lock")}
                                 icon={Lock}
                                 tone="warn"
                                 disabled={accountAction.isPending}
@@ -275,7 +281,7 @@ function StaffInner() {
                                 }
                               />
                               <AdminIconButton
-                                label="Unlock"
+                                label={t("admin.common.unlock")}
                                 icon={Unlock}
                                 tone="approve"
                                 disabled={accountAction.isPending}
@@ -287,7 +293,7 @@ function StaffInner() {
                                 }
                               />
                               <AdminIconButton
-                                label="Delete"
+                                label={t("admin.common.delete")}
                                 icon={Trash2}
                                 tone="danger"
                                 disabled={accountAction.isPending}
@@ -324,7 +330,7 @@ function StaffInner() {
           <button
             type="button"
             className="mq-admin-modal-backdrop"
-            aria-label="Close dialog"
+            aria-label={t("admin.common.close")}
             onClick={closeCreate}
           />
           <div
@@ -335,12 +341,12 @@ function StaffInner() {
           >
             <div className="mq-admin-modal-head">
               <h2 id="create-staff-title" className="mq-admin-modal-title">
-                Create shop staff
+                {t("admin.common.create")}
               </h2>
               <button
                 type="button"
                 className="mq-admin-icon-btn"
-                aria-label="Close"
+                aria-label={t("admin.common.close")}
                 onClick={closeCreate}
               >
                 <X size={16} />
@@ -351,7 +357,9 @@ function StaffInner() {
                 Only when the email does not exist yet. Prefer Assign on a BUYER candidate.
               </p>
               <div>
-                <label className="block text-xs font-medium text-mq-text-muted mb-1.5">Email</label>
+                <label className="block text-xs font-medium text-mq-text-muted mb-1.5">
+                  {t("admin.common.email")}
+                </label>
                 <input
                   type="email"
                   className="mq-input"
@@ -364,7 +372,7 @@ function StaffInner() {
               </div>
               <div>
                 <label className="block text-xs font-medium text-mq-text-muted mb-1.5">
-                  Full name (optional)
+                  {t("admin.common.name")} ({t("admin.common.optional")})
                 </label>
                 <input
                   className="mq-input"
@@ -374,7 +382,9 @@ function StaffInner() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-mq-text-muted mb-1.5">Role</label>
+                <label className="block text-xs font-medium text-mq-text-muted mb-1.5">
+                  {t("admin.staffPage.role")}
+                </label>
                 <select
                   className="mq-input"
                   value={role}
@@ -390,7 +400,7 @@ function StaffInner() {
               </div>
               <div>
                 <label className="block text-xs font-medium text-mq-text-muted mb-1.5">
-                  Shop (APPROVED)
+                  {t("admin.common.shop")}
                 </label>
                 <select
                   className="mq-input"
@@ -398,7 +408,7 @@ function StaffInner() {
                   onChange={(e) => setShopId(e.target.value)}
                   required
                 >
-                  <option value="">Select shop</option>
+                  <option value="">{t("admin.staffPage.selectShop")}</option>
                   {shops.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.name}
@@ -412,14 +422,16 @@ function StaffInner() {
                   className="mq-admin-btn mq-admin-btn-secondary"
                   onClick={closeCreate}
                 >
-                  Cancel
+                  {t("admin.common.cancel")}
                 </button>
                 <button
                   type="submit"
                   className="mq-admin-btn mq-admin-btn-approve"
                   disabled={createStaff.isPending}
                 >
-                  {createStaff.isPending ? "Creating…" : "Create"}
+                  {createStaff.isPending
+                    ? t("admin.staffPage.creating")
+                    : t("admin.common.create")}
                 </button>
               </div>
             </form>
@@ -432,7 +444,7 @@ function StaffInner() {
           <button
             type="button"
             className="mq-admin-modal-backdrop"
-            aria-label="Close dialog"
+            aria-label={t("admin.common.close")}
             onClick={closeAssign}
           />
           <div
@@ -443,13 +455,15 @@ function StaffInner() {
           >
             <div className="mq-admin-modal-head">
               <h2 id="assign-roles-title" className="mq-admin-modal-title">
-                {isBuyerCandidate(assignOpen) ? "Assign staff role" : "Edit staff roles"} —{" "}
-                {assignOpen.email}
+                {isBuyerCandidate(assignOpen)
+                  ? t("admin.staffPage.assignTitle")
+                  : t("admin.staffPage.editTitle")}{" "}
+                — {assignOpen.email}
               </h2>
               <button
                 type="button"
                 className="mq-admin-icon-btn"
-                aria-label="Close"
+                aria-label={t("admin.common.close")}
                 onClick={closeAssign}
               >
                 <X size={16} />
@@ -457,7 +471,9 @@ function StaffInner() {
             </div>
             <form className="mq-admin-modal-body space-y-3" onSubmit={(e) => void onAssign(e)}>
               <div>
-                <label className="block text-xs font-medium text-mq-text-muted mb-1.5">Role</label>
+                <label className="block text-xs font-medium text-mq-text-muted mb-1.5">
+                  {t("admin.staffPage.role")}
+                </label>
                 <select
                   className="mq-input"
                   value={assignRole}
@@ -473,7 +489,8 @@ function StaffInner() {
               </div>
               <div>
                 <label className="block text-xs font-medium text-mq-text-muted mb-1.5">
-                  Shop {isBuyerCandidate(assignOpen) ? "(required)" : ""}
+                  {t("admin.common.shop")}
+                  {isBuyerCandidate(assignOpen) ? ` (${t("admin.common.required")})` : ""}
                 </label>
                 <select
                   className="mq-input"
@@ -481,7 +498,7 @@ function StaffInner() {
                   onChange={(e) => setAssignShopId(e.target.value)}
                   required
                 >
-                  <option value="">Select shop</option>
+                  <option value="">{t("admin.staffPage.selectShop")}</option>
                   {shops.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.name}
@@ -495,14 +512,14 @@ function StaffInner() {
                   className="mq-admin-btn mq-admin-btn-secondary"
                   onClick={closeAssign}
                 >
-                  Cancel
+                  {t("admin.common.cancel")}
                 </button>
                 <button
                   type="submit"
                   className="mq-admin-btn mq-admin-btn-approve"
                   disabled={updateRoles.isPending}
                 >
-                  {updateRoles.isPending ? "Saving…" : "Save"}
+                  {updateRoles.isPending ? t("admin.common.saving") : t("admin.common.save")}
                 </button>
               </div>
             </form>
@@ -515,7 +532,7 @@ function StaffInner() {
           <button
             type="button"
             className="mq-admin-modal-backdrop"
-            aria-label="Close dialog"
+            aria-label={t("admin.common.close")}
             onClick={() => setCreatedCred(null)}
           />
           <div
@@ -531,7 +548,7 @@ function StaffInner() {
               <button
                 type="button"
                 className="mq-admin-icon-btn"
-                aria-label="Close"
+                aria-label={t("admin.common.close")}
                 onClick={() => setCreatedCred(null)}
               >
                 <X size={16} />
@@ -561,7 +578,7 @@ function StaffInner() {
                   className="mq-admin-btn mq-admin-btn-approve"
                   onClick={() => setCreatedCred(null)}
                 >
-                  Done
+                  {t("admin.common.confirm")}
                 </button>
               </div>
             </div>

@@ -248,6 +248,7 @@ export type {
   CreateMarketingFolderBody,
   UpdateMarketingFolderBody,
 } from "./promotions";
+export { BANNER_LANGS, BANNER_LANG_LABELS } from "./promotions";
 
 export const walletApi = {
   affiliateLink: () => api.get<{ code: string; link?: string }>("/wallet/affiliate-link"),

@@ -15,10 +15,12 @@ import {
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { BadgeCheck, Check, X } from "lucide-react";
 
 function FinanceInner() {
+  const { t } = useLanguage();
   const { data, isLoading, isError, error } = useAdminFinance();
   const createBatch = useCreatePayoutBatch();
   const approvePayout = useApprovePayout();
@@ -37,13 +39,13 @@ function FinanceInner() {
   return (
     <>
       <AdminPageHeader
-        title="Finance"
-        description="Payouts, withdraws, gateways, and refunds."
+        title={t("admin.finance.title")}
+        description={t("admin.finance.description")}
       />
 <div className="space-y-8">
 {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : "Failed"}
+            {error instanceof Error ? error.message : t("admin.common.failed")}
           </div>
         )}
         <p className="text-sm text-mq-text-muted">
@@ -56,7 +58,7 @@ function FinanceInner() {
           <>
             <section className="space-y-3">
               <div className="flex flex-wrap gap-2 items-center">
-                <h2 className="text-lg">Payout batches</h2>
+                <h2 className="text-lg">{t("admin.financePage.payoutBatches")}</h2>
                 <button
                   type="button"
                   className="mq-btn mq-btn-outline text-xs"
@@ -72,12 +74,12 @@ function FinanceInner() {
                   <AdminActions>
                     {b.status === "PENDING" && (
                       <>
-                        <AdminIconButton label="Approve" icon={Check} tone="approve" disabled={approvePayout.isPending} onClick={() => void approvePayout.mutateAsync(b.id)} />
-                        <AdminIconButton label="Reject" icon={X} tone="reject" disabled={rejectPayout.isPending} onClick={() => void rejectPayout.mutateAsync(b.id)} />
+                        <AdminIconButton label={t("admin.common.approve")} icon={Check} tone="approve" disabled={approvePayout.isPending} onClick={() => void approvePayout.mutateAsync(b.id)} />
+                        <AdminIconButton label={t("admin.common.reject")} icon={X} tone="reject" disabled={rejectPayout.isPending} onClick={() => void rejectPayout.mutateAsync(b.id)} />
                       </>
                     )}
                     {b.status === "APPROVED" && (
-                      <AdminIconButton label="Mark completed" icon={BadgeCheck} tone="approve" disabled={completePayout.isPending} onClick={() => void completePayout.mutateAsync(b.id)} />
+                      <AdminIconButton label={t("admin.common.markCompleted")} icon={BadgeCheck} tone="approve" disabled={completePayout.isPending} onClick={() => void completePayout.mutateAsync(b.id)} />
                     )}
                   </AdminActions>
                 </div>
@@ -85,19 +87,19 @@ function FinanceInner() {
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-lg">Wallet withdraw requests</h2>
+              <h2 className="text-lg">{t("admin.financePage.withdrawRequests")}</h2>
               {withdraws.map((w) => (
                 <div key={w.id} className="mq-card p-4 flex flex-wrap justify-between gap-2 text-sm">
                   <span>{w.amountPoints} pts · {w.status}</span>
                   <AdminActions>
                     {w.status === "PENDING" && (
                       <>
-                        <AdminIconButton label="Approve" icon={Check} tone="approve" disabled={withdrawDecision.isPending} onClick={() => void withdrawDecision.mutateAsync({ id: w.id, decision: "APPROVED" })} />
-                        <AdminIconButton label="Reject" icon={X} tone="reject" disabled={withdrawDecision.isPending} onClick={() => void withdrawDecision.mutateAsync({ id: w.id, decision: "REJECTED", reason: "Invalid bank" })} />
+                        <AdminIconButton label={t("admin.common.approve")} icon={Check} tone="approve" disabled={withdrawDecision.isPending} onClick={() => void withdrawDecision.mutateAsync({ id: w.id, decision: "APPROVED" })} />
+                        <AdminIconButton label={t("admin.common.reject")} icon={X} tone="reject" disabled={withdrawDecision.isPending} onClick={() => void withdrawDecision.mutateAsync({ id: w.id, decision: "REJECTED", reason: "Invalid bank" })} />
                       </>
                     )}
                     {w.status === "APPROVED" && (
-                      <AdminIconButton label="Mark paid" icon={BadgeCheck} tone="approve" disabled={completeWithdraw.isPending} onClick={() => void completeWithdraw.mutateAsync(w.id)} />
+                      <AdminIconButton label={t("admin.common.markPaid")} icon={BadgeCheck} tone="approve" disabled={completeWithdraw.isPending} onClick={() => void completeWithdraw.mutateAsync(w.id)} />
                     )}
                   </AdminActions>
                 </div>
@@ -105,14 +107,14 @@ function FinanceInner() {
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-lg">Payment gateways</h2>
+              <h2 className="text-lg">{t("admin.financePage.paymentGateways")}</h2>
               {gateways.map((g) => (
                 <div key={g.id} className="mq-card p-4 flex justify-between text-sm">
                   <span>{g.gatewayName || g.id.slice(0, 8)} · {g.status}</span>
                   {g.status === "PENDING_REVIEW" && (
                     <AdminActions>
-                      <AdminIconButton label="Approve" icon={Check} tone="approve" disabled={reviewGateway.isPending} onClick={() => void reviewGateway.mutateAsync({ id: g.id, decision: "APPROVED" })} />
-                      <AdminIconButton label="Reject" icon={X} tone="reject" disabled={reviewGateway.isPending} onClick={() => void reviewGateway.mutateAsync({ id: g.id, decision: "REJECTED", reason: "Invalid" })} />
+                      <AdminIconButton label={t("admin.common.approve")} icon={Check} tone="approve" disabled={reviewGateway.isPending} onClick={() => void reviewGateway.mutateAsync({ id: g.id, decision: "APPROVED" })} />
+                      <AdminIconButton label={t("admin.common.reject")} icon={X} tone="reject" disabled={reviewGateway.isPending} onClick={() => void reviewGateway.mutateAsync({ id: g.id, decision: "REJECTED", reason: "Invalid" })} />
                     </AdminActions>
                   )}
                 </div>
@@ -129,7 +131,7 @@ function FinanceInner() {
             void refundReport.mutateAsync().then((r) => setReport(JSON.stringify(r, null, 2)))
           }
         >
-          {refundReport.isPending ? "Loading…" : "Load daily refund report"}
+          {refundReport.isPending ? t("admin.common.loading") : t("admin.financePage.loadRefundReport")}
         </button>
         {report && <pre className="mq-card p-4 text-xs overflow-auto">{report}</pre>}
       </div>

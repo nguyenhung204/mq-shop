@@ -15,71 +15,74 @@ import {
   Store,
 } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Container } from "@/components/ui/shared";
 import "./seller.css";
 
 const links = [
-  { href: "/seller", label: "Overview", icon: LayoutDashboard, sellerOnly: true },
-  { href: "/seller/shop", label: "Shop", icon: Store, sellerOnly: true },
-  { href: "/seller/products", label: "Products", icon: Package, sellerOnly: true },
-  { href: "/seller/inventory", label: "Inventory", icon: Boxes, sellerOnly: false },
-  { href: "/seller/orders", label: "Orders", icon: ShoppingBag, sellerOnly: true },
+  { href: "/seller", labelKey: "seller.nav.overview", icon: LayoutDashboard, sellerOnly: true },
+  { href: "/seller/shop", labelKey: "seller.nav.shop", icon: Store, sellerOnly: true },
+  { href: "/seller/products", labelKey: "seller.nav.products", icon: Package, sellerOnly: true },
+  { href: "/seller/inventory", labelKey: "seller.nav.inventory", icon: Boxes, sellerOnly: false },
+  { href: "/seller/orders", labelKey: "seller.nav.orders", icon: ShoppingBag, sellerOnly: true },
   {
     href: "/seller/settlements",
-    label: "Settlements",
+    labelKey: "seller.nav.settlements",
     icon: BadgeDollarSign,
     sellerOnly: true,
   },
-  { href: "/seller/promotions", label: "Promotions", icon: BadgePercent, sellerOnly: true },
-  { href: "/seller/rma", label: "RMA", icon: RotateCcw, sellerOnly: true },
-  { href: "/seller/materials", label: "Materials", icon: FolderOpen, sellerOnly: true },
+  {
+    href: "/seller/promotions",
+    labelKey: "seller.nav.promotions",
+    icon: BadgePercent,
+    sellerOnly: true,
+  },
+  { href: "/seller/rma", labelKey: "seller.nav.rma", icon: RotateCcw, sellerOnly: true },
+  {
+    href: "/seller/materials",
+    labelKey: "seller.nav.materials",
+    icon: FolderOpen,
+    sellerOnly: true,
+  },
 ] as const;
 
-function titleFromPath(pathname: string): { title: string; desc?: string } {
+function titleKeysFromPath(pathname: string): { titleKey: string; descKey?: string } {
   if (pathname.startsWith("/seller/shop")) {
-    return { title: "My shop", desc: "Application status, details, and branding." };
+    return { titleKey: "seller.titles.shop", descKey: "seller.titles.shopDesc" };
   }
   if (pathname.startsWith("/seller/products")) {
-    return { title: "Products", desc: "Create and manage your catalog." };
+    return { titleKey: "seller.titles.products", descKey: "seller.titles.productsDesc" };
   }
   if (pathname.startsWith("/seller/inventory")) {
-    return {
-      title: "Inventory",
-      desc: "Warehouses, SKUs, slips, and stock ledger.",
-    };
+    return { titleKey: "seller.titles.inventory", descKey: "seller.titles.inventoryDesc" };
   }
   if (pathname.startsWith("/seller/orders")) {
-    return { title: "Sales orders", desc: "Orders placed for your shop." };
+    return { titleKey: "seller.titles.orders", descKey: "seller.titles.ordersDesc" };
   }
   if (pathname.startsWith("/seller/settlements")) {
-    return {
-      title: "Settlements",
-      desc: "Pending reconcile revenue from delivered orders.",
-    };
+    return { titleKey: "seller.titles.settlements", descKey: "seller.titles.settlementsDesc" };
   }
   if (pathname.startsWith("/seller/promotions")) {
-    return {
-      title: "Promotions",
-      desc: "Create shop promotions — submitted for admin review.",
-    };
+    return { titleKey: "seller.titles.promotions", descKey: "seller.titles.promotionsDesc" };
   }
   if (pathname.startsWith("/seller/rma")) {
-    return { title: "RMA", desc: "Confirm returned stock." };
+    return { titleKey: "seller.titles.rma", descKey: "seller.titles.rmaDesc" };
   }
   if (pathname.startsWith("/seller/materials")) {
-    return { title: "Marketing materials", desc: "Download seller assets." };
+    return { titleKey: "seller.titles.materials", descKey: "seller.titles.materialsDesc" };
   }
-  return { title: "Seller Center", desc: "Manage your shop, products, and orders." };
+  return { titleKey: "seller.titles.overview", descKey: "seller.titles.overviewDesc" };
 }
 
 export function SellerNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { hasRole } = useAuth();
+  const { t } = useLanguage();
   const warehouseOnly = hasRole("WAREHOUSE") && !hasRole("SELLER");
   const visible = warehouseOnly ? links.filter((l) => !l.sellerOnly) : links;
 
   return (
-    <nav className="mq-seller-nav" aria-label="Seller center">
+    <nav className="mq-seller-nav" aria-label={t("seller.brand")}>
       {visible.map((l) => {
         const active =
           l.href === "/seller"
@@ -95,7 +98,7 @@ export function SellerNav({ onNavigate }: { onNavigate?: () => void }) {
             onClick={onNavigate}
           >
             <Icon size={17} strokeWidth={1.75} aria-hidden />
-            <span>{l.label}</span>
+            <span>{t(l.labelKey)}</span>
           </Link>
         );
       })}
@@ -106,7 +109,8 @@ export function SellerNav({ onNavigate }: { onNavigate?: () => void }) {
 export function SellerShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { user, hasRole } = useAuth();
-  const { title, desc } = titleFromPath(pathname);
+  const { t } = useLanguage();
+  const { titleKey, descKey } = titleKeysFromPath(pathname);
   const warehouseOnly = hasRole("WAREHOUSE") && !hasRole("SELLER");
 
   return (
@@ -118,9 +122,11 @@ export function SellerShell({ children }: { children: ReactNode }) {
               MQ
             </span>
             <div className="mq-seller-identity-text">
-              <p className="mq-seller-kicker">{warehouseOnly ? "Warehouse" : "Seller"}</p>
+              <p className="mq-seller-kicker">
+                {warehouseOnly ? t("seller.warehouseKicker") : t("seller.kicker")}
+              </p>
               <h2 className="mq-seller-title">
-                {warehouseOnly ? "Warehouse" : "Seller Center"}
+                {warehouseOnly ? t("seller.warehouseBrand") : t("seller.brand")}
               </h2>
               <p className="mq-seller-sub">{user?.fullName || user?.email || "—"}</p>
             </div>
@@ -130,8 +136,8 @@ export function SellerShell({ children }: { children: ReactNode }) {
 
         <div className="mq-seller-main">
           <header className="mq-seller-main-head">
-            <h1>{title}</h1>
-            {desc ? <p>{desc}</p> : null}
+            <h1>{t(titleKey)}</h1>
+            {descKey ? <p>{t(descKey)}</p> : null}
           </header>
           {children}
         </div>

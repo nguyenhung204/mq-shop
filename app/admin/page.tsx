@@ -18,102 +18,91 @@ import {
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 const cards: {
   href: string;
-  label: string;
-  desc: string;
+  navKey: string;
   permissions: string[];
   icon: typeof Store;
 }[] = [
   {
     href: "/admin/shops",
-    label: "Shops",
-    desc: "Approve, reject, and violation-lock seller applications",
+    navKey: "shops",
     permissions: ["APPROVE_SELLER", "APPROVE_SHOP", "SUSPEND_SHOP"],
     icon: Store,
   },
   {
     href: "/admin/products",
-    label: "Products",
-    desc: "Review listings — approve, reject, or hide",
+    navKey: "products",
     permissions: ["APPROVE_PRODUCT"],
     icon: Package,
   },
   {
     href: "/admin/inventory",
-    label: "Inventory",
-    desc: "Approve or reject cross-shop stock slips",
+    navKey: "inventory",
     permissions: ["VIEW_INVENTORY", "EDIT_INVENTORY"],
     icon: Boxes,
   },
   {
     href: "/admin/categories",
-    label: "Categories",
-    desc: "Maintain the storefront catalog tree",
+    navKey: "categories",
     permissions: ["MANAGE_CONTENT"],
     icon: FolderTree,
   },
   {
     href: "/admin/users",
-    label: "Users",
-    desc: "Lock, unlock, and soft-delete accounts",
+    navKey: "users",
     permissions: ["VIEW_USERS", "DELETE_ACCOUNT", "LOCK_USER"],
     icon: Users,
   },
   {
     href: "/admin/audit-logs",
-    label: "Audit logs",
-    desc: "Trace admin actions across the platform",
+    navKey: "audit",
     permissions: ["VIEW_AUDIT_LOG"],
     icon: ClipboardList,
   },
   {
     href: "/admin/orders",
-    label: "Orders",
-    desc: "Cross-shop inbox, cancel, create on behalf of buyers",
+    navKey: "orders",
     permissions: ["VIEW_ORDER", "CREATE_ORDER"],
     icon: ShoppingBag,
   },
   {
     href: "/admin/rma",
-    label: "RMA",
-    desc: "Decide return and refund requests",
+    navKey: "rma",
     permissions: ["PROCESS_RMA", "MANAGE_RMA"],
     icon: RotateCcw,
   },
   {
     href: "/admin/finance",
-    label: "Finance",
-    desc: "Payouts, withdraws, and gateway reviews",
+    navKey: "finance",
     permissions: ["MANAGE_PAYOUT", "MANAGE_WALLET_WITHDRAW", "VIEW_REFUND_REPORT"],
     icon: BadgeDollarSign,
   },
   {
     href: "/admin/promotions",
-    label: "Promotions",
-    desc: "Approve seller campaigns and create platform promos",
+    navKey: "promotions",
     permissions: ["APPROVE_PROMO", "MANAGE_PROMO"],
     icon: BadgePercent,
   },
   {
     href: "/admin/banners",
-    label: "Banners",
-    desc: "Homepage and promo CMS creatives",
+    navKey: "banners",
     permissions: ["MANAGE_CONTENT"],
     icon: ImageIcon,
   },
   {
     href: "/admin/marketing",
-    label: "Marketing",
-    desc: "Upload seller marketing kits and assets",
+    navKey: "marketing",
     permissions: ["MANAGE_CONTENT"],
     icon: FolderOpen,
   },
 ];
 
 function AdminHome() {
-  const { user, hasAnyPermission, hasRole } = useAuth();
+  const { hasAnyPermission, hasRole } = useAuth();
+  const { t } = useLanguage();
   const visible = cards.filter((c) => {
     if (hasAnyPermission(c.permissions)) return true;
     if (hasRole("ACCOUNTANT")) {
@@ -127,8 +116,8 @@ function AdminHome() {
   return (
     <>
       <AdminPageHeader
-        title="Overview"
-        description={`Welcome back${user?.fullName ? `, ${user.fullName}` : ""}. Pick a module to continue.`}
+        title={t("admin.overview.title")}
+        description={t("admin.overview.description")}
       />
 
       {visible.length === 0 ? (
@@ -144,8 +133,10 @@ function AdminHome() {
                 <span className="mq-admin-module-icon">
                   <Icon size={18} strokeWidth={1.75} />
                 </span>
-                <span className="mq-admin-module-title">{c.label}</span>
-                <p className="mq-admin-module-desc">{c.desc}</p>
+                <span className="mq-admin-module-title">{t(`admin.nav.${c.navKey}`)}</span>
+                <p className="mq-admin-module-desc">
+                  {t(`admin.overview.cards.${c.navKey}`)}
+                </p>
               </Link>
             );
           })}

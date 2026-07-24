@@ -4,9 +4,11 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export default function SellerPage() {
   const { hasRole } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
   const warehouseOnly = hasRole("WAREHOUSE") && !hasRole("SELLER");
 
@@ -17,7 +19,7 @@ export default function SellerPage() {
   if (warehouseOnly) {
     return (
       <div className="mq-seller-panel max-w-lg text-sm text-mq-text-muted">
-        Redirecting to inventory…
+        {t("seller.common.loading")}
       </div>
     );
   }
@@ -26,11 +28,10 @@ export default function SellerPage() {
     return (
       <div className="mq-seller-panel max-w-lg">
         <p className="text-sm text-mq-text-secondary mb-4">
-          You do not have the Seller role yet. Apply to open a shop — after Admin approval, sign in
-          again to refresh your JWT.
+          {t("seller.titles.overviewDesc")}
         </p>
         <Link href="/seller/shop" className="mq-btn mq-btn-primary">
-          Apply for shop
+          {t("seller.overview.applyShop")}
         </Link>
       </div>
     );
@@ -38,20 +39,22 @@ export default function SellerPage() {
 
   return (
     <div className="grid sm:grid-cols-2 gap-3">
-      {[
-        ["/seller/shop", "My shop"],
-        ["/seller/products", "Manage products"],
-        ["/seller/inventory", "Warehouses, SKUs & slips"],
-        ["/seller/orders", "Sales orders"],
-        ["/seller/rma", "RMA restock links"],
-        ["/seller/materials", "Marketing materials"],
-      ].map(([href, label]) => (
+      {(
+        [
+          ["/seller/shop", "seller.overview.myShop"],
+          ["/seller/products", "seller.overview.manageProducts"],
+          ["/seller/inventory", "seller.overview.inventoryCard"],
+          ["/seller/orders", "seller.overview.ordersCard"],
+          ["/seller/rma", "seller.overview.rmaCard"],
+          ["/seller/materials", "seller.overview.materialsCard"],
+        ] as const
+      ).map(([href, labelKey]) => (
         <Link
           key={href}
           href={href}
           className="mq-seller-panel !min-h-0 hover:border-[#e7ba0a] transition-colors"
         >
-          <span className="text-sm font-medium">{label}</span>
+          <span className="text-sm font-medium">{t(labelKey)}</span>
         </Link>
       ))}
     </div>

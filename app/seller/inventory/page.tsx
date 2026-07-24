@@ -26,6 +26,7 @@ import {
 } from "@/lib/queries/inventory";
 import { useSellerProducts } from "@/lib/queries/seller";
 import { AuthGuard } from "@/components/guards/AuthGuard";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import {
   AdminActions,
   AdminIconButton,
@@ -36,11 +37,11 @@ import { TableSkeleton } from "@/components/ui/Skeleton";
 
 type TabId = "warehouses" | "variants" | "slips" | "ledger";
 
-const TABS: { id: TabId; label: string }[] = [
-  { id: "warehouses", label: "Warehouses" },
-  { id: "variants", label: "Variants" },
-  { id: "slips", label: "Slips" },
-  { id: "ledger", label: "Ledger" },
+const TABS: { id: TabId; labelKey: string }[] = [
+  { id: "warehouses", labelKey: "seller.inventoryPage.warehouses" },
+  { id: "variants", labelKey: "seller.inventoryPage.variants" },
+  { id: "slips", labelKey: "seller.inventoryPage.slips" },
+  { id: "ledger", labelKey: "seller.inventoryPage.ledger" },
 ];
 
 const WH_CODE_RE = /^[A-Za-z0-9_-]+$/;
@@ -81,6 +82,7 @@ function slipTypeLabel(type: InventorySlipType): string {
 }
 
 function WarehousesTab() {
+  const { t } = useLanguage();
   const { data: warehouses = [], isLoading, isError, error } = useWarehouses();
   const createWarehouse = useCreateWarehouse();
   const [code, setCode] = useState("");
@@ -106,7 +108,7 @@ function WarehousesTab() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-mq-text-muted">
-        Locations for receiving stock. Use codes like <code>KHO-HN</code> on slips.
+        {t("seller.inventoryPage.warehousesDesc")}
       </p>
       <form
         className="mq-card p-4 flex flex-wrap items-center gap-3"
@@ -114,7 +116,7 @@ function WarehousesTab() {
       >
         <input
           className="mq-input flex-1 min-w-[140px]"
-          placeholder="Code (e.g. KHO-HN)"
+          placeholder={t("seller.inventoryPage.warehouseCode")}
           value={code}
           maxLength={32}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
@@ -122,7 +124,7 @@ function WarehousesTab() {
         />
         <input
           className="mq-input flex-[2] min-w-[200px]"
-          placeholder="Address (optional)"
+          placeholder={t("seller.inventoryPage.warehouseAddress")}
           value={address}
           maxLength={200}
           onChange={(e) => setAddress(e.target.value)}
@@ -131,7 +133,7 @@ function WarehousesTab() {
           className="mq-btn mq-btn-primary shrink-0 self-center"
           disabled={createWarehouse.isPending}
         >
-          {createWarehouse.isPending ? "Adding…" : "Add warehouse"}
+          {createWarehouse.isPending ? t("admin.common.working") : t("seller.inventoryPage.addWarehouse")}
         </button>
         {formError ? (
           <p className="w-full text-xs text-mq-text-muted">{formError}</p>
@@ -140,21 +142,21 @@ function WarehousesTab() {
 
       {isError && (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : "Failed to load warehouses"}
+          {error instanceof Error ? error.message : t("admin.common.failed")}
         </div>
       )}
       {isLoading ? (
         <TableSkeleton rows={3} cols={3} />
       ) : warehouses.length === 0 ? (
-        <p className="text-sm text-mq-text-muted">No warehouses yet.</p>
+        <p className="text-sm text-mq-text-muted">{t("seller.inventoryPage.noWarehouses")}</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-mq-text-muted border-b border-mq-border">
-                <th className="py-2 pr-3 font-medium">Code</th>
-                <th className="py-2 pr-3 font-medium">Address</th>
-                <th className="py-2 font-medium">Created</th>
+                <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.code")}</th>
+                <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.address")}</th>
+                <th className="py-2 font-medium">{t("seller.inventoryPage.created")}</th>
               </tr>
             </thead>
             <tbody>
@@ -176,6 +178,7 @@ function WarehousesTab() {
 }
 
 function VariantsTab() {
+  const { t } = useLanguage();
   const [q, setQ] = useState("");
   const [productFilter, setProductFilter] = useState("");
   const [page, setPage] = useState(1);
@@ -251,7 +254,7 @@ function VariantsTab() {
       <div className="flex flex-wrap items-center gap-3">
         <input
           className="mq-input max-w-xs"
-          placeholder="Search SKU…"
+          placeholder={t("seller.inventoryPage.searchSku")}
           value={q}
           onChange={(e) => {
             setQ(e.target.value);
@@ -261,13 +264,13 @@ function VariantsTab() {
         <select
           className="mq-input max-w-[14rem]"
           value={productFilter}
-          aria-label="Filter by product"
+          aria-label={t("seller.inventoryPage.allProducts")}
           onChange={(e) => {
             setProductFilter(e.target.value);
             setPage(1);
           }}
         >
-          <option value="">All products</option>
+          <option value="">{t("seller.inventoryPage.allProducts")}</option>
           {productOptions.map((p) => (
             <option key={p.id} value={p.id}>
               {p.title || p.name || p.id.slice(0, 8)}
@@ -279,7 +282,7 @@ function VariantsTab() {
           className="mq-btn mq-btn-primary ml-auto"
           onClick={() => setShowForm((v) => !v)}
         >
-          {showForm ? "Cancel" : "Add SKU"}
+          {showForm ? t("seller.common.cancel") : t("seller.inventoryPage.addSku")}
         </button>
       </div>
 
@@ -300,7 +303,7 @@ function VariantsTab() {
           </select>
           <input
             className="mq-input"
-            placeholder="SKU (e.g. MOUSE-001)"
+            placeholder={t("seller.productsPage.sku")}
             value={sku}
             maxLength={64}
             onChange={(e) => setSku(e.target.value)}
@@ -311,14 +314,14 @@ function VariantsTab() {
             type="number"
             min="0"
             step="0.01"
-            placeholder="Sell price"
+            placeholder={t("seller.inventoryPage.sellPrice")}
             value={sellingPrice}
             onChange={(e) => setSellingPrice(e.target.value)}
             required
           />
           <input
             className="mq-input sm:col-span-2"
-            placeholder="Options (optional) — size=M, color=black"
+            placeholder={t("seller.productsPage.options")}
             value={optionsText}
             onChange={(e) => setOptionsText(e.target.value)}
           />
@@ -331,32 +334,32 @@ function VariantsTab() {
             Enrollment package (MLM)
           </label>
           <button className="mq-btn mq-btn-primary sm:col-span-2" disabled={createVariant.isPending}>
-            {createVariant.isPending ? "Creating…" : "Create SKU"}
+            {createVariant.isPending ? t("admin.common.working") : t("seller.inventoryPage.createSku")}
           </button>
         </form>
       ) : null}
 
       {isError && (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : "Failed to load variants"}
+          {error instanceof Error ? error.message : t("admin.common.failed")}
         </div>
       )}
       {isLoading ? (
         <TableSkeleton rows={5} cols={5} />
       ) : items.length === 0 ? (
-        <p className="text-sm text-mq-text-muted">No SKUs yet.</p>
+        <p className="text-sm text-mq-text-muted">{t("seller.inventoryPage.noSkus")}</p>
       ) : (
         <>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-mq-text-muted border-b border-mq-border">
-                  <th className="py-2 pr-3 font-medium">SKU</th>
-                  <th className="py-2 pr-3 font-medium">Product</th>
-                  <th className="py-2 pr-3 font-medium">Sell price</th>
-                  <th className="py-2 pr-3 font-medium">Available</th>
-                  <th className="py-2 pr-3 font-medium">Cost price</th>
-                  <th className="py-2 font-medium">Flags</th>
+                  <th className="py-2 pr-3 font-medium">{t("seller.productsPage.sku")}</th>
+                  <th className="py-2 pr-3 font-medium">{t("admin.common.name")}</th>
+                  <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.sellPrice")}</th>
+                  <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.available")}</th>
+                  <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.costPrice")}</th>
+                  <th className="py-2 font-medium">{t("seller.inventoryPage.flags")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -400,6 +403,7 @@ function emptySlipLine() {
 }
 
 function SlipsTab() {
+  const { t } = useLanguage();
   const [status, setStatus] = useState<InventorySlipStatus | "">("");
   const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
@@ -499,24 +503,24 @@ function SlipsTab() {
       <div className="flex flex-wrap items-center gap-3">
         <select
           className="mq-input max-w-[11rem]"
-          aria-label="Filter by status"
+          aria-label={t("admin.common.filterStatus")}
           value={status}
           onChange={(e) => {
             setStatus(e.target.value as InventorySlipStatus | "");
             setPage(1);
           }}
         >
-          <option value="">All statuses</option>
-          <option value="PENDING">Pending</option>
-          <option value="APPROVED">Approved</option>
-          <option value="REJECTED">Rejected</option>
+          <option value="">{t("admin.common.allStatuses")}</option>
+          <option value="PENDING">{t("admin.common.pending")}</option>
+          <option value="APPROVED">{t("admin.common.approved")}</option>
+          <option value="REJECTED">{t("admin.common.rejected")}</option>
         </select>
         <button
           type="button"
           className="mq-btn mq-btn-primary ml-auto"
           onClick={() => setShowForm((v) => !v)}
         >
-          {showForm ? "Cancel" : "New slip"}
+          {showForm ? t("seller.common.cancel") : t("seller.inventoryPage.newSlip")}
         </button>
       </div>
 
@@ -528,16 +532,18 @@ function SlipsTab() {
               value={type}
               onChange={(e) => setType(e.target.value as InventorySlipType)}
             >
-              <option value="IN">IN — goods received</option>
+              <option value="IN">{t("seller.inventoryPage.inGoods")}</option>
               <option value="ADJUST_IN">ADJUST_IN — increase</option>
-              <option value="ADJUST_OUT">ADJUST_OUT — write-off</option>
+              <option value="ADJUST_OUT">{t("seller.inventoryPage.outGoods")}</option>
             </select>
             <select
               className="mq-input"
               value={warehouseCode}
               onChange={(e) => setWarehouseCode(e.target.value)}
             >
-              <option value="">Warehouse (optional)</option>
+              <option value="">
+                {t("seller.inventoryPage.warehouses")} ({t("admin.common.optional")})
+              </option>
               {warehouses.map((w) => (
                 <option key={w.id} value={w.code}>
                   {w.code}
@@ -555,7 +561,7 @@ function SlipsTab() {
 
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
-              <h3 className="text-sm font-semibold">Items</h3>
+              <h3 className="text-sm font-semibold">{t("seller.inventoryPage.items")}</h3>
               <button
                 type="button"
                 className="mq-btn mq-btn-outline text-xs"
@@ -575,7 +581,7 @@ function SlipsTab() {
                   onChange={(e) => updateLine(line.key, { sku: e.target.value })}
                   required
                 >
-                  <option value="">Select SKU</option>
+                  <option value="">{t("seller.promotions.addSku")}</option>
                   {skuOptions.map((sku) => (
                     <option key={sku} value={sku}>
                       {sku}
@@ -624,33 +630,33 @@ function SlipsTab() {
             <p className="w-full text-xs text-mq-text-muted">{formError}</p>
           ) : null}
           <button className="mq-btn mq-btn-primary w-full sm:w-auto" disabled={createSlip.isPending}>
-            {createSlip.isPending ? "Creating…" : "Create slip"}
+            {createSlip.isPending ? t("admin.common.working") : t("seller.inventoryPage.createSlip")}
           </button>
         </form>
       ) : null}
 
       {isError && (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : "Failed to load slips"}
+          {error instanceof Error ? error.message : t("admin.common.failed")}
         </div>
       )}
       {isLoading ? (
         <TableSkeleton rows={5} cols={5} />
       ) : items.length === 0 ? (
-        <p className="text-sm text-mq-text-muted">No slips for this filter.</p>
+        <p className="text-sm text-mq-text-muted">{t("seller.inventoryPage.noSlips")}</p>
       ) : (
         <>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-mq-text-muted border-b border-mq-border">
-                  <th className="py-2 pr-3 font-medium">Code</th>
-                  <th className="py-2 pr-3 font-medium">Type</th>
-                  <th className="py-2 pr-3 font-medium">Items</th>
-                  <th className="py-2 pr-3 font-medium">Status</th>
-                  <th className="py-2 pr-3 font-medium">Warehouse</th>
-                  <th className="py-2 pr-3 font-medium">Created</th>
-                  <th className="py-2 font-medium">Actions</th>
+                  <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.code")}</th>
+                  <th className="py-2 pr-3 font-medium">{t("seller.promotions.type")}</th>
+                  <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.items")}</th>
+                  <th className="py-2 pr-3 font-medium">{t("seller.common.status")}</th>
+                  <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.warehouses")}</th>
+                  <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.created")}</th>
+                  <th className="py-2 font-medium">{t("seller.common.actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -707,14 +713,14 @@ function SlipsTab() {
                       {s.status === "PENDING" ? (
                         <AdminActions>
                           <AdminIconButton
-                            label="Approve"
+                            label={t("seller.common.approve")}
                             icon={Check}
                             tone="approve"
                             disabled={busy}
                             onClick={() => void approveSlip.mutateAsync(s.id)}
                           />
                           <AdminIconButton
-                            label="Reject"
+                            label={t("seller.common.reject")}
                             icon={X}
                             tone="reject"
                             disabled={busy}
@@ -736,7 +742,7 @@ function SlipsTab() {
                             detailQuery.isError
                               ? detailQuery.error instanceof Error
                                 ? detailQuery.error.message
-                                : "Failed to load"
+                                : t("admin.common.failed")
                               : null
                           }
                         />
@@ -756,6 +762,7 @@ function SlipsTab() {
 }
 
 function LedgerTab() {
+  const { t } = useLanguage();
   const [sku, setSku] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -781,7 +788,7 @@ function LedgerTab() {
       <div className="flex flex-wrap gap-3">
         <input
           className="mq-input max-w-[10rem]"
-          placeholder="SKU filter"
+          placeholder={t("seller.inventoryPage.skuFilter")}
           value={sku}
           onChange={(e) => {
             setSku(e.target.value);
@@ -791,7 +798,7 @@ function LedgerTab() {
         <input
           className="mq-input max-w-[11rem]"
           type="date"
-          aria-label="From date"
+          aria-label={t("seller.inventoryPage.fromDate")}
           value={from}
           onChange={(e) => {
             setFrom(e.target.value);
@@ -801,7 +808,7 @@ function LedgerTab() {
         <input
           className="mq-input max-w-[11rem]"
           type="date"
-          aria-label="To date"
+          aria-label={t("seller.inventoryPage.toDate")}
           value={to}
           onChange={(e) => {
             setTo(e.target.value);
@@ -812,25 +819,25 @@ function LedgerTab() {
 
       {isError && (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : "Failed to load ledger"}
+          {error instanceof Error ? error.message : t("admin.common.failed")}
         </div>
       )}
       {isLoading ? (
         <TableSkeleton rows={5} cols={6} />
       ) : items.length === 0 ? (
-        <p className="text-sm text-mq-text-muted">No ledger entries yet.</p>
+        <p className="text-sm text-mq-text-muted">{t("seller.common.empty")}</p>
       ) : (
         <>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-mq-text-muted border-b border-mq-border">
-                  <th className="py-2 pr-3 font-medium">When</th>
-                  <th className="py-2 pr-3 font-medium">SKU</th>
-                  <th className="py-2 pr-3 font-medium">Type</th>
+                  <th className="py-2 pr-3 font-medium">{t("admin.common.when")}</th>
+                  <th className="py-2 pr-3 font-medium">{t("seller.productsPage.sku")}</th>
+                  <th className="py-2 pr-3 font-medium">{t("seller.promotions.type")}</th>
                   <th className="py-2 pr-3 font-medium">Qty</th>
                   <th className="py-2 pr-3 font-medium">Before → After</th>
-                  <th className="py-2 font-medium">Slip</th>
+                  <th className="py-2 font-medium">{t("seller.inventoryPage.slips")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -861,6 +868,7 @@ function LedgerTab() {
 }
 
 function InventoryInner() {
+  const { t } = useLanguage();
   const [tab, setTab] = useState<TabId>("slips");
 
   return (
@@ -868,13 +876,13 @@ function InventoryInner() {
       <div
         className="flex flex-wrap gap-1 border-b border-mq-border pb-px"
         role="tablist"
-        aria-label="Inventory sections"
+        aria-label={t("seller.titles.inventory")}
       >
-        {TABS.map((t) => {
-          const active = tab === t.id;
+        {TABS.map((item) => {
+          const active = tab === item.id;
           return (
             <button
-              key={t.id}
+              key={item.id}
               type="button"
               role="tab"
               aria-selected={active}
@@ -883,9 +891,9 @@ function InventoryInner() {
                   ? "bg-mq-surface text-mq-text border border-mq-border border-b-mq-surface -mb-px"
                   : "text-mq-text-muted hover:text-mq-text"
               }`}
-              onClick={() => setTab(t.id)}
+              onClick={() => setTab(item.id)}
             >
-              {t.label}
+              {t(item.labelKey)}
             </button>
           );
         })}

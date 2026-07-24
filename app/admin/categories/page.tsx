@@ -8,9 +8,11 @@ import type { ApiCategory } from "@/lib/api/types";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 
 function CategoriesInner() {
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [form, setForm] = useState({ name: "", nameVi: "", slug: "", parentId: "" });
   const [editing, setEditing] = useState<ApiCategory | null>(null);
@@ -61,37 +63,37 @@ function CategoriesInner() {
   return (
     <>
       <AdminPageHeader
-        title="Categories"
-        description="Create and update the product category tree."
+        title={t("admin.categories.title")}
+        description={t("admin.categories.description")}
       />
-<div className="space-y-6">
-{isError && (
+      <div className="space-y-6">
+        {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : "Failed"}
+            {error instanceof Error ? error.message : t("admin.common.failed")}
           </div>
         )}
 
         <form className="mq-card p-5 grid sm:grid-cols-2 gap-3 max-w-3xl" onSubmit={submit}>
           <h2 className="sm:col-span-2 text-lg">
-            {editing ? `Edit ${editing.id}` : "Create category"}
+            {editing ? `${t("admin.common.edit")} ${editing.id}` : t("admin.categoriesPage.create")}
           </h2>
           <input
             className="mq-input"
-            placeholder="Name (EN)"
+            placeholder={t("admin.categoriesPage.nameEn")}
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             required={!editing}
           />
           <input
             className="mq-input"
-            placeholder="Name (VI)"
+            placeholder={t("admin.categoriesPage.nameVi")}
             value={form.nameVi}
             onChange={(e) => setForm({ ...form, nameVi: e.target.value })}
           />
           {!editing && (
             <input
               className="mq-input"
-              placeholder="Slug (optional)"
+              placeholder={`${t("admin.categoriesPage.slug")} (${t("admin.common.optional")})`}
               value={form.slug}
               onChange={(e) => setForm({ ...form, slug: e.target.value })}
             />
@@ -101,7 +103,7 @@ function CategoriesInner() {
             value={form.parentId}
             onChange={(e) => setForm({ ...form, parentId: e.target.value })}
           >
-            <option value="">No parent</option>
+            <option value="">{t("admin.categoriesPage.noParent")}</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
@@ -110,7 +112,7 @@ function CategoriesInner() {
           </select>
           <div className="sm:col-span-2 flex gap-2">
             <button className="mq-btn mq-btn-primary" disabled={createCat.isPending || updateCat.isPending}>
-              {editing ? "Save" : "Create"}
+              {editing ? t("admin.common.save") : t("admin.common.create")}
             </button>
             {editing && (
               <button
@@ -121,7 +123,7 @@ function CategoriesInner() {
                   setForm({ name: "", nameVi: "", slug: "", parentId: "" });
                 }}
               >
-                Cancel
+                {t("admin.common.cancel")}
               </button>
             )}
           </div>
@@ -129,15 +131,17 @@ function CategoriesInner() {
 
         {isLoading ? (
           <TableSkeleton rows={5} cols={4} />
+        ) : categories.length === 0 ? (
+          <p className="text-sm text-mq-text-muted">{t("admin.categoriesPage.empty")}</p>
         ) : (
           <div className="mq-table-wrap">
             <table className="w-full text-sm">
               <thead className="bg-mq-surface-subtle text-left">
                 <tr>
                   <th className="p-3">ID</th>
-                  <th className="p-3">Name</th>
-                  <th className="p-3">Slug</th>
-                  <th className="p-3">Parent</th>
+                  <th className="p-3">{t("admin.common.name")}</th>
+                  <th className="p-3">{t("admin.categoriesPage.slug")}</th>
+                  <th className="p-3">{t("admin.categoriesPage.parent")}</th>
                   <th className="p-3" />
                 </tr>
               </thead>
@@ -165,7 +169,7 @@ function CategoriesInner() {
                           });
                         }}
                       >
-                        Edit
+                        {t("admin.common.edit")}
                       </button>
                     </td>
                   </tr>

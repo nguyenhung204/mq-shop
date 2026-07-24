@@ -96,7 +96,13 @@ Admin create ───────────────► ACTIVE (bỏ qua P
 
 ### BannerLang
 
-`VI` \| `EN`
+`VI` \| `EN` \| `TW`
+
+| Code | Ngôn ngữ |
+|------|----------|
+| `VI` | Tiếng Việt |
+| `EN` | English |
+| `TW` | Tiếng Đài Loan (繁體中文／台灣) |
 
 ---
 
@@ -313,7 +319,7 @@ DELETE /admin/banners/:bannerId
 |-------|----------|------|
 | `image` | create: **yes** | jpeg/png/webp/gif ≤ 5MB → BE convert webp |
 | `title` | yes | string |
-| `lang` | yes | `VI` \| `EN` |
+| `lang` | yes | `VI` \| `EN` \| `TW` |
 | `linkUrl` | no | URL |
 | `sortOrder` | no | int ≥ 0, default 0 |
 | `isActive` | no | `"true"` / `"false"`, default true |
@@ -415,7 +421,7 @@ Folder view:
 type PromotionType = "PERCENT" | "FIXED" | "FREE_SHIP" | "VOUCHER";
 type PromotionScope = "PLATFORM" | "TARGETED";
 type PromotionStatus = "PENDING" | "ACTIVE" | "REJECTED" | "EXPIRED";
-type BannerLang = "VI" | "EN";
+type BannerLang = "VI" | "EN" | "TW";
 
 type Promotion = {
   id: string;
@@ -524,7 +530,7 @@ Map UI theo `data.code` trong error envelope.
 ### Admin
 - [ ] Queue `GET /admin/promotions?status=PENDING` → approve / reject (+ modal reason)
 - [ ] Form admin: radio `PLATFORM` vs `TARGETED` (TARGETED bắt buộc SKU/category)
-- [ ] Banner manager: multipart create/update, toggle `isActive`, `lang` tabs VI/EN
+- [ ] Banner manager: multipart create/update, toggle `isActive`, `lang` tabs VI/EN/TW
 - [ ] Media: tạo folder, upload `file`, xóa asset
 
 ### Public / storefront

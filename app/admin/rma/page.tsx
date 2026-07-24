@@ -17,9 +17,11 @@ import {
   AdminIconLink,
 } from "@/components/admin/AdminIconButton";
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 
 function RmaInner() {
+  const { t } = useLanguage();
   const [status, setStatus] = useState<RmaStatus | "">("PENDING");
   const [rejectId, setRejectId] = useState<string | null>(null);
   const [refundId, setRefundId] = useState<string | null>(null);
@@ -32,25 +34,25 @@ function RmaInner() {
   return (
     <>
       <AdminPageHeader
-        title="RMA"
-        description="Approve/reject returns, then accountant marks refunded after external bank payout."
+        title={t("admin.rma.title")}
+        description={t("admin.rma.description")}
       />
       <div className="space-y-4">
         <select
           className="mq-input max-w-[12rem]"
           value={status}
-          aria-label="Filter RMA status"
+          aria-label={t("admin.common.filterStatus")}
           onChange={(e) => setStatus(e.target.value as RmaStatus | "")}
         >
-          <option value="">All</option>
-          <option value="PENDING">Pending</option>
-          <option value="APPROVED">Approved (payout)</option>
-          <option value="REJECTED">Rejected</option>
-          <option value="CLOSED">Closed</option>
+          <option value="">{t("admin.common.all")}</option>
+          <option value="PENDING">{t("admin.rmaPage.pending")}</option>
+          <option value="APPROVED">{t("admin.rmaPage.approvedPayout")}</option>
+          <option value="REJECTED">{t("admin.common.rejected")}</option>
+          <option value="CLOSED">{t("admin.rmaPage.closed")}</option>
         </select>
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : "Failed"}
+            {error instanceof Error ? error.message : t("admin.common.failed")}
           </div>
         )}
         {isLoading && <AdminCardListSkeleton />}
@@ -64,7 +66,7 @@ function RmaInner() {
                 href={`/admin/rma/${r.id}`}
                 className="font-medium hover:text-mq-gold transition-colors"
               >
-                Order {r.orderId.slice(0, 8)}…
+                {t("admin.rmaPage.order")} {r.orderId.slice(0, 8)}…
               </Link>
               <span className="mq-badge mq-badge-pink ml-2">{r.status}</span>
               <p className="text-xs text-mq-text-muted line-clamp-2 mt-1">{r.reason}</p>
@@ -81,14 +83,14 @@ function RmaInner() {
             </div>
             <AdminActions>
               <AdminIconLink
-                label="View"
+                label={t("admin.common.view")}
                 icon={Eye}
                 href={`/admin/rma/${r.id}`}
               />
               {r.status === "PENDING" ? (
                 <>
                   <AdminIconButton
-                    label="Approve"
+                    label={t("admin.common.approve")}
                     icon={Check}
                     tone="approve"
                     disabled={busy}
@@ -97,7 +99,7 @@ function RmaInner() {
                     }
                   />
                   <AdminIconButton
-                    label="Reject"
+                    label={t("admin.common.reject")}
                     icon={X}
                     tone="reject"
                     disabled={busy}
@@ -107,7 +109,7 @@ function RmaInner() {
               ) : null}
               {r.status === "APPROVED" ? (
                 <AdminIconButton
-                  label="Mark refunded"
+                  label={t("admin.common.markRefunded")}
                   icon={Banknote}
                   tone="approve"
                   disabled={busy}
@@ -118,15 +120,15 @@ function RmaInner() {
           </div>
         ))}
         {!isLoading && items.length === 0 ? (
-          <p className="text-sm text-mq-text-muted">No RMA for this filter.</p>
+          <p className="text-sm text-mq-text-muted">{t("admin.rmaPage.empty")}</p>
         ) : null}
       </div>
 
       <AdminReasonModal
         open={Boolean(rejectId)}
-        title="Reject RMA"
-        description="Buyer will be notified. Provide a clear reason."
-        confirmLabel="Reject"
+        title={t("admin.rmaPage.rejectTitle")}
+        description={t("admin.rmaPage.rejectDesc")}
+        confirmLabel={t("admin.common.reject")}
         maxLength={500}
         busy={busy}
         onClose={() => setRejectId(null)}
@@ -143,9 +145,9 @@ function RmaInner() {
 
       <AdminReasonModal
         open={Boolean(refundId)}
-        title="Mark as refunded"
-        description="Confirm external bank transfer is done. Requires RMA APPROVED and order REFUND_APPROVED."
-        confirmLabel="Mark refunded"
+        title={t("admin.rmaPage.markRefundedTitle")}
+        description={t("admin.rmaPage.markRefundedDesc")}
+        confirmLabel={t("admin.common.markRefunded")}
         required={false}
         maxLength={500}
         busy={busy}

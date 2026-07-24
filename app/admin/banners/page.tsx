@@ -10,34 +10,38 @@ import {
   useUpdateBannerMultipart,
 } from "@/lib/queries/admin";
 import type { Banner, BannerLang } from "@/lib/api/promotions";
+import { BANNER_LANGS, BANNER_LANG_LABELS } from "@/lib/api/promotions";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 
 type FormState = {
   title: string;
-  lang: BannerLang;
   linkUrl: string;
   sortOrder: string;
   isActive: boolean;
   file: File | null;
 };
 
-const emptyForm = (lang: BannerLang = "VI"): FormState => ({
+const emptyForm = (): FormState => ({
   title: "",
-  lang,
   linkUrl: "",
-  sortOrder: "0",
+  sortOrder: "",
   isActive: true,
   file: null,
 });
 
-function buildFormData(form: FormState, opts?: { includeImage?: boolean }): FormData {
+function buildFormData(
+  form: FormState,
+  lang: BannerLang,
+  opts?: { includeImage?: boolean },
+): FormData {
   const fd = new FormData();
   fd.append("title", form.title.trim());
-  fd.append("lang", form.lang);
+  fd.append("lang", lang);
   if (form.linkUrl.trim()) fd.append("linkUrl", form.linkUrl.trim());
   fd.append("sortOrder", String(Number(form.sortOrder) || 0));
   fd.append("isActive", String(form.isActive));
@@ -48,10 +52,11 @@ function buildFormData(form: FormState, opts?: { includeImage?: boolean }): Form
 }
 
 function BannersInner() {
+  const { t } = useLanguage();
   const [lang, setLang] = useState<BannerLang>("VI");
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<Banner | null>(null);
-  const [form, setForm] = useState<FormState>(emptyForm("VI"));
+  const [form, setForm] = useState<FormState>(emptyForm);
 
   const { data, isLoading, isError, error } = useAdminBanners(lang, page);
   const items = data?.items ?? [];
@@ -69,9 +74,9 @@ function BannersInner() {
 
   const startEdit = (b: Banner) => {
     setEditing(b);
+    setLang(b.lang);
     setForm({
       title: b.title,
-      lang: b.lang,
       linkUrl: b.linkUrl ?? "",
       sortOrder: String(b.sortOrder),
       isActive: b.isActive,
@@ -81,20 +86,20 @@ function BannersInner() {
 
   const cancelEdit = () => {
     setEditing(null);
-    setForm(emptyForm(lang));
+    setForm(emptyForm());
   };
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (editing) {
-      const fd = buildFormData(form, { includeImage: Boolean(form.file) });
+      const fd = buildFormData(form, lang, { includeImage: Boolean(form.file) });
       await updateBanner.mutateAsync({ id: editing.id, formData: fd });
       cancelEdit();
       return;
     }
     if (!form.file) return;
-    await createBanner.mutateAsync(buildFormData(form));
-    setForm(emptyForm(lang));
+    await createBanner.mutateAsync(buildFormData(form, lang));
+    setForm(emptyForm());
   };
 
   const busy =
@@ -103,19 +108,20 @@ function BannersInner() {
   return (
     <>
       <AdminPageHeader
-        title="Banners"
-        description="Upload homepage CMS banners (multipart image ≤5MB)."
+        title={t("admin.banners.title")}
+        description={t("admin.banners.description")}
         actions={
           <div className="flex gap-1 rounded-md border border-mq-border p-0.5">
-            {(["VI", "EN"] as BannerLang[]).map((l) => (
+            {BANNER_LANGS.map((l) => (
               <button
                 key={l}
                 type="button"
                 className={`mq-btn text-xs px-3 py-1.5 ${lang === l ? "mq-btn-primary" : "mq-btn-ghost"}`}
+                title={BANNER_LANG_LABELS[l]}
                 onClick={() => {
                   setLang(l);
                   setPage(1);
-                  if (!editing) setForm(emptyForm(l));
+                  if (!editing) setForm(emptyForm());
                 }}
               >
                 {l}
@@ -128,40 +134,38 @@ function BannersInner() {
       <div className="space-y-6">
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : "Failed"}
+            {error instanceof Error ? error.message : t("admin.common.failed")}
           </div>
         )}
 
         <form className="mq-card p-5 grid sm:grid-cols-2 gap-3" onSubmit={(e) => void onSubmit(e)}>
           <div className="sm:col-span-2 flex items-center justify-between gap-2">
             <h3 className="font-semibold text-sm">
-              {editing ? `Edit · ${editing.title}` : "Create banner"}
+              {editing
+                ? t("admin.banners.editTitle", { title: editing.title })
+                : t("admin.banners.createTitle", { lang })}
             </h3>
             {editing && (
               <button type="button" className="mq-btn mq-btn-ghost text-xs" onClick={cancelEdit}>
-                Cancel edit
+                {t("admin.common.cancelEdit")}
               </button>
             )}
           </div>
 
+          <p className="sm:col-span-2 text-xs text-mq-text-muted">
+            {t("admin.banners.langHint", { label: BANNER_LANG_LABELS[lang] })}
+          </p>
+
           <input
             className="mq-input"
-            placeholder="Title"
+            placeholder={t("admin.banners.titlePh")}
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
             required
           />
-          <select
-            className="mq-input"
-            value={form.lang}
-            onChange={(e) => setForm({ ...form, lang: e.target.value as BannerLang })}
-          >
-            <option value="VI">VI</option>
-            <option value="EN">EN</option>
-          </select>
           <input
             className="mq-input"
-            placeholder="Link URL (optional)"
+            placeholder={t("admin.banners.linkPh")}
             value={form.linkUrl}
             onChange={(e) => setForm({ ...form, linkUrl: e.target.value })}
           />
@@ -169,7 +173,7 @@ function BannersInner() {
             className="mq-input"
             type="number"
             min={0}
-            placeholder="Sort order"
+            placeholder={t("admin.banners.orderPh")}
             value={form.sortOrder}
             onChange={(e) => setForm({ ...form, sortOrder: e.target.value })}
           />
@@ -179,11 +183,11 @@ function BannersInner() {
               checked={form.isActive}
               onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
             />
-            Active
+            {t("admin.common.active")}
           </label>
           <label className="space-y-1 text-sm">
             <span className="text-mq-text-muted text-xs">
-              Image {editing ? "(optional replace)" : "(required)"} · jpeg/png/webp/gif ≤5MB
+              {editing ? t("admin.banners.imageOptional") : t("admin.banners.imageRequired")}
             </span>
             <input
               className="mq-input"
@@ -197,7 +201,11 @@ function BannersInner() {
             className="mq-btn mq-btn-primary sm:col-span-2"
             disabled={busy || (!editing && !form.file)}
           >
-            {busy ? "Saving…" : editing ? "Save changes" : "Create banner"}
+            {busy
+              ? t("admin.common.saving")
+              : editing
+                ? t("admin.common.save")
+                : t("admin.banners.createBtn")}
           </button>
         </form>
 
@@ -216,13 +224,18 @@ function BannersInner() {
                 <div className="min-w-0">
                   <p className="font-medium truncate">{b.title}</p>
                   <p className="text-xs text-mq-text-muted">
-                    {b.lang} · sort {b.sortOrder} · {b.isActive ? "active" : "hidden"}
+                    {b.lang} · {t("admin.banners.sortLabel", { n: String(b.sortOrder) })} ·{" "}
+                    {b.isActive ? t("admin.common.active") : t("admin.common.hidden")}
                     {b.linkUrl ? ` · ${b.linkUrl}` : ""}
                   </p>
                 </div>
               </div>
               <AdminActions>
-                <AdminIconButton label="Edit" icon={Pencil} onClick={() => startEdit(b)} />
+                <AdminIconButton
+                  label={t("admin.common.edit")}
+                  icon={Pencil}
+                  onClick={() => startEdit(b)}
+                />
                 <button
                   type="button"
                   className="mq-btn mq-btn-outline text-xs"
@@ -231,15 +244,15 @@ function BannersInner() {
                     void toggleBanner.mutateAsync({ id: b.id, isActive: !b.isActive })
                   }
                 >
-                  {b.isActive ? "Hide" : "Show"}
+                  {b.isActive ? t("admin.common.hide") : t("admin.common.show")}
                 </button>
                 <AdminIconButton
-                  label="Delete"
+                  label={t("admin.common.delete")}
                   icon={Trash2}
                   tone="danger"
                   disabled={deleteBanner.isPending}
                   onClick={() => {
-                    if (confirm(`Delete banner “${b.title}”?`)) {
+                    if (confirm(t("admin.banners.confirmDelete", { title: b.title }))) {
                       void deleteBanner.mutateAsync(b.id);
                     }
                   }}
@@ -249,7 +262,7 @@ function BannersInner() {
           ))}
           {!isLoading && sorted.length === 0 && (
             <p className="text-sm text-mq-text-muted text-center py-6">
-              No banners for {lang}.
+              {t("admin.banners.empty", { lang })}
             </p>
           )}
         </div>

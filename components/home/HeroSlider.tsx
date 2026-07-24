@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { usePublicBanners } from "@/lib/queries/promotions";
 import type { BannerLang } from "@/lib/api/promotions";
+import type { Locale } from "@/lib/i18n/types";
 import { heroImages } from "@/lib/images";
 import { Container } from "@/components/ui/shared";
 
@@ -20,15 +21,18 @@ type Slide = {
   fromCms?: boolean;
 };
 
-function localeToBannerLang(locale: string | null): BannerLang {
-  return locale === "vi" ? "VI" : "EN";
+/** Map app locale → public banner `lang` query. */
+export function localeToBannerLang(locale: Locale | string | null): BannerLang {
+  if (locale === "vi") return "VI";
+  if (locale === "zh-TW") return "TW";
+  return "EN";
 }
 
 export function HeroSlider() {
-  const { t, locale } = useLanguage();
+  const { t, locale, ready } = useLanguage();
   const [slide, setSlide] = useState(0);
   const bannerLang = localeToBannerLang(locale);
-  const { data: cmsBanners = [] } = usePublicBanners(bannerLang);
+  const { data: cmsBanners = [] } = usePublicBanners(bannerLang, ready && Boolean(locale));
 
   const slides: Slide[] = useMemo(() => {
     const staticSlides: Slide[] = [
@@ -62,7 +66,8 @@ export function HeroSlider() {
         fromCms: true,
       }));
 
-    return [...staticSlides, ...cmsSlides];
+    // CMS banners first (after matching lang), then keep static hero slides.
+    return [...cmsSlides, ...staticSlides];
   }, [cmsBanners, t]);
 
   useEffect(() => {

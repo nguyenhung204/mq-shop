@@ -7,10 +7,12 @@ import { useAdminSettlements } from "@/lib/queries/settlements";
 import { useAdminShops } from "@/lib/queries/admin";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 
 function SettlementsInner() {
+  const { t } = useLanguage();
   const [shopId, setShopId] = useState("");
   const [page, setPage] = useState(1);
   const { data: shopsPage } = useAdminShops("APPROVED", 1, 100);
@@ -29,22 +31,23 @@ function SettlementsInner() {
   return (
     <>
       <AdminPageHeader
-        title="Settlements"
-        description="Pending reconcile revenue across shops. Read-only MVP — no payout action yet."
+        title={t("admin.settlements.title")}
+        description={t("admin.settlements.description")}
       />
       <div className="space-y-4">
         <div className="flex flex-wrap gap-3 items-end">
           <label className="block text-sm">
-            <span className="text-mq-text-muted text-xs">Shop</span>
+            <span className="text-mq-text-muted text-xs">{t("admin.common.shop")}</span>
             <select
               className="mq-input mt-1 min-w-[14rem]"
               value={shopId}
+              aria-label={t("admin.common.shop")}
               onChange={(e) => {
                 setShopId(e.target.value);
                 setPage(1);
               }}
             >
-              <option value="">All shops</option>
+              <option value="">{t("admin.common.allShops")}</option>
               {shops.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.name}
@@ -64,19 +67,21 @@ function SettlementsInner() {
             </p>
           </div>
           {typeof meta?.total === "number" ? (
-            <p className="text-sm text-mq-text-muted">{meta.total} entries</p>
+            <p className="text-sm text-mq-text-muted">
+              {t("admin.common.items", { count: String(meta.total) })}
+            </p>
           ) : null}
         </div>
 
         {isLoading && <AdminCardListSkeleton count={6} />}
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : "Failed"}
+            {error instanceof Error ? error.message : t("admin.common.failed")}
           </div>
         )}
         {!isLoading && items.length === 0 && !isError && (
           <p className="text-sm text-mq-text-muted py-6 text-center">
-            No pending settlements.
+            {t("admin.settlementsPage.empty")}
           </p>
         )}
         {items.map((s) => (
