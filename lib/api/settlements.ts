@@ -128,7 +128,7 @@ export const settlementApi = {
   list: async (query?: ListSettlementsParams) => {
     const raw = await api.get<unknown>("/settlements", {
       query: {
-        status: query?.status ?? "PENDING_RECONCILE",
+        ...(query?.status ? { status: query.status } : {}),
         page: query?.page ?? 1,
         pageSize: query?.pageSize ?? 20,
       },
@@ -142,7 +142,7 @@ export const adminSettlementApi = {
   list: async (query?: AdminListSettlementsParams) => {
     const raw = await api.get<unknown>("/admin/settlements", {
       query: {
-        status: query?.status ?? "PENDING_RECONCILE",
+        ...(query?.status ? { status: query.status } : {}),
         shopId: query?.shopId,
         page: query?.page ?? 1,
         pageSize: query?.pageSize ?? 20,

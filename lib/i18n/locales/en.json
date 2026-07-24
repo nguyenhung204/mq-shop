@@ -578,7 +578,7 @@
     },
     "settlements": {
       "title": "Settlements",
-      "description": "View and manage shop settlements."
+      "description": "Track shop settlements from pending reconcile through payout."
     },
     "payouts": {
       "title": "Seller payouts",
@@ -748,7 +748,14 @@
       "empty": "No audit logs."
     },
     "settlementsPage": {
-      "empty": "No settlements for this filter."
+      "empty": "No settlements for this filter.",
+      "pendingTotal": "Pending reconcile total",
+      "openPayouts": "Seller payouts",
+      "status": {
+        "PENDING_RECONCILE": "Pending reconcile",
+        "INCLUDED_IN_PAYOUT": "Included in payout",
+        "PAID_OUT": "Paid out"
+      }
     }
   },
   "seller": {
@@ -941,8 +948,13 @@
     },
     "settlementsPage": {
       "pendingTotal": "Pending reconcile total",
-      "empty": "No pending settlements.",
-      "intro": "Revenue from delivered orders awaiting reconcile."
+      "empty": "No settlements for this filter.",
+      "intro": "Revenue from delivered orders — pending, in a payout slip, or paid out.",
+      "status": {
+        "PENDING_RECONCILE": "Pending reconcile",
+        "INCLUDED_IN_PAYOUT": "Included in payout",
+        "PAID_OUT": "Paid out"
+      }
     },
     "rmaPage": {
       "intro": "Confirm returned stock for approved refunds.",

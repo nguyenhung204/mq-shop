@@ -578,7 +578,7 @@
     },
     "settlements": {
       "title": "結算",
-      "description": "查看與管理商店結算。"
+      "description": "追蹤商店結算：待對帳、撥款中、已撥款。"
     },
     "payouts": {
       "title": "賣家撥款",
@@ -748,7 +748,14 @@
       "empty": "無稽核紀錄。"
     },
     "settlementsPage": {
-      "empty": "此篩選條件無結算。"
+      "empty": "此篩選條件無結算。",
+      "pendingTotal": "待對帳總額",
+      "openPayouts": "賣家撥款",
+      "status": {
+        "PENDING_RECONCILE": "待對帳",
+        "INCLUDED_IN_PAYOUT": "已納入撥款",
+        "PAID_OUT": "已撥款"
+      }
     }
   },
   "seller": {
@@ -941,8 +948,13 @@
     },
     "settlementsPage": {
       "pendingTotal": "待對帳總額",
-      "empty": "沒有待對帳結算。",
-      "intro": "已配達訂單待對帳營收。"
+      "empty": "此篩選條件無結算。",
+      "intro": "已配達訂單營收 — 待對帳、撥款中或已撥款。",
+      "status": {
+        "PENDING_RECONCILE": "待對帳",
+        "INCLUDED_IN_PAYOUT": "已納入撥款",
+        "PAID_OUT": "已撥款"
+      }
     },
     "rmaPage": {
       "intro": "確認已核准退款的退貨入庫。",

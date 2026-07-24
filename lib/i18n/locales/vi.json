@@ -578,7 +578,7 @@
     },
     "settlements": {
       "title": "Đối soát",
-      "description": "Xem và quản lý đối soát shop."
+      "description": "Theo dõi settlement từ chờ đối soát đến đã chi trả."
     },
     "payouts": {
       "title": "Chi trả seller",
@@ -748,7 +748,14 @@
       "empty": "Không có nhật ký."
     },
     "settlementsPage": {
-      "empty": "Không có đối soát trong bộ lọc này."
+      "empty": "Không có đối soát trong bộ lọc này.",
+      "pendingTotal": "Tổng chờ đối soát",
+      "openPayouts": "Chi trả seller",
+      "status": {
+        "PENDING_RECONCILE": "Chờ đối soát",
+        "INCLUDED_IN_PAYOUT": "Đã vào phiếu chi trả",
+        "PAID_OUT": "Đã chi trả"
+      }
     }
   },
   "seller": {
@@ -941,8 +948,13 @@
     },
     "settlementsPage": {
       "pendingTotal": "Tổng chờ đối soát",
-      "empty": "Không có đối soát chờ.",
-      "intro": "Doanh thu từ đơn đã giao đang chờ đối soát."
+      "empty": "Không có đối soát trong bộ lọc này.",
+      "intro": "Doanh thu từ đơn đã giao — chờ đối soát, trong phiếu chi trả, hoặc đã chi.",
+      "status": {
+        "PENDING_RECONCILE": "Chờ đối soát",
+        "INCLUDED_IN_PAYOUT": "Đã vào phiếu chi trả",
+        "PAID_OUT": "Đã chi trả"
+      }
     },
     "rmaPage": {
       "intro": "Xác nhận hàng hoàn về kho cho hoàn tiền đã duyệt.",

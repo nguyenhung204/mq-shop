@@ -14,7 +14,7 @@ export const settlementKeys = {
     [
       ...settlementKeys.all,
       "seller",
-      params.status ?? "PENDING_RECONCILE",
+      params.status ?? "ALL",
       params.page ?? 1,
       params.pageSize ?? 20,
     ] as const,
@@ -23,7 +23,7 @@ export const settlementKeys = {
       ...settlementKeys.all,
       "admin",
       params.shopId ?? "",
-      params.status ?? "PENDING_RECONCILE",
+      params.status ?? "ALL",
       params.page ?? 1,
       params.pageSize ?? 20,
     ] as const,
@@ -32,7 +32,7 @@ export const settlementKeys = {
 export function useSellerSettlements(params: ListSettlementsParams = {}) {
   const page = params.page ?? 1;
   const pageSize = params.pageSize ?? 20;
-  const status = params.status ?? "PENDING_RECONCILE";
+  const status = params.status;
   return useQuery({
     queryKey: settlementKeys.seller({ status, page, pageSize }),
     queryFn: () => settlementApi.list({ status, page, pageSize }),
@@ -45,7 +45,7 @@ export function useAdminSettlements(
 ) {
   const page = params.page ?? 1;
   const pageSize = params.pageSize ?? 20;
-  const status = params.status ?? "PENDING_RECONCILE";
+  const status = params.status;
   const shopId = params.shopId;
   return useQuery({
     queryKey: settlementKeys.admin({ status, shopId, page, pageSize }),
