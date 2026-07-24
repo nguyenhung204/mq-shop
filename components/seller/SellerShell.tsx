@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import {
   BadgeDollarSign,
+  BadgePercent,
   Boxes,
   FolderOpen,
   LayoutDashboard,
@@ -29,6 +30,7 @@ const links = [
     icon: BadgeDollarSign,
     sellerOnly: true,
   },
+  { href: "/seller/promotions", label: "Promotions", icon: BadgePercent, sellerOnly: true },
   { href: "/seller/rma", label: "RMA", icon: RotateCcw, sellerOnly: true },
   { href: "/seller/materials", label: "Materials", icon: FolderOpen, sellerOnly: true },
 ] as const;
@@ -53,6 +55,12 @@ function titleFromPath(pathname: string): { title: string; desc?: string } {
     return {
       title: "Settlements",
       desc: "Pending reconcile revenue from delivered orders.",
+    };
+  }
+  if (pathname.startsWith("/seller/promotions")) {
+    return {
+      title: "Promotions",
+      desc: "Create shop promotions — submitted for admin review.",
     };
   }
   if (pathname.startsWith("/seller/rma")) {

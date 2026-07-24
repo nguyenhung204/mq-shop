@@ -12,6 +12,7 @@ import {
   type CreatePromotionBody,
   type ListBannersParams,
   type ListPromotionsParams,
+  type MarketingFolder,
   type Promotion,
   type UpdateMarketingFolderBody,
   type UpdatePromotionBody,
@@ -292,7 +293,8 @@ export function useDeleteBanner() {
 export function useMarketingFolders(page = 1, pageSize = 20) {
   return useQuery({
     queryKey: marketingKeys.folders(page, pageSize),
-    queryFn: async () => parsePage(await marketingApi.folders({ page, pageSize })),
+    queryFn: async () =>
+      parsePage<MarketingFolder>(await marketingApi.folders({ page, pageSize })),
   });
 }
 
