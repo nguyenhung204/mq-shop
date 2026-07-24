@@ -2,7 +2,10 @@ import { api } from "./client";
 import type { PageMeta } from "./types";
 import { asArray } from "./utils";
 
-export type SettlementStatus = "PENDING_RECONCILE";
+export type SettlementStatus =
+  | "PENDING_RECONCILE"
+  | "INCLUDED_IN_PAYOUT"
+  | "PAID_OUT";
 
 export type SettlementView = {
   id: string;

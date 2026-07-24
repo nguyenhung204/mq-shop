@@ -50,6 +50,34 @@ export type {
   UpdateOrderStatusRequest,
 } from "./orders";
 export { settlementApi, adminSettlementApi } from "./settlements";
+export {
+  financeConfigApi,
+  adminPayoutApi,
+  landingCostApi,
+  financeReportApi,
+} from "./finance";
+export type {
+  FinanceConfigStatus,
+  PayoutStatus,
+  FinanceTransactionType,
+  FinanceExportFormat,
+  FinanceConfig,
+  CreateFinanceConfigBody,
+  ListFinanceConfigsParams,
+  SellerPayout,
+  SellerPayoutItem,
+  CreateSellerPayoutBody,
+  ListSellerPayoutsParams,
+  LandingCostItemInput,
+  LandingCostRequest,
+  LandingCostItemResult,
+  LandingCostBreakdown,
+  LandingCostResult,
+  FinanceTransaction,
+  ListFinanceTransactionsParams,
+  ExportFinanceReportBody,
+  ExportFinanceReportResult,
+} from "./finance";
 export type {
   SettlementStatus,
   SettlementView,
@@ -330,6 +358,11 @@ export const adminApi = {
   deleteBanner: (id: string) => bannerApi.adminDelete(id),
 };
 
+/**
+ * @deprecated Legacy payout-batch / withdraw / gateway-review paths (pre-007).
+ * Prefer `financeConfigApi`, `adminPayoutApi`, `landingCostApi`, `financeReportApi`
+ * from `@/lib/api/finance`. Wallet withdraw stays out of scope (module 009).
+ */
 export const financeApi = {
   createPayoutBatch: (body: unknown) => api.post("/finance/payout-batches", body),
   payoutBatches: () => api.get("/finance/payout-batches"),
