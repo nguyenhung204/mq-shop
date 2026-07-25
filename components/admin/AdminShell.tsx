@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { LogOut, Menu, Store, X } from "lucide-react";
 import { adminNavItems, ACCOUNTANT_COMMERCE_PERMS } from "@/components/admin/nav";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -159,6 +160,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             <p className="mq-admin-user-email">{user?.email || t("admin.brand")}</p>
             <p className="mq-admin-user-roles">{user?.roles?.join(" · ") || "—"}</p>
           </div>
+          <LanguageSwitcher menuAlign="end" />
           <NotificationBell />
           <button type="button" className="mq-admin-logout" onClick={() => void onLogout()}>
             <LogOut size={16} strokeWidth={1.75} />
