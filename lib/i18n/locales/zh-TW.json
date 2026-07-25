@@ -278,6 +278,12 @@
     "myProfile": "我的個人資料",
     "myOrders": "我的訂單",
     "signOut": "登出",
+    "menu": {
+      "inventory": "庫存",
+      "admin": "管理後台",
+      "adminRma": "管理退換貨",
+      "system": "系統"
+    },
     "nav": {
       "profile": "個人資料",
       "password": "密碼",
@@ -322,7 +328,7 @@
       "transactionsDesc": "您的訂單付款紀錄",
       "wallet": "錢包",
       "walletDesc": "餘額、轉帳與提領",
-      "rma": "RMA",
+      "rma": "退換貨",
       "rmaDesc": "退貨與換貨",
       "applyShop": "申請開店",
       "applyShopDesc": "開始在 MQ 販售",

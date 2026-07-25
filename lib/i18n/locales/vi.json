@@ -278,6 +278,12 @@
     "myProfile": "Hồ sơ của tôi",
     "myOrders": "Đơn hàng của tôi",
     "signOut": "Đăng xuất",
+    "menu": {
+      "inventory": "Kho hàng",
+      "admin": "Quản trị",
+      "adminRma": "RMA quản trị",
+      "system": "Hệ thống"
+    },
     "nav": {
       "profile": "Hồ sơ",
       "password": "Mật khẩu",
@@ -322,7 +328,7 @@
       "transactionsDesc": "Lịch sử thanh toán đơn hàng của bạn",
       "wallet": "Ví",
       "walletDesc": "Số dư, chuyển khoản và rút tiền",
-      "rma": "RMA",
+      "rma": "Đổi trả",
       "rmaDesc": "Đổi trả và hoàn hàng",
       "applyShop": "Mở gian hàng",
       "applyShopDesc": "Bắt đầu bán trên MQ",

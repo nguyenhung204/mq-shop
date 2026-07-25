@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
+import { LogOut } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import type { AuthUser } from "@/lib/api/types";
@@ -147,14 +148,16 @@ export function UserMenu() {
         >
           {t("account.links.wallet")}
         </Link>
-        <Link
-          href="/rma"
-          role="menuitem"
-          className="mq-user-menu-item"
-          onClick={() => setOpen(false)}
-        >
-          {t("account.links.rma")}
-        </Link>
+        {!hasRole("SELLER") ? (
+          <Link
+            href="/rma"
+            role="menuitem"
+            className="mq-user-menu-item"
+            onClick={() => setOpen(false)}
+          >
+            {t("account.links.rma")}
+          </Link>
+        ) : null}
         {hasRole("SELLER") ? (
           <Link
             href="/seller"
@@ -162,7 +165,7 @@ export function UserMenu() {
             className="mq-user-menu-item"
             onClick={() => setOpen(false)}
           >
-            Seller Center
+            {t("seller.brand")}
           </Link>
         ) : null}
         {hasRole("WAREHOUSE") && !hasRole("SELLER") ? (
@@ -172,7 +175,7 @@ export function UserMenu() {
             className="mq-user-menu-item"
             onClick={() => setOpen(false)}
           >
-            Inventory
+            {t("account.menu.inventory")}
           </Link>
         ) : null}
         {showAdmin ? (
@@ -182,7 +185,7 @@ export function UserMenu() {
             className="mq-user-menu-item"
             onClick={() => setOpen(false)}
           >
-            Admin
+            {t("account.menu.admin")}
           </Link>
         ) : null}
         {showAdminRma ? (
@@ -192,7 +195,7 @@ export function UserMenu() {
             className="mq-user-menu-item"
             onClick={() => setOpen(false)}
           >
-            Admin RMA
+            {t("account.menu.adminRma")}
           </Link>
         ) : null}
         {hasRole("SUPER_ADMIN") ? (
@@ -202,7 +205,7 @@ export function UserMenu() {
             className="mq-user-menu-item"
             onClick={() => setOpen(false)}
           >
-            System
+            {t("account.menu.system")}
           </Link>
         ) : null}
         <button
@@ -211,6 +214,7 @@ export function UserMenu() {
           className="mq-user-menu-item mq-user-menu-item-danger"
           onClick={() => void onSignOut()}
         >
+          <LogOut size={15} strokeWidth={1.75} aria-hidden />
           {t("account.signOut")}
         </button>
       </div>

@@ -278,6 +278,12 @@
     "myProfile": "My profile",
     "myOrders": "My orders",
     "signOut": "Sign out",
+    "menu": {
+      "inventory": "Inventory",
+      "admin": "Admin",
+      "adminRma": "Admin RMA",
+      "system": "System"
+    },
     "nav": {
       "profile": "Profile",
       "password": "Password",
@@ -322,7 +328,7 @@
       "transactionsDesc": "Your order payment history",
       "wallet": "Wallet",
       "walletDesc": "Balance, transfers, and payouts",
-      "rma": "RMA",
+      "rma": "Returns",
       "rmaDesc": "Returns and exchanges",
       "applyShop": "Apply shop",
       "applyShopDesc": "Start selling on MQ",

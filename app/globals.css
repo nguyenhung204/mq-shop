@@ -1546,12 +1546,17 @@ select.mq-input,
 }
 
 .mq-user-menu-item-danger {
-  color: var(--mq-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  color: #b91c1c;
+  background: color-mix(in srgb, #ef4444 10%, var(--mq-surface));
 }
 
 .mq-user-menu-item-danger:hover {
-  color: #c2410c;
-  background: color-mix(in srgb, #ea580c 8%, var(--mq-surface));
+  color: #991b1b;
+  background: color-mix(in srgb, #ef4444 22%, var(--mq-surface));
 }
 
 /* Desktop: hide mobile nav toggle (backup if wrapper class missing) */
