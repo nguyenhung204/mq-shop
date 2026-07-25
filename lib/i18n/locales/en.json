@@ -477,7 +477,7 @@
         "banners": "Homepage and promo CMS creatives",
         "marketing": "Upload seller marketing kits and assets",
         "walletPayouts": "Approve personal wallet withdraw requests (≠ seller payouts)",
-        "mlm": "View rank table and set user MLM rank"
+        "mlm": "Rank table / set rank (Acc+SA); network lookup for Admin"
       },
       "noModules": "No admin modules available for this account. Check roles and permissions."
     },
@@ -806,14 +806,14 @@
     },
     "mlm": {
       "title": "MLM ranks",
-      "description": "Rank percent table and manual rank assignment (CONFIG_MLM).",
-      "hint": "Not related to finance config commissionPercent.",
+      "description": "Rank table / set rank (Accountant, Super Admin) and network lookup by user (Admin+).",
+      "hint": "CONFIG_MLM: Accountant + Super Admin set rank. Admin uses network lookup only (VIEW_MLM_TREE). Not finance commissionPercent.",
       "ranksTitle": "Rank table",
       "team": "Team %",
       "referral": "Referral %",
       "globalTier": "Global tier",
       "setRankTitle": "Set user rank",
-      "setRankHint": "Paste a user UUID and choose rank 1–10.",
+      "setRankHint": "Search a user by name or email, then choose rank 1–10. Accountant (APPROVE) and Super Admin (ALL) only.",
       "userId": "User ID",
       "userIdRequired": "User ID is required.",
       "rankInvalid": "Rank must be an integer from 1 to 10.",
@@ -821,7 +821,11 @@
       "rankUpdated": "Updated {email} → rank {rank} ({name})",
       "treeTitle": "Network by user",
       "treeHint": "Ops lookup: load another user’s downline via userId (VIEW_MLM_TREE ALL).",
-      "loadTree": "Load tree"
+      "loadTree": "Load tree",
+      "searchUser": "User",
+      "searchUserPh": "Search by name or email…",
+      "userRequired": "Select a user.",
+      "noConfigPerm": "Your role cannot set MLM rank (CONFIG_MLM is NONE for Admin). You can still look up network trees below."
     }
   },
   "seller": {

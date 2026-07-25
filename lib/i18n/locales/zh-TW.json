@@ -477,7 +477,7 @@
         "banners": "首頁／促銷 CMS 橫幅",
         "marketing": "上傳賣家行銷素材包",
         "walletPayouts": "核准個人錢包提領（≠ 賣家撥款）",
-        "mlm": "等級比率表與手動設定等級"
+        "mlm": "等級表／設等級（Acc+SA）；Admin 查網絡"
       },
       "noModules": "此帳號沒有可用的管理模組。請檢查角色與權限。"
     },
@@ -806,14 +806,14 @@
     },
     "mlm": {
       "title": "MLM 等級",
-      "description": "等級比率表與手動設定等級（CONFIG_MLM）。",
-      "hint": "與財務設定的 commissionPercent 無關。",
+      "description": "等級表／設定等級（Accountant、Super Admin）與依使用者查網絡（Admin+）。",
+      "hint": "CONFIG_MLM：Accountant 與 Super Admin 可設定等級。Admin 僅可查網絡（VIEW_MLM_TREE）。與財務 commissionPercent 無關。",
       "ranksTitle": "等級表",
       "team": "團隊 %",
       "referral": "推薦 %",
       "globalTier": "全球層級",
       "setRankTitle": "設定使用者等級",
-      "setRankHint": "貼上使用者 UUID 並選擇等級 1–10。",
+      "setRankHint": "依姓名或電子郵件搜尋使用者，再選擇等級 1–10。僅 Accountant（APPROVE）與 Super Admin（ALL）。",
       "userId": "使用者 ID",
       "userIdRequired": "需要使用者 ID。",
       "rankInvalid": "等級須為 1–10 的整數。",
@@ -821,7 +821,11 @@
       "rankUpdated": "已更新 {email} → 等級 {rank}（{name}）",
       "treeTitle": "依使用者查網絡",
       "treeHint": "營運查詢：以 userId 載入其他使用者下線（VIEW_MLM_TREE ALL）。",
-      "loadTree": "載入樹"
+      "loadTree": "載入樹",
+      "searchUser": "使用者",
+      "searchUserPh": "依姓名或電子郵件搜尋…",
+      "userRequired": "請選擇使用者。",
+      "noConfigPerm": "您的角色無法設定 MLM 等級（Admin 的 CONFIG_MLM 為 NONE）。仍可在下方查詢網絡。"
     }
   },
   "seller": {

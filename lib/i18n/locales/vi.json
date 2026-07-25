@@ -477,7 +477,7 @@
         "banners": "Banner CMS trang chủ / khuyến mãi",
         "marketing": "Upload bộ tài liệu marketing cho seller",
         "walletPayouts": "Duyệt yêu cầu rút ví cá nhân (≠ seller payouts)",
-        "mlm": "Bảng % rank và gán rank user"
+        "mlm": "Bảng rank / gán rank (Acc+SA); Admin tra network"
       },
       "noModules": "Không có module admin cho tài khoản này. Kiểm tra role/permission."
     },
@@ -806,14 +806,14 @@
     },
     "mlm": {
       "title": "Rank MLM",
-      "description": "Bảng % rank và gán rank thủ công (CONFIG_MLM).",
-      "hint": "Không liên quan commissionPercent trên finance config.",
+      "description": "Bảng rank / gán rank (Accountant, Super Admin) và tra network theo user (Admin+).",
+      "hint": "CONFIG_MLM: Accountant + Super Admin gán rank. Admin chỉ tra network (VIEW_MLM_TREE). Không liên quan commissionPercent finance.",
       "ranksTitle": "Bảng rank",
       "team": "Team %",
       "referral": "Referral %",
       "globalTier": "Global tier",
       "setRankTitle": "Gán rank user",
-      "setRankHint": "Dán UUID user và chọn rank 1–10.",
+      "setRankHint": "Tìm user theo tên hoặc email, rồi chọn rank 1–10. Chỉ Accountant (APPROVE) và Super Admin (ALL).",
       "userId": "User ID",
       "userIdRequired": "Cần User ID.",
       "rankInvalid": "Rank phải là số nguyên 1–10.",
@@ -821,7 +821,11 @@
       "rankUpdated": "Đã cập nhật {email} → rank {rank} ({name})",
       "treeTitle": "Mạng theo user",
       "treeHint": "Ops: tải downline của user khác qua userId (VIEW_MLM_TREE ALL).",
-      "loadTree": "Tải cây"
+      "loadTree": "Tải cây",
+      "searchUser": "User",
+      "searchUserPh": "Tìm theo tên hoặc email…",
+      "userRequired": "Chọn một user.",
+      "noConfigPerm": "Role của bạn không được gán rank MLM (CONFIG_MLM = NONE với Admin). Vẫn có thể xem network bên dưới."
     }
   },
   "seller": {
