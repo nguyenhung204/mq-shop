@@ -33,13 +33,15 @@ export function RegisterContent() {
         email: regEmail,
         password: regPw,
         fullName: regName || undefined,
-        referralCode: refCode || undefined,
+        referrerCode: refCode || undefined,
       });
       router.push(`/my-account/verify-otp?email=${encodeURIComponent(regEmail)}`);
     } catch (err) {
       const code = err instanceof ApiError ? err.code : null;
       if (code === "EMAIL_ALREADY_IN_USE") setError("Email already in use.");
-      else if (code === "TOO_MANY_REQUESTS") setError("Too many requests. Try again later.");
+      else if (code === "REFERRER_NOT_FOUND" || code === "REFERRER_INVALID") {
+        setError("Referral code is invalid or not found.");
+      } else if (code === "TOO_MANY_REQUESTS") setError("Too many requests. Try again later.");
       else setError(err instanceof ApiError ? err.message : "Registration failed");
     } finally {
       setBusy(false);

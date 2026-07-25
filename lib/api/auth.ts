@@ -7,7 +7,8 @@ export const authApi = {
     password: string;
     fullName?: string;
     phone?: string;
-    referralCode?: string;
+    /** Prefill from `/register?ref=` — BE field name. */
+    referrerCode?: string;
   }) =>
     api.post<{ id?: string; email?: string; status?: string; message?: string }>(
       "/auth/register",

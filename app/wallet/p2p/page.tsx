@@ -1,54 +1,51 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { walletApi } from "@/lib/api";
+import { walletApi, type TransferPreviewResult } from "@/lib/api/wallet";
 import { ApiError } from "@/lib/api/client";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { Container, PageHero } from "@/components/ui/shared";
 
+/** Temporary bridge — full PIN UX lands in Phase 2. */
 function P2pInner() {
-  const [recipient, setRecipient] = useState("");
-  const [amountPoints, setAmount] = useState("");
-  const [password, setPassword] = useState("");
-  const [otpCode, setOtp] = useState("");
-  const [step, setStep] = useState<"form" | "confirm">("form");
-  const [idempotencyKey] = useState(() =>
-    typeof crypto !== "undefined" && crypto.randomUUID
-      ? crypto.randomUUID()
-      : `p2p-${Date.now()}`,
-  );
+  const [email, setEmail] = useState("");
+  const [amount, setAmount] = useState("");
+  const [pin, setPin] = useState("");
+  const [preview, setPreview] = useState<TransferPreviewResult | null>(null);
   const [error, setError] = useState("");
   const [ok, setOk] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const requestOtp = async (e: FormEvent) => {
+  const onPreview = async (e: FormEvent) => {
     e.preventDefault();
     setBusy(true);
     setError("");
+    setOk("");
     try {
-      await walletApi.requestP2pOtp({ recipient, amountPoints: Number(amountPoints) });
-      setStep("confirm");
-      setOk("OTP sent to your email. Enter password + OTP to confirm. No PIN required.");
+      const res = await walletApi.transferPreview({ email: email.trim() });
+      setPreview(res);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to request OTP");
+      setError(err instanceof ApiError ? err.message : "Preview failed");
     } finally {
       setBusy(false);
     }
   };
 
-  const transfer = async (e: FormEvent) => {
+  const onTransfer = async (e: FormEvent) => {
     e.preventDefault();
+    if (!preview) return;
     setBusy(true);
     setError("");
     try {
-      await walletApi.p2pTransfer({
-        recipient,
-        amountPoints: Number(amountPoints),
-        password,
-        otpCode,
-        idempotencyKey,
+      await walletApi.transfer({
+        email: preview.email,
+        amount: Number(amount),
+        pin,
       });
       setOk("Transfer completed.");
+      setPreview(null);
+      setPin("");
+      setAmount("");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Transfer failed");
     } finally {
@@ -58,23 +55,64 @@ function P2pInner() {
 
   return (
     <>
-      <PageHero title="P2P transfer" breadcrumb={[{ label: "Wallet", href: "/wallet" }, { label: "P2P" }]} />
+      <PageHero
+        title="P2P transfer"
+        breadcrumb={[{ label: "Wallet", href: "/wallet" }, { label: "P2P" }]}
+      />
       <Container className="py-10 max-w-md mx-auto">
         <div className="mq-card p-6 space-y-4">
           {error && <div className="mq-alert mq-alert-error">{error}</div>}
           {ok && <div className="mq-alert mq-alert-success">{ok}</div>}
-          {step === "form" ? (
-            <form className="space-y-3" onSubmit={requestOtp}>
-              <input className="mq-input" placeholder="Recipient (id / email / phone)" value={recipient} onChange={(e) => setRecipient(e.target.value)} required />
-              <input className="mq-input" type="number" step="0.000001" min="0.000001" placeholder="Amount (points)" value={amountPoints} onChange={(e) => setAmount(e.target.value)} required />
-              <button className="mq-btn mq-btn-primary w-full" disabled={busy}>Request OTP</button>
+          {!preview ? (
+            <form className="space-y-3" onSubmit={onPreview}>
+              <input
+                className="mq-input"
+                type="email"
+                placeholder="Recipient email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <button className="mq-btn mq-btn-primary w-full" disabled={busy}>
+                Look up recipient
+              </button>
             </form>
           ) : (
-            <form className="space-y-3" onSubmit={transfer}>
-              <input type="password" className="mq-input" placeholder="Account password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-              <input className="mq-input" placeholder="Email OTP" value={otpCode} onChange={(e) => setOtp(e.target.value)} required />
-              <p className="text-xs text-mq-text-muted">Idempotency key: {idempotencyKey}</p>
-              <button className="mq-btn mq-btn-primary w-full" disabled={busy}>Confirm transfer</button>
+            <form className="space-y-3" onSubmit={onTransfer}>
+              <p className="text-sm">
+                To: <strong>{preview.fullName || preview.email}</strong> ({preview.email})
+              </p>
+              <input
+                className="mq-input"
+                type="number"
+                step="0.01"
+                min="0.01"
+                placeholder="Amount (USD)"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                required
+              />
+              <input
+                className="mq-input"
+                type="password"
+                inputMode="numeric"
+                pattern="[0-9]{6}"
+                maxLength={6}
+                placeholder="Wallet PIN (6 digits)"
+                value={pin}
+                onChange={(e) => setPin(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                className="mq-btn mq-btn-outline w-full"
+                onClick={() => setPreview(null)}
+              >
+                Back
+              </button>
+              <button className="mq-btn mq-btn-primary w-full" disabled={busy}>
+                Confirm transfer
+              </button>
             </form>
           )}
         </div>

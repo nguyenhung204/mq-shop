@@ -17,7 +17,6 @@ import type {
   ShopStorefront,
   UpdateProductRequest,
   UpdateProductVariantRequest,
-  WalletBalance,
 } from "./types";
 import { asArray, parsePage } from "./utils";
 
@@ -78,6 +77,37 @@ export type {
   ExportFinanceReportBody,
   ExportFinanceReportResult,
 } from "./finance";
+export { walletApi, adminWalletPayoutApi } from "./wallet";
+export type {
+  Wallet,
+  WalletTxReason,
+  WalletTxDirection,
+  WalletTransaction,
+  ListWalletTransactionsParams,
+  ConfirmWalletPinBody,
+  TransferPreviewBody,
+  TransferPreviewResult,
+  TransferBody,
+  BankInfo,
+  WithdrawBody,
+  PayoutRequestStatus,
+  UserPayoutRequest,
+  ListAdminWalletPayoutsParams,
+} from "./wallet";
+export { mlmApi, adminMlmApi } from "./mlm";
+export type {
+  ReferralLink,
+  NetworkNode,
+  NetworkTree,
+  ListNetworkTreeParams,
+  CommissionType,
+  CommissionLedgerStatus,
+  CommissionRow,
+  ListCommissionsParams,
+  MlmRankConfig,
+  SetMlmRankBody,
+  SetMlmRankResult,
+} from "./mlm";
 export type {
   SettlementStatus,
   SettlementView,
@@ -277,27 +307,6 @@ export type {
   UpdateMarketingFolderBody,
 } from "./promotions";
 export { BANNER_LANGS, BANNER_LANG_LABELS } from "./promotions";
-
-export const walletApi = {
-  affiliateLink: () => api.get<{ code: string; link?: string }>("/wallet/affiliate-link"),
-  networkTree: () => api.get("/wallet/network-tree"),
-  commissionStats: () => api.get("/wallet/commission-stats"),
-  balance: () => api.get<WalletBalance>("/wallet/balance"),
-  requestP2pOtp: (body: { recipient: string; amountPoints: number }) =>
-    api.post("/wallet/p2p-transfer/request-otp", body),
-  p2pTransfer: (body: {
-    recipient: string;
-    amountPoints: number;
-    password: string;
-    otpCode: string;
-    idempotencyKey: string;
-  }) => api.post("/wallet/p2p-transfer", body),
-  withdraw: (body: {
-    amountPoints: number;
-    bankInfo: { bankName: string; accountNumber: string; accountName: string };
-  }) => api.post("/wallet/withdraw", body),
-  myWithdrawals: () => api.get("/wallet/withdraw-requests/me"),
-};
 
 export const adminApi = {
   users: (query?: { page?: number; pageSize?: number; status?: string }) =>

@@ -44,6 +44,14 @@ export type AuthUser = {
   shopId?: string | null;
   emailVerifiedAt?: string | null;
   createdAt?: string;
+  /** Direct upline (MLM 009). */
+  referrerId?: string | null;
+  /** Shareable referral code. */
+  referralCode?: string | null;
+  /** MLM rank 1–10. */
+  mlmRank?: number | null;
+  /** Gate P2P / withdraw until PIN is set. */
+  hasWalletPin?: boolean;
 };
 
 export type LoginResponse = {
@@ -372,9 +380,14 @@ export type ApiAuditLog = {
   meta?: Record<string, unknown>;
 };
 
+/**
+ * @deprecated Prefer `Wallet` from `@/lib/api/wallet` (`availableBalance` / `frozenBalance`).
+ */
 export type WalletBalance = {
   available: string | number;
   frozen: string | number;
+  availableBalance?: string | number;
+  frozenBalance?: string | number;
   pointUsdRate?: string | number;
 };
 
