@@ -271,14 +271,26 @@ Header: `Idempotency-Key: <uuid-v4>` (**bắt buộc**)
 
 Cùng rule idempotency như P2P transfer.
 
+### User list / detail · `VIEW_WALLET`
+
+| Method | Path | Notes |
+|--------|------|-------|
+| GET | `/wallet/withdrawals?status=&page=` | Chỉ request của chính user |
+| GET | `/wallet/withdrawals/:payoutId` | Id của người khác → not found |
+
+FE: list trên `/wallet/withdraw` · `/seller/wallet/withdraw`; detail `/wallet/withdrawals/:id` · `/seller/wallet/withdrawals/:id`.
+
 ### Admin
 
 | Method | Path | Permission | Idempotency |
 |--------|------|------------|-------------|
 | GET | `/admin/wallet/payouts?status=&userId=&page=` | `APPROVE_PAYOUT` | — |
+| GET | `/admin/wallet/payouts/:payoutId` | `APPROVE_PAYOUT` | Chi tiết + bank info |
 | POST | `/admin/wallet/payouts/:id/approve` | `APPROVE_PAYOUT` | — |
 | POST | `/admin/wallet/payouts/:id/reject` | body `{ "reason": "…" }` | — |
 | POST | `/admin/wallet/payouts/:id/process` | `PROCESS_PAYOUT` → stub `gatewayRef` | **`Idempotency-Key` bắt buộc** |
+
+FE detail: `/admin/wallet/payouts/:id` — duyệt / từ chối / **Process** (stub chuyển tiền).
 
 Process: UUID mới mỗi payout id / lần process mới; retry cùng key + cùng id.
 
@@ -381,11 +393,12 @@ Smoke:
 - [x] Wallet available / frozen
 - [x] TX list filter theo `reason` (optional FE)
 - [x] P2P: preview → confirm PIN → success (`Idempotency-Key`)
-- [x] Withdraw form + bankInfo + status tracking (`Idempotency-Key`)
+- [x] Withdraw form + bankInfo + list/detail (`Idempotency-Key`)
 
 ### Accountant / Admin
 
 - [x] `/admin/wallet/payouts` queue (≠ seller `/admin/payouts`)
+- [x] Detail `/admin/wallet/payouts/:id` (bank info + actions)
 - [x] Approve / reject (+ reason)
 - [x] Process (Accountant / SA) + `Idempotency-Key`
 - [x] Network tree `?userId=` (optional ops)

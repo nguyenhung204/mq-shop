@@ -2,20 +2,40 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+import type { PayoutRequestStatus } from "@/lib/api/wallet";
 import { formatMoney } from "@/lib/api/utils";
-import type { UserPayoutRequest } from "@/lib/api/wallet";
-import { useWalletWithdraw } from "@/lib/queries/wallet";
+import {
+  useWalletWithdraw,
+  useWalletWithdrawals,
+} from "@/lib/queries/wallet";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { PaginationBar } from "@/components/ui/PaginationBar";
 import { Container, PageHero } from "@/components/ui/shared";
+import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
+import {
+  formatWalletPayoutWhen,
+  walletPayoutStatusBadgeClass,
+} from "@/components/wallet/walletPayoutUi";
+
+const STATUSES: Array<PayoutRequestStatus | ""> = [
+  "",
+  "PENDING",
+  "APPROVED",
+  "COMPLETED",
+  "REJECTED",
+  "PAY_FAILED",
+];
 
 function WithdrawPanel({
   embedded = false,
   walletHref = "/wallet",
+  detailHrefBase = "/wallet/withdrawals",
 }: {
   embedded?: boolean;
   walletHref?: string;
+  detailHrefBase?: string;
 }) {
   const { t } = useLanguage();
   const { user } = useAuth();
@@ -27,7 +47,16 @@ function WithdrawPanel({
   const [accountNumber, setAccountNumber] = useState("");
   const [accountName, setAccountName] = useState("");
   const [localError, setLocalError] = useState("");
-  const [requests, setRequests] = useState<UserPayoutRequest[]>([]);
+  const [status, setStatus] = useState<PayoutRequestStatus | "">("");
+  const [page, setPage] = useState(1);
+
+  const { data, isLoading, isError, error, isFetching } = useWalletWithdrawals({
+    status: status || undefined,
+    page,
+    pageSize: 10,
+  });
+  const items = data?.items ?? [];
+  const meta = data?.meta;
 
   const needsPin = user ? user.hasWalletPin === false : false;
 
@@ -44,14 +73,14 @@ function WithdrawPanel({
       return;
     }
     try {
-      const res = await withdraw.mutateAsync({
+      await withdraw.mutateAsync({
         amount: n,
         pin,
         bankInfo: { bankName, accountNumber, accountName },
       });
-      setRequests((prev) => [res, ...prev]);
       setAmount("");
       setPin("");
+      setPage(1);
     } catch {
       /* toast from hook */
     }
@@ -135,25 +164,68 @@ function WithdrawPanel({
         </button>
       </form>
 
-      {requests.length > 0 ? (
-        <section className="space-y-3">
+      <section className="space-y-3">
+        <div className="flex flex-wrap items-end justify-between gap-3">
           <h2 className="text-lg">{t("wallet.withdrawRequests")}</h2>
-          {requests.map((w) => (
-            <div
-              key={w.id}
-              className="mq-card p-4 flex flex-wrap justify-between gap-3 text-sm"
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-xs text-mq-text-muted">
+              {t("wallet.withdrawFilterStatus")}
+            </span>
+            <select
+              className="mq-input !w-[11rem] max-w-full"
+              value={status}
+              onChange={(e) => {
+                setStatus(e.target.value as PayoutRequestStatus | "");
+                setPage(1);
+              }}
             >
-              <div className="space-y-1 min-w-0">
-                <p className="tabular-nums font-medium">{formatMoney(w.amount)}</p>
-                <p className="text-xs text-mq-text-muted font-mono truncate">{w.id}</p>
-              </div>
-              <span className="mq-badge mq-badge-cyan">
-                {t(`wallet.payoutStatus.${w.status}`)}
-              </span>
+              <option value="">{t("wallet.withdrawFilterAll")}</option>
+              {STATUSES.filter(Boolean).map((s) => (
+                <option key={s} value={s}>
+                  {t(`wallet.payoutStatus.${s}`)}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        {isError ? (
+          <div className="mq-alert mq-alert-error">
+            {error instanceof Error ? error.message : t("wallet.loadFailed")}
+          </div>
+        ) : null}
+
+        {(isLoading || isFetching) && items.length === 0 ? (
+          <AdminCardListSkeleton count={3} />
+        ) : null}
+
+        {!isLoading && items.length === 0 && !isError ? (
+          <p className="text-sm text-mq-text-muted py-4 text-center">
+            {t("wallet.withdrawEmpty")}
+          </p>
+        ) : null}
+
+        {items.map((w) => (
+          <Link
+            key={w.id}
+            href={`${detailHrefBase}/${w.id}`}
+            className="mq-card p-4 flex items-center justify-between gap-3 text-sm overflow-visible hover:border-mq-accent transition-colors block"
+          >
+            <div className="space-y-1 min-w-0 flex-1">
+              <p className="tabular-nums font-medium">{formatMoney(w.amount)}</p>
+              <p className="text-xs text-mq-text-muted">
+                {formatWalletPayoutWhen(w.createdAt)}
+              </p>
+              <p className="text-xs text-mq-text-muted font-mono truncate">{w.id}</p>
             </div>
-          ))}
-        </section>
-      ) : null}
+            <span className={`${walletPayoutStatusBadgeClass(w.status)} shrink-0`}>
+              {t(`wallet.payoutStatus.${w.status}`)}
+            </span>
+          </Link>
+        ))}
+
+        {meta ? <PaginationBar page={page} meta={meta} onPageChange={setPage} /> : null}
+      </section>
     </div>
   );
 
@@ -176,16 +248,22 @@ function WithdrawPanel({
 export function WalletWithdraw({
   embedded = false,
   walletHref = "/wallet",
+  detailHrefBase = "/wallet/withdrawals",
 }: {
   embedded?: boolean;
   walletHref?: string;
+  detailHrefBase?: string;
 }) {
   return (
     <AuthGuard
       roles={["BUYER", "SELLER", "SUPER_ADMIN"]}
       permissions={["CREATE_PAYOUT"]}
     >
-      <WithdrawPanel embedded={embedded} walletHref={walletHref} />
+      <WithdrawPanel
+        embedded={embedded}
+        walletHref={walletHref}
+        detailHrefBase={detailHrefBase}
+      />
     </AuthGuard>
   );
 }

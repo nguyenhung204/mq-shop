@@ -97,6 +97,12 @@ export type UserPayoutRequest = {
   updatedAt?: string;
 };
 
+export type ListWalletWithdrawalsParams = {
+  status?: PayoutRequestStatus;
+  page?: number;
+  pageSize?: number;
+};
+
 export type ListAdminWalletPayoutsParams = {
   status?: PayoutRequestStatus;
   userId?: string;
@@ -132,12 +138,19 @@ export const walletApi = {
     api.post<UserPayoutRequest>("/wallet/withdraw", body, {
       headers: { "Idempotency-Key": idempotencyKey },
     }),
+  /** Own withdrawal requests — `VIEW_WALLET`. */
+  listWithdrawals: (query?: ListWalletWithdrawalsParams) =>
+    api.get<PayoutListRes>("/wallet/withdrawals", { query, withMeta: true }),
+  getWithdrawal: (payoutId: string) =>
+    api.get<UserPayoutRequest>(`/wallet/withdrawals/${payoutId}`),
 };
 
 /** Admin personal wallet payouts — `APPROVE_PAYOUT` / `PROCESS_PAYOUT`. */
 export const adminWalletPayoutApi = {
   list: (query?: ListAdminWalletPayoutsParams) =>
     api.get<PayoutListRes>("/admin/wallet/payouts", { query, withMeta: true }),
+  get: (payoutId: string) =>
+    api.get<UserPayoutRequest>(`/admin/wallet/payouts/${payoutId}`),
   approve: (id: string) =>
     api.post<UserPayoutRequest>(`/admin/wallet/payouts/${id}/approve`, {}),
   reject: (id: string, body: { reason: string }) =>

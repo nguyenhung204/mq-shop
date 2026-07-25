@@ -28,6 +28,10 @@ type Props = {
   placeholder?: string;
   searchPlaceholder?: string;
   emptyText?: string;
+  /** Allow confirming the typed query as a value (e.g. free-form email). */
+  allowCustom?: boolean;
+  /** Label for the creatable row; defaults to the raw query. */
+  customOptionLabel?: (query: string) => string;
   required?: boolean;
   disabled?: boolean;
   className?: string;
@@ -53,6 +57,8 @@ export function SearchableSelect({
   placeholder = "Select…",
   searchPlaceholder = "Type to search…",
   emptyText = "No matches",
+  allowCustom = false,
+  customOptionLabel,
   required,
   disabled,
   className = "",
@@ -68,19 +74,38 @@ export function SearchableSelect({
   const [highlight, setHighlight] = useState(0);
   const [coords, setCoords] = useState<PanelCoords | null>(null);
 
-  const selected = useMemo(
-    () => options.find((o) => o.value === value) ?? null,
-    [options, value],
-  );
+  const selected = useMemo(() => {
+    const hit = options.find((o) => o.value === value);
+    if (hit) return hit;
+    if (allowCustom && value) return { value, label: value };
+    return null;
+  }, [allowCustom, options, value]);
 
   const filtered = useMemo(() => {
     const q = normalize(query);
-    if (!q) return options;
-    return options.filter((o) => {
-      const hay = normalize(`${o.label} ${o.keywords ?? ""} ${o.group ?? ""}`);
-      return hay.includes(q);
-    });
-  }, [options, query]);
+    const base = !q
+      ? options
+      : options.filter((o) => {
+          const hay = normalize(`${o.label} ${o.keywords ?? ""} ${o.group ?? ""}`);
+          return hay.includes(q);
+        });
+    const trimmed = query.trim();
+    if (
+      allowCustom &&
+      trimmed &&
+      !options.some((o) => normalize(o.value) === normalize(trimmed)) &&
+      !base.some((o) => normalize(o.label) === normalize(trimmed))
+    ) {
+      return [
+        {
+          value: trimmed,
+          label: customOptionLabel ? customOptionLabel(trimmed) : trimmed,
+        },
+        ...base,
+      ];
+    }
+    return base;
+  }, [allowCustom, customOptionLabel, options, query]);
 
   const placePanel = useCallback(() => {
     const el = triggerRef.current;

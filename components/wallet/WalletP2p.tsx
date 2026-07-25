@@ -1,13 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
+import { formatMoney } from "@/lib/api/utils";
 import type { TransferPreviewResult } from "@/lib/api/wallet";
-import { useTransferPreview, useWalletTransfer } from "@/lib/queries/wallet";
+import {
+  useNetworkTree,
+  useTransferPreview,
+  useWallet,
+  useWalletTransfer,
+} from "@/lib/queries/wallet";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import {
+  SearchableSelect,
+  type SearchableSelectOption,
+} from "@/components/ui/SearchableSelect";
 import { Container, PageHero } from "@/components/ui/shared";
+
+const AMOUNT_PRESETS = [10, 20, 50, 100, 200, 500] as const;
+
+function formatPreset(n: number): string {
+  return Number.isInteger(n) ? String(n) : n.toFixed(2);
+}
 
 function P2pPanel({
   embedded = false,
@@ -18,10 +34,15 @@ function P2pPanel({
 }) {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const { data: balance } = useWallet();
   const previewMut = useTransferPreview();
   const transferMut = useWalletTransfer();
+  const { data: tree } = useNetworkTree(
+    { maxDepth: 20, limit: 500 },
+    { enabled: Boolean(user) && user.hasWalletPin !== false },
+  );
 
-  const [email, setEmail] = useState("");
+  const [recipientKey, setRecipientKey] = useState("");
   const [amount, setAmount] = useState("");
   const [pin, setPin] = useState("");
   const [preview, setPreview] = useState<TransferPreviewResult | null>(null);
@@ -31,12 +52,64 @@ function P2pPanel({
   const needsPin = user ? user.hasWalletPin === false : false;
   const busy = previewMut.isPending || transferMut.isPending;
 
+  const available = useMemo(() => {
+    const n = Number(balance?.availableBalance);
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  }, [balance?.availableBalance]);
+
+  const amountSuggestions = useMemo(() => {
+    const presets = AMOUNT_PRESETS.filter((n) => n <= available);
+    const chips: { key: string; label: string; value: string }[] = presets.map((n) => ({
+      key: `p-${n}`,
+      label: formatPreset(n),
+      value: formatPreset(n),
+    }));
+    if (available > 0) {
+      const maxLabel = formatPreset(Math.round(available * 100) / 100);
+      if (!chips.some((c) => c.value === maxLabel)) {
+        chips.push({
+          key: "all",
+          label: t("wallet.p2pAmountAll"),
+          value: maxLabel,
+        });
+      }
+    }
+    return chips;
+  }, [available, t]);
+
+  const recipientOptions = useMemo<SearchableSelectOption[]>(() => {
+    const nodes = tree?.nodes ?? [];
+    const byKey = new Map<string, SearchableSelectOption>();
+    for (const n of nodes) {
+      if (!n.userId || n.userId === user?.id) continue;
+      const email = n.email?.trim() || "";
+      const name = n.fullName?.trim() || "";
+      const label = name && email ? `${name} · ${email}` : name || email || n.userId;
+      byKey.set(n.userId, {
+        value: n.userId,
+        label,
+        keywords: `${name} ${email} ${n.userId}`,
+      });
+    }
+    return [...byKey.values()].sort((a, b) =>
+      a.label.localeCompare(b.label, undefined, { sensitivity: "base" }),
+    );
+  }, [tree?.nodes, user?.id]);
+
   const onPreview = async (e: FormEvent) => {
     e.preventDefault();
     setLocalError("");
     setDone(false);
+    const key = recipientKey.trim();
+    if (!key) {
+      setLocalError(t("wallet.p2pRecipientRequired"));
+      return;
+    }
     try {
-      const res = await previewMut.mutateAsync({ email: email.trim() });
+      const fromList = recipientOptions.some((o) => o.value === key);
+      const res = await previewMut.mutateAsync(
+        fromList ? { userId: key } : { email: key },
+      );
       setPreview(res);
     } catch {
       /* toast from hook */
@@ -58,7 +131,9 @@ function P2pPanel({
     }
     try {
       await transferMut.mutateAsync({
-        email: preview.email,
+        ...(preview.userId
+          ? { userId: preview.userId }
+          : { email: preview.email }),
         amount: n,
         pin,
       });
@@ -66,7 +141,7 @@ function P2pPanel({
       setPreview(null);
       setPin("");
       setAmount("");
-      setEmail("");
+      setRecipientKey("");
     } catch {
       /* toast from hook */
     }
@@ -90,17 +165,27 @@ function P2pPanel({
           <p className="text-sm text-mq-text-muted">{t("wallet.pinRequiredBanner")}</p>
         ) : !preview ? (
           <form className="space-y-3" onSubmit={(e) => void onPreview(e)}>
-            <label className="block text-sm">
+            <label className="block text-sm min-w-0">
               <span className="text-xs text-mq-text-muted">{t("wallet.p2pEmail")}</span>
-              <input
-                className="mq-input mt-1"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+              <div className="mt-1 min-w-0">
+                <SearchableSelect
+                  options={recipientOptions}
+                  value={recipientKey}
+                  required
+                  allowCustom
+                  aria-label={t("wallet.p2pEmail")}
+                  placeholder={t("wallet.p2pSearchPh")}
+                  searchPlaceholder={t("wallet.p2pSearchPh")}
+                  emptyText={t("wallet.p2pSearchEmpty")}
+                  customOptionLabel={(q) => t("wallet.p2pUseEmail", { email: q })}
+                  onChange={setRecipientKey}
+                />
+              </div>
             </label>
-            <button className="mq-btn mq-btn-primary w-full" disabled={busy}>
+            <button
+              className="mq-btn mq-btn-primary w-full"
+              disabled={busy || !recipientKey.trim()}
+            >
               {busy ? t("wallet.loading") : t("wallet.p2pLookup")}
             </button>
           </form>
@@ -110,18 +195,51 @@ function P2pPanel({
               {t("wallet.p2pTo")}:{" "}
               <strong>{preview.fullName || preview.email}</strong> ({preview.email})
             </p>
-            <label className="block text-sm">
-              <span className="text-xs text-mq-text-muted">{t("wallet.p2pAmount")}</span>
-              <input
-                className="mq-input mt-1"
-                type="number"
-                step="0.01"
-                min="0.01"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                required
-              />
-            </label>
+            <div className="space-y-2">
+              <label className="block text-sm">
+                <span className="text-xs text-mq-text-muted">{t("wallet.p2pAmount")}</span>
+                <input
+                  className="mq-input mt-1"
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  required
+                />
+              </label>
+              {available > 0 ? (
+                <p className="text-xs text-mq-text-muted">
+                  {t("wallet.available")}:{" "}
+                  <span className="tabular-nums font-medium text-mq-text">
+                    {formatMoney(balance?.availableBalance)}
+                  </span>
+                </p>
+              ) : null}
+              {amountSuggestions.length > 0 ? (
+                <div
+                  className="flex flex-wrap gap-2"
+                  role="group"
+                  aria-label={t("wallet.p2pAmountSuggestions")}
+                >
+                  {amountSuggestions.map((chip) => {
+                    const active = amount === chip.value;
+                    return (
+                      <button
+                        key={chip.key}
+                        type="button"
+                        className={`mq-btn text-xs !px-3 !py-1.5 ${
+                          active ? "mq-btn-primary" : "mq-btn-outline"
+                        }`}
+                        onClick={() => setAmount(chip.value)}
+                      >
+                        {chip.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
             <label className="block text-sm">
               <span className="text-xs text-mq-text-muted">{t("wallet.pin")}</span>
               <input

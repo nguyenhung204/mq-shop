@@ -1073,7 +1073,8 @@ Row: `{ type, id, shopId, shopName, shopOwnerName, buyerId, buyerName, amount, c
 | GET | `/wallet` · `/wallet/transactions` | `VIEW_WALLET` |
 | POST | `/wallet/transfer/preview` · `/wallet/transfer` | `TRANSFER_P2P` · transfer **bắt buộc** `Idempotency-Key` |
 | POST | `/wallet/withdraw` | `CREATE_PAYOUT` · **bắt buộc** `Idempotency-Key` |
-| GET/POST | `/admin/wallet/payouts` (+ approve/reject/process) | `APPROVE_PAYOUT` / `PROCESS_PAYOUT` · **process bắt buộc** `Idempotency-Key` |
+| GET | `/wallet/withdrawals` · `/wallet/withdrawals/:id` | `VIEW_WALLET` · list/detail của chính user |
+| GET/POST | `/admin/wallet/payouts` (+ `/:id`, approve/reject/process) | `APPROVE_PAYOUT` / `PROCESS_PAYOUT` · **process bắt buộc** `Idempotency-Key` |
 
 Register: optional `referrerCode` trên `POST /auth/register`.
 

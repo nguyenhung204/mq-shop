@@ -9,6 +9,7 @@ import {
   type ConfirmWalletPinBody,
   type ListAdminWalletPayoutsParams,
   type ListWalletTransactionsParams,
+  type ListWalletWithdrawalsParams,
   type TransferBody,
   type TransferPreviewBody,
   type UserPayoutRequest,
@@ -40,6 +41,15 @@ export const walletKeys = {
       params.page ?? 1,
       params.pageSize ?? 20,
     ] as const,
+  withdrawals: (params: ListWalletWithdrawalsParams) =>
+    [
+      ...walletKeys.all,
+      "withdrawals",
+      params.status ?? "",
+      params.page ?? 1,
+      params.pageSize ?? 20,
+    ] as const,
+  withdrawal: (id: string) => [...walletKeys.all, "withdrawal", id] as const,
   dashboard: () => [...walletKeys.all, "dashboard"] as const,
 };
 
@@ -76,6 +86,7 @@ export const adminWalletKeys = {
       params.page ?? 1,
       params.pageSize ?? 20,
     ] as const,
+  payout: (id: string) => [...adminWalletKeys.all, "payout", id] as const,
 };
 
 function walletErrorMessage(e: unknown, fallback: string): string {
@@ -259,6 +270,26 @@ export function useWalletWithdraw() {
   });
 }
 
+export function useWalletWithdrawals(params: ListWalletWithdrawalsParams = {}) {
+  const page = params.page ?? 1;
+  const pageSize = params.pageSize ?? 20;
+  return useQuery({
+    queryKey: walletKeys.withdrawals({ ...params, page, pageSize }),
+    queryFn: async () =>
+      parsePage<UserPayoutRequest>(
+        await walletApi.listWithdrawals({ ...params, page, pageSize }),
+      ),
+  });
+}
+
+export function useWalletWithdrawal(payoutId: string) {
+  return useQuery({
+    queryKey: walletKeys.withdrawal(payoutId),
+    queryFn: () => walletApi.getWithdrawal(payoutId),
+    enabled: Boolean(payoutId),
+  });
+}
+
 export function useAdminWalletPayouts(params: ListAdminWalletPayoutsParams = {}) {
   const page = params.page ?? 1;
   const pageSize = params.pageSize ?? 20;
@@ -268,6 +299,14 @@ export function useAdminWalletPayouts(params: ListAdminWalletPayoutsParams = {})
       parsePage<UserPayoutRequest>(
         await adminWalletPayoutApi.list({ ...params, page, pageSize }),
       ),
+  });
+}
+
+export function useAdminWalletPayout(payoutId: string) {
+  return useQuery({
+    queryKey: adminWalletKeys.payout(payoutId),
+    queryFn: () => adminWalletPayoutApi.get(payoutId),
+    enabled: Boolean(payoutId),
   });
 }
 

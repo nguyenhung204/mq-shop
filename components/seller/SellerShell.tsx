@@ -160,6 +160,12 @@ function titleKeysFromPath(pathname: string): { titleKey: string; descKey?: stri
       descKey: "seller.titles.walletWithdrawDesc",
     };
   }
+  if (pathname.startsWith("/seller/wallet/withdrawals/")) {
+    return {
+      titleKey: "seller.titles.walletWithdrawDetail",
+      descKey: "seller.titles.walletWithdrawDetailDesc",
+    };
+  }
   if (pathname === "/seller/wallet/network") {
     return {
       titleKey: "seller.titles.walletNetwork",
@@ -193,6 +199,11 @@ function titleKeysFromPath(pathname: string): { titleKey: string; descKey?: stri
 function leafActive(pathname: string, href: string): boolean {
   if (href === "/seller") return pathname === "/seller";
   if (href === "/seller/wallet") return pathname === "/seller/wallet";
+  if (href === "/seller/wallet/withdraw") {
+    return (
+      pathname === href || pathname.startsWith("/seller/wallet/withdrawals")
+    );
+  }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 

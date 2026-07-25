@@ -896,13 +896,21 @@ select.mq-input,
 }
 
 .mq-badge {
-  display: inline-block;
-  padding: 3px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  max-width: 100%;
+  padding: 4px 12px;
   font-size: 10px;
   font-weight: 600;
+  line-height: 1.35;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
   border-radius: 999px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 .mq-badge-teal { color: var(--mq-accent-teal); background: rgba(25, 149, 136, 0.13); }

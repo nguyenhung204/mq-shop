@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Check, Play, X } from "lucide-react";
 import type { PayoutRequestStatus } from "@/lib/api/wallet";
@@ -142,7 +143,10 @@ function WalletPayoutsInner() {
             key={row.id}
             className="mq-card p-4 flex flex-wrap justify-between gap-3 text-sm"
           >
-            <div className="space-y-1 min-w-0">
+            <Link
+              href={`/admin/wallet/payouts/${row.id}`}
+              className="space-y-1 min-w-0 flex-1 hover:opacity-90"
+            >
               <div className="flex flex-wrap items-center gap-2">
                 <span className={statusBadgeClass(row.status)}>
                   {t(`wallet.payoutStatus.${row.status}`)}
@@ -167,7 +171,8 @@ function WalletPayoutsInner() {
               {row.gatewayRef ? (
                 <p className="text-xs text-mq-text-muted">ref: {row.gatewayRef}</p>
               ) : null}
-            </div>
+              <p className="text-xs text-mq-accent mt-1">{t("admin.walletPayouts.viewDetail")}</p>
+            </Link>
             <AdminActions>
               {row.status === "PENDING" ? (
                 <>
