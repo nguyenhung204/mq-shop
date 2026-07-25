@@ -1108,7 +1108,14 @@
       "COMPLETED": "已完成",
       "REJECTED": "已拒絕",
       "PAY_FAILED": "付款失敗"
-    }
+    },
+    "networkIntro": "依層級顯示下線（F1、F2…）。僅顯示您的網絡。",
+    "networkTotal": "下線數",
+    "networkMaxDepth": "最大深度",
+    "networkTruncated": "已截斷",
+    "networkEmpty": "尚無下線。分享推薦連結以擴展網絡。",
+    "networkRoot": "根",
+    "networkFx": "F{n}"
   },
   "toast": {
     "somethingWentWrong": "發生錯誤",

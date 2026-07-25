@@ -1108,7 +1108,14 @@
       "COMPLETED": "Completed",
       "REJECTED": "Rejected",
       "PAY_FAILED": "Pay failed"
-    }
+    },
+    "networkIntro": "Your downline by depth (F1, F2, …). Only your network is shown.",
+    "networkTotal": "Downline",
+    "networkMaxDepth": "Max depth",
+    "networkTruncated": "Truncated",
+    "networkEmpty": "No downline yet. Share your referral link to grow the network.",
+    "networkRoot": "Root",
+    "networkFx": "F{n}"
   },
   "toast": {
     "somethingWentWrong": "Something went wrong",

@@ -1108,7 +1108,14 @@
       "COMPLETED": "Hoàn tất",
       "REJECTED": "Từ chối",
       "PAY_FAILED": "Thanh toán lỗi"
-    }
+    },
+    "networkIntro": "Downline theo độ sâu (F1, F2, …). Chỉ hiện mạng của bạn.",
+    "networkTotal": "Downline",
+    "networkMaxDepth": "Độ sâu tối đa",
+    "networkTruncated": "Đã cắt bớt",
+    "networkEmpty": "Chưa có downline. Chia sẻ link giới thiệu để mở rộng mạng.",
+    "networkRoot": "Gốc",
+    "networkFx": "F{n}"
   },
   "toast": {
     "somethingWentWrong": "Đã xảy ra lỗi",
