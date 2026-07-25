@@ -10,11 +10,14 @@ import {
   type ListWalletTransactionsParams,
   type TransferBody,
   type TransferPreviewBody,
+  type UserPayoutRequest,
+  type WalletTransaction,
   type WithdrawBody,
 } from "@/lib/api/wallet";
 import {
   adminMlmApi,
   mlmApi,
+  type CommissionRow,
   type ListCommissionsParams,
   type ListNetworkTreeParams,
   type SetMlmRankBody,
@@ -124,7 +127,9 @@ export function useWalletTransactions(params: ListWalletTransactionsParams = {})
   return useQuery({
     queryKey: walletKeys.transactions({ ...params, page, pageSize }),
     queryFn: async () =>
-      parsePage(await walletApi.transactions({ ...params, page, pageSize })),
+      parsePage<WalletTransaction>(
+        await walletApi.transactions({ ...params, page, pageSize }),
+      ),
   });
 }
 
@@ -148,7 +153,9 @@ export function useCommissions(params: ListCommissionsParams = {}) {
   return useQuery({
     queryKey: mlmKeys.commissions({ ...params, page, pageSize }),
     queryFn: async () =>
-      parsePage(await mlmApi.commissions({ ...params, page, pageSize })),
+      parsePage<CommissionRow>(
+        await mlmApi.commissions({ ...params, page, pageSize }),
+      ),
   });
 }
 
@@ -225,7 +232,9 @@ export function useAdminWalletPayouts(params: ListAdminWalletPayoutsParams = {})
   return useQuery({
     queryKey: adminWalletKeys.payouts({ ...params, page, pageSize }),
     queryFn: async () =>
-      parsePage(await adminWalletPayoutApi.list({ ...params, page, pageSize })),
+      parsePage<UserPayoutRequest>(
+        await adminWalletPayoutApi.list({ ...params, page, pageSize }),
+      ),
   });
 }
 
