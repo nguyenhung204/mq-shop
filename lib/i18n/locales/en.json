@@ -825,7 +825,8 @@
       "searchUser": "User",
       "searchUserPh": "Search by name or email…",
       "userRequired": "Select a user.",
-      "noConfigPerm": "Your role cannot set MLM rank (CONFIG_MLM is NONE for Admin). You can still look up network trees below."
+      "noConfigPerm": "Your role cannot set MLM rank (CONFIG_MLM is NONE for Admin). You can still look up network trees below.",
+      "rankName": "Name"
     }
   },
   "seller": {

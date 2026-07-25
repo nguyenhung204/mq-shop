@@ -825,7 +825,8 @@
       "searchUser": "User",
       "searchUserPh": "Tìm theo tên hoặc email…",
       "userRequired": "Chọn một user.",
-      "noConfigPerm": "Role của bạn không được gán rank MLM (CONFIG_MLM = NONE với Admin). Vẫn có thể xem network bên dưới."
+      "noConfigPerm": "Role của bạn không được gán rank MLM (CONFIG_MLM = NONE với Admin). Vẫn có thể xem network bên dưới.",
+      "rankName": "Tên"
     }
   },
   "seller": {

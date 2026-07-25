@@ -144,40 +144,71 @@ function MlmAdminInner() {
 
         {canSetRank ? (
           <>
-            <section className="space-y-3">
-              <h2 className="text-lg">{t("admin.mlm.ranksTitle")}</h2>
-              {isLoading ? <AdminCardListSkeleton count={5} /> : null}
+            <section className="space-y-2">
+              <h2 className="text-base font-medium">{t("admin.mlm.ranksTitle")}</h2>
+              {isLoading ? <AdminCardListSkeleton count={2} /> : null}
               {isError ? (
                 <div className="mq-alert mq-alert-error">
                   {error instanceof Error ? error.message : t("admin.common.failed")}
                 </div>
               ) : null}
-              {(ranks ?? []).map((r) => (
-                <div
-                  key={r.rank}
-                  className="mq-card p-4 flex flex-wrap justify-between gap-3 text-sm"
-                >
-                  <div>
-                    <p className="font-medium">
-                      {t("wallet.rank")} {r.rank} · {r.name}
-                    </p>
-                    <p className="text-xs text-mq-text-muted mt-1">
-                      {t("admin.mlm.team")}: {formatPercent(r.teamPercent)} ·{" "}
-                      {t("admin.mlm.referral")}: {formatPercent(r.referralPercent)}
-                      {r.globalFundTier != null
-                        ? ` · ${t("admin.mlm.globalTier")}: ≥${r.globalFundTier}`
-                        : ""}
-                    </p>
-                  </div>
-                  <span
-                    className={
-                      r.isActive ? "mq-badge mq-badge-cyan" : "mq-badge mq-badge-muted"
-                    }
-                  >
-                    {r.isActive ? t("admin.common.active") : t("admin.common.hidden")}
-                  </span>
+              {(ranks ?? []).length > 0 ? (
+                <div className="mq-table-wrap overflow-x-auto">
+                  <table className="w-full text-xs tabular-nums">
+                    <thead>
+                      <tr className="border-b border-mq-border bg-mq-surface-subtle text-left text-mq-text-muted">
+                        <th className="px-2.5 py-1.5 font-medium w-10">#</th>
+                        <th className="px-2.5 py-1.5 font-medium">{t("admin.mlm.rankName")}</th>
+                        <th className="px-2.5 py-1.5 font-medium text-right whitespace-nowrap">
+                          {t("admin.mlm.team")}
+                        </th>
+                        <th className="px-2.5 py-1.5 font-medium text-right whitespace-nowrap">
+                          {t("admin.mlm.referral")}
+                        </th>
+                        <th className="px-2.5 py-1.5 font-medium text-right whitespace-nowrap">
+                          {t("admin.mlm.globalTier")}
+                        </th>
+                        <th className="px-2.5 py-1.5 font-medium text-center w-16">
+                          {t("admin.common.status")}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(ranks ?? []).map((r) => (
+                        <tr
+                          key={r.rank}
+                          className="border-b border-mq-border last:border-0 hover:bg-mq-surface-subtle/60"
+                        >
+                          <td className="px-2.5 py-1 font-semibold text-mq-text">{r.rank}</td>
+                          <td className="px-2.5 py-1 text-mq-text">{r.name}</td>
+                          <td className="px-2.5 py-1 text-right text-mq-text-muted">
+                            {formatPercent(r.teamPercent)}
+                          </td>
+                          <td className="px-2.5 py-1 text-right text-mq-text-muted">
+                            {formatPercent(r.referralPercent)}
+                          </td>
+                          <td className="px-2.5 py-1 text-right text-mq-text-muted">
+                            {r.globalFundTier != null ? `≥${r.globalFundTier}` : "—"}
+                          </td>
+                          <td className="px-2.5 py-1 text-center">
+                            <span
+                              className={
+                                r.isActive
+                                  ? "mq-badge mq-badge-cyan !text-[10px] !px-1.5 !py-0"
+                                  : "mq-badge mq-badge-muted !text-[10px] !px-1.5 !py-0"
+                              }
+                            >
+                              {r.isActive
+                                ? t("admin.common.active")
+                                : t("admin.common.hidden")}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              ))}
+              ) : null}
             </section>
 
             <section className="mq-card p-5 space-y-3">

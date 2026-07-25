@@ -825,7 +825,8 @@
       "searchUser": "使用者",
       "searchUserPh": "依姓名或電子郵件搜尋…",
       "userRequired": "請選擇使用者。",
-      "noConfigPerm": "您的角色無法設定 MLM 等級（Admin 的 CONFIG_MLM 為 NONE）。仍可在下方查詢網絡。"
+      "noConfigPerm": "您的角色無法設定 MLM 等級（Admin 的 CONFIG_MLM 為 NONE）。仍可在下方查詢網絡。",
+      "rankName": "名稱"
     }
   },
   "seller": {
