@@ -327,7 +327,9 @@
       "applyShop": "申請開店",
       "applyShopDesc": "開始在 MQ 販售",
       "myShop": "我的商店",
-      "myShopDesc": "管理您的 MQ 商店"
+      "myShopDesc": "管理您的 MQ 商店",
+      "network": "網絡",
+      "networkDesc": "您的 MLM 下線樹"
     },
     "otp": {
       "timeRemaining": "剩餘時間",
@@ -816,7 +818,10 @@
       "userIdRequired": "需要使用者 ID。",
       "rankInvalid": "等級須為 1–10 的整數。",
       "setRank": "更新等級",
-      "rankUpdated": "已更新 {email} → 等級 {rank}（{name}）"
+      "rankUpdated": "已更新 {email} → 等級 {rank}（{name}）",
+      "treeTitle": "依使用者查網絡",
+      "treeHint": "營運查詢：以 userId 載入其他使用者下線（VIEW_MLM_TREE ALL）。",
+      "loadTree": "載入樹"
     }
   },
   "seller": {
@@ -930,7 +935,8 @@
       "landingCostCard": "落地成本",
       "promotionsCard": "促銷",
       "rmaCard": "RMA",
-      "materialsCard": "行銷素材"
+      "materialsCard": "行銷素材",
+      "walletCard": "個人錢包與 MLM"
     },
     "shop": {
       "sectionsAria": "商店區塊",
@@ -1159,7 +1165,9 @@
       "PENDING": "待處理",
       "CREDITED": "已入帳",
       "VOID": "作廢"
-    }
+    },
+    "txReason": "原因",
+    "txReasonAll": "全部原因"
   },
   "toast": {
     "somethingWentWrong": "發生錯誤",

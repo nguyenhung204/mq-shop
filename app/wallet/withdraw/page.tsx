@@ -163,7 +163,10 @@ function WithdrawInner() {
 
 export default function WithdrawPage() {
   return (
-    <AuthGuard>
+    <AuthGuard
+      roles={["BUYER", "SELLER", "SUPER_ADMIN"]}
+      permissions={["CREATE_PAYOUT"]}
+    >
       <WithdrawInner />
     </AuthGuard>
   );

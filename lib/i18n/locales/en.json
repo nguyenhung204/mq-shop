@@ -327,7 +327,9 @@
       "applyShop": "Apply shop",
       "applyShopDesc": "Start selling on MQ",
       "myShop": "My shop",
-      "myShopDesc": "Manage your shop on MQ"
+      "myShopDesc": "Manage your shop on MQ",
+      "network": "Network",
+      "networkDesc": "Your MLM downline tree"
     },
     "otp": {
       "timeRemaining": "Time remaining",
@@ -816,7 +818,10 @@
       "userIdRequired": "User ID is required.",
       "rankInvalid": "Rank must be an integer from 1 to 10.",
       "setRank": "Update rank",
-      "rankUpdated": "Updated {email} → rank {rank} ({name})"
+      "rankUpdated": "Updated {email} → rank {rank} ({name})",
+      "treeTitle": "Network by user",
+      "treeHint": "Ops lookup: load another user’s downline via userId (VIEW_MLM_TREE ALL).",
+      "loadTree": "Load tree"
     }
   },
   "seller": {
@@ -930,7 +935,8 @@
       "landingCostCard": "Landing cost",
       "promotionsCard": "Promotions",
       "rmaCard": "RMA",
-      "materialsCard": "Marketing materials"
+      "materialsCard": "Marketing materials",
+      "walletCard": "Personal wallet & MLM"
     },
     "shop": {
       "sectionsAria": "Shop sections",
@@ -1159,7 +1165,9 @@
       "PENDING": "Pending",
       "CREDITED": "Credited",
       "VOID": "Void"
-    }
+    },
+    "txReason": "Reason",
+    "txReasonAll": "All reasons"
   },
   "toast": {
     "somethingWentWrong": "Something went wrong",

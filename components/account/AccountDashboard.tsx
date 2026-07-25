@@ -7,6 +7,7 @@ import {
   KeyRound,
   LogOut,
   Mail,
+  Network,
   Package,
   Receipt,
   RefreshCw,
@@ -364,6 +365,13 @@ function AccountInner() {
                   <span>
                     <strong>{t("account.links.wallet")}</strong>
                     <small>{t("account.links.walletDesc")}</small>
+                  </span>
+                </Link>
+                <Link href="/mlm/network" className="mq-account-link-card">
+                  <Network size={20} strokeWidth={1.75} />
+                  <span>
+                    <strong>{t("account.links.network")}</strong>
+                    <small>{t("account.links.networkDesc")}</small>
                   </span>
                 </Link>
                 <Link href="/rma" className="mq-account-link-card">

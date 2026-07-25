@@ -140,10 +140,14 @@ export function useReferralLink() {
   });
 }
 
-export function useNetworkTree(params: ListNetworkTreeParams = {}) {
+export function useNetworkTree(
+  params: ListNetworkTreeParams = {},
+  options?: { enabled?: boolean },
+) {
   return useQuery({
     queryKey: mlmKeys.networkTree(params),
     queryFn: () => mlmApi.networkTree(params),
+    enabled: options?.enabled ?? true,
   });
 }
 
@@ -278,10 +282,11 @@ export function useProcessWalletPayout() {
   });
 }
 
-export function useMlmRanks() {
+export function useMlmRanks(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: mlmKeys.ranks(),
     queryFn: () => adminMlmApi.ranks(),
+    enabled: options?.enabled ?? true,
   });
 }
 

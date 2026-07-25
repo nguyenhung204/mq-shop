@@ -156,7 +156,10 @@ function P2pInner() {
 
 export default function P2pPage() {
   return (
-    <AuthGuard>
+    <AuthGuard
+      roles={["BUYER", "SELLER", "SUPER_ADMIN"]}
+      permissions={["TRANSFER_P2P"]}
+    >
       <P2pInner />
     </AuthGuard>
   );

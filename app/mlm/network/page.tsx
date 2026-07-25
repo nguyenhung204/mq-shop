@@ -105,7 +105,10 @@ function NetworkInner() {
 
 export default function MlmNetworkPage() {
   return (
-    <AuthGuard>
+    <AuthGuard
+      roles={["BUYER", "SELLER", "ACCOUNTANT", "ADMIN", "SUPER_ADMIN"]}
+      permissions={["VIEW_MLM_TREE"]}
+    >
       <NetworkInner />
     </AuthGuard>
   );

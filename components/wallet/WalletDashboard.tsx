@@ -4,7 +4,7 @@ import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/api/utils";
-import type { WalletTransaction } from "@/lib/api/wallet";
+import type { WalletTransaction, WalletTxReason } from "@/lib/api/wallet";
 import {
   useConfirmWalletPin,
   useRequestWalletPinOtp,
@@ -18,6 +18,19 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Container, PageHero } from "@/components/ui/shared";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { WalletSkeleton } from "@/components/ui/Skeleton";
+
+const TX_REASONS: Array<WalletTxReason | ""> = [
+  "",
+  "P2P",
+  "WITHDRAW_FREEZE",
+  "WITHDRAW_RELEASE",
+  "WITHDRAW_COMPLETE",
+  "REFERRAL",
+  "TEAM",
+  "GLOBAL",
+  "LOYALTY",
+  "ADJUST",
+];
 
 function formatWhen(iso: string): string {
   try {
@@ -173,9 +186,11 @@ function WalletInner() {
   const { data: balance, isLoading, isError, error } = useWallet();
   const { data: referral } = useReferralLink();
   const [txPage, setTxPage] = useState(1);
+  const [txReason, setTxReason] = useState<WalletTxReason | "">("");
   const { data: txPageData, isLoading: txLoading } = useWalletTransactions({
     page: txPage,
     pageSize: 10,
+    reason: txReason || undefined,
   });
   const [copied, setCopied] = useState(false);
 
@@ -289,7 +304,27 @@ function WalletInner() {
             </div>
 
             <section className="space-y-3">
-              <h2 className="text-lg">{t("wallet.txTitle")}</h2>
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <h2 className="text-lg">{t("wallet.txTitle")}</h2>
+                <label className="block text-sm">
+                  <span className="text-xs text-mq-text-muted">{t("wallet.txReason")}</span>
+                  <select
+                    className="mq-input mt-1 !w-[12rem]"
+                    value={txReason}
+                    onChange={(e) => {
+                      setTxReason(e.target.value as WalletTxReason | "");
+                      setTxPage(1);
+                    }}
+                  >
+                    <option value="">{t("wallet.txReasonAll")}</option>
+                    {TX_REASONS.filter(Boolean).map((r) => (
+                      <option key={r} value={r}>
+                        {t(`wallet.reasons.${r}`)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
               {txLoading && txItems.length === 0 ? (
                 <p className="text-sm text-mq-text-muted">{t("wallet.loading")}</p>
               ) : null}
@@ -314,7 +349,10 @@ function WalletInner() {
 
 export function WalletDashboard() {
   return (
-    <AuthGuard>
+    <AuthGuard
+      roles={["BUYER", "SELLER", "SUPER_ADMIN"]}
+      permissions={["VIEW_WALLET"]}
+    >
       <WalletInner />
     </AuthGuard>
   );

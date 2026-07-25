@@ -327,7 +327,9 @@
       "applyShop": "Mở gian hàng",
       "applyShopDesc": "Bắt đầu bán trên MQ",
       "myShop": "Gian hàng của tôi",
-      "myShopDesc": "Quản lý gian hàng trên MQ"
+      "myShopDesc": "Quản lý gian hàng trên MQ",
+      "network": "Mạng lưới",
+      "networkDesc": "Cây downline MLM của bạn"
     },
     "otp": {
       "timeRemaining": "Thời gian còn lại",
@@ -816,7 +818,10 @@
       "userIdRequired": "Cần User ID.",
       "rankInvalid": "Rank phải là số nguyên 1–10.",
       "setRank": "Cập nhật rank",
-      "rankUpdated": "Đã cập nhật {email} → rank {rank} ({name})"
+      "rankUpdated": "Đã cập nhật {email} → rank {rank} ({name})",
+      "treeTitle": "Mạng theo user",
+      "treeHint": "Ops: tải downline của user khác qua userId (VIEW_MLM_TREE ALL).",
+      "loadTree": "Tải cây"
     }
   },
   "seller": {
@@ -930,7 +935,8 @@
       "landingCostCard": "Chi phí landing",
       "promotionsCard": "Khuyến mãi",
       "rmaCard": "RMA",
-      "materialsCard": "Tài liệu marketing"
+      "materialsCard": "Tài liệu marketing",
+      "walletCard": "Ví cá nhân & MLM"
     },
     "shop": {
       "sectionsAria": "Mục shop",
@@ -1159,7 +1165,9 @@
       "PENDING": "Chờ",
       "CREDITED": "Đã vào ví",
       "VOID": "Hủy"
-    }
+    },
+    "txReason": "Lý do",
+    "txReasonAll": "Tất cả lý do"
   },
   "toast": {
     "somethingWentWrong": "Đã xảy ra lỗi",

@@ -139,7 +139,10 @@ function CommissionsInner() {
 
 export default function WalletCommissionsPage() {
   return (
-    <AuthGuard>
+    <AuthGuard
+      roles={["BUYER", "SELLER", "SUPER_ADMIN"]}
+      permissions={["VIEW_MLM_COMSN"]}
+    >
       <CommissionsInner />
     </AuthGuard>
   );

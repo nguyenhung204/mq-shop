@@ -47,6 +47,7 @@ export default function SellerPage() {
           ["/seller/orders", "seller.overview.ordersCard"],
           ["/seller/settlements", "seller.overview.settlementsCard"],
           ["/seller/transactions", "seller.overview.transactionsCard"],
+          ["/wallet", "seller.overview.walletCard"],
           ["/seller/landing-cost", "seller.overview.landingCostCard"],
           ["/seller/promotions", "seller.overview.promotionsCard"],
           ["/seller/rma", "seller.overview.rmaCard"],

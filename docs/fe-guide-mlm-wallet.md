@@ -368,7 +368,7 @@ Smoke:
 - [x] `/admin/wallet/payouts` queue (≠ seller `/admin/payouts`)
 - [x] Approve / reject (+ reason)
 - [x] Process (Accountant / SA)
-- [ ] Network tree `?userId=` (optional ops)
+- [x] Network tree `?userId=` (optional ops)
 
 ---
 
