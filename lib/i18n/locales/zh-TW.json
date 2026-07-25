@@ -1062,7 +1062,6 @@
     "network": "網絡",
     "commissions": "獎金",
     "networkComingSoon": "網絡樹將於下一階段提供。",
-    "commissionsComingSoon": "獎金紀錄將於之後階段提供。",
     "txTitle": "錢包交易",
     "txEmpty": "尚無錢包交易。",
     "setPinTitle": "設定錢包 PIN",
@@ -1115,7 +1114,23 @@
     "networkTruncated": "已截斷",
     "networkEmpty": "尚無下線。分享推薦連結以擴展網絡。",
     "networkRoot": "根",
-    "networkFx": "F{n}"
+    "networkFx": "F{n}",
+    "commissionsIntro": "推薦獎金於 enrollment 訂單 DELIVERED 時入帳。團隊／忠誠／全球獎金由月結 cron 寫入。",
+    "commissionsEmpty": "此篩選條件無獎金紀錄。",
+    "commissionRate": "比率",
+    "commissionBase": "基數",
+    "commissionTypes": {
+      "ALL": "全部",
+      "REFERRAL": "推薦",
+      "TEAM": "團隊",
+      "GLOBAL": "全球",
+      "LOYALTY": "忠誠"
+    },
+    "commissionStatus": {
+      "PENDING": "待處理",
+      "CREDITED": "已入帳",
+      "VOID": "作廢"
+    }
   },
   "toast": {
     "somethingWentWrong": "發生錯誤",

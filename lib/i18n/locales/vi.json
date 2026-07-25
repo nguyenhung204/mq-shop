@@ -1062,7 +1062,6 @@
     "network": "Mạng lưới",
     "commissions": "Thưởng",
     "networkComingSoon": "Cây mạng lưới sẽ có ở phase sau.",
-    "commissionsComingSoon": "Lịch sử thưởng sẽ có ở phase sau.",
     "txTitle": "Giao dịch ví",
     "txEmpty": "Chưa có giao dịch ví.",
     "setPinTitle": "Đặt PIN ví",
@@ -1115,7 +1114,23 @@
     "networkTruncated": "Đã cắt bớt",
     "networkEmpty": "Chưa có downline. Chia sẻ link giới thiệu để mở rộng mạng.",
     "networkRoot": "Gốc",
-    "networkFx": "F{n}"
+    "networkFx": "F{n}",
+    "commissionsIntro": "Thưởng giới thiệu khi đơn enrollment DELIVERED. Team / loyalty / global ghi vào ví theo cron tháng.",
+    "commissionsEmpty": "Không có dòng thưởng trong bộ lọc này.",
+    "commissionRate": "Tỷ lệ",
+    "commissionBase": "Cơ sở",
+    "commissionTypes": {
+      "ALL": "Tất cả",
+      "REFERRAL": "Giới thiệu",
+      "TEAM": "Team",
+      "GLOBAL": "Global",
+      "LOYALTY": "Loyalty"
+    },
+    "commissionStatus": {
+      "PENDING": "Chờ",
+      "CREDITED": "Đã vào ví",
+      "VOID": "Hủy"
+    }
   },
   "toast": {
     "somethingWentWrong": "Đã xảy ra lỗi",

@@ -1062,7 +1062,6 @@
     "network": "Network",
     "commissions": "Commissions",
     "networkComingSoon": "Network tree UI is coming in the next phase.",
-    "commissionsComingSoon": "Commission history is coming in a later phase.",
     "txTitle": "Transactions",
     "txEmpty": "No wallet transactions yet.",
     "setPinTitle": "Set wallet PIN",
@@ -1115,7 +1114,23 @@
     "networkTruncated": "Truncated",
     "networkEmpty": "No downline yet. Share your referral link to grow the network.",
     "networkRoot": "Root",
-    "networkFx": "F{n}"
+    "networkFx": "F{n}",
+    "commissionsIntro": "Referral credits when enrollment orders are delivered. Team, loyalty, and global bonuses post on the monthly cron.",
+    "commissionsEmpty": "No commission rows for this filter.",
+    "commissionRate": "Rate",
+    "commissionBase": "Base",
+    "commissionTypes": {
+      "ALL": "All",
+      "REFERRAL": "Referral",
+      "TEAM": "Team",
+      "GLOBAL": "Global",
+      "LOYALTY": "Loyalty"
+    },
+    "commissionStatus": {
+      "PENDING": "Pending",
+      "CREDITED": "Credited",
+      "VOID": "Void"
+    }
   },
   "toast": {
     "somethingWentWrong": "Something went wrong",
