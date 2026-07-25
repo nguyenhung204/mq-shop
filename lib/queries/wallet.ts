@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -23,6 +24,7 @@ import {
   type SetMlmRankBody,
 } from "@/lib/api/mlm";
 import { ApiError } from "@/lib/api/client";
+import { createIdempotencyKeyStore } from "@/lib/api/idempotency";
 import { parsePage } from "@/lib/api/utils";
 import { tt } from "@/lib/i18n/tt";
 import { getErrorMessage } from "@/lib/queries/utils";
@@ -107,11 +109,26 @@ function walletErrorMessage(e: unknown, fallback: string): string {
         return tt("toast.referrerInvalid");
       case "FORBIDDEN":
         return tt("toast.accessDenied");
+      case "IDEMPOTENCY_KEY_REQUIRED":
+        return tt("toast.idempotencyKeyRequired");
+      case "IDEMPOTENCY_KEY_REUSE_MISMATCH":
+        return tt("toast.idempotencyKeyReuseMismatch");
+      case "IDEMPOTENCY_REQUEST_IN_PROGRESS":
+        return tt("toast.idempotencyRequestInProgress");
       default:
         break;
     }
   }
   return getErrorMessage(e, fallback);
+}
+
+function onWalletIdempotencyError(
+  e: unknown,
+  idempotency: ReturnType<typeof createIdempotencyKeyStore>,
+) {
+  if (e instanceof ApiError && e.code === "IDEMPOTENCY_KEY_REUSE_MISMATCH") {
+    idempotency.invalidate();
+  }
 }
 
 export function useWallet() {
@@ -208,25 +225,37 @@ export function useTransferPreview() {
 
 export function useWalletTransfer() {
   const qc = useQueryClient();
+  const idempotency = useMemo(() => createIdempotencyKeyStore(), []);
   return useMutation({
-    mutationFn: (body: TransferBody) => walletApi.transfer(body),
+    mutationFn: (body: TransferBody) =>
+      walletApi.transfer(body, idempotency.keyFor(body)),
     onSuccess: () => {
+      idempotency.invalidate();
       toast.success(tt("toast.walletTransferOk"));
       void qc.invalidateQueries({ queryKey: walletKeys.all });
     },
-    onError: (e) => toast.error(walletErrorMessage(e, tt("toast.walletTransferFailed"))),
+    onError: (e) => {
+      onWalletIdempotencyError(e, idempotency);
+      toast.error(walletErrorMessage(e, tt("toast.walletTransferFailed")));
+    },
   });
 }
 
 export function useWalletWithdraw() {
   const qc = useQueryClient();
+  const idempotency = useMemo(() => createIdempotencyKeyStore(), []);
   return useMutation({
-    mutationFn: (body: WithdrawBody) => walletApi.withdraw(body),
+    mutationFn: (body: WithdrawBody) =>
+      walletApi.withdraw(body, idempotency.keyFor(body)),
     onSuccess: () => {
+      idempotency.invalidate();
       toast.success(tt("toast.walletWithdrawSubmitted"));
       void qc.invalidateQueries({ queryKey: walletKeys.all });
     },
-    onError: (e) => toast.error(walletErrorMessage(e, tt("toast.walletWithdrawFailed"))),
+    onError: (e) => {
+      onWalletIdempotencyError(e, idempotency);
+      toast.error(walletErrorMessage(e, tt("toast.walletWithdrawFailed")));
+    },
   });
 }
 
@@ -271,14 +300,22 @@ export function useRejectWalletPayout() {
 
 export function useProcessWalletPayout() {
   const qc = useQueryClient();
+  const idempotency = useMemo(() => createIdempotencyKeyStore(), []);
   return useMutation({
-    mutationFn: (id: string) => adminWalletPayoutApi.process(id),
+    mutationFn: (id: string) =>
+      adminWalletPayoutApi.process(
+        id,
+        idempotency.keyFor({ payoutId: id, action: "process" }),
+      ),
     onSuccess: () => {
+      idempotency.invalidate();
       toast.success(tt("toast.walletPayoutProcessed"));
       void qc.invalidateQueries({ queryKey: adminWalletKeys.all });
     },
-    onError: (e) =>
-      toast.error(walletErrorMessage(e, tt("toast.walletPayoutProcessFailed"))),
+    onError: (e) => {
+      onWalletIdempotencyError(e, idempotency);
+      toast.error(walletErrorMessage(e, tt("toast.walletPayoutProcessFailed")));
+    },
   });
 }
 

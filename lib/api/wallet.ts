@@ -124,9 +124,14 @@ export const walletApi = {
     api.post<unknown>("/wallet/pin/confirm", body),
   transferPreview: (body: TransferPreviewBody) =>
     api.post<TransferPreviewResult>("/wallet/transfer/preview", body),
-  transfer: (body: TransferBody) => api.post<unknown>("/wallet/transfer", body),
-  withdraw: (body: WithdrawBody) =>
-    api.post<UserPayoutRequest>("/wallet/withdraw", body),
+  transfer: (body: TransferBody, idempotencyKey: string) =>
+    api.post<unknown>("/wallet/transfer", body, {
+      headers: { "Idempotency-Key": idempotencyKey },
+    }),
+  withdraw: (body: WithdrawBody, idempotencyKey: string) =>
+    api.post<UserPayoutRequest>("/wallet/withdraw", body, {
+      headers: { "Idempotency-Key": idempotencyKey },
+    }),
 };
 
 /** Admin personal wallet payouts — `APPROVE_PAYOUT` / `PROCESS_PAYOUT`. */
@@ -137,6 +142,8 @@ export const adminWalletPayoutApi = {
     api.post<UserPayoutRequest>(`/admin/wallet/payouts/${id}/approve`, {}),
   reject: (id: string, body: { reason: string }) =>
     api.post<UserPayoutRequest>(`/admin/wallet/payouts/${id}/reject`, body),
-  process: (id: string) =>
-    api.post<UserPayoutRequest>(`/admin/wallet/payouts/${id}/process`, {}),
+  process: (id: string, idempotencyKey: string) =>
+    api.post<UserPayoutRequest>(`/admin/wallet/payouts/${id}/process`, {}, {
+      headers: { "Idempotency-Key": idempotencyKey },
+    }),
 };

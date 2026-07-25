@@ -1,4 +1,4 @@
-/** Client UUID for idempotent POST (checkout, etc.). */
+/** Client UUID for idempotent POST (checkout, inventory, wallet transfer/withdraw/process). */
 
 export function newIdempotencyKey(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {

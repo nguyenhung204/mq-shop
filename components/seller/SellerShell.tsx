@@ -2,27 +2,93 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
+  ArrowLeftRight,
   BadgeDollarSign,
   BadgePercent,
   Boxes,
   Calculator,
+  ChevronDown,
   FolderOpen,
+  Gift,
   LayoutDashboard,
+  Network,
   Package,
   Receipt,
   RotateCcw,
   ShoppingBag,
   Store,
+  Wallet,
 } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Container } from "@/components/ui/shared";
 import "./seller.css";
 
-const links = [
+type NavLeaf = {
+  href: string;
+  labelKey: string;
+  icon: typeof LayoutDashboard;
+  sellerOnly: boolean;
+};
+
+type NavGroup = {
+  id: "wallet";
+  labelKey: string;
+  icon: typeof Wallet;
+  sellerOnly: boolean;
+  baseHref: string;
+  children: NavLeaf[];
+};
+
+type NavEntry = NavLeaf | NavGroup;
+
+function isGroup(entry: NavEntry): entry is NavGroup {
+  return "children" in entry;
+}
+
+const links: NavEntry[] = [
   { href: "/seller", labelKey: "seller.nav.overview", icon: LayoutDashboard, sellerOnly: true },
+  {
+    id: "wallet",
+    labelKey: "seller.nav.wallet",
+    icon: Wallet,
+    sellerOnly: true,
+    baseHref: "/seller/wallet",
+    children: [
+      {
+        href: "/seller/wallet",
+        labelKey: "seller.nav.walletOverview",
+        icon: Wallet,
+        sellerOnly: true,
+      },
+      {
+        href: "/seller/wallet/transfer",
+        labelKey: "seller.nav.walletTransfer",
+        icon: ArrowLeftRight,
+        sellerOnly: true,
+      },
+      {
+        href: "/seller/wallet/withdraw",
+        labelKey: "seller.nav.walletWithdraw",
+        icon: BadgeDollarSign,
+        sellerOnly: true,
+      },
+      {
+        href: "/seller/wallet/network",
+        labelKey: "seller.nav.walletNetwork",
+        icon: Network,
+        sellerOnly: true,
+      },
+      {
+        href: "/seller/wallet/commissions",
+        labelKey: "seller.nav.walletCommissions",
+        icon: Gift,
+        sellerOnly: true,
+      },
+    ],
+  },
   { href: "/seller/shop", labelKey: "seller.nav.shop", icon: Store, sellerOnly: true },
   { href: "/seller/products", labelKey: "seller.nav.products", icon: Package, sellerOnly: true },
   { href: "/seller/inventory", labelKey: "seller.nav.inventory", icon: Boxes, sellerOnly: false },
@@ -58,7 +124,7 @@ const links = [
     icon: FolderOpen,
     sellerOnly: true,
   },
-] as const;
+];
 
 function titleKeysFromPath(pathname: string): { titleKey: string; descKey?: string } {
   if (pathname.startsWith("/seller/shop")) {
@@ -82,6 +148,33 @@ function titleKeysFromPath(pathname: string): { titleKey: string; descKey?: stri
       descKey: "seller.titles.transactionsDesc",
     };
   }
+  if (pathname === "/seller/wallet/transfer") {
+    return {
+      titleKey: "seller.titles.walletTransfer",
+      descKey: "seller.titles.walletTransferDesc",
+    };
+  }
+  if (pathname === "/seller/wallet/withdraw") {
+    return {
+      titleKey: "seller.titles.walletWithdraw",
+      descKey: "seller.titles.walletWithdrawDesc",
+    };
+  }
+  if (pathname === "/seller/wallet/network") {
+    return {
+      titleKey: "seller.titles.walletNetwork",
+      descKey: "seller.titles.walletNetworkDesc",
+    };
+  }
+  if (pathname === "/seller/wallet/commissions") {
+    return {
+      titleKey: "seller.titles.walletCommissions",
+      descKey: "seller.titles.walletCommissionsDesc",
+    };
+  }
+  if (pathname.startsWith("/seller/wallet")) {
+    return { titleKey: "seller.titles.wallet", descKey: "seller.titles.walletDesc" };
+  }
   if (pathname.startsWith("/seller/landing-cost")) {
     return { titleKey: "seller.titles.landingCost", descKey: "seller.titles.landingCostDesc" };
   }
@@ -97,31 +190,91 @@ function titleKeysFromPath(pathname: string): { titleKey: string; descKey?: stri
   return { titleKey: "seller.titles.overview", descKey: "seller.titles.overviewDesc" };
 }
 
+function leafActive(pathname: string, href: string): boolean {
+  if (href === "/seller") return pathname === "/seller";
+  if (href === "/seller/wallet") return pathname === "/seller/wallet";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function SellerNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { hasRole } = useAuth();
   const { t } = useLanguage();
   const warehouseOnly = hasRole("WAREHOUSE") && !hasRole("SELLER");
-  const visible = warehouseOnly ? links.filter((l) => !l.sellerOnly) : links;
+  const visible = warehouseOnly
+    ? links.filter((l) => !l.sellerOnly)
+    : links;
+
+  const walletOpenByRoute = pathname.startsWith("/seller/wallet");
+  const [walletOpen, setWalletOpen] = useState(walletOpenByRoute);
+
+  useEffect(() => {
+    if (walletOpenByRoute) setWalletOpen(true);
+  }, [walletOpenByRoute]);
 
   return (
     <nav className="mq-seller-nav" aria-label={t("seller.brand")}>
-      {visible.map((l) => {
-        const active =
-          l.href === "/seller"
-            ? pathname === "/seller"
-            : pathname === l.href || pathname.startsWith(`${l.href}/`);
-        const Icon = l.icon;
+      {visible.map((entry) => {
+        if (isGroup(entry)) {
+          const GroupIcon = entry.icon;
+          const groupActive = pathname.startsWith(entry.baseHref);
+          const open = walletOpen || groupActive;
+          return (
+            <div
+              key={entry.id}
+              className={`mq-seller-nav-group${open ? " is-open" : ""}${groupActive ? " is-active" : ""}`}
+            >
+              <button
+                type="button"
+                className={`mq-seller-nav-item mq-seller-nav-toggle${groupActive ? " is-active" : ""}`}
+                aria-expanded={open}
+                onClick={() => setWalletOpen((v) => !v)}
+              >
+                <GroupIcon size={17} strokeWidth={1.75} aria-hidden />
+                <span className="flex-1 text-left">{t(entry.labelKey)}</span>
+                <ChevronDown
+                  size={15}
+                  strokeWidth={2}
+                  className={`mq-seller-nav-chevron${open ? " is-open" : ""}`}
+                  aria-hidden
+                />
+              </button>
+              {open ? (
+                <div className="mq-seller-nav-sub" role="group" aria-label={t(entry.labelKey)}>
+                  {entry.children.map((child) => {
+                    const active = leafActive(pathname, child.href);
+                    const ChildIcon = child.icon;
+                    return (
+                      <Link
+                        key={child.href}
+                        href={child.href}
+                        className={`mq-seller-nav-subitem${active ? " is-active" : ""}`}
+                        aria-current={active ? "page" : undefined}
+                        onClick={onNavigate}
+                      >
+                        <ChildIcon size={15} strokeWidth={1.75} aria-hidden />
+                        <span>{t(child.labelKey)}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+          );
+        }
+
+        const active = leafActive(pathname, entry.href);
+        const Icon = entry.icon;
         return (
           <Link
-            key={l.href}
-            href={l.href}
+            key={entry.href}
+            href={entry.href}
             className={`mq-seller-nav-item${active ? " is-active" : ""}`}
             aria-current={active ? "page" : undefined}
             onClick={onNavigate}
           >
             <Icon size={17} strokeWidth={1.75} aria-hidden />
-            <span>{t(l.labelKey)}</span>
+            <span>{t(entry.labelKey)}</span>
           </Link>
         );
       })}

@@ -210,6 +210,8 @@ hoặc `{ "userId": "uuid" }`
 
 ### `POST /wallet/transfer`
 
+Header: `Idempotency-Key: <uuid-v4>` (**bắt buộc**, giống checkout)
+
 ```json
 {
   "email": "buyer@example.com",
@@ -217,6 +219,13 @@ hoặc `{ "userId": "uuid" }`
   "pin": "123456"
 }
 ```
+
+**Idempotency:**
+- Mỗi lần Confirm P2P với body mới → UUID mới
+- Retry mạng / timeout → giữ cùng key + cùng body
+- Thiếu key → `400 IDEMPOTENCY_KEY_REQUIRED`
+- Cùng key + body khác → `422 IDEMPOTENCY_KEY_REUSE_MISMATCH`
+- Request trùng đang chạy → `409 IDEMPOTENCY_REQUEST_IN_PROGRESS`
 
 - Không tự transfer · insufficient → `WALLET_INSUFFICIENT_BALANCE`
 - Self → `WALLET_TRANSFER_SELF`
@@ -244,6 +253,8 @@ Số dư:
 
 ### `POST /wallet/withdraw` · `CREATE_PAYOUT`
 
+Header: `Idempotency-Key: <uuid-v4>` (**bắt buộc**)
+
 ```json
 {
   "amount": 50,
@@ -256,14 +267,18 @@ Số dư:
 }
 ```
 
+Cùng rule idempotency như P2P transfer.
+
 ### Admin
 
-| Method | Path | Permission |
-|--------|------|------------|
-| GET | `/admin/wallet/payouts?status=&userId=&page=` | `APPROVE_PAYOUT` |
-| POST | `/admin/wallet/payouts/:id/approve` | `APPROVE_PAYOUT` |
-| POST | `/admin/wallet/payouts/:id/reject` | body `{ "reason": "…" }` |
-| POST | `/admin/wallet/payouts/:id/process` | `PROCESS_PAYOUT` → stub `gatewayRef` |
+| Method | Path | Permission | Idempotency |
+|--------|------|------------|-------------|
+| GET | `/admin/wallet/payouts?status=&userId=&page=` | `APPROVE_PAYOUT` | — |
+| POST | `/admin/wallet/payouts/:id/approve` | `APPROVE_PAYOUT` | — |
+| POST | `/admin/wallet/payouts/:id/reject` | body `{ "reason": "…" }` | — |
+| POST | `/admin/wallet/payouts/:id/process` | `PROCESS_PAYOUT` → stub `gatewayRef` | **`Idempotency-Key` bắt buộc** |
+
+Process: UUID mới mỗi payout id / lần process mới; retry cùng key + cùng id.
 
 ---
 
@@ -325,6 +340,9 @@ type NetworkNode = {
 | `MLM_USER_PAYOUT_NOT_FOUND` | Payout id sai |
 | `MLM_USER_PAYOUT_INVALID_STATUS` | Sai bước approve/reject/process |
 | `INVALID_OTP` | OTP PIN hết hạn / sai |
+| `IDEMPOTENCY_KEY_REQUIRED` | Thiếu / invalid `Idempotency-Key` (transfer · withdraw · process) |
+| `IDEMPOTENCY_KEY_REUSE_MISMATCH` | Cùng key nhưng body khác |
+| `IDEMPOTENCY_REQUEST_IN_PROGRESS` | Cùng key đang xử lý |
 
 ---
 
@@ -360,14 +378,14 @@ Smoke:
 - [x] Set PIN (OTP → confirm)
 - [x] Wallet available / frozen
 - [x] TX list filter theo `reason` (optional FE)
-- [x] P2P: preview → confirm PIN → success
-- [x] Withdraw form + bankInfo + status tracking
+- [x] P2P: preview → confirm PIN → success (`Idempotency-Key`)
+- [x] Withdraw form + bankInfo + status tracking (`Idempotency-Key`)
 
 ### Accountant / Admin
 
 - [x] `/admin/wallet/payouts` queue (≠ seller `/admin/payouts`)
 - [x] Approve / reject (+ reason)
-- [x] Process (Accountant / SA)
+- [x] Process (Accountant / SA) + `Idempotency-Key`
 - [x] Network tree `?userId=` (optional ops)
 
 ---

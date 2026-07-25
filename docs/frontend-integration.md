@@ -1071,11 +1071,13 @@ Row: `{ type, id, shopId, shopName, shopOwnerName, buyerId, buyerName, amount, c
 | GET | `/mlm/network-tree` | `VIEW_MLM_TREE` |
 | POST | `/wallet/pin/request-otp` · `/wallet/pin/confirm` | `SET_WALLET_PIN` |
 | GET | `/wallet` · `/wallet/transactions` | `VIEW_WALLET` |
-| POST | `/wallet/transfer/preview` · `/wallet/transfer` | `TRANSFER_P2P` |
-| POST | `/wallet/withdraw` | `CREATE_PAYOUT` |
-| GET/POST | `/admin/wallet/payouts` (+ approve/reject/process) | `APPROVE_PAYOUT` / `PROCESS_PAYOUT` |
+| POST | `/wallet/transfer/preview` · `/wallet/transfer` | `TRANSFER_P2P` · transfer **bắt buộc** `Idempotency-Key` |
+| POST | `/wallet/withdraw` | `CREATE_PAYOUT` · **bắt buộc** `Idempotency-Key` |
+| GET/POST | `/admin/wallet/payouts` (+ approve/reject/process) | `APPROVE_PAYOUT` / `PROCESS_PAYOUT` · **process bắt buộc** `Idempotency-Key` |
 
 Register: optional `referrerCode` trên `POST /auth/register`.
+
+**Idempotency (transfer / withdraw / process):** UUID mới khi Confirm với body mới (hoặc payout id mới); retry mạng giữ cùng key + cùng body; thiếu key → `IDEMPOTENCY_KEY_REQUIRED`.
 
 ### 8.4 Endpoints nhanh — Commission
 

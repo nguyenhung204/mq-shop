@@ -41,13 +41,13 @@ export default function SellerPage() {
     <div className="grid sm:grid-cols-2 gap-3">
       {(
         [
+          ["/seller/wallet", "seller.overview.walletCard"],
           ["/seller/shop", "seller.overview.myShop"],
           ["/seller/products", "seller.overview.manageProducts"],
           ["/seller/inventory", "seller.overview.inventoryCard"],
           ["/seller/orders", "seller.overview.ordersCard"],
           ["/seller/settlements", "seller.overview.settlementsCard"],
           ["/seller/transactions", "seller.overview.transactionsCard"],
-          ["/wallet", "seller.overview.walletCard"],
           ["/seller/landing-cost", "seller.overview.landingCostCard"],
           ["/seller/promotions", "seller.overview.promotionsCard"],
           ["/seller/rma", "seller.overview.rmaCard"],

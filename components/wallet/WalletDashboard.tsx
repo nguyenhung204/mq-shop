@@ -180,7 +180,7 @@ function TxRow({ row }: { row: WalletTransaction }) {
   );
 }
 
-function WalletInner() {
+function WalletInner({ embedded = false }: { embedded?: boolean }) {
   const { t } = useLanguage();
   const { user, refreshUser } = useAuth();
   const { data: balance, isLoading, isError, error } = useWallet();
@@ -216,144 +216,156 @@ function WalletInner() {
   const txItems = txPageData?.items ?? [];
   const txMeta = txPageData?.meta;
 
+  const body = (
+    <div className="space-y-6">
+      {isLoading && <WalletSkeleton />}
+      {isError && (
+        <div className="mq-alert mq-alert-error">
+          {error instanceof Error ? error.message : t("wallet.loadFailed")}
+        </div>
+      )}
+      {!isLoading && (
+        <>
+          {needsPin ? <PinSetupCard onDone={() => void onPinDone()} /> : null}
+
+          <div className="flex flex-wrap gap-2 text-xs">
+            {(referral?.referralCode || user?.referralCode) && (
+              <span className="mq-badge mq-badge-muted">
+                {t("wallet.code")}: {referral?.referralCode || user?.referralCode}
+              </span>
+            )}
+            {user?.mlmRank != null ? (
+              <span className="mq-badge mq-badge-cyan">
+                {t("wallet.rank")} {user.mlmRank}
+              </span>
+            ) : null}
+            {user?.hasWalletPin ? (
+              <span className="mq-badge mq-badge-muted">{t("wallet.pinSet")}</span>
+            ) : null}
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="mq-card p-5">
+              <p className="text-xs uppercase tracking-wider text-mq-text-muted">
+                {t("wallet.available")}
+              </p>
+              <p className="text-2xl mt-2 tabular-nums">
+                {formatMoney(balance?.availableBalance)}
+              </p>
+            </div>
+            <div className="mq-card p-5">
+              <p className="text-xs uppercase tracking-wider text-mq-text-muted">
+                {t("wallet.frozen")}
+              </p>
+              <p className="text-2xl mt-2 tabular-nums">
+                {formatMoney(balance?.frozenBalance)}
+              </p>
+              <p className="text-xs text-mq-text-muted mt-1">{t("wallet.frozenHint")}</p>
+            </div>
+          </div>
+
+          <div className="mq-card p-5 space-y-3">
+            <h2 className="text-lg">{t("wallet.referralTitle")}</h2>
+            <p className="text-sm break-all text-mq-text-secondary">{link || "—"}</p>
+            <button
+              type="button"
+              className="mq-btn mq-btn-outline text-xs"
+              disabled={!link}
+              onClick={() => void copyLink()}
+            >
+              {copied ? t("wallet.copied") : t("wallet.copyLink")}
+            </button>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href={embedded ? "/seller/wallet/transfer" : "/wallet/p2p"}
+              className={`mq-btn mq-btn-primary ${needsPin ? "pointer-events-none opacity-50" : ""}`}
+            >
+              {t("wallet.p2p")}
+            </Link>
+            <Link
+              href={embedded ? "/seller/wallet/withdraw" : "/wallet/withdraw"}
+              className={`mq-btn mq-btn-outline ${needsPin ? "pointer-events-none opacity-50" : ""}`}
+            >
+              {t("wallet.withdraw")}
+            </Link>
+            <Link
+              href={embedded ? "/seller/wallet/network" : "/mlm/network"}
+              className="mq-btn mq-btn-outline"
+            >
+              {t("wallet.network")}
+            </Link>
+            <Link
+              href={embedded ? "/seller/wallet/commissions" : "/wallet/commissions"}
+              className="mq-btn mq-btn-outline"
+            >
+              {t("wallet.commissions")}
+            </Link>
+          </div>
+
+          <section className="space-y-3">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <h2 className="text-lg">{t("wallet.txTitle")}</h2>
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-xs text-mq-text-muted">{t("wallet.txReason")}</span>
+                <select
+                  className="mq-input !w-[12rem] max-w-full"
+                  value={txReason}
+                  onChange={(e) => {
+                    setTxReason(e.target.value as WalletTxReason | "");
+                    setTxPage(1);
+                  }}
+                >
+                  <option value="">{t("wallet.txReasonAll")}</option>
+                  {TX_REASONS.filter(Boolean).map((r) => (
+                    <option key={r} value={r}>
+                      {t(`wallet.reasons.${r}`)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            {txLoading && txItems.length === 0 ? (
+              <p className="text-sm text-mq-text-muted">{t("wallet.loading")}</p>
+            ) : null}
+            {!txLoading && txItems.length === 0 ? (
+              <p className="text-sm text-mq-text-muted text-center py-4">
+                {t("wallet.txEmpty")}
+              </p>
+            ) : null}
+            {txItems.map((row) => (
+              <TxRow key={row.id} row={row} />
+            ))}
+            {txMeta ? (
+              <PaginationBar page={txPage} meta={txMeta} onPageChange={setTxPage} />
+            ) : null}
+          </section>
+        </>
+      )}
+    </div>
+  );
+
+  if (embedded) return body;
+
   return (
     <>
       <PageHero
         title={t("wallet.title")}
         breadcrumb={[{ label: t("wallet.title") }]}
       />
-      <Container className="py-10 md:py-14 space-y-6 max-w-3xl mx-auto">
-        {isLoading && <WalletSkeleton />}
-        {isError && (
-          <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : t("wallet.loadFailed")}
-          </div>
-        )}
-        {!isLoading && (
-          <>
-            {needsPin ? <PinSetupCard onDone={() => void onPinDone()} /> : null}
-
-            <div className="flex flex-wrap gap-2 text-xs">
-              {(referral?.referralCode || user?.referralCode) && (
-                <span className="mq-badge mq-badge-muted">
-                  {t("wallet.code")}: {referral?.referralCode || user?.referralCode}
-                </span>
-              )}
-              {user?.mlmRank != null ? (
-                <span className="mq-badge mq-badge-cyan">
-                  {t("wallet.rank")} {user.mlmRank}
-                </span>
-              ) : null}
-              {user?.hasWalletPin ? (
-                <span className="mq-badge mq-badge-muted">{t("wallet.pinSet")}</span>
-              ) : null}
-            </div>
-
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="mq-card p-5">
-                <p className="text-xs uppercase tracking-wider text-mq-text-muted">
-                  {t("wallet.available")}
-                </p>
-                <p className="text-2xl mt-2 tabular-nums">
-                  {formatMoney(balance?.availableBalance)}
-                </p>
-              </div>
-              <div className="mq-card p-5">
-                <p className="text-xs uppercase tracking-wider text-mq-text-muted">
-                  {t("wallet.frozen")}
-                </p>
-                <p className="text-2xl mt-2 tabular-nums">
-                  {formatMoney(balance?.frozenBalance)}
-                </p>
-                <p className="text-xs text-mq-text-muted mt-1">{t("wallet.frozenHint")}</p>
-              </div>
-            </div>
-
-            <div className="mq-card p-5 space-y-3">
-              <h2 className="text-lg">{t("wallet.referralTitle")}</h2>
-              <p className="text-sm break-all text-mq-text-secondary">{link || "—"}</p>
-              <button
-                type="button"
-                className="mq-btn mq-btn-outline text-xs"
-                disabled={!link}
-                onClick={() => void copyLink()}
-              >
-                {copied ? t("wallet.copied") : t("wallet.copyLink")}
-              </button>
-            </div>
-
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/wallet/p2p"
-                className={`mq-btn mq-btn-primary ${needsPin ? "pointer-events-none opacity-50" : ""}`}
-              >
-                {t("wallet.p2p")}
-              </Link>
-              <Link
-                href="/wallet/withdraw"
-                className={`mq-btn mq-btn-outline ${needsPin ? "pointer-events-none opacity-50" : ""}`}
-              >
-                {t("wallet.withdraw")}
-              </Link>
-              <Link href="/mlm/network" className="mq-btn mq-btn-outline">
-                {t("wallet.network")}
-              </Link>
-              <Link href="/wallet/commissions" className="mq-btn mq-btn-outline">
-                {t("wallet.commissions")}
-              </Link>
-            </div>
-
-            <section className="space-y-3">
-              <div className="flex flex-wrap items-end justify-between gap-3">
-                <h2 className="text-lg">{t("wallet.txTitle")}</h2>
-                <label className="flex flex-col gap-1 text-sm">
-                  <span className="text-xs text-mq-text-muted">{t("wallet.txReason")}</span>
-                  <select
-                    className="mq-input !w-[12rem] max-w-full"
-                    value={txReason}
-                    onChange={(e) => {
-                      setTxReason(e.target.value as WalletTxReason | "");
-                      setTxPage(1);
-                    }}
-                  >
-                    <option value="">{t("wallet.txReasonAll")}</option>
-                    {TX_REASONS.filter(Boolean).map((r) => (
-                      <option key={r} value={r}>
-                        {t(`wallet.reasons.${r}`)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-              {txLoading && txItems.length === 0 ? (
-                <p className="text-sm text-mq-text-muted">{t("wallet.loading")}</p>
-              ) : null}
-              {!txLoading && txItems.length === 0 ? (
-                <p className="text-sm text-mq-text-muted text-center py-4">
-                  {t("wallet.txEmpty")}
-                </p>
-              ) : null}
-              {txItems.map((row) => (
-                <TxRow key={row.id} row={row} />
-              ))}
-              {txMeta ? (
-                <PaginationBar page={txPage} meta={txMeta} onPageChange={setTxPage} />
-              ) : null}
-            </section>
-          </>
-        )}
-      </Container>
+      <Container className="py-10 md:py-14 max-w-3xl mx-auto">{body}</Container>
     </>
   );
 }
 
-export function WalletDashboard() {
+export function WalletDashboard({ embedded = false }: { embedded?: boolean }) {
   return (
     <AuthGuard
       roles={["BUYER", "SELLER", "SUPER_ADMIN"]}
       permissions={["VIEW_WALLET"]}
     >
-      <WalletInner />
+      <WalletInner embedded={embedded} />
     </AuthGuard>
   );
 }
