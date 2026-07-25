@@ -87,6 +87,8 @@ export type {
   ConfirmWalletPinBody,
   TransferPreviewBody,
   TransferPreviewResult,
+  TransferRecipient,
+  ListTransferRecipientsParams,
   TransferBody,
   BankInfo,
   WithdrawBody,

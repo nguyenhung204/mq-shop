@@ -1071,7 +1071,8 @@ Row: `{ type, id, shopId, shopName, shopOwnerName, buyerId, buyerName, amount, c
 | GET | `/mlm/network-tree` | `VIEW_MLM_TREE` |
 | POST | `/wallet/pin/request-otp` · `/wallet/pin/confirm` | `SET_WALLET_PIN` |
 | GET | `/wallet` · `/wallet/transactions` | `VIEW_WALLET` |
-| POST | `/wallet/transfer/preview` · `/wallet/transfer` | `TRANSFER_P2P` · transfer **bắt buộc** `Idempotency-Key` |
+| POST | `/wallet/transfer/preview` · `/wallet/transfer` | `TRANSFER_P2P` · transfer **bắt buộc** `Idempotency-Key` · `userId`=downline ACTIVE; `email`=mọi ACTIVE |
+| GET | `/wallet/transfer/recipients?q=&maxDepth=&limit=` | `TRANSFER_P2P` · picker downline ACTIVE (không search toàn sàn) |
 | POST | `/wallet/withdraw` | `CREATE_PAYOUT` · **bắt buộc** `Idempotency-Key` |
 | GET | `/wallet/withdrawals` · `/wallet/withdrawals/:id` | `VIEW_WALLET` · list/detail của chính user |
 | GET/POST | `/admin/wallet/payouts` (+ `/:id`, approve/reject/process) | `APPROVE_PAYOUT` / `PROCESS_PAYOUT` · **process bắt buộc** `Idempotency-Key` |

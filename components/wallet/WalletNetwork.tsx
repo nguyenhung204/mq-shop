@@ -1,12 +1,15 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { NetworkNode } from "@/lib/api/mlm";
 import { useNetworkTree } from "@/lib/queries/wallet";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { PaginationBar } from "@/components/ui/PaginationBar";
 import { Container, PageHero } from "@/components/ui/shared";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
+
+const PAGE_SIZE = 20;
 
 function depthLabel(depth: number, t: (k: string) => string): string {
   if (depth <= 0) return t("wallet.networkRoot");
@@ -15,17 +18,53 @@ function depthLabel(depth: number, t: (k: string) => string): string {
 
 function NetworkPanel({ embedded = false }: { embedded?: boolean }) {
   const { t } = useLanguage();
-  const { data, isLoading, isError, error } = useNetworkTree({ maxDepth: 20, limit: 500 });
+  const [page, setPage] = useState(1);
+  const { data, isLoading, isError, error } = useNetworkTree({
+    maxDepth: 20,
+    limit: 500,
+  });
 
-  const byDepth = useMemo(() => {
+  const sortedNodes = useMemo(() => {
+    const nodes = [...(data?.nodes ?? [])];
+    nodes.sort((a, b) => {
+      if (a.depth !== b.depth) return a.depth - b.depth;
+      const la = (a.fullName || a.email || a.userId).toLowerCase();
+      const lb = (b.fullName || b.email || b.userId).toLowerCase();
+      return la.localeCompare(lb);
+    });
+    return nodes;
+  }, [data?.nodes]);
+
+  const total = sortedNodes.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pageNodes = sortedNodes.slice(
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE,
+  );
+
+  const pageByDepth = useMemo(() => {
     const map = new Map<number, NetworkNode[]>();
-    for (const node of data?.nodes ?? []) {
+    for (const node of pageNodes) {
       const list = map.get(node.depth) ?? [];
       list.push(node);
       map.set(node.depth, list);
     }
     return [...map.entries()].sort((a, b) => a[0] - b[0]);
-  }, [data?.nodes]);
+  }, [pageNodes]);
+
+  const meta = total > 0
+    ? {
+        page: safePage,
+        pageSize: PAGE_SIZE,
+        total,
+        totalPages,
+      }
+    : null;
+
+  const onPageChange = (next: number) => {
+    setPage(next);
+  };
 
   const body = (
     <div className="space-y-5">
@@ -52,13 +91,13 @@ function NetworkPanel({ embedded = false }: { embedded?: boolean }) {
         </div>
       ) : null}
 
-      {!isLoading && byDepth.length === 0 && !isError ? (
+      {!isLoading && total === 0 && !isError ? (
         <p className="text-sm text-mq-text-muted text-center py-6">
           {t("wallet.networkEmpty")}
         </p>
       ) : null}
 
-      {byDepth.map(([depth, nodes]) => (
+      {pageByDepth.map(([depth, nodes]) => (
         <section key={depth} className="space-y-2">
           <h2 className="text-sm font-medium uppercase tracking-wider text-mq-text-muted">
             {depthLabel(depth, t)} · {nodes.length}
@@ -90,6 +129,10 @@ function NetworkPanel({ embedded = false }: { embedded?: boolean }) {
           </div>
         </section>
       ))}
+
+      {meta ? (
+        <PaginationBar page={safePage} meta={meta} onPageChange={onPageChange} />
+      ) : null}
     </div>
   );
 

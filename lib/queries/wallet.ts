@@ -10,10 +10,12 @@ import {
   type AdjustWalletBody,
   type ConfirmWalletPinBody,
   type ListAdminWalletPayoutsParams,
+  type ListTransferRecipientsParams,
   type ListWalletTransactionsParams,
   type ListWalletWithdrawalsParams,
   type TransferBody,
   type TransferPreviewBody,
+  type TransferRecipient,
   type UserPayoutRequest,
   type WalletTransaction,
   type WithdrawBody,
@@ -30,7 +32,7 @@ import {
 } from "@/lib/api/mlm";
 import { ApiError } from "@/lib/api/client";
 import { createIdempotencyKeyStore } from "@/lib/api/idempotency";
-import { parsePage } from "@/lib/api/utils";
+import { asArray, parsePage } from "@/lib/api/utils";
 import { tt } from "@/lib/i18n/tt";
 import { getErrorMessage } from "@/lib/queries/utils";
 
@@ -54,6 +56,14 @@ export const walletKeys = {
       params.pageSize ?? 20,
     ] as const,
   withdrawal: (id: string) => [...walletKeys.all, "withdrawal", id] as const,
+  transferRecipients: (params: ListTransferRecipientsParams) =>
+    [
+      ...walletKeys.all,
+      "transfer-recipients",
+      params.q ?? "",
+      params.maxDepth ?? 20,
+      params.limit ?? 50,
+    ] as const,
   dashboard: () => [...walletKeys.all, "dashboard"] as const,
 };
 
@@ -108,6 +118,8 @@ function walletErrorMessage(e: unknown, fallback: string): string {
         return tt("toast.walletTransferSelf");
       case "WALLET_RECIPIENT_NOT_FOUND":
         return tt("toast.walletRecipientNotFound");
+      case "WALLET_RECIPIENT_USE_EMAIL":
+        return tt("toast.walletRecipientUseEmail");
       case "MLM_TREE_TOO_LARGE":
         return tt("toast.mlmTreeTooLarge");
       case "MLM_USER_PAYOUT_NOT_FOUND":
@@ -235,6 +247,23 @@ export function useTransferPreview() {
     mutationFn: (body: TransferPreviewBody) => walletApi.transferPreview(body),
     onError: (e) =>
       toast.error(walletErrorMessage(e, tt("toast.walletTransferPreviewFailed"))),
+  });
+}
+
+export function useTransferRecipients(
+  params: ListTransferRecipientsParams = {},
+  options?: { enabled?: boolean },
+) {
+  const maxDepth = params.maxDepth ?? 20;
+  const limit = params.limit ?? 50;
+  const q = params.q?.trim() || undefined;
+  return useQuery({
+    queryKey: walletKeys.transferRecipients({ q, maxDepth, limit }),
+    queryFn: async () =>
+      asArray<TransferRecipient>(
+        await walletApi.transferRecipients({ q, maxDepth, limit }),
+      ),
+    enabled: options?.enabled ?? true,
   });
 }
 

@@ -59,6 +59,21 @@ export type TransferPreviewResult = {
   fullName: string | null;
 };
 
+/** ACTIVE downline for P2P picker — `GET /wallet/transfer/recipients`. */
+export type TransferRecipient = {
+  userId: string;
+  email: string | null;
+  fullName: string | null;
+  depth?: number;
+  mlmRank?: number | null;
+};
+
+export type ListTransferRecipientsParams = {
+  q?: string;
+  maxDepth?: number;
+  limit?: number;
+};
+
 export type TransferBody = {
   email?: string;
   userId?: string;
@@ -130,6 +145,16 @@ export const walletApi = {
     api.post<unknown>("/wallet/pin/confirm", body),
   transferPreview: (body: TransferPreviewBody) =>
     api.post<TransferPreviewResult>("/wallet/transfer/preview", body),
+  /**
+   * ACTIVE downline picker for P2P (`TRANSFER_P2P`).
+   * Not a marketplace-wide user search — use email for users outside the tree.
+   */
+  transferRecipients: (query?: ListTransferRecipientsParams) =>
+    api.get<
+      | TransferRecipient[]
+      | { data: TransferRecipient[] }
+      | Paginated<TransferRecipient>
+    >("/wallet/transfer/recipients", { query }),
   transfer: (body: TransferBody, idempotencyKey: string) =>
     api.post<unknown>("/wallet/transfer", body, {
       headers: { "Idempotency-Key": idempotencyKey },

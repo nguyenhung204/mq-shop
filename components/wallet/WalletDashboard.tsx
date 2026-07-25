@@ -50,7 +50,17 @@ function reasonBadgeClass(reason: string): string {
   return "mq-badge mq-badge-muted";
 }
 
-function PinSetupCard({ onDone }: { onDone: () => void }) {
+type PinFlowMode = "set" | "change" | "forgot";
+
+function PinSetupCard({
+  mode,
+  onDone,
+  onCancel,
+}: {
+  mode: PinFlowMode;
+  onDone: () => void;
+  onCancel?: () => void;
+}) {
   const { t } = useLanguage();
   const requestOtp = useRequestWalletPinOtp();
   const confirmPin = useConfirmWalletPin();
@@ -59,6 +69,21 @@ function PinSetupCard({ onDone }: { onDone: () => void }) {
   const [pin, setPin] = useState("");
   const [confirm, setConfirm] = useState("");
   const [localError, setLocalError] = useState("");
+
+  const titleKey =
+    mode === "change"
+      ? "wallet.changePinTitle"
+      : mode === "forgot"
+        ? "wallet.forgotPinTitle"
+        : "wallet.setPinTitle";
+  const hintKey =
+    mode === "change"
+      ? "wallet.changePinHint"
+      : mode === "forgot"
+        ? "wallet.forgotPinHint"
+        : "wallet.setPinHint";
+  const saveKey =
+    mode === "set" ? "wallet.savePin" : "wallet.updatePin";
 
   const onRequest = async () => {
     setLocalError("");
@@ -91,8 +116,21 @@ function PinSetupCard({ onDone }: { onDone: () => void }) {
 
   return (
     <div className="mq-card p-5 space-y-3">
-      <h2 className="text-lg">{t("wallet.setPinTitle")}</h2>
-      <p className="text-sm text-mq-text-muted">{t("wallet.setPinHint")}</p>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="space-y-1 min-w-0">
+          <h2 className="text-lg">{t(titleKey)}</h2>
+          <p className="text-sm text-mq-text-muted">{t(hintKey)}</p>
+        </div>
+        {onCancel ? (
+          <button
+            type="button"
+            className="mq-btn mq-btn-outline text-xs shrink-0"
+            onClick={onCancel}
+          >
+            {t("wallet.back")}
+          </button>
+        ) : null}
+      </div>
       {localError ? <div className="mq-alert mq-alert-error">{localError}</div> : null}
       {!otpSent ? (
         <button
@@ -117,7 +155,7 @@ function PinSetupCard({ onDone }: { onDone: () => void }) {
             />
           </label>
           <label className="block text-sm">
-            <span className="text-xs text-mq-text-muted">{t("wallet.pin")}</span>
+            <span className="text-xs text-mq-text-muted">{t("wallet.newPin")}</span>
             <input
               className="mq-input mt-1"
               type="password"
@@ -140,13 +178,23 @@ function PinSetupCard({ onDone }: { onDone: () => void }) {
               required
             />
           </label>
-          <button
-            type="submit"
-            className="mq-btn mq-btn-primary"
-            disabled={confirmPin.isPending}
-          >
-            {confirmPin.isPending ? t("wallet.savingPin") : t("wallet.savePin")}
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="submit"
+              className="mq-btn mq-btn-primary"
+              disabled={confirmPin.isPending}
+            >
+              {confirmPin.isPending ? t("wallet.savingPin") : t(saveKey)}
+            </button>
+            <button
+              type="button"
+              className="mq-btn mq-btn-outline"
+              disabled={requestOtp.isPending}
+              onClick={() => void onRequest()}
+            >
+              {requestOtp.isPending ? t("wallet.sendingOtp") : t("wallet.resendPinOtp")}
+            </button>
+          </div>
         </form>
       )}
     </div>
@@ -194,6 +242,7 @@ function WalletInner({ embedded = false }: { embedded?: boolean }) {
     reason: txReason || undefined,
   });
   const [copied, setCopied] = useState(false);
+  const [pinFlow, setPinFlow] = useState<PinFlowMode | null>(null);
 
   const link = buildReferralRegisterUrl(
     referral?.referralCode || user?.referralCode,
@@ -208,12 +257,14 @@ function WalletInner({ embedded = false }: { embedded?: boolean }) {
   };
 
   const onPinDone = async () => {
+    setPinFlow(null);
     await refreshUser();
   };
 
   const needsPin = user ? user.hasWalletPin === false : false;
   const txItems = txPageData?.items ?? [];
   const txMeta = txPageData?.meta;
+  const activePinFlow: PinFlowMode | null = needsPin ? "set" : pinFlow;
 
   const body = (
     <div className="space-y-6">
@@ -225,9 +276,18 @@ function WalletInner({ embedded = false }: { embedded?: boolean }) {
       )}
       {!isLoading && (
         <>
-          {needsPin ? <PinSetupCard onDone={() => void onPinDone()} /> : null}
+          {activePinFlow ? (
+            <PinSetupCard
+              key={activePinFlow}
+              mode={activePinFlow}
+              onDone={() => void onPinDone()}
+              onCancel={
+                activePinFlow === "set" ? undefined : () => setPinFlow(null)
+              }
+            />
+          ) : null}
 
-          <div className="flex flex-wrap gap-2 text-xs">
+          <div className="flex flex-wrap gap-2 text-xs items-center">
             {(referral?.referralCode || user?.referralCode) && (
               <span className="mq-badge mq-badge-muted">
                 {t("wallet.code")}: {referral?.referralCode || user?.referralCode}
@@ -248,6 +308,25 @@ function WalletInner({ embedded = false }: { embedded?: boolean }) {
               <span className="mq-badge mq-badge-muted">{t("wallet.pinSet")}</span>
             ) : null}
           </div>
+
+          {user?.hasWalletPin && !activePinFlow ? (
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                className="mq-btn mq-btn-outline text-xs"
+                onClick={() => setPinFlow("change")}
+              >
+                {t("wallet.changePin")}
+              </button>
+              <button
+                type="button"
+                className="mq-btn mq-btn-outline text-xs"
+                onClick={() => setPinFlow("forgot")}
+              >
+                {t("wallet.forgotPin")}
+              </button>
+            </div>
+          ) : null}
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="mq-card p-5">

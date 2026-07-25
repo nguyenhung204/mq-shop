@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { formatMoney } from "@/lib/api/utils";
 import type { TransferPreviewResult } from "@/lib/api/wallet";
 import {
-  useNetworkTree,
   useTransferPreview,
+  useTransferRecipients,
   useWallet,
   useWalletTransfer,
 } from "@/lib/queries/wallet";
@@ -38,12 +38,11 @@ function P2pPanel({
   const { data: balance } = useWallet();
   const previewMut = useTransferPreview();
   const transferMut = useWalletTransfer();
-  const { data: tree } = useNetworkTree(
-    { maxDepth: 20, limit: 500 },
-    { enabled: Boolean(user) && user.hasWalletPin !== false },
-  );
 
-  const [recipientKey, setRecipientKey] = useState("");
+  const [email, setEmail] = useState("");
+  const [pickedUserId, setPickedUserId] = useState("");
+  const [networkQuery, setNetworkQuery] = useState("");
+  const [debouncedQ, setDebouncedQ] = useState("");
   const [amount, setAmount] = useState("");
   const [pin, setPin] = useState("");
   const [preview, setPreview] = useState<TransferPreviewResult | null>(null);
@@ -52,6 +51,20 @@ function P2pPanel({
 
   const needsPin = user ? user.hasWalletPin === false : false;
   const busy = previewMut.isPending || transferMut.isPending;
+
+  useEffect(() => {
+    const id = window.setTimeout(() => setDebouncedQ(networkQuery.trim()), 300);
+    return () => window.clearTimeout(id);
+  }, [networkQuery]);
+
+  const { data: recipients = [], isFetching: recipientsFetching } =
+    useTransferRecipients(
+      { q: debouncedQ || undefined, maxDepth: 20, limit: 50 },
+      {
+        enabled:
+          Boolean(user) && user !== null && user.hasWalletPin !== false,
+      },
+    );
 
   const available = useMemo(() => {
     const n = Number(balance?.availableBalance);
@@ -78,38 +91,63 @@ function P2pPanel({
     return chips;
   }, [available, t]);
 
-  const recipientOptions = useMemo<SearchableSelectOption[]>(() => {
-    const nodes = tree?.nodes ?? [];
-    const byKey = new Map<string, SearchableSelectOption>();
-    for (const n of nodes) {
+  const recipientById = useMemo(() => {
+    const map = new Map<string, { email: string; label: string }>();
+    for (const n of recipients) {
       if (!n.userId || n.userId === user?.id) continue;
-      const email = n.email?.trim() || "";
+      const em = n.email?.trim() || "";
       const name = n.fullName?.trim() || "";
-      const label = name && email ? `${name} · ${email}` : name || email || n.userId;
-      byKey.set(n.userId, {
-        value: n.userId,
-        label,
-        keywords: `${name} ${email} ${n.userId}`,
+      const depth =
+        typeof n.depth === "number" && n.depth > 0 ? `F${n.depth}` : "";
+      const base = name && em ? `${name} · ${em}` : name || em || n.userId;
+      map.set(n.userId, {
+        email: em,
+        label: depth ? `${base} · ${depth}` : base,
       });
     }
-    return [...byKey.values()].sort((a, b) =>
-      a.label.localeCompare(b.label, undefined, { sensitivity: "base" }),
-    );
-  }, [tree?.nodes, user?.id]);
+    return map;
+  }, [recipients, user?.id]);
+
+  const networkOptions = useMemo<SearchableSelectOption[]>(
+    () =>
+      [...recipientById.entries()].map(([id, row]) => ({
+        value: id,
+        label: row.label,
+        keywords: `${row.label} ${row.email} ${id}`,
+      })),
+    [recipientById],
+  );
+
+  const onPickNetwork = (userId: string) => {
+    setPickedUserId(userId);
+    const row = recipientById.get(userId);
+    if (row?.email) setEmail(row.email);
+  };
+
+  const onEmailChange = (value: string) => {
+    setEmail(value);
+    if (pickedUserId) {
+      const row = recipientById.get(pickedUserId);
+      if (!row || row.email !== value.trim()) setPickedUserId("");
+    }
+  };
 
   const onPreview = async (e: FormEvent) => {
     e.preventDefault();
     setLocalError("");
     setDone(false);
-    const key = recipientKey.trim();
-    if (!key) {
+    const em = email.trim();
+    if (!pickedUserId && !em) {
       setLocalError(t("wallet.p2pRecipientRequired"));
       return;
     }
+    if (!pickedUserId && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
+      setLocalError(t("wallet.p2pEmailInvalid"));
+      return;
+    }
     try {
-      const fromList = recipientOptions.some((o) => o.value === key);
       const res = await previewMut.mutateAsync(
-        fromList ? { userId: key } : { email: key },
+        pickedUserId ? { userId: pickedUserId } : { email: em },
       );
       setPreview(res);
     } catch {
@@ -142,7 +180,8 @@ function P2pPanel({
       setPreview(null);
       setPin("");
       setAmount("");
-      setRecipientKey("");
+      setEmail("");
+      setPickedUserId("");
     } catch {
       /* toast from hook */
     }
@@ -166,26 +205,44 @@ function P2pPanel({
           <p className="text-sm text-mq-text-muted">{t("wallet.pinRequiredBanner")}</p>
         ) : !preview ? (
           <form className="space-y-3" onSubmit={(e) => void onPreview(e)}>
+            <p className="text-sm text-mq-text-muted">{t("wallet.p2pAnyoneHint")}</p>
             <label className="block text-sm min-w-0">
               <span className="text-xs text-mq-text-muted">{t("wallet.p2pEmail")}</span>
+              <input
+                className="mq-input mt-1"
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => onEmailChange(e.target.value)}
+                placeholder={t("wallet.p2pEmailPh")}
+                required={!pickedUserId}
+                disabled={needsPin}
+              />
+            </label>
+            <label className="block text-sm min-w-0">
+              <span className="text-xs text-mq-text-muted">
+                {t("wallet.p2pFromNetwork")}
+                {recipientsFetching ? (
+                  <span className="ml-2 text-mq-text-muted">…</span>
+                ) : null}
+              </span>
               <div className="mt-1 min-w-0">
                 <SearchableSelect
-                  options={recipientOptions}
-                  value={recipientKey}
-                  required
-                  allowCustom
-                  aria-label={t("wallet.p2pEmail")}
-                  placeholder={t("wallet.p2pSearchPh")}
-                  searchPlaceholder={t("wallet.p2pSearchPh")}
-                  emptyText={t("wallet.p2pSearchEmpty")}
-                  customOptionLabel={(q) => t("wallet.p2pUseEmail", { email: q })}
-                  onChange={setRecipientKey}
+                  options={networkOptions}
+                  value={pickedUserId}
+                  filterLocally={false}
+                  aria-label={t("wallet.p2pFromNetwork")}
+                  placeholder={t("wallet.p2pNetworkPh")}
+                  searchPlaceholder={t("wallet.p2pNetworkPh")}
+                  emptyText={t("wallet.p2pNetworkEmpty")}
+                  onQueryChange={setNetworkQuery}
+                  onChange={onPickNetwork}
                 />
               </div>
             </label>
             <button
               className="mq-btn mq-btn-primary w-full"
-              disabled={busy || !recipientKey.trim()}
+              disabled={busy || (!pickedUserId && !email.trim())}
             >
               {busy ? t("wallet.loading") : t("wallet.p2pLookup")}
             </button>
@@ -253,6 +310,11 @@ function P2pPanel({
                 required
               />
             </label>
+            <p className="text-xs text-mq-text-muted">
+              <Link href={walletHref} className="underline">
+                {t("wallet.forgotPin")}
+              </Link>
+            </p>
             <button
               type="button"
               className="mq-btn mq-btn-outline w-full"

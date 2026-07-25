@@ -32,6 +32,10 @@ type Props = {
   allowCustom?: boolean;
   /** Label for the creatable row; defaults to the raw query. */
   customOptionLabel?: (query: string) => string;
+  /** Called when the search input changes (for server-side filtering). */
+  onQueryChange?: (query: string) => void;
+  /** When false, options are shown as-is (already filtered by the server). */
+  filterLocally?: boolean;
   required?: boolean;
   disabled?: boolean;
   className?: string;
@@ -59,6 +63,8 @@ export function SearchableSelect({
   emptyText = "No matches",
   allowCustom = false,
   customOptionLabel,
+  onQueryChange,
+  filterLocally = true,
   required,
   disabled,
   className = "",
@@ -83,12 +89,13 @@ export function SearchableSelect({
 
   const filtered = useMemo(() => {
     const q = normalize(query);
-    const base = !q
-      ? options
-      : options.filter((o) => {
-          const hay = normalize(`${o.label} ${o.keywords ?? ""} ${o.group ?? ""}`);
-          return hay.includes(q);
-        });
+    const base =
+      !filterLocally || !q
+        ? options
+        : options.filter((o) => {
+            const hay = normalize(`${o.label} ${o.keywords ?? ""} ${o.group ?? ""}`);
+            return hay.includes(q);
+          });
     const trimmed = query.trim();
     if (
       allowCustom &&
@@ -105,7 +112,15 @@ export function SearchableSelect({
       ];
     }
     return base;
-  }, [allowCustom, customOptionLabel, options, query]);
+  }, [allowCustom, customOptionLabel, filterLocally, options, query]);
+
+  const setSearchQuery = useCallback(
+    (next: string) => {
+      setQuery(next);
+      onQueryChange?.(next);
+    },
+    [onQueryChange],
+  );
 
   const placePanel = useCallback(() => {
     const el = triggerRef.current;
@@ -172,15 +187,15 @@ export function SearchableSelect({
 
   useEffect(() => {
     if (open) {
-      setQuery("");
+      setSearchQuery("");
       queueMicrotask(() => inputRef.current?.focus());
     }
-  }, [open]);
+  }, [open, setSearchQuery]);
 
   const pick = (next: string) => {
     onChange(next);
     setOpen(false);
-    setQuery("");
+    setSearchQuery("");
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -223,7 +238,7 @@ export function SearchableSelect({
                 className="mq-input w-full text-sm"
                 placeholder={searchPlaceholder}
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={onKeyDown}
                 autoComplete="off"
               />

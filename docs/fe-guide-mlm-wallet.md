@@ -162,6 +162,8 @@ Response:
 
 ## 5. Wallet PIN
 
+Cùng 2 API cho **lần đầu / đổi / quên PIN** — không cần PIN cũ, chỉ OTP email.
+
 ### `POST /wallet/pin/request-otp` · `SET_WALLET_PIN`
 
 Gửi OTP email (`OTP_WALLET_PIN`).
@@ -175,6 +177,8 @@ Gửi OTP email (`OTP_WALLET_PIN`).
 - PIN đúng 6 chữ số
 - `pin !== confirmPin` hoặc OTP sai → `WALLET_PIN_INVALID` / `INVALID_OTP`
 - Sau OK: `hasWalletPin: true` trên profile lần fetch sau
+
+FE: `/wallet` · `/seller/wallet` — set PIN lần đầu; khi đã có PIN → **Change PIN** / **Forgot PIN**.
 
 P2P / withdraw **bắt buộc** đã set PIN → không thì `WALLET_PIN_REQUIRED`.
 
@@ -207,6 +211,21 @@ Mỗi dòng: `direction` `IN|OUT`, `reason`, `amount`, `availableAfter`, `frozen
 
 ## 7. P2P transfer
 
+### `GET /wallet/transfer/recipients` · `TRANSFER_P2P`
+
+Picker **downline ACTIVE** (không search toàn sàn).
+
+Query: `q` · `maxDepth` · `limit`
+
+### Lookup rules (preview / transfer)
+
+| Lookup | Rule |
+|--------|------|
+| `userId` | Chỉ downline ACTIVE |
+| `email` | Mọi user ACTIVE (kể cả ngoài mạng) |
+| Locked / deleted | `WALLET_RECIPIENT_NOT_FOUND` |
+| `userId` ngoài tree | `WALLET_RECIPIENT_USE_EMAIL` |
+
 ### `POST /wallet/transfer/preview` · `TRANSFER_P2P`
 
 ```json
@@ -235,7 +254,7 @@ Header: `Idempotency-Key: <uuid-v4>` (**bắt buộc**, giống checkout)
 - Cùng key + body khác → `422 IDEMPOTENCY_KEY_REUSE_MISMATCH`
 - Request trùng đang chạy → `409 IDEMPOTENCY_REQUEST_IN_PROGRESS`
 
-- Không tự transfer · insufficient → `WALLET_INSUFFICIENT_BALANCE`
+- Không đủ số dư → `WALLET_INSUFFICIENT_BALANCE`
 - Self → `WALLET_TRANSFER_SELF`
 - PIN sai → `WALLET_PIN_INVALID`
 
@@ -376,7 +395,8 @@ type NetworkNode = {
 | `WALLET_PIN_INVALID` | PIN / confirm sai |
 | `WALLET_INSUFFICIENT_BALANCE` | Available không đủ |
 | `WALLET_TRANSFER_SELF` | P2P chính mình |
-| `WALLET_RECIPIENT_NOT_FOUND` | Email/userId không có |
+| `WALLET_RECIPIENT_NOT_FOUND` | Email/userId không có / locked / deleted |
+| `WALLET_RECIPIENT_USE_EMAIL` | `userId` ngoài downline — phải dùng email |
 | `MLM_TREE_TOO_LARGE` | Tree vượt limit |
 | `MLM_USER_PAYOUT_NOT_FOUND` | Payout id sai |
 | `MLM_USER_PAYOUT_INVALID_STATUS` | Sai bước approve/reject/process |
@@ -416,7 +436,7 @@ Smoke:
 - [x] Profile: `referralCode`, `mlmRank`, `hasWalletPin`
 - [x] Share referral link
 - [x] Network tree (depth badge F1/F2)
-- [x] Set PIN (OTP → confirm)
+- [x] Set / change / forgot PIN (OTP → confirm, no old PIN)
 - [x] Wallet available / frozen
 - [x] TX list filter theo `reason` (optional FE)
 - [x] P2P: preview → confirm PIN → success (`Idempotency-Key`)

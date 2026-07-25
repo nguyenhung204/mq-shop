@@ -128,6 +128,13 @@ function WithdrawPanel({
               disabled={needsPin}
             />
           </label>
+          {!needsPin ? (
+            <p className="text-xs text-mq-text-muted -mt-1">
+              <Link href={walletHref} className="underline">
+                {t("wallet.forgotPin")}
+              </Link>
+            </p>
+          ) : null}
           <label className="block text-sm">
             <span className="text-xs text-mq-text-muted">{t("wallet.bankName")}</span>
             <input
