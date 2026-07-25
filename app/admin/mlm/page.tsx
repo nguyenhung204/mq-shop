@@ -139,80 +139,90 @@ function MlmAdminInner() {
         description={t("admin.mlm.description")}
       />
 
-      <div className="space-y-6 max-w-3xl">
+      <div className="space-y-6 w-full">
         <p className="text-sm text-mq-text-muted">{t("admin.mlm.hint")}</p>
 
         {canSetRank ? (
-          <>
-            <section className="space-y-2">
-              <h2 className="text-base font-medium">{t("admin.mlm.ranksTitle")}</h2>
-              {isLoading ? <AdminCardListSkeleton count={2} /> : null}
-              {isError ? (
-                <div className="mq-alert mq-alert-error">
-                  {error instanceof Error ? error.message : t("admin.common.failed")}
-                </div>
-              ) : null}
-              {(ranks ?? []).length > 0 ? (
-                <div className="mq-table-wrap overflow-x-auto">
-                  <table className="w-full text-xs tabular-nums">
-                    <thead>
-                      <tr className="border-b border-mq-border bg-mq-surface-subtle text-left text-mq-text-muted">
-                        <th className="px-2.5 py-1.5 font-medium w-10">#</th>
-                        <th className="px-2.5 py-1.5 font-medium">{t("admin.mlm.rankName")}</th>
-                        <th className="px-2.5 py-1.5 font-medium text-right whitespace-nowrap">
-                          {t("admin.mlm.team")}
-                        </th>
-                        <th className="px-2.5 py-1.5 font-medium text-right whitespace-nowrap">
-                          {t("admin.mlm.referral")}
-                        </th>
-                        <th className="px-2.5 py-1.5 font-medium text-right whitespace-nowrap">
-                          {t("admin.mlm.globalTier")}
-                        </th>
-                        <th className="px-2.5 py-1.5 font-medium text-center w-16">
-                          {t("admin.common.status")}
-                        </th>
+          <section className="space-y-2">
+            <h2 className="text-base font-medium">{t("admin.mlm.ranksTitle")}</h2>
+            {isLoading ? <AdminCardListSkeleton count={2} /> : null}
+            {isError ? (
+              <div className="mq-alert mq-alert-error">
+                {error instanceof Error ? error.message : t("admin.common.failed")}
+              </div>
+            ) : null}
+            {(ranks ?? []).length > 0 ? (
+              <div className="mq-table-wrap overflow-x-auto">
+                <table className="w-full text-xs tabular-nums">
+                  <thead>
+                    <tr className="border-b border-mq-border bg-mq-surface-subtle text-left text-mq-text-muted">
+                      <th className="px-3 py-2 font-medium w-12">#</th>
+                      <th className="px-3 py-2 font-medium">{t("admin.mlm.rankName")}</th>
+                      <th className="px-3 py-2 font-medium text-right whitespace-nowrap">
+                        {t("admin.mlm.team")}
+                      </th>
+                      <th className="px-3 py-2 font-medium text-right whitespace-nowrap">
+                        {t("admin.mlm.referral")}
+                      </th>
+                      <th className="px-3 py-2 font-medium text-right whitespace-nowrap">
+                        {t("admin.mlm.globalTier")}
+                      </th>
+                      <th className="px-3 py-2 font-medium text-center w-20">
+                        {t("admin.common.status")}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(ranks ?? []).map((r) => (
+                      <tr
+                        key={r.rank}
+                        className="border-b border-mq-border last:border-0 hover:bg-mq-surface-subtle/60"
+                      >
+                        <td className="px-3 py-1.5 font-semibold text-mq-text">{r.rank}</td>
+                        <td className="px-3 py-1.5 text-mq-text">{r.name}</td>
+                        <td className="px-3 py-1.5 text-right text-mq-text-muted">
+                          {formatPercent(r.teamPercent)}
+                        </td>
+                        <td className="px-3 py-1.5 text-right text-mq-text-muted">
+                          {formatPercent(r.referralPercent)}
+                        </td>
+                        <td className="px-3 py-1.5 text-right text-mq-text-muted">
+                          {r.globalFundTier != null ? `≥${r.globalFundTier}` : "—"}
+                        </td>
+                        <td className="px-3 py-1.5 text-center">
+                          <span
+                            className={
+                              r.isActive
+                                ? "mq-badge mq-badge-cyan !text-[10px] !px-1.5 !py-0"
+                                : "mq-badge mq-badge-muted !text-[10px] !px-1.5 !py-0"
+                            }
+                          >
+                            {r.isActive
+                              ? t("admin.common.active")
+                              : t("admin.common.hidden")}
+                          </span>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {(ranks ?? []).map((r) => (
-                        <tr
-                          key={r.rank}
-                          className="border-b border-mq-border last:border-0 hover:bg-mq-surface-subtle/60"
-                        >
-                          <td className="px-2.5 py-1 font-semibold text-mq-text">{r.rank}</td>
-                          <td className="px-2.5 py-1 text-mq-text">{r.name}</td>
-                          <td className="px-2.5 py-1 text-right text-mq-text-muted">
-                            {formatPercent(r.teamPercent)}
-                          </td>
-                          <td className="px-2.5 py-1 text-right text-mq-text-muted">
-                            {formatPercent(r.referralPercent)}
-                          </td>
-                          <td className="px-2.5 py-1 text-right text-mq-text-muted">
-                            {r.globalFundTier != null ? `≥${r.globalFundTier}` : "—"}
-                          </td>
-                          <td className="px-2.5 py-1 text-center">
-                            <span
-                              className={
-                                r.isActive
-                                  ? "mq-badge mq-badge-cyan !text-[10px] !px-1.5 !py-0"
-                                  : "mq-badge mq-badge-muted !text-[10px] !px-1.5 !py-0"
-                              }
-                            >
-                              {r.isActive
-                                ? t("admin.common.active")
-                                : t("admin.common.hidden")}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : null}
-            </section>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : null}
+          </section>
+        ) : (
+          <div className="mq-alert mq-alert-error text-sm">
+            {t("admin.mlm.noConfigPerm")}
+          </div>
+        )}
 
-            <section className="mq-card p-5 space-y-3">
-              <h2 className="text-lg">{t("admin.mlm.setRankTitle")}</h2>
+        <div
+          className={`grid gap-4 ${
+            canSetRank && canViewTree ? "lg:grid-cols-2" : "grid-cols-1"
+          }`}
+        >
+          {canSetRank ? (
+            <section className="mq-card p-5 space-y-3 min-w-0">
+              <h2 className="text-base font-medium">{t("admin.mlm.setRankTitle")}</h2>
               <p className="text-sm text-mq-text-muted">{t("admin.mlm.setRankHint")}</p>
               {formError ? <div className="mq-alert mq-alert-error">{formError}</div> : null}
               {okMsg ? <div className="mq-alert mq-alert-success">{okMsg}</div> : null}
@@ -265,97 +275,93 @@ function MlmAdminInner() {
                 </div>
               </form>
             </section>
-          </>
-        ) : (
-          <div className="mq-alert mq-alert-error text-sm">
-            {t("admin.mlm.noConfigPerm")}
-          </div>
-        )}
+          ) : null}
 
-        {canViewTree ? (
-          <section className="mq-card p-5 space-y-3">
-            <h2 className="text-lg">{t("admin.mlm.treeTitle")}</h2>
-            <p className="text-sm text-mq-text-muted">{t("admin.mlm.treeHint")}</p>
-            <form className="space-y-3" onSubmit={onLoadTree}>
-              <label className="block text-sm">
-                <span className="text-xs text-mq-text-muted">{t("admin.mlm.searchUser")}</span>
-                <div className="mt-1">
-                  <SearchableSelect
-                    options={userOptions}
-                    value={treeUserId}
-                    required
-                    aria-label={t("admin.mlm.searchUser")}
-                    placeholder={t("admin.mlm.searchUserPh")}
-                    searchPlaceholder={t("admin.mlm.searchUserPh")}
-                    onChange={setTreeUserId}
-                  />
-                </div>
-              </label>
-              {treeUser ? (
-                <p className="text-xs text-mq-text-muted break-all">
-                  {treeUser.fullName || "—"} · {treeUser.email} ·{" "}
-                  <span className="font-mono">{treeUser.id}</span>
-                </p>
+          {canViewTree ? (
+            <section className="mq-card p-5 space-y-3 min-w-0">
+              <h2 className="text-base font-medium">{t("admin.mlm.treeTitle")}</h2>
+              <p className="text-sm text-mq-text-muted">{t("admin.mlm.treeHint")}</p>
+              <form className="space-y-3" onSubmit={onLoadTree}>
+                <label className="block text-sm">
+                  <span className="text-xs text-mq-text-muted">{t("admin.mlm.searchUser")}</span>
+                  <div className="mt-1">
+                    <SearchableSelect
+                      options={userOptions}
+                      value={treeUserId}
+                      required
+                      aria-label={t("admin.mlm.searchUser")}
+                      placeholder={t("admin.mlm.searchUserPh")}
+                      searchPlaceholder={t("admin.mlm.searchUserPh")}
+                      onChange={setTreeUserId}
+                    />
+                  </div>
+                </label>
+                {treeUser ? (
+                  <p className="text-xs text-mq-text-muted break-all">
+                    {treeUser.fullName || "—"} · {treeUser.email} ·{" "}
+                    <span className="font-mono">{treeUser.id}</span>
+                  </p>
+                ) : null}
+                <button
+                  type="submit"
+                  className="mq-btn mq-btn-outline"
+                  disabled={!treeUserId}
+                >
+                  {t("admin.mlm.loadTree")}
+                </button>
+              </form>
+              {treeLoading ? (
+                <p className="text-sm text-mq-text-muted">{t("wallet.loading")}</p>
               ) : null}
-              <button
-                type="submit"
-                className="mq-btn mq-btn-outline"
-                disabled={!treeUserId}
-              >
-                {t("admin.mlm.loadTree")}
-              </button>
-            </form>
-            {treeLoading ? (
-              <p className="text-sm text-mq-text-muted">{t("wallet.loading")}</p>
-            ) : null}
-            {treeError ? (
-              <div className="mq-alert mq-alert-error">
-                {treeErr instanceof Error ? treeErr.message : t("admin.common.failed")}
-              </div>
-            ) : null}
-            {tree ? (
-              <div className="space-y-3">
-                <div className="flex flex-wrap gap-2 text-xs">
-                  <span className="mq-badge mq-badge-muted">
-                    {t("wallet.networkTotal")}: {tree.totalDownline}
-                  </span>
-                  {tree.truncated ? (
-                    <span className="mq-badge mq-badge-orange">
-                      {t("wallet.networkTruncated")}
-                    </span>
-                  ) : null}
+              {treeError ? (
+                <div className="mq-alert mq-alert-error">
+                  {treeErr instanceof Error ? treeErr.message : t("admin.common.failed")}
                 </div>
-                {treeByDepth.map(([depth, nodes]) => (
-                  <div key={depth} className="space-y-1">
-                    <p className="text-xs uppercase tracking-wider text-mq-text-muted">
-                      F{depth} · {nodes.length}
-                    </p>
-                    {nodes.slice(0, 20).map((n) => (
-                      <div
-                        key={n.userId}
-                        className="text-sm flex flex-wrap justify-between gap-2 border-b border-mq-border py-1"
-                      >
-                        <span className="truncate">
-                          {n.fullName || n.email || n.userId.slice(0, 8)}
-                        </span>
-                        {n.mlmRank != null ? (
-                          <span className="text-xs text-mq-text-muted">
-                            {t("wallet.rank")} {n.mlmRank}
-                          </span>
-                        ) : null}
-                      </div>
-                    ))}
-                    {nodes.length > 20 ? (
-                      <p className="text-xs text-mq-text-muted">
-                        +{nodes.length - 20} more
-                      </p>
+              ) : null}
+              {tree ? (
+                <div className="space-y-3 max-h-[28rem] overflow-y-auto pr-1">
+                  <div className="flex flex-wrap gap-2 text-xs sticky top-0 bg-mq-surface py-1">
+                    <span className="mq-badge mq-badge-muted">
+                      {t("wallet.networkTotal")}: {tree.totalDownline}
+                    </span>
+                    {tree.truncated ? (
+                      <span className="mq-badge mq-badge-orange">
+                        {t("wallet.networkTruncated")}
+                      </span>
                     ) : null}
                   </div>
-                ))}
-              </div>
-            ) : null}
-          </section>
-        ) : null}
+                  {treeByDepth.map(([depth, nodes]) => (
+                    <div key={depth} className="space-y-1">
+                      <p className="text-xs uppercase tracking-wider text-mq-text-muted">
+                        F{depth} · {nodes.length}
+                      </p>
+                      {nodes.slice(0, 20).map((n) => (
+                        <div
+                          key={n.userId}
+                          className="text-sm flex flex-wrap justify-between gap-2 border-b border-mq-border py-1"
+                        >
+                          <span className="truncate">
+                            {n.fullName || n.email || n.userId.slice(0, 8)}
+                          </span>
+                          {n.mlmRank != null ? (
+                            <span className="text-xs text-mq-text-muted">
+                              {t("wallet.rank")} {n.mlmRank}
+                            </span>
+                          ) : null}
+                        </div>
+                      ))}
+                      {nodes.length > 20 ? (
+                        <p className="text-xs text-mq-text-muted">
+                          +{nodes.length - 20} more
+                        </p>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </section>
+          ) : null}
+        </div>
       </div>
     </>
   );
