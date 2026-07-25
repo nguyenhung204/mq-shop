@@ -1070,7 +1070,7 @@
     "sendPinOtp": "寄送 OTP 至信箱",
     "sendingOtp": "寄送中…",
     "otp": "OTP 驗證碼",
-    "pin": "新 PIN（6 碼）",
+    "pin": "錢包 PIN（6 碼）",
     "confirmPin": "確認 PIN",
     "savePin": "儲存 PIN",
     "savingPin": "儲存中…",
@@ -1086,6 +1086,28 @@
       "GLOBAL": "全球",
       "LOYALTY": "忠誠",
       "ADJUST": "調整"
+    },
+    "pinRequiredBanner": "請先設定錢包 PIN 再繼續。",
+    "p2pEmail": "收款人電子郵件",
+    "p2pLookup": "查詢收款人",
+    "p2pTo": "轉給",
+    "p2pAmount": "金額（USD）",
+    "p2pAmountInvalid": "請輸入大於 0 的有效金額。",
+    "p2pConfirm": "確認轉帳",
+    "p2pSuccess": "轉帳完成。",
+    "back": "返回",
+    "withdrawHint": "可用餘額會凍結，直到申請被拒絕或完成（stub bank）。",
+    "bankName": "銀行名稱",
+    "accountNumber": "帳號",
+    "accountName": "戶名",
+    "withdrawSubmit": "送出提領",
+    "withdrawRequests": "本階段已送出",
+    "payoutStatus": {
+      "PENDING": "待審",
+      "APPROVED": "已核准",
+      "COMPLETED": "已完成",
+      "REJECTED": "已拒絕",
+      "PAY_FAILED": "付款失敗"
     }
   },
   "toast": {

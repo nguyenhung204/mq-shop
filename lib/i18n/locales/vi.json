@@ -1070,7 +1070,7 @@
     "sendPinOtp": "Gửi OTP tới email",
     "sendingOtp": "Đang gửi…",
     "otp": "Mã OTP",
-    "pin": "PIN mới (6 số)",
+    "pin": "PIN ví (6 số)",
     "confirmPin": "Xác nhận PIN",
     "savePin": "Lưu PIN",
     "savingPin": "Đang lưu…",
@@ -1086,6 +1086,28 @@
       "GLOBAL": "Global",
       "LOYALTY": "Loyalty",
       "ADJUST": "Điều chỉnh"
+    },
+    "pinRequiredBanner": "Cần đặt PIN ví trước khi tiếp tục.",
+    "p2pEmail": "Email người nhận",
+    "p2pLookup": "Tra người nhận",
+    "p2pTo": "Đến",
+    "p2pAmount": "Số tiền (USD)",
+    "p2pAmountInvalid": "Nhập số tiền hợp lệ lớn hơn 0.",
+    "p2pConfirm": "Xác nhận chuyển",
+    "p2pSuccess": "Chuyển tiền thành công.",
+    "back": "Quay lại",
+    "withdrawHint": "Số dư khả dụng sẽ bị đóng băng đến khi từ chối hoặc hoàn tất (stub bank).",
+    "bankName": "Ngân hàng",
+    "accountNumber": "Số tài khoản",
+    "accountName": "Tên chủ tài khoản",
+    "withdrawSubmit": "Gửi yêu cầu rút",
+    "withdrawRequests": "Đã gửi trong phiên này",
+    "payoutStatus": {
+      "PENDING": "Chờ duyệt",
+      "APPROVED": "Đã duyệt",
+      "COMPLETED": "Hoàn tất",
+      "REJECTED": "Từ chối",
+      "PAY_FAILED": "Thanh toán lỗi"
     }
   },
   "toast": {

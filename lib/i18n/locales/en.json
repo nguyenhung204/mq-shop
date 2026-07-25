@@ -1070,7 +1070,7 @@
     "sendPinOtp": "Send OTP to email",
     "sendingOtp": "Sending…",
     "otp": "OTP code",
-    "pin": "New PIN (6 digits)",
+    "pin": "Wallet PIN (6 digits)",
     "confirmPin": "Confirm PIN",
     "savePin": "Save PIN",
     "savingPin": "Saving…",
@@ -1086,6 +1086,28 @@
       "GLOBAL": "Global",
       "LOYALTY": "Loyalty",
       "ADJUST": "Adjust"
+    },
+    "pinRequiredBanner": "Set your wallet PIN before continuing.",
+    "p2pEmail": "Recipient email",
+    "p2pLookup": "Look up recipient",
+    "p2pTo": "To",
+    "p2pAmount": "Amount (USD)",
+    "p2pAmountInvalid": "Enter a valid amount greater than zero.",
+    "p2pConfirm": "Confirm transfer",
+    "p2pSuccess": "Transfer completed.",
+    "back": "Back",
+    "withdrawHint": "Available balance is frozen until the request is rejected or completed (stub bank).",
+    "bankName": "Bank name",
+    "accountNumber": "Account number",
+    "accountName": "Account name",
+    "withdrawSubmit": "Submit withdrawal",
+    "withdrawRequests": "Submitted this session",
+    "payoutStatus": {
+      "PENDING": "Pending",
+      "APPROVED": "Approved",
+      "COMPLETED": "Completed",
+      "REJECTED": "Rejected",
+      "PAY_FAILED": "Pay failed"
     }
   },
   "toast": {

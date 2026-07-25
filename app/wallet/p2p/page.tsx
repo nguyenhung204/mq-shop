@@ -1,117 +1,150 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useState } from "react";
-import { walletApi, type TransferPreviewResult } from "@/lib/api/wallet";
-import { ApiError } from "@/lib/api/client";
+import type { TransferPreviewResult } from "@/lib/api/wallet";
+import { useTransferPreview, useWalletTransfer } from "@/lib/queries/wallet";
 import { AuthGuard } from "@/components/guards/AuthGuard";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Container, PageHero } from "@/components/ui/shared";
 
-/** Temporary bridge — full PIN UX lands in Phase 2. */
 function P2pInner() {
+  const { t } = useLanguage();
+  const { user } = useAuth();
+  const previewMut = useTransferPreview();
+  const transferMut = useWalletTransfer();
+
   const [email, setEmail] = useState("");
   const [amount, setAmount] = useState("");
   const [pin, setPin] = useState("");
   const [preview, setPreview] = useState<TransferPreviewResult | null>(null);
-  const [error, setError] = useState("");
-  const [ok, setOk] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [localError, setLocalError] = useState("");
+  const [done, setDone] = useState(false);
+
+  const needsPin = user ? user.hasWalletPin === false : false;
+  const busy = previewMut.isPending || transferMut.isPending;
 
   const onPreview = async (e: FormEvent) => {
     e.preventDefault();
-    setBusy(true);
-    setError("");
-    setOk("");
+    setLocalError("");
+    setDone(false);
     try {
-      const res = await walletApi.transferPreview({ email: email.trim() });
+      const res = await previewMut.mutateAsync({ email: email.trim() });
       setPreview(res);
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Preview failed");
-    } finally {
-      setBusy(false);
+    } catch {
+      /* toast from hook */
     }
   };
 
   const onTransfer = async (e: FormEvent) => {
     e.preventDefault();
     if (!preview) return;
-    setBusy(true);
-    setError("");
+    setLocalError("");
+    if (!/^\d{6}$/.test(pin)) {
+      setLocalError(t("wallet.pinMismatch"));
+      return;
+    }
+    const n = Number(amount);
+    if (!Number.isFinite(n) || n <= 0) {
+      setLocalError(t("wallet.p2pAmountInvalid"));
+      return;
+    }
     try {
-      await walletApi.transfer({
+      await transferMut.mutateAsync({
         email: preview.email,
-        amount: Number(amount),
+        amount: n,
         pin,
       });
-      setOk("Transfer completed.");
+      setDone(true);
       setPreview(null);
       setPin("");
       setAmount("");
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Transfer failed");
-    } finally {
-      setBusy(false);
+      setEmail("");
+    } catch {
+      /* toast from hook */
     }
   };
 
   return (
     <>
       <PageHero
-        title="P2P transfer"
-        breadcrumb={[{ label: "Wallet", href: "/wallet" }, { label: "P2P" }]}
+        title={t("wallet.p2p")}
+        breadcrumb={[
+          { label: t("wallet.title"), href: "/wallet" },
+          { label: t("wallet.p2p") },
+        ]}
       />
-      <Container className="py-10 max-w-md mx-auto">
+      <Container className="py-10 max-w-md mx-auto space-y-4">
+        {needsPin ? (
+          <div className="mq-alert mq-alert-error">
+            {t("wallet.pinRequiredBanner")}{" "}
+            <Link href="/wallet" className="underline">
+              {t("wallet.title")}
+            </Link>
+          </div>
+        ) : null}
+        {localError ? <div className="mq-alert mq-alert-error">{localError}</div> : null}
+        {done ? <div className="mq-alert mq-alert-success">{t("wallet.p2pSuccess")}</div> : null}
+
         <div className="mq-card p-6 space-y-4">
-          {error && <div className="mq-alert mq-alert-error">{error}</div>}
-          {ok && <div className="mq-alert mq-alert-success">{ok}</div>}
-          {!preview ? (
-            <form className="space-y-3" onSubmit={onPreview}>
-              <input
-                className="mq-input"
-                type="email"
-                placeholder="Recipient email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+          {needsPin ? (
+            <p className="text-sm text-mq-text-muted">{t("wallet.pinRequiredBanner")}</p>
+          ) : !preview ? (
+            <form className="space-y-3" onSubmit={(e) => void onPreview(e)}>
+              <label className="block text-sm">
+                <span className="text-xs text-mq-text-muted">{t("wallet.p2pEmail")}</span>
+                <input
+                  className="mq-input mt-1"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </label>
               <button className="mq-btn mq-btn-primary w-full" disabled={busy}>
-                Look up recipient
+                {busy ? t("wallet.loading") : t("wallet.p2pLookup")}
               </button>
             </form>
           ) : (
-            <form className="space-y-3" onSubmit={onTransfer}>
+            <form className="space-y-3" onSubmit={(e) => void onTransfer(e)}>
               <p className="text-sm">
-                To: <strong>{preview.fullName || preview.email}</strong> ({preview.email})
+                {t("wallet.p2pTo")}:{" "}
+                <strong>{preview.fullName || preview.email}</strong> ({preview.email})
               </p>
-              <input
-                className="mq-input"
-                type="number"
-                step="0.01"
-                min="0.01"
-                placeholder="Amount (USD)"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                required
-              />
-              <input
-                className="mq-input"
-                type="password"
-                inputMode="numeric"
-                pattern="[0-9]{6}"
-                maxLength={6}
-                placeholder="Wallet PIN (6 digits)"
-                value={pin}
-                onChange={(e) => setPin(e.target.value)}
-                required
-              />
+              <label className="block text-sm">
+                <span className="text-xs text-mq-text-muted">{t("wallet.p2pAmount")}</span>
+                <input
+                  className="mq-input mt-1"
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  required
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="text-xs text-mq-text-muted">{t("wallet.pin")}</span>
+                <input
+                  className="mq-input mt-1"
+                  type="password"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  required
+                />
+              </label>
               <button
                 type="button"
                 className="mq-btn mq-btn-outline w-full"
                 onClick={() => setPreview(null)}
               >
-                Back
+                {t("wallet.back")}
               </button>
               <button className="mq-btn mq-btn-primary w-full" disabled={busy}>
-                Confirm transfer
+                {busy ? t("wallet.loading") : t("wallet.p2pConfirm")}
               </button>
             </form>
           )}
