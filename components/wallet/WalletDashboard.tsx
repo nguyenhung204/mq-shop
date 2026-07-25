@@ -18,6 +18,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Container, PageHero } from "@/components/ui/shared";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { WalletSkeleton } from "@/components/ui/Skeleton";
+import { buildReferralRegisterUrl } from "@/lib/mlm/referralLink";
 
 const TX_REASONS: Array<WalletTxReason | ""> = [
   "",
@@ -194,11 +195,9 @@ function WalletInner({ embedded = false }: { embedded?: boolean }) {
   });
   const [copied, setCopied] = useState(false);
 
-  const link =
-    referral?.referralLink ||
-    (typeof window !== "undefined" && (referral?.referralCode || user?.referralCode)
-      ? `${window.location.origin}/my-account/register?ref=${referral?.referralCode || user?.referralCode}`
-      : "");
+  const link = buildReferralRegisterUrl(
+    referral?.referralCode || user?.referralCode,
+  );
 
   const copyLink = async () => {
     if (!link) return;

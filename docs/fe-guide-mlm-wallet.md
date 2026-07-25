@@ -100,7 +100,8 @@ Body thêm optional:
 
 Không cần gửi lại `referrerCode`. Sau verify: user có `referralCode` mới + wallet + closure self-row.
 
-Deep link FE: `{FRONTEND_URL}/register?ref=MLMROOT1` → prefill `referrerCode`.
+Deep link FE: `{FRONTEND_URL}/my-account/register?ref=MLMROOT1` → prefill `referrerCode`.
+Alias: `/register?ref=` redirects to `/my-account/register` (BE `referralLink` often uses `/register`).
 
 ---
 
@@ -115,6 +116,7 @@ Deep link FE: `{FRONTEND_URL}/register?ref=MLMROOT1` → prefill `referrerCode`.
 }
 ```
 
+FE **không** copy nguyên `referralLink` nếu path là `/register` — build lại `{origin}/my-account/register?ref={referralCode}` (và giữ alias `/register` → redirect).
 ### `GET /mlm/network-tree` · `VIEW_MLM_TREE`
 
 Query:
