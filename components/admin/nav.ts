@@ -5,6 +5,7 @@ import {
   Boxes,
   Calculator,
   ClipboardList,
+  Coins,
   FolderOpen,
   FolderTree,
   HandCoins,
@@ -36,6 +37,8 @@ export const ACCOUNTANT_COMMERCE_PERMS = [
   "APPROVE_PAYOUT",
   "PROCESS_PAYOUT",
   "VIEW_MLM_TREE",
+  "ADJUST_POINTS",
+  "CONFIG_MLM",
 ] as const;
 
 export type AdminNavItem = {
@@ -141,6 +144,14 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.walletPayouts",
     icon: Wallet,
     permissions: ["APPROVE_PAYOUT"],
+    roles: ["ACCOUNTANT", "ADMIN", "SUPER_ADMIN"],
+    group: "commerce",
+  },
+  {
+    href: "/admin/wallet/adjust",
+    labelKey: "admin.nav.walletAdjust",
+    icon: Coins,
+    permissions: ["ADJUST_POINTS"],
     roles: ["ACCOUNTANT", "ADMIN", "SUPER_ADMIN"],
     group: "commerce",
   },

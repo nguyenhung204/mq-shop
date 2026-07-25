@@ -6,7 +6,7 @@ import { adminApi } from "@/lib/api";
 import type { AuthUser } from "@/lib/api/types";
 import { formatPercent, parsePage } from "@/lib/api/utils";
 import type { NetworkNode } from "@/lib/api/mlm";
-import { useMlmRanks, useNetworkTree, useSetMlmRank } from "@/lib/queries/wallet";
+import { useMlmRanks, useNetworkTree, useSetMlmRank, useSetMlmReferralRate, useSetMlmReferrer } from "@/lib/queries/wallet";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -41,6 +41,8 @@ function MlmAdminInner() {
     enabled: canSetRank,
   });
   const setRank = useSetMlmRank();
+  const setReferrer = useSetMlmReferrer();
+  const setReferralRate = useSetMlmReferralRate();
 
   const { data: usersPage } = useQuery({
     queryKey: ["admin", "users", "ACTIVE", "mlm-picker"],
@@ -71,6 +73,16 @@ function MlmAdminInner() {
   const [formError, setFormError] = useState("");
   const [okMsg, setOkMsg] = useState("");
 
+  const [referrerUserId, setReferrerUserId] = useState("");
+  const [newReferrerId, setNewReferrerId] = useState("");
+  const [referrerError, setReferrerError] = useState("");
+  const [referrerOk, setReferrerOk] = useState("");
+
+  const [rateUserId, setRateUserId] = useState("");
+  const [ratePercent, setRatePercent] = useState("");
+  const [rateError, setRateError] = useState("");
+  const [rateOk, setRateOk] = useState("");
+
   const [treeUserId, setTreeUserId] = useState("");
   const [treeQuery, setTreeQuery] = useState("");
   const {
@@ -84,7 +96,14 @@ function MlmAdminInner() {
   );
 
   const selectedUser = users.find((u) => u.id === selectedUserId);
+  const referrerTarget = users.find((u) => u.id === referrerUserId);
+  const rateTarget = users.find((u) => u.id === rateUserId);
   const treeUser = users.find((u) => u.id === treeUserId);
+
+  const referrerOptions = useMemo(
+    () => userOptions.filter((o) => o.value !== referrerUserId),
+    [userOptions, referrerUserId],
+  );
 
   const treeByDepth = useMemo(() => {
     const map = new Map<number, NetworkNode[]>();
@@ -123,6 +142,95 @@ function MlmAdminInner() {
       );
     } catch {
       /* toast from hook */
+    }
+  };
+
+  const onSetReferrer = async (e: FormEvent) => {
+    e.preventDefault();
+    setReferrerError("");
+    setReferrerOk("");
+    if (!referrerUserId) {
+      setReferrerError(t("admin.mlm.userRequired"));
+      return;
+    }
+    if (!newReferrerId) {
+      setReferrerError(t("admin.mlm.referrerRequired"));
+      return;
+    }
+    if (newReferrerId === referrerUserId) {
+      setReferrerError(t("admin.mlm.referrerSelf"));
+      return;
+    }
+    try {
+      await setReferrer.mutateAsync({
+        userId: referrerUserId,
+        body: { referrerId: newReferrerId },
+      });
+      setReferrerOk(t("admin.mlm.referrerUpdated"));
+    } catch {
+      /* toast */
+    }
+  };
+
+  const onClearReferrer = async () => {
+    setReferrerError("");
+    setReferrerOk("");
+    if (!referrerUserId) {
+      setReferrerError(t("admin.mlm.userRequired"));
+      return;
+    }
+    try {
+      await setReferrer.mutateAsync({
+        userId: referrerUserId,
+        body: { referrerId: null },
+      });
+      setNewReferrerId("");
+      setReferrerOk(t("admin.mlm.referrerCleared"));
+    } catch {
+      /* toast */
+    }
+  };
+
+  const onSetRate = async (e: FormEvent) => {
+    e.preventDefault();
+    setRateError("");
+    setRateOk("");
+    if (!rateUserId) {
+      setRateError(t("admin.mlm.userRequired"));
+      return;
+    }
+    const n = Number(ratePercent);
+    if (!Number.isFinite(n) || n < 0 || n > 10) {
+      setRateError(t("admin.mlm.rateInvalid"));
+      return;
+    }
+    try {
+      await setReferralRate.mutateAsync({
+        userId: rateUserId,
+        body: { ratePercent: n },
+      });
+      setRateOk(t("admin.mlm.rateUpdated", { rate: String(n) }));
+    } catch {
+      /* toast */
+    }
+  };
+
+  const onClearRate = async () => {
+    setRateError("");
+    setRateOk("");
+    if (!rateUserId) {
+      setRateError(t("admin.mlm.userRequired"));
+      return;
+    }
+    try {
+      await setReferralRate.mutateAsync({
+        userId: rateUserId,
+        body: { ratePercent: null },
+      });
+      setRatePercent("");
+      setRateOk(t("admin.mlm.rateCleared"));
+    } catch {
+      /* toast */
     }
   };
 
@@ -264,6 +372,13 @@ function MlmAdminInner() {
                         {t("wallet.rank")} {selectedUser.mlmRank}
                       </p>
                     ) : null}
+                    {selectedUser.referralRateOverride != null &&
+                    selectedUser.referralRateOverride !== "" ? (
+                      <p className="text-mq-text-muted">
+                        {t("wallet.referralRateOverride")}:{" "}
+                        {selectedUser.referralRateOverride}%
+                      </p>
+                    ) : null}
                   </div>
                 ) : null}
                 <div className="flex flex-wrap gap-3 items-end">
@@ -388,6 +503,162 @@ function MlmAdminInner() {
             </section>
           ) : null}
         </div>
+
+        {canSetRank ? (
+          <div className="grid gap-4 items-start lg:grid-cols-2">
+            <section className="mq-card p-5 space-y-3 min-w-0">
+              <h2 className="text-base font-medium">{t("admin.mlm.setReferrerTitle")}</h2>
+              <p className="text-sm text-mq-text-muted">{t("admin.mlm.setReferrerHint")}</p>
+              {referrerError ? (
+                <div className="mq-alert mq-alert-error break-words">{referrerError}</div>
+              ) : null}
+              {referrerOk ? (
+                <div className="mq-alert mq-alert-success break-words">{referrerOk}</div>
+              ) : null}
+              <form className="space-y-3" onSubmit={(e) => void onSetReferrer(e)}>
+                <label className="block text-sm min-w-0">
+                  <span className="text-xs text-mq-text-muted">{t("admin.mlm.searchUser")}</span>
+                  <div className="mt-1">
+                    <SearchableSelect
+                      options={userOptions}
+                      value={referrerUserId}
+                      required
+                      aria-label={t("admin.mlm.searchUser")}
+                      placeholder={t("admin.mlm.searchUserPh")}
+                      searchPlaceholder={t("admin.mlm.searchUserPh")}
+                      onChange={(id) => {
+                        setReferrerUserId(id);
+                        if (newReferrerId === id) setNewReferrerId("");
+                      }}
+                    />
+                  </div>
+                </label>
+                {referrerTarget ? (
+                  <div className="rounded-md border border-mq-border bg-mq-surface-subtle px-3 py-2 text-xs space-y-0.5">
+                    <p className="truncate font-medium">
+                      {referrerTarget.fullName || referrerTarget.email}
+                    </p>
+                    <p className="truncate font-mono text-mq-text-muted" title={referrerTarget.id}>
+                      {referrerTarget.id}
+                    </p>
+                    <p className="text-mq-text-muted">
+                      {t("admin.mlm.currentReferrer")}:{" "}
+                      {referrerTarget.referrerId
+                        ? users.find((u) => u.id === referrerTarget.referrerId)
+                            ?.email ?? referrerTarget.referrerId.slice(0, 8)
+                        : "—"}
+                    </p>
+                  </div>
+                ) : null}
+                <label className="block text-sm min-w-0">
+                  <span className="text-xs text-mq-text-muted">{t("admin.mlm.newReferrer")}</span>
+                  <div className="mt-1">
+                    <SearchableSelect
+                      options={referrerOptions}
+                      value={newReferrerId}
+                      aria-label={t("admin.mlm.newReferrer")}
+                      placeholder={t("admin.mlm.newReferrerPh")}
+                      searchPlaceholder={t("admin.mlm.searchUserPh")}
+                      onChange={setNewReferrerId}
+                    />
+                  </div>
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="submit"
+                    className="mq-btn mq-btn-primary"
+                    disabled={setReferrer.isPending || !referrerUserId || !newReferrerId}
+                  >
+                    {setReferrer.isPending
+                      ? t("admin.common.saving")
+                      : t("admin.mlm.setReferrer")}
+                  </button>
+                  <button
+                    type="button"
+                    className="mq-btn mq-btn-outline"
+                    disabled={setReferrer.isPending || !referrerUserId}
+                    onClick={() => void onClearReferrer()}
+                  >
+                    {t("admin.mlm.clearReferrer")}
+                  </button>
+                </div>
+              </form>
+            </section>
+
+            <section className="mq-card p-5 space-y-3 min-w-0">
+              <h2 className="text-base font-medium">{t("admin.mlm.setRateTitle")}</h2>
+              <p className="text-sm text-mq-text-muted">{t("admin.mlm.setRateHint")}</p>
+              {rateError ? (
+                <div className="mq-alert mq-alert-error break-words">{rateError}</div>
+              ) : null}
+              {rateOk ? (
+                <div className="mq-alert mq-alert-success break-words">{rateOk}</div>
+              ) : null}
+              <form className="space-y-3" onSubmit={(e) => void onSetRate(e)}>
+                <label className="block text-sm min-w-0">
+                  <span className="text-xs text-mq-text-muted">{t("admin.mlm.searchUser")}</span>
+                  <div className="mt-1">
+                    <SearchableSelect
+                      options={userOptions}
+                      value={rateUserId}
+                      required
+                      aria-label={t("admin.mlm.searchUser")}
+                      placeholder={t("admin.mlm.searchUserPh")}
+                      searchPlaceholder={t("admin.mlm.searchUserPh")}
+                      onChange={setRateUserId}
+                    />
+                  </div>
+                </label>
+                {rateTarget ? (
+                  <div className="rounded-md border border-mq-border bg-mq-surface-subtle px-3 py-2 text-xs space-y-0.5">
+                    <p className="truncate font-medium">
+                      {rateTarget.fullName || rateTarget.email}
+                    </p>
+                    <p className="text-mq-text-muted">
+                      {t("wallet.referralRateOverride")}:{" "}
+                      {rateTarget.referralRateOverride != null &&
+                      rateTarget.referralRateOverride !== ""
+                        ? `${rateTarget.referralRateOverride}%`
+                        : t("admin.mlm.rateDefault")}
+                    </p>
+                  </div>
+                ) : null}
+                <label className="flex flex-col gap-1 text-sm">
+                  <span className="text-xs text-mq-text-muted">{t("admin.mlm.ratePercent")}</span>
+                  <input
+                    className="mq-input !w-[8rem] max-w-full"
+                    type="number"
+                    min={0}
+                    max={10}
+                    step={0.01}
+                    value={ratePercent}
+                    onChange={(e) => setRatePercent(e.target.value)}
+                    placeholder="0–10"
+                  />
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="submit"
+                    className="mq-btn mq-btn-primary"
+                    disabled={setReferralRate.isPending || !rateUserId}
+                  >
+                    {setReferralRate.isPending
+                      ? t("admin.common.saving")
+                      : t("admin.mlm.setRate")}
+                  </button>
+                  <button
+                    type="button"
+                    className="mq-btn mq-btn-outline"
+                    disabled={setReferralRate.isPending || !rateUserId}
+                    onClick={() => void onClearRate()}
+                  >
+                    {t("admin.mlm.clearRate")}
+                  </button>
+                </div>
+              </form>
+            </section>
+          </div>
+        ) : null}
       </div>
     </>
   );

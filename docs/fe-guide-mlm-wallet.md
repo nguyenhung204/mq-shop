@@ -17,7 +17,7 @@
 | PIN | 6 số; OTP email trước khi set/đổi; hash Argon2 |
 | Currency | USD 1:1 với order |
 | Bank withdraw | **Stub** giống seller payout — approve/process không chuyển tiền thật |
-| Đổi referrer | Không hỗ trợ sau register |
+| Đổi referrer | Admin `PATCH …/referrer` (`CONFIG_MLM`) — sau register |
 
 ---
 
@@ -50,8 +50,11 @@
 | `CREATE_PAYOUT` | SELF | — | — | ALL |
 | `APPROVE_PAYOUT` | — | APPROVE | APPROVE | ALL |
 | `PROCESS_PAYOUT` | — | ALL | — | ALL |
+| `ADJUST_POINTS` | — | ALL** | — | ALL |
+| `CONFIG_MLM` | — | APPROVE | — | ALL |
 
-\* Matrix cho Acc/Admin `VIEW_WALLET` = ALL — MVP API hiện chỉ trả **ví của chính actor** (`GET /wallet`). Acc/Admin dùng list payout admin.
+\* Matrix cho Acc/Admin `VIEW_WALLET` = ALL — MVP API hiện chỉ trả **ví của chính actor** (`GET /wallet`). Acc/Admin dùng list payout admin / adjust.  
+\*\* `ADJUST_POINTS`: Acc/SA điều chỉnh `available` (ledger `ADJUST`).
 
 ### UI gate gợi ý
 
@@ -62,6 +65,8 @@
 | Wallet balance / TX / PIN / P2P / Withdraw | Buyer / Seller (+ SA) |
 | Admin wallet payouts approve/reject | Accountant / Admin |
 | Process payout (stub bank) | Accountant / Super Admin |
+| Admin wallet adjust | Accountant / Super Admin (`ADJUST_POINTS`) |
+| Set rank / referrer / referral rate | Accountant / Super Admin (`CONFIG_MLM`) |
 
 ---
 
@@ -74,6 +79,7 @@
 | `referrerId` | `string \| null` | Upline trực tiếp |
 | `referralCode` | `string \| null` | Mã share |
 | `mlmRank` | `number` 1–10 | Cấp MLM |
+| `referralRateOverride` | `string \| number \| null` | Override % referral 0–10; `null` → dùng bảng rank |
 | `hasWalletPin` | `boolean` | Gate UI: chưa set PIN → bắt flow OTP |
 
 ---
@@ -294,6 +300,27 @@ FE detail: `/admin/wallet/payouts/:id` — duyệt / từ chối / **Process** (
 
 Process: UUID mới mỗi payout id / lần process mới; retry cùng key + cùng id.
 
+### Admin adjust · `ADJUST_POINTS`
+
+`POST /admin/wallet/adjust`
+
+```json
+{ "userId": "…", "amount": 25, "note": "ops credit" }
+```
+
+`amount` dương → credit `available`; âm → debit. Ghi ledger `reason=ADJUST`.
+
+FE: `/admin/wallet/adjust`.
+
+### Admin MLM user · `CONFIG_MLM`
+
+| Method | Path | Body |
+|--------|------|------|
+| PATCH | `/admin/mlm/users/:id/referrer` | `{ "referrerId": "<uuid>" \| null }` |
+| PATCH | `/admin/mlm/users/:id/referral-rate` | `{ "ratePercent": 0..10 \| null }` |
+
+FE: form trên `/admin/mlm` (cùng gate Acc/SA như set rank).
+
 ---
 
 ## 9. TypeScript types
@@ -401,6 +428,8 @@ Smoke:
 - [x] Detail `/admin/wallet/payouts/:id` (bank info + actions)
 - [x] Approve / reject (+ reason)
 - [x] Process (Accountant / SA) + `Idempotency-Key`
+- [x] Wallet adjust `/admin/wallet/adjust` (`ADJUST_POINTS`)
+- [x] Set referrer + referral rate override (`CONFIG_MLM`)
 - [x] Network tree `?userId=` (optional ops)
 
 ---

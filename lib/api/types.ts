@@ -50,6 +50,11 @@ export type AuthUser = {
   referralCode?: string | null;
   /** MLM rank 1–10. */
   mlmRank?: number | null;
+  /**
+   * Optional override for referral commission % (0–10).
+   * `null` / omitted → use rank table default.
+   */
+  referralRateOverride?: string | number | null;
   /** Gate P2P / withdraw until PIN is set. */
   hasWalletPin?: boolean;
 };

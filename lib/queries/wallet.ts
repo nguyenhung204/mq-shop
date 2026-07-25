@@ -4,8 +4,10 @@ import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
+  adminWalletApi,
   adminWalletPayoutApi,
   walletApi,
+  type AdjustWalletBody,
   type ConfirmWalletPinBody,
   type ListAdminWalletPayoutsParams,
   type ListWalletTransactionsParams,
@@ -23,6 +25,8 @@ import {
   type ListCommissionsParams,
   type ListNetworkTreeParams,
   type SetMlmRankBody,
+  type SetMlmReferralRateBody,
+  type SetMlmReferrerBody,
 } from "@/lib/api/mlm";
 import { ApiError } from "@/lib/api/client";
 import { createIdempotencyKeyStore } from "@/lib/api/idempotency";
@@ -323,6 +327,20 @@ export function useApproveWalletPayout() {
   });
 }
 
+export function useAdjustWalletBalance() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: AdjustWalletBody) => adminWalletApi.adjust(body),
+    onSuccess: () => {
+      toast.success(tt("toast.walletAdjustOk"));
+      void qc.invalidateQueries({ queryKey: walletKeys.all });
+      void qc.invalidateQueries({ queryKey: adminWalletKeys.all });
+    },
+    onError: (e) =>
+      toast.error(walletErrorMessage(e, tt("toast.walletAdjustFailed"))),
+  });
+}
+
 export function useRejectWalletPayout() {
   const qc = useQueryClient();
   return useMutation({
@@ -374,7 +392,48 @@ export function useSetMlmRank() {
     onSuccess: () => {
       toast.success(tt("toast.mlmRankUpdated"));
       void qc.invalidateQueries({ queryKey: mlmKeys.ranks() });
+      void qc.invalidateQueries({ queryKey: ["admin", "users"] });
     },
     onError: (e) => toast.error(walletErrorMessage(e, tt("toast.mlmRankUpdateFailed"))),
+  });
+}
+
+export function useSetMlmReferrer() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      userId,
+      body,
+    }: {
+      userId: string;
+      body: SetMlmReferrerBody;
+    }) => adminMlmApi.setUserReferrer(userId, body),
+    onSuccess: () => {
+      toast.success(tt("toast.mlmReferrerUpdated"));
+      void qc.invalidateQueries({ queryKey: mlmKeys.all });
+      void qc.invalidateQueries({ queryKey: ["admin", "users"] });
+    },
+    onError: (e) =>
+      toast.error(walletErrorMessage(e, tt("toast.mlmReferrerUpdateFailed"))),
+  });
+}
+
+export function useSetMlmReferralRate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      userId,
+      body,
+    }: {
+      userId: string;
+      body: SetMlmReferralRateBody;
+    }) => adminMlmApi.setUserReferralRate(userId, body),
+    onSuccess: () => {
+      toast.success(tt("toast.mlmReferralRateUpdated"));
+      void qc.invalidateQueries({ queryKey: mlmKeys.all });
+      void qc.invalidateQueries({ queryKey: ["admin", "users"] });
+    },
+    onError: (e) =>
+      toast.error(walletErrorMessage(e, tt("toast.mlmReferralRateUpdateFailed"))),
   });
 }

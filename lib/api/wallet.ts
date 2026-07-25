@@ -160,3 +160,24 @@ export const adminWalletPayoutApi = {
       headers: { "Idempotency-Key": idempotencyKey },
     }),
 };
+
+export type AdjustWalletBody = {
+  userId: string;
+  /** Positive credits available; negative debits (must leave balance ≥ 0). */
+  amount: number;
+  note?: string;
+};
+
+export type AdjustWalletResult = {
+  wallet?: Wallet;
+  availableBalance?: string;
+  frozenBalance?: string;
+  transaction?: WalletTransaction;
+  userId?: string;
+};
+
+/** Admin wallet balance adjust — `ADJUST_POINTS`. */
+export const adminWalletApi = {
+  adjust: (body: AdjustWalletBody) =>
+    api.post<AdjustWalletResult | Wallet>("/admin/wallet/adjust", body),
+};

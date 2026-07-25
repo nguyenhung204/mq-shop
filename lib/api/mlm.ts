@@ -77,6 +77,30 @@ export type SetMlmRankResult = {
   rankName: string;
 };
 
+export type SetMlmReferrerBody = {
+  /** Pass `null` to clear upline. */
+  referrerId: string | null;
+};
+
+export type SetMlmReferrerResult = {
+  userId: string;
+  email?: string;
+  fullName?: string | null;
+  referrerId: string | null;
+};
+
+export type SetMlmReferralRateBody = {
+  /** Override % in 0..10, or `null` to clear override. */
+  ratePercent: number | null;
+};
+
+export type SetMlmReferralRateResult = {
+  userId: string;
+  email?: string;
+  fullName?: string | null;
+  referralRateOverride: string | number | null;
+};
+
 type CommissionListRes =
   | CommissionRow[]
   | { data: CommissionRow[]; meta?: PageMeta }
@@ -91,9 +115,16 @@ export const mlmApi = {
     api.get<CommissionListRes>("/mlm/commissions", { query, withMeta: true }),
 };
 
-/** Admin MLM rank config — `CONFIG_MLM`. */
+/** Admin MLM config — `CONFIG_MLM`. */
 export const adminMlmApi = {
   ranks: () => api.get<MlmRankConfig[]>("/admin/mlm/ranks"),
   setUserRank: (userId: string, body: SetMlmRankBody) =>
     api.patch<SetMlmRankResult>(`/admin/mlm/users/${userId}/rank`, body),
+  setUserReferrer: (userId: string, body: SetMlmReferrerBody) =>
+    api.patch<SetMlmReferrerResult>(`/admin/mlm/users/${userId}/referrer`, body),
+  setUserReferralRate: (userId: string, body: SetMlmReferralRateBody) =>
+    api.patch<SetMlmReferralRateResult>(
+      `/admin/mlm/users/${userId}/referral-rate`,
+      body,
+    ),
 };

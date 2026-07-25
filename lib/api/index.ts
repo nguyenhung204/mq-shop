@@ -77,7 +77,7 @@ export type {
   ExportFinanceReportBody,
   ExportFinanceReportResult,
 } from "./finance";
-export { walletApi, adminWalletPayoutApi } from "./wallet";
+export { walletApi, adminWalletPayoutApi, adminWalletApi } from "./wallet";
 export type {
   Wallet,
   WalletTxReason,
@@ -93,6 +93,9 @@ export type {
   PayoutRequestStatus,
   UserPayoutRequest,
   ListAdminWalletPayoutsParams,
+  ListWalletWithdrawalsParams,
+  AdjustWalletBody,
+  AdjustWalletResult,
 } from "./wallet";
 export { mlmApi, adminMlmApi } from "./mlm";
 export type {
@@ -107,6 +110,10 @@ export type {
   MlmRankConfig,
   SetMlmRankBody,
   SetMlmRankResult,
+  SetMlmReferrerBody,
+  SetMlmReferrerResult,
+  SetMlmReferralRateBody,
+  SetMlmReferralRateResult,
 } from "./mlm";
 export type {
   SettlementStatus,

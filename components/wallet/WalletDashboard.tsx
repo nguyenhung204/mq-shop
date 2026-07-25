@@ -238,6 +238,12 @@ function WalletInner({ embedded = false }: { embedded?: boolean }) {
                 {t("wallet.rank")} {user.mlmRank}
               </span>
             ) : null}
+            {user?.referralRateOverride != null &&
+            user.referralRateOverride !== "" ? (
+              <span className="mq-badge mq-badge-teal">
+                {t("wallet.referralRateOverride")}: {user.referralRateOverride}%
+              </span>
+            ) : null}
             {user?.hasWalletPin ? (
               <span className="mq-badge mq-badge-muted">{t("wallet.pinSet")}</span>
             ) : null}

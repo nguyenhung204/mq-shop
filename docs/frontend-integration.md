@@ -1061,7 +1061,7 @@ Row: `{ type, id, shopId, shopName, shopOwnerName, buyerId, buyerName, amount, c
 
 ### 8.2 Profile fields mới
 
-`referrerId`, `referralCode`, `mlmRank` (1–10), `hasWalletPin`.
+`referrerId`, `referralCode`, `mlmRank` (1–10), `referralRateOverride`, `hasWalletPin`.
 
 ### 8.3 Endpoints nhanh — Wallet / MLM
 
@@ -1075,6 +1075,10 @@ Row: `{ type, id, shopId, shopName, shopOwnerName, buyerId, buyerName, amount, c
 | POST | `/wallet/withdraw` | `CREATE_PAYOUT` · **bắt buộc** `Idempotency-Key` |
 | GET | `/wallet/withdrawals` · `/wallet/withdrawals/:id` | `VIEW_WALLET` · list/detail của chính user |
 | GET/POST | `/admin/wallet/payouts` (+ `/:id`, approve/reject/process) | `APPROVE_PAYOUT` / `PROCESS_PAYOUT` · **process bắt buộc** `Idempotency-Key` |
+| POST | `/admin/wallet/adjust` | `ADJUST_POINTS` · `{ userId, amount, note? }` |
+| PATCH | `/admin/mlm/users/:id/rank` | `CONFIG_MLM` |
+| PATCH | `/admin/mlm/users/:id/referrer` | `CONFIG_MLM` · `{ referrerId \| null }` |
+| PATCH | `/admin/mlm/users/:id/referral-rate` | `CONFIG_MLM` · `{ ratePercent: 0..10 \| null }` |
 
 Register: optional `referrerCode` trên `POST /auth/register`.
 
@@ -1214,4 +1218,4 @@ Shop **Seed Electronics Store**: products/SKUs + `KHO-HN`/`KHO-HCM` + slips + or
 - Auto-delete / export CSV audit files
 - Payment gateway / bank transfer **thật** (seller payout + wallet withdraw đang stub)
 - Auto-rank MLM (MVP: admin set tay)
-- Đổi `referrerId` sau register
+- Đổi `referrerId` sau register → Admin `PATCH /admin/mlm/users/:id/referrer`
