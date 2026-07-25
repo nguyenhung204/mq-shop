@@ -115,7 +115,7 @@ export function SearchableSelect({
   let lastGroup: string | undefined;
 
   return (
-    <div ref={rootRef} className={`relative ${className}`.trim()}>
+    <div ref={rootRef} className={`relative w-full min-w-0 ${className}`.trim()}>
       {/* Native required check for form submit */}
       <input
         type="text"
@@ -132,10 +132,12 @@ export function SearchableSelect({
         aria-label={ariaLabel}
         aria-expanded={open}
         aria-controls={listId}
-        className="mq-input w-full text-left flex items-center justify-between gap-2"
+        className="mq-input w-full min-w-0 text-left flex items-center justify-between gap-2 overflow-hidden"
         onClick={() => !disabled && setOpen((v) => !v)}
       >
-        <span className={selected ? "truncate" : "truncate text-mq-text-muted"}>
+        <span
+          className={`min-w-0 flex-1 truncate ${selected ? "" : "text-mq-text-muted"}`}
+        >
           {selected ? selected.label : placeholder}
         </span>
         <span className="text-mq-text-muted text-xs shrink-0" aria-hidden>

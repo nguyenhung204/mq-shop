@@ -60,7 +60,7 @@ function MlmAdminInner() {
     () =>
       users.map((u) => ({
         value: u.id,
-        label: `${userLabel(u)} · ${u.id}`,
+        label: userLabel(u),
         keywords: `${u.fullName ?? ""} ${u.email} ${u.id}`,
       })),
     [users],
@@ -216,20 +216,24 @@ function MlmAdminInner() {
         )}
 
         <div
-          className={`grid gap-4 ${
+          className={`grid gap-4 items-start ${
             canSetRank && canViewTree ? "lg:grid-cols-2" : "grid-cols-1"
           }`}
         >
           {canSetRank ? (
-            <section className="mq-card p-5 space-y-3 min-w-0">
+            <section className="mq-card p-5 space-y-3 min-w-0 overflow-hidden">
               <h2 className="text-base font-medium">{t("admin.mlm.setRankTitle")}</h2>
               <p className="text-sm text-mq-text-muted">{t("admin.mlm.setRankHint")}</p>
-              {formError ? <div className="mq-alert mq-alert-error">{formError}</div> : null}
-              {okMsg ? <div className="mq-alert mq-alert-success">{okMsg}</div> : null}
-              <form className="space-y-3" onSubmit={(e) => void onSubmit(e)}>
-                <label className="block text-sm">
+              {formError ? (
+                <div className="mq-alert mq-alert-error break-words">{formError}</div>
+              ) : null}
+              {okMsg ? (
+                <div className="mq-alert mq-alert-success break-words">{okMsg}</div>
+              ) : null}
+              <form className="space-y-3 min-w-0" onSubmit={(e) => void onSubmit(e)}>
+                <label className="block text-sm min-w-0">
                   <span className="text-xs text-mq-text-muted">{t("admin.mlm.searchUser")}</span>
-                  <div className="mt-1">
+                  <div className="mt-1 min-w-0">
                     <SearchableSelect
                       options={userOptions}
                       value={selectedUserId}
@@ -242,13 +246,25 @@ function MlmAdminInner() {
                   </div>
                 </label>
                 {selectedUser ? (
-                  <p className="text-xs text-mq-text-muted break-all">
-                    {selectedUser.fullName || "—"} · {selectedUser.email} ·{" "}
-                    <span className="font-mono">{selectedUser.id}</span>
-                    {selectedUser.mlmRank != null
-                      ? ` · ${t("wallet.rank")} ${selectedUser.mlmRank}`
-                      : ""}
-                  </p>
+                  <div className="rounded-md border border-mq-border bg-mq-surface-subtle px-3 py-2 text-xs min-w-0 overflow-hidden space-y-0.5">
+                    <p className="truncate font-medium text-mq-text">
+                      {selectedUser.fullName || selectedUser.email}
+                    </p>
+                    {selectedUser.fullName ? (
+                      <p className="truncate text-mq-text-muted">{selectedUser.email}</p>
+                    ) : null}
+                    <p
+                      className="truncate font-mono text-mq-text-muted"
+                      title={selectedUser.id}
+                    >
+                      {selectedUser.id}
+                    </p>
+                    {selectedUser.mlmRank != null ? (
+                      <p className="text-mq-text-muted">
+                        {t("wallet.rank")} {selectedUser.mlmRank}
+                      </p>
+                    ) : null}
+                  </div>
                 ) : null}
                 <div className="flex flex-wrap gap-3 items-end">
                   <label className="block text-sm">
@@ -278,13 +294,13 @@ function MlmAdminInner() {
           ) : null}
 
           {canViewTree ? (
-            <section className="mq-card p-5 space-y-3 min-w-0">
+            <section className="mq-card p-5 space-y-3 min-w-0 overflow-hidden">
               <h2 className="text-base font-medium">{t("admin.mlm.treeTitle")}</h2>
               <p className="text-sm text-mq-text-muted">{t("admin.mlm.treeHint")}</p>
-              <form className="space-y-3" onSubmit={onLoadTree}>
-                <label className="block text-sm">
+              <form className="space-y-3 min-w-0" onSubmit={onLoadTree}>
+                <label className="block text-sm min-w-0">
                   <span className="text-xs text-mq-text-muted">{t("admin.mlm.searchUser")}</span>
-                  <div className="mt-1">
+                  <div className="mt-1 min-w-0">
                     <SearchableSelect
                       options={userOptions}
                       value={treeUserId}
@@ -297,10 +313,20 @@ function MlmAdminInner() {
                   </div>
                 </label>
                 {treeUser ? (
-                  <p className="text-xs text-mq-text-muted break-all">
-                    {treeUser.fullName || "—"} · {treeUser.email} ·{" "}
-                    <span className="font-mono">{treeUser.id}</span>
-                  </p>
+                  <div className="rounded-md border border-mq-border bg-mq-surface-subtle px-3 py-2 text-xs min-w-0 overflow-hidden space-y-0.5">
+                    <p className="truncate font-medium text-mq-text">
+                      {treeUser.fullName || treeUser.email}
+                    </p>
+                    {treeUser.fullName ? (
+                      <p className="truncate text-mq-text-muted">{treeUser.email}</p>
+                    ) : null}
+                    <p
+                      className="truncate font-mono text-mq-text-muted"
+                      title={treeUser.id}
+                    >
+                      {treeUser.id}
+                    </p>
+                  </div>
                 ) : null}
                 <button
                   type="submit"
@@ -314,13 +340,13 @@ function MlmAdminInner() {
                 <p className="text-sm text-mq-text-muted">{t("wallet.loading")}</p>
               ) : null}
               {treeError ? (
-                <div className="mq-alert mq-alert-error">
+                <div className="mq-alert mq-alert-error break-words">
                   {treeErr instanceof Error ? treeErr.message : t("admin.common.failed")}
                 </div>
               ) : null}
               {tree ? (
-                <div className="space-y-3 max-h-[28rem] overflow-y-auto pr-1">
-                  <div className="flex flex-wrap gap-2 text-xs sticky top-0 bg-mq-surface py-1">
+                <div className="space-y-3 max-h-[28rem] overflow-y-auto overflow-x-hidden pr-1 min-w-0">
+                  <div className="flex flex-wrap gap-2 text-xs sticky top-0 bg-mq-surface-elevated py-1 z-10">
                     <span className="mq-badge mq-badge-muted">
                       {t("wallet.networkTotal")}: {tree.totalDownline}
                     </span>
@@ -331,20 +357,20 @@ function MlmAdminInner() {
                     ) : null}
                   </div>
                   {treeByDepth.map(([depth, nodes]) => (
-                    <div key={depth} className="space-y-1">
+                    <div key={depth} className="space-y-1 min-w-0">
                       <p className="text-xs uppercase tracking-wider text-mq-text-muted">
                         F{depth} · {nodes.length}
                       </p>
                       {nodes.slice(0, 20).map((n) => (
                         <div
                           key={n.userId}
-                          className="text-sm flex flex-wrap justify-between gap-2 border-b border-mq-border py-1"
+                          className="text-sm flex items-center justify-between gap-2 border-b border-mq-border py-1 min-w-0"
                         >
-                          <span className="truncate">
+                          <span className="truncate min-w-0">
                             {n.fullName || n.email || n.userId.slice(0, 8)}
                           </span>
                           {n.mlmRank != null ? (
-                            <span className="text-xs text-mq-text-muted">
+                            <span className="text-xs text-mq-text-muted shrink-0">
                               {t("wallet.rank")} {n.mlmRank}
                             </span>
                           ) : null}
