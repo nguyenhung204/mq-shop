@@ -22,7 +22,8 @@ import { Container, PageHero } from "@/components/ui/shared";
 const AMOUNT_PRESETS = [10, 20, 50, 100, 200, 500] as const;
 
 function formatPreset(n: number): string {
-  return Number.isInteger(n) ? String(n) : n.toFixed(2);
+  if (!Number.isFinite(n)) return "0";
+  return String(Number(n.toFixed(2)));
 }
 
 function P2pPanel({

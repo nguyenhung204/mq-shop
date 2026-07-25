@@ -73,8 +73,13 @@ export function getErrorCode(error: unknown): string | null {
 
 export function formatMoney(value: string | number | undefined | null): string {
   const n = typeof value === "string" ? Number(value) : value ?? 0;
-  if (Number.isNaN(n)) return "$0.00";
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
+  if (Number.isNaN(n)) return "$0";
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(n);
 }
 
 /** Format BE percent strings (e.g. `"5.0000"`) as `5%` / `6.5%`. */
