@@ -386,7 +386,9 @@
       "promotions": "Khuyến mãi",
       "banners": "Banner",
       "marketing": "Marketing",
-      "system": "Hệ thống"
+      "system": "Hệ thống",
+      "walletPayouts": "Rút ví cá nhân",
+      "mlm": "Rank MLM"
     },
     "common": {
       "create": "Tạo mới",
@@ -471,7 +473,9 @@
         "finance": "Legacy: rút ví, lô chi trả và duyệt cổng",
         "promotions": "Duyệt KM seller và tạo KM nền tảng",
         "banners": "Banner CMS trang chủ / khuyến mãi",
-        "marketing": "Upload bộ tài liệu marketing cho seller"
+        "marketing": "Upload bộ tài liệu marketing cho seller",
+        "walletPayouts": "Duyệt yêu cầu rút ví cá nhân (≠ seller payouts)",
+        "mlm": "Bảng % rank và gán rank user"
       },
       "noModules": "Không có module admin cho tài khoản này. Kiểm tra role/permission."
     },
@@ -788,6 +792,31 @@
         "INCLUDED_IN_PAYOUT": "Đã vào phiếu chi trả",
         "PAID_OUT": "Đã chi trả"
       }
+    },
+    "walletPayouts": {
+      "title": "Rút ví cá nhân",
+      "description": "Hàng đợi rút ví — duyệt, từ chối hoặc process stub bank.",
+      "hint": "Khác Seller payouts. Các yêu cầu này đóng băng/giải phóng ví user.",
+      "userId": "User ID",
+      "empty": "Không có yêu cầu rút ví trong bộ lọc này.",
+      "process": "Process",
+      "rejectTitle": "Từ chối rút ví"
+    },
+    "mlm": {
+      "title": "Rank MLM",
+      "description": "Bảng % rank và gán rank thủ công (CONFIG_MLM).",
+      "hint": "Không liên quan commissionPercent trên finance config.",
+      "ranksTitle": "Bảng rank",
+      "team": "Team %",
+      "referral": "Referral %",
+      "globalTier": "Global tier",
+      "setRankTitle": "Gán rank user",
+      "setRankHint": "Dán UUID user và chọn rank 1–10.",
+      "userId": "User ID",
+      "userIdRequired": "Cần User ID.",
+      "rankInvalid": "Rank phải là số nguyên 1–10.",
+      "setRank": "Cập nhật rank",
+      "rankUpdated": "Đã cập nhật {email} → rank {rank} ({name})"
     }
   },
   "seller": {

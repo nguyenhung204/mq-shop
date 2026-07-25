@@ -11,6 +11,7 @@ import {
   FolderTree,
   HandCoins,
   ImageIcon,
+  Network,
   Package,
   Percent,
   Receipt,
@@ -19,6 +20,7 @@ import {
   ShoppingBag,
   Store,
   Users,
+  Wallet,
 } from "lucide-react";
 import type { Role } from "@/lib/api/types";
 import { ACCOUNTANT_COMMERCE_PERMS } from "@/components/admin/nav";
@@ -99,6 +101,20 @@ const cards: {
     navKey: "payouts",
     permissions: ["PAYOUT_SELLER"],
     icon: HandCoins,
+  },
+  {
+    href: "/admin/wallet/payouts",
+    navKey: "walletPayouts",
+    permissions: ["APPROVE_PAYOUT"],
+    roles: ["ACCOUNTANT", "ADMIN", "SUPER_ADMIN"],
+    icon: Wallet,
+  },
+  {
+    href: "/admin/mlm",
+    navKey: "mlm",
+    permissions: ["CONFIG_MLM"],
+    roles: ["SUPER_ADMIN"],
+    icon: Network,
   },
   {
     href: "/admin/landing-cost",

@@ -386,7 +386,9 @@
       "promotions": "Promotions",
       "banners": "Banners",
       "marketing": "Marketing",
-      "system": "System"
+      "system": "System",
+      "walletPayouts": "Wallet payouts",
+      "mlm": "MLM ranks"
     },
     "common": {
       "create": "Create",
@@ -471,7 +473,9 @@
         "finance": "Legacy wallet withdraws, batches, and gateway reviews",
         "promotions": "Approve seller campaigns and create platform promos",
         "banners": "Homepage and promo CMS creatives",
-        "marketing": "Upload seller marketing kits and assets"
+        "marketing": "Upload seller marketing kits and assets",
+        "walletPayouts": "Approve personal wallet withdraw requests (≠ seller payouts)",
+        "mlm": "View rank table and set user MLM rank"
       },
       "noModules": "No admin modules available for this account. Check roles and permissions."
     },
@@ -788,6 +792,31 @@
         "INCLUDED_IN_PAYOUT": "Included in payout",
         "PAID_OUT": "Paid out"
       }
+    },
+    "walletPayouts": {
+      "title": "Wallet payouts",
+      "description": "Personal withdraw queue — approve, reject, or process stub bank payouts.",
+      "hint": "Not the same as Seller payouts under Finance. These freeze/release the user wallet.",
+      "userId": "User ID",
+      "empty": "No wallet payouts in this filter.",
+      "process": "Process",
+      "rejectTitle": "Reject wallet payout"
+    },
+    "mlm": {
+      "title": "MLM ranks",
+      "description": "Rank percent table and manual rank assignment (CONFIG_MLM).",
+      "hint": "Not related to finance config commissionPercent.",
+      "ranksTitle": "Rank table",
+      "team": "Team %",
+      "referral": "Referral %",
+      "globalTier": "Global tier",
+      "setRankTitle": "Set user rank",
+      "setRankHint": "Paste a user UUID and choose rank 1–10.",
+      "userId": "User ID",
+      "userIdRequired": "User ID is required.",
+      "rankInvalid": "Rank must be an integer from 1 to 10.",
+      "setRank": "Update rank",
+      "rankUpdated": "Updated {email} → rank {rank} ({name})"
     }
   },
   "seller": {

@@ -10,6 +10,7 @@ import {
   HandCoins,
   ImageIcon,
   LayoutDashboard,
+  Network,
   Package,
   Percent,
   Receipt,
@@ -20,6 +21,7 @@ import {
   Store,
   UserCog,
   Users,
+  Wallet,
 } from "lucide-react";
 import type { Role } from "@/lib/api/types";
 
@@ -31,6 +33,9 @@ export const ACCOUNTANT_COMMERCE_PERMS = [
   "CONFIG_FEE",
   "PAYOUT_SELLER",
   "CALC_LAND_COST",
+  "APPROVE_PAYOUT",
+  "PROCESS_PAYOUT",
+  "VIEW_MLM_TREE",
 ] as const;
 
 export type AdminNavItem = {
@@ -129,6 +134,22 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.payouts",
     icon: HandCoins,
     permissions: ["PAYOUT_SELLER"],
+    group: "commerce",
+  },
+  {
+    href: "/admin/wallet/payouts",
+    labelKey: "admin.nav.walletPayouts",
+    icon: Wallet,
+    permissions: ["APPROVE_PAYOUT"],
+    roles: ["ACCOUNTANT", "ADMIN", "SUPER_ADMIN"],
+    group: "commerce",
+  },
+  {
+    href: "/admin/mlm",
+    labelKey: "admin.nav.mlm",
+    icon: Network,
+    permissions: ["CONFIG_MLM"],
+    roles: ["SUPER_ADMIN"],
     group: "commerce",
   },
   {

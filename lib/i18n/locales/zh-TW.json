@@ -386,7 +386,9 @@
       "promotions": "促銷",
       "banners": "橫幅",
       "marketing": "行銷",
-      "system": "系統"
+      "system": "系統",
+      "walletPayouts": "錢包提領",
+      "mlm": "MLM 等級"
     },
     "common": {
       "create": "建立",
@@ -471,7 +473,9 @@
         "finance": "舊版：錢包提領、批次與金流審核",
         "promotions": "審核賣家活動並建立平台促銷",
         "banners": "首頁／促銷 CMS 橫幅",
-        "marketing": "上傳賣家行銷素材包"
+        "marketing": "上傳賣家行銷素材包",
+        "walletPayouts": "核准個人錢包提領（≠ 賣家撥款）",
+        "mlm": "等級比率表與手動設定等級"
       },
       "noModules": "此帳號沒有可用的管理模組。請檢查角色與權限。"
     },
@@ -788,6 +792,31 @@
         "INCLUDED_IN_PAYOUT": "已納入撥款",
         "PAID_OUT": "已撥款"
       }
+    },
+    "walletPayouts": {
+      "title": "錢包提領",
+      "description": "個人提領佇列 — 核准、拒絕或處理 stub bank。",
+      "hint": "與賣家撥款不同。這些申請會凍結／釋放使用者錢包。",
+      "userId": "使用者 ID",
+      "empty": "此篩選條件無錢包提領。",
+      "process": "處理",
+      "rejectTitle": "拒絕錢包提領"
+    },
+    "mlm": {
+      "title": "MLM 等級",
+      "description": "等級比率表與手動設定等級（CONFIG_MLM）。",
+      "hint": "與財務設定的 commissionPercent 無關。",
+      "ranksTitle": "等級表",
+      "team": "團隊 %",
+      "referral": "推薦 %",
+      "globalTier": "全球層級",
+      "setRankTitle": "設定使用者等級",
+      "setRankHint": "貼上使用者 UUID 並選擇等級 1–10。",
+      "userId": "使用者 ID",
+      "userIdRequired": "需要使用者 ID。",
+      "rankInvalid": "等級須為 1–10 的整數。",
+      "setRank": "更新等級",
+      "rankUpdated": "已更新 {email} → 等級 {rank}（{name}）"
     }
   },
   "seller": {
