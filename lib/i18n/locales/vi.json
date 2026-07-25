@@ -783,6 +783,9 @@
       "event": "Sự kiện",
       "outcome": "Kết quả",
       "actor": "Người thực hiện",
+      "actorPh": "Actor ID (UUID)",
+      "resourceType": "Loại resource",
+      "resourceTypePh": "Loại resource",
       "empty": "Không có nhật ký."
     },
     "settlementsPage": {
@@ -819,7 +822,7 @@
       "rankInvalid": "Rank phải là số nguyên 1–10.",
       "setRank": "Cập nhật rank",
       "rankUpdated": "Đã cập nhật {email} → rank {rank} ({name})",
-      "treeTitle": "Mạng theo user",
+      "treeTitle": "Mạng lưới phân phối",
       "treeHint": "Ops: tải downline của user khác qua userId (VIEW_MLM_TREE ALL).",
       "loadTree": "Tải cây",
       "searchUser": "User",

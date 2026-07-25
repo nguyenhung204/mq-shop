@@ -524,31 +524,33 @@ function ProductsInner() {
         </div>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-3 items-center">
-          <label className="text-sm text-mq-text-muted">{t("seller.productsPage.status")}</label>
-          <select
-            className="mq-input max-w-xs"
-            value={status}
-            onChange={(e) => {
-              setStatus(e.target.value);
-              setPage(1);
-            }}
-          >
-            {statusOptions.map((s) => (
-              <option key={s || "all"} value={s}>
-                {s === "PENDING"
-                  ? t("seller.productsPage.pendingReview")
-                  : s === "ACTIVE"
-                    ? t("seller.common.active")
-                    : s === "REJECTED"
-                      ? t("seller.common.rejected")
-                      : s === "HIDDEN"
-                        ? t("admin.common.hidden")
-                        : t("seller.common.all")}
-              </option>
-            ))}
-          </select>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="flex flex-wrap gap-3 items-end">
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-mq-text-muted text-xs">{t("seller.productsPage.status")}</span>
+            <select
+              className="mq-input max-w-xs"
+              value={status}
+              onChange={(e) => {
+                setStatus(e.target.value);
+                setPage(1);
+              }}
+            >
+              {statusOptions.map((s) => (
+                <option key={s || "all"} value={s}>
+                  {s === "PENDING"
+                    ? t("seller.productsPage.pendingReview")
+                    : s === "ACTIVE"
+                      ? t("seller.common.active")
+                      : s === "REJECTED"
+                        ? t("seller.common.rejected")
+                        : s === "HIDDEN"
+                          ? t("admin.common.hidden")
+                          : t("seller.common.all")}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
         {!showForm ? (
           <button type="button" className="mq-btn mq-btn-primary text-sm" onClick={openCreate}>

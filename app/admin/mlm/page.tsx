@@ -221,7 +221,7 @@ function MlmAdminInner() {
           }`}
         >
           {canSetRank ? (
-            <section className="mq-card p-5 space-y-3 min-w-0 overflow-hidden">
+            <section className="mq-card p-5 space-y-3 min-w-0">
               <h2 className="text-base font-medium">{t("admin.mlm.setRankTitle")}</h2>
               <p className="text-sm text-mq-text-muted">{t("admin.mlm.setRankHint")}</p>
               {formError ? (
@@ -267,10 +267,10 @@ function MlmAdminInner() {
                   </div>
                 ) : null}
                 <div className="flex flex-wrap gap-3 items-end">
-                  <label className="block text-sm">
+                  <label className="flex flex-col gap-1 text-sm">
                     <span className="text-xs text-mq-text-muted">{t("wallet.rank")}</span>
                     <select
-                      className="mq-input mt-1 !w-[6rem]"
+                      className="mq-input !w-[6rem] max-w-full"
                       value={rank}
                       onChange={(e) => setRankValue(e.target.value)}
                     >
@@ -294,7 +294,7 @@ function MlmAdminInner() {
           ) : null}
 
           {canViewTree ? (
-            <section className="mq-card p-5 space-y-3 min-w-0 overflow-hidden">
+            <section className="mq-card p-5 space-y-3 min-w-0">
               <h2 className="text-base font-medium">{t("admin.mlm.treeTitle")}</h2>
               <p className="text-sm text-mq-text-muted">{t("admin.mlm.treeHint")}</p>
               <form className="space-y-3 min-w-0" onSubmit={onLoadTree}>

@@ -783,6 +783,9 @@
       "event": "事件",
       "outcome": "結果",
       "actor": "操作者",
+      "actorPh": "操作者 ID (UUID)",
+      "resourceType": "資源類型",
+      "resourceTypePh": "資源類型",
       "empty": "無稽核紀錄。"
     },
     "settlementsPage": {
@@ -819,7 +822,7 @@
       "rankInvalid": "等級須為 1–10 的整數。",
       "setRank": "更新等級",
       "rankUpdated": "已更新 {email} → 等級 {rank}（{name}）",
-      "treeTitle": "依使用者查網絡",
+      "treeTitle": "分銷網絡",
       "treeHint": "營運查詢：以 userId 載入其他使用者下線（VIEW_MLM_TREE ALL）。",
       "loadTree": "載入樹",
       "searchUser": "使用者",

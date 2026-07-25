@@ -306,10 +306,10 @@ function WalletInner() {
             <section className="space-y-3">
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <h2 className="text-lg">{t("wallet.txTitle")}</h2>
-                <label className="block text-sm">
+                <label className="flex flex-col gap-1 text-sm">
                   <span className="text-xs text-mq-text-muted">{t("wallet.txReason")}</span>
                   <select
-                    className="mq-input mt-1 !w-[12rem]"
+                    className="mq-input !w-[12rem] max-w-full"
                     value={txReason}
                     onChange={(e) => {
                       setTxReason(e.target.value as WalletTxReason | "");

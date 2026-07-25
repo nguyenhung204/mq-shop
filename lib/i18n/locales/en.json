@@ -783,6 +783,9 @@
       "event": "Event",
       "outcome": "Outcome",
       "actor": "Actor",
+      "actorPh": "Actor ID (UUID)",
+      "resourceType": "Resource type",
+      "resourceTypePh": "Resource type",
       "empty": "No audit logs."
     },
     "settlementsPage": {
@@ -819,7 +822,7 @@
       "rankInvalid": "Rank must be an integer from 1 to 10.",
       "setRank": "Update rank",
       "rankUpdated": "Updated {email} → rank {rank} ({name})",
-      "treeTitle": "Network by user",
+      "treeTitle": "Distribution network",
       "treeHint": "Ops lookup: load another user’s downline via userId (VIEW_MLM_TREE ALL).",
       "loadTree": "Load tree",
       "searchUser": "User",

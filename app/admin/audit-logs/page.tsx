@@ -143,52 +143,64 @@ function AuditInner() {
           </div>
         )}
 
-        <div className="mq-admin-panel p-4 flex flex-wrap gap-3">
-          <input
-            className="mq-input max-w-xs"
-            placeholder={t("admin.auditPage.filterAction")}
-            value={action}
-            onChange={(e) => {
-              setAction(e.target.value);
-              setPage(1);
-            }}
-          />
-          <select
-            className="mq-input max-w-[160px]"
-            value={outcome}
-            onChange={(e) => {
-              setOutcome(e.target.value);
-              setPage(1);
-            }}
-          >
-            <option value="">{t("admin.auditPage.anyOutcome")}</option>
-            <option value="success">{t("admin.auditPage.succeeded")}</option>
-            <option value="failure">{t("admin.auditPage.failed")}</option>
-            <option value="denied">{t("admin.auditPage.denied")}</option>
-          </select>
-          <input
-            className="mq-input max-w-xs"
-            placeholder="Resource type"
-            value={resourceType}
-            onChange={(e) => {
-              setResourceType(e.target.value);
-              setPage(1);
-            }}
-          />
-          <input
-            className="mq-input max-w-xs"
-            placeholder="Actor ID (UUID)"
-            value={actorId}
-            onChange={(e) => {
-              setActorId(e.target.value.trim());
-              setPage(1);
-            }}
-          />
-          <label className="flex items-center gap-2 text-xs text-mq-text-muted">
-            From
+        <div className="mq-admin-panel p-4 flex flex-wrap gap-3 items-end">
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-mq-text-muted text-xs">{t("admin.auditPage.event")}</span>
+            <input
+              className="mq-input max-w-xs"
+              placeholder={t("admin.auditPage.filterAction")}
+              value={action}
+              onChange={(e) => {
+                setAction(e.target.value);
+                setPage(1);
+              }}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-mq-text-muted text-xs">{t("admin.auditPage.outcome")}</span>
+            <select
+              className="mq-input !w-[10rem] max-w-full"
+              value={outcome}
+              onChange={(e) => {
+                setOutcome(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="">{t("admin.auditPage.anyOutcome")}</option>
+              <option value="success">{t("admin.auditPage.succeeded")}</option>
+              <option value="failure">{t("admin.auditPage.failed")}</option>
+              <option value="denied">{t("admin.auditPage.denied")}</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-mq-text-muted text-xs">{t("admin.auditPage.resourceType")}</span>
+            <input
+              className="mq-input max-w-xs"
+              placeholder={t("admin.auditPage.resourceTypePh")}
+              value={resourceType}
+              onChange={(e) => {
+                setResourceType(e.target.value);
+                setPage(1);
+              }}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-mq-text-muted text-xs">{t("admin.auditPage.actor")}</span>
+            <input
+              className="mq-input max-w-xs"
+              placeholder={t("admin.auditPage.actorPh")}
+              value={actorId}
+              onChange={(e) => {
+                setActorId(e.target.value.trim());
+                setPage(1);
+              }}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-mq-text-muted text-xs">{t("transactions.startDate")}</span>
             <input
               type="date"
-              className="mq-input max-w-[160px]"
+              className="mq-input"
               value={from}
               onChange={(e) => {
                 setFrom(e.target.value);
@@ -196,11 +208,11 @@ function AuditInner() {
               }}
             />
           </label>
-          <label className="flex items-center gap-2 text-xs text-mq-text-muted">
-            To
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-mq-text-muted text-xs">{t("transactions.endDate")}</span>
             <input
               type="date"
-              className="mq-input max-w-[160px]"
+              className="mq-input"
               value={to}
               onChange={(e) => {
                 setTo(e.target.value);

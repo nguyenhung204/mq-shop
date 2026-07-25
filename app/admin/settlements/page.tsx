@@ -65,10 +65,10 @@ function SettlementsInner() {
       />
       <div className="space-y-4">
         <div className="flex flex-wrap gap-3 items-end">
-          <label className="block text-sm">
+          <label className="flex flex-col gap-1 text-sm">
             <span className="text-mq-text-muted text-xs">{t("admin.common.filterStatus")}</span>
             <select
-              className="mq-input mt-1 !w-[16rem] max-w-full"
+              className="mq-input !w-[16rem] max-w-full"
               value={status}
               aria-label={t("admin.common.filterStatus")}
               onChange={(e) => {
@@ -85,10 +85,10 @@ function SettlementsInner() {
               ))}
             </select>
           </label>
-          <label className="block text-sm">
+          <label className="flex flex-col gap-1 text-sm">
             <span className="text-mq-text-muted text-xs">{t("admin.common.shop")}</span>
             <select
-              className="mq-input mt-1 min-w-[14rem]"
+              className="mq-input min-w-[14rem]"
               value={shopId}
               aria-label={t("admin.common.shop")}
               onChange={(e) => {

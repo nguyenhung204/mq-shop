@@ -143,11 +143,11 @@ export function TransactionsReport({
       <div className="mq-card p-4 space-y-3">
         {filterError ? <div className="mq-alert mq-alert-error">{filterError}</div> : null}
         <div className="flex flex-wrap gap-3 items-end">
-          <label className="block text-sm">
+          <label className="flex flex-col gap-1 text-sm">
             <span className="text-mq-text-muted text-xs">{t("transactions.startDate")}</span>
             <input
               type="date"
-              className="mq-input mt-1"
+              className="mq-input"
               value={startDate}
               onChange={(e) => {
                 setStartDate(e.target.value);
@@ -155,11 +155,11 @@ export function TransactionsReport({
               }}
             />
           </label>
-          <label className="block text-sm">
+          <label className="flex flex-col gap-1 text-sm">
             <span className="text-mq-text-muted text-xs">{t("transactions.endDate")}</span>
             <input
               type="date"
-              className="mq-input mt-1"
+              className="mq-input"
               value={endDate}
               onChange={(e) => {
                 setEndDate(e.target.value);
@@ -167,10 +167,10 @@ export function TransactionsReport({
               }}
             />
           </label>
-          <label className="block text-sm">
+          <label className="flex flex-col gap-1 text-sm">
             <span className="text-mq-text-muted text-xs">{t("transactions.type")}</span>
             <select
-              className="mq-input mt-1 !w-[10rem]"
+              className="mq-input !w-[10rem] max-w-full"
               value={type}
               onChange={(e) => {
                 setType(e.target.value as FinanceTransactionType);
@@ -185,10 +185,10 @@ export function TransactionsReport({
             </select>
           </label>
           {showShopFilter ? (
-            <label className="block text-sm">
+            <label className="flex flex-col gap-1 text-sm">
               <span className="text-mq-text-muted text-xs">{t("admin.common.shop")}</span>
               <select
-                className="mq-input mt-1 min-w-[14rem]"
+                className="mq-input min-w-[14rem]"
                 value={shopId}
                 onChange={(e) => {
                   setShopId(e.target.value);
@@ -206,10 +206,10 @@ export function TransactionsReport({
           ) : null}
           {canExport ? (
             <>
-              <label className="block text-sm">
+              <label className="flex flex-col gap-1 text-sm">
                 <span className="text-mq-text-muted text-xs">{t("transactions.format")}</span>
                 <select
-                  className="mq-input mt-1 !w-[8rem]"
+                  className="mq-input !w-[8rem] max-w-full"
                   value={format}
                   onChange={(e) => setFormat(e.target.value as FinanceExportFormat)}
                 >
@@ -220,17 +220,22 @@ export function TransactionsReport({
                   ))}
                 </select>
               </label>
-              <button
-                type="button"
-                className="mq-btn mq-btn-primary shrink-0"
-                disabled={exportReport.isPending || !datesOk}
-                onClick={onExport}
-              >
-                <Download size={16} aria-hidden />
-                {exportReport.isPending
-                  ? t("transactions.exporting")
-                  : t("transactions.export")}
-              </button>
+              <div className="flex flex-col gap-1 -translate-y-1">
+                <span className="text-xs leading-none invisible select-none" aria-hidden>
+                  &nbsp;
+                </span>
+                <button
+                  type="button"
+                  className="mq-btn mq-btn-primary shrink-0"
+                  disabled={exportReport.isPending || !datesOk}
+                  onClick={onExport}
+                >
+                  <Download size={16} aria-hidden />
+                  {exportReport.isPending
+                    ? t("transactions.exporting")
+                    : t("transactions.export")}
+                </button>
+              </div>
             </>
           ) : null}
         </div>
