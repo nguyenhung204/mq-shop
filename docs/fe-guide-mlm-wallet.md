@@ -353,21 +353,21 @@ Smoke:
 
 ### Buyer / Seller
 
-- [ ] Register form optional `referrerCode` / `?ref=`
-- [ ] Profile: `referralCode`, `mlmRank`, `hasWalletPin`
-- [ ] Share referral link
-- [ ] Network tree (depth badge F1/F2)
-- [ ] Set PIN (OTP → confirm)
-- [ ] Wallet available / frozen
-- [ ] TX list filter theo `reason` (optional FE)
-- [ ] P2P: preview → confirm PIN → success
-- [ ] Withdraw form + bankInfo + status tracking
+- [x] Register form optional `referrerCode` / `?ref=`
+- [x] Profile: `referralCode`, `mlmRank`, `hasWalletPin`
+- [x] Share referral link
+- [x] Network tree (depth badge F1/F2)
+- [x] Set PIN (OTP → confirm)
+- [x] Wallet available / frozen
+- [x] TX list filter theo `reason` (optional FE)
+- [x] P2P: preview → confirm PIN → success
+- [x] Withdraw form + bankInfo + status tracking
 
 ### Accountant / Admin
 
-- [ ] `/admin/wallet/payouts` queue (≠ seller `/admin/payouts`)
-- [ ] Approve / reject (+ reason)
-- [ ] Process (Accountant / SA)
+- [x] `/admin/wallet/payouts` queue (≠ seller `/admin/payouts`)
+- [x] Approve / reject (+ reason)
+- [x] Process (Accountant / SA)
 - [ ] Network tree `?userId=` (optional ops)
 
 ---

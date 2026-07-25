@@ -206,16 +206,16 @@ Loyalty / team / global: chạy job tháng (BE cron) — FE chỉ đọc lịch 
 
 ### Buyer / Seller
 
-- [ ] Màn “Thưởng / Commissions” filter `type`
-- [ ] Sau DELIVERED enrollment: refresh wallet + commissions
-- [ ] Hiển thị rank hiện tại từ profile (`mlmRank`)
-- [ ] Copy giải thích 4 trụ (referral realtime vs 3 trụ cron)
+- [x] Màn “Thưởng / Commissions” filter `type`
+- [x] Sau DELIVERED enrollment: refresh wallet + commissions
+- [x] Hiển thị rank hiện tại từ profile (`mlmRank`)
+- [x] Copy giải thích 4 trụ (referral realtime vs 3 trụ cron)
 
 ### Super Admin
 
-- [ ] Bảng rank configs
-- [ ] Form set rank user (ops MVP)
-- [ ] Không nhầm với finance `commissionPercent` trên finance config (default MLM khác bảng rank)
+- [x] Bảng rank configs
+- [x] Form set rank user (ops MVP)
+- [x] Không nhầm với finance `commissionPercent` trên finance config (default MLM khác bảng rank)
 
 ---
 
