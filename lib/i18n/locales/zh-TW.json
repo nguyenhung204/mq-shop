@@ -398,7 +398,8 @@
       "system": "系統",
       "walletPayouts": "錢包提領",
       "walletAdjust": "錢包調整",
-      "mlm": "MLM 等級"
+      "mlm": "MLM 等級",
+      "backups": "備份"
     },
     "common": {
       "create": "建立",
@@ -598,6 +599,20 @@
       "createHint": "Admin 建立 → PENDING 待 Super Admin。Super Admin 建立 → ACTIVE 並產生臨時密碼。",
       "pendingNotice": "變更已存為 PENDING。需 Super Admin 核准後才能以新角色登入。",
       "reaffirmHint": "重新送出 ADMIN 角色以雙重審核（Admin → PENDING；Super Admin 立即套用）。"
+    },
+    "backups": {
+      "title": "備份",
+      "description": "建立完整資料庫備份，完成後下載 ZIP。僅 Super Admin。",
+      "startFull": "開始 FULL 備份",
+      "starting": "啟動中…",
+      "refresh": "重新整理",
+      "empty": "尚無備份。",
+      "id": "備份",
+      "progress": "進度",
+      "size": "大小",
+      "created": "建立時間",
+      "download": "下載 ZIP",
+      "maintenanceNote": "dump 進行中時，寫入 API 可能回傳 503（軟維護）。GET 仍可用。"
     },
     "audit": {
       "title": "稽核日誌",

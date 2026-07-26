@@ -398,7 +398,8 @@
       "system": "System",
       "walletPayouts": "Wallet payouts",
       "walletAdjust": "Wallet adjust",
-      "mlm": "MLM ranks"
+      "mlm": "MLM ranks",
+      "backups": "Backups"
     },
     "common": {
       "create": "Create",
@@ -598,6 +599,20 @@
       "createHint": "Admin create → PENDING until Super Admin approves. Super Admin create → ACTIVE with a temporary password.",
       "pendingNotice": "Change saved as PENDING. Super Admin must approve before the account can sign in with the new roles.",
       "reaffirmHint": "Re-submit ADMIN role for dual-control (Admin → PENDING; Super Admin applies immediately)."
+    },
+    "backups": {
+      "title": "Backups",
+      "description": "Create a full database backup and download the ZIP when ready. Super Admin only.",
+      "startFull": "Start FULL backup",
+      "starting": "Starting…",
+      "refresh": "Refresh",
+      "empty": "No backups yet.",
+      "id": "Backup",
+      "progress": "Progress",
+      "size": "Size",
+      "created": "Created",
+      "download": "Download ZIP",
+      "maintenanceNote": "While a dump is RUNNING, mutating API calls may return 503 (soft maintenance). GET requests still work."
     },
     "audit": {
       "title": "Audit logs",
@@ -1401,6 +1416,9 @@
     "platformStaffRolesUpdated": "Platform staff roles updated",
     "platformStaffApproved": "Platform staff approved",
     "platformStaffRejected": "Platform staff rejected",
+    "backupStarted": "Full backup queued",
+    "backupAlreadyRunning": "A backup is already queued or running",
+    "backupFailed": "Could not start backup",
     "categoryCreated": "Category created",
     "categoryUpdated": "Category updated",
     "checkoutFailed": "Checkout failed",

@@ -300,6 +300,9 @@ export type {
   ListPlatformStaffParams,
 } from "./staff";
 
+export { adminBackupApi, isBackupInProgress } from "./compliance";
+export type { ApiBackup, BackupStatus, ListBackupsParams } from "./compliance";
+
 export {
   promotionApi,
   adminPromotionApi,

@@ -9,6 +9,7 @@ import {
   FolderOpen,
   FolderTree,
   HandCoins,
+  HardDrive,
   ImageIcon,
   LayoutDashboard,
   Network,
@@ -216,6 +217,14 @@ export const adminNavItems: AdminNavItem[] = [
     icon: FolderOpen,
     permissions: ["MANAGE_CONTENT"],
     group: "commerce",
+  },
+  {
+    href: "/admin/backups",
+    labelKey: "admin.nav.backups",
+    icon: HardDrive,
+    permissions: ["BACKUP_RESTORE"],
+    sa: true,
+    group: "system",
   },
   { href: "/super-admin", labelKey: "admin.nav.system", icon: Settings, sa: true, group: "system" },
 ];

@@ -599,6 +599,20 @@
       "pendingNotice": "Thay đổi đã lưu PENDING. Super Admin phải duyệt trước khi đăng nhập với vai trò mới.",
       "reaffirmHint": "Gửi lại vai trò ADMIN để dual-control (Admin → PENDING; Super Admin áp dụng ngay)."
     },
+    "backups": {
+      "title": "Sao lưu",
+      "description": "Tạo backup FULL và tải ZIP khi xong. Chỉ Super Admin.",
+      "startFull": "Bắt đầu backup FULL",
+      "starting": "Đang bắt đầu…",
+      "refresh": "Làm mới",
+      "empty": "Chưa có bản sao lưu.",
+      "id": "Backup",
+      "progress": "Tiến độ",
+      "size": "Dung lượng",
+      "created": "Tạo lúc",
+      "download": "Tải ZIP",
+      "maintenanceNote": "Khi dump đang RUNNING, API ghi có thể trả 503 (bảo trì mềm). GET vẫn hoạt động."
+    },
     "audit": {
       "title": "Nhật ký",
       "description": "Theo dõi thao tác admin trên hệ thống."
@@ -1401,6 +1415,9 @@
     "platformStaffRolesUpdated": "Đã cập nhật vai trò nền tảng",
     "platformStaffApproved": "Đã duyệt nhân sự nền tảng",
     "platformStaffRejected": "Đã từ chối nhân sự nền tảng",
+    "backupStarted": "Đã xếp hàng backup FULL",
+    "backupAlreadyRunning": "Đã có backup đang xếp hàng hoặc chạy",
+    "backupFailed": "Không bắt đầu được backup",
     "categoryCreated": "Đã tạo danh mục",
     "categoryUpdated": "Đã cập nhật danh mục",
     "checkoutFailed": "Thanh toán thất bại",
