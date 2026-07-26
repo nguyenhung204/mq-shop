@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { X } from "lucide-react";
 import { formatMoney } from "@/lib/api/utils";
 import {
   canCancelOrder,
@@ -14,9 +15,12 @@ import {
   type RmaStatus,
 } from "@/lib/api/orders";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useCancelOrder, useOrder, useUpdateOrderStatus } from "@/lib/queries/orders";
 import { useSellerShop } from "@/lib/queries/seller";
+import { useProductReviews } from "@/lib/queries/reviews";
 import { AuthGuard } from "@/components/guards/AuthGuard";
+import { ReviewForm } from "@/components/reviews/ReviewForm";
 import { Container, PageHero } from "@/components/ui/shared";
 import { OrderDetailSkeleton } from "@/components/ui/Skeleton";
 
@@ -68,8 +72,59 @@ function resolveRmaInfo(order: {
   return null;
 }
 
+function OrderLineReview({
+  productId,
+  orderId,
+  buyerId,
+}: {
+  productId: string;
+  orderId: string;
+  buyerId: string;
+}) {
+  const { t } = useLanguage();
+  const [open, setOpen] = useState(false);
+  const { data } = useProductReviews(productId, 1, 50);
+  const mine = (data?.items ?? []).find((r) => r.buyer?.id === buyerId) ?? null;
+
+  return (
+    <div className="mt-2">
+      {!open ? (
+        <button
+          type="button"
+          className="text-xs text-mq-gold hover:underline"
+          onClick={() => setOpen(true)}
+        >
+          {mine ? t("orders.review.edit") : t("orders.review.write")}
+        </button>
+      ) : (
+        <div className="mt-2 rounded-[var(--mq-radius-sm)] border border-mq-border p-3 bg-mq-surface-subtle relative">
+          <button
+            type="button"
+            className="absolute top-2 right-2 mq-admin-icon-btn"
+            aria-label={t("admin.common.close")}
+            onClick={() => setOpen(false)}
+          >
+            <X size={14} />
+          </button>
+          <p className="text-xs font-medium mb-2 pr-6">
+            {mine ? t("orders.review.editTitle") : t("orders.review.writeTitle")}
+          </p>
+          <ReviewForm
+            productId={productId}
+            orderId={orderId}
+            existing={mine}
+            onDone={() => setOpen(false)}
+            onCancel={() => setOpen(false)}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function OrderDetailInner() {
   const { id } = useParams<{ id: string }>();
+  const { t } = useLanguage();
   const { user } = useAuth();
   const { data: order, isLoading, isError, error } = useOrder(id);
   const { data: shop } = useSellerShop();
@@ -93,6 +148,7 @@ function OrderDetailInner() {
     Boolean(order && canCancelOrder(order.status) && (isBuyer || isShopOrder));
   const showRma = Boolean(order && isBuyer && canRequestRma(order));
   const rmaInfo = order ? resolveRmaInfo(order) : null;
+  const canReview = Boolean(order && isBuyer && order.status === "DELIVERED" && user?.id);
 
   const onCancel = async (e: FormEvent) => {
     e.preventDefault();
@@ -162,7 +218,7 @@ function OrderDetailInner() {
             ) : null}
             <ul className="divide-y divide-mq-border">
               {(order.items || []).map((item) => (
-                <li key={item.id} className="py-3 flex items-center gap-3 text-sm">
+                <li key={item.id} className="py-3 flex items-start gap-3 text-sm">
                   <Link
                     href={`/product/${item.productId}`}
                     className="relative w-14 h-14 shrink-0 overflow-hidden rounded-[var(--mq-radius-sm)] mq-product-image-bg mq-product-media"
@@ -185,6 +241,13 @@ function OrderDetailInner() {
                     <p className="text-xs text-mq-text-muted mt-0.5">
                       {item.sku} × {item.quantity}
                     </p>
+                    {canReview && item.productId && user?.id ? (
+                      <OrderLineReview
+                        productId={item.productId}
+                        orderId={order.id}
+                        buyerId={user.id}
+                      />
+                    ) : null}
                   </div>
                   <span className="shrink-0 font-medium">{formatMoney(item.lineTotal)}</span>
                 </li>

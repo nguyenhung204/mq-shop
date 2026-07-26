@@ -252,7 +252,34 @@
     "buyNow": "立即購買",
     "soldBy": "賣家",
     "visitShop": "查看商店與更多商品",
-    "sellerShop": "賣家商店"
+    "sellerShop": "賣家商店",
+    "reviewsPage": {
+      "rating": "評分",
+      "basedOn": "依據 {count} 則評價",
+      "empty": "尚無評價。",
+      "anonymous": "買家",
+      "sellerReply": "賣家回覆",
+      "additionalInfo": "賣家提供的屬性與保養資訊將顯示於此。",
+      "comment": "評論",
+      "commentPh": "分享您的使用心得…",
+      "photos": "照片",
+      "photosHint": "最多 5 張 · 每張 ≤ 5MB",
+      "submit": "送出評價",
+      "save": "儲存變更",
+      "delete": "刪除評價",
+      "deleteConfirm": "刪除此評價？",
+      "ratingRequired": "請選擇 1 到 5 分。",
+      "invalidImage": "圖片格式無效。請使用 JPEG、PNG、WebP 或 GIF。",
+      "imageTooLarge": "每張圖片必須 ≤ 5MB。"
+    }
+  },
+  "orders": {
+    "review": {
+      "write": "撰寫評價",
+      "edit": "編輯評價",
+      "writeTitle": "撰寫評價",
+      "editTitle": "編輯評價"
+    }
   },
   "wishlist": {
     "emptyTitle": "願望清單是空的",

@@ -252,7 +252,34 @@
     "buyNow": "Mua ngay",
     "soldBy": "Bán bởi",
     "visitShop": "Xem gian hàng & thêm sản phẩm",
-    "sellerShop": "Gian hàng người bán"
+    "sellerShop": "Gian hàng người bán",
+    "reviewsPage": {
+      "rating": "Đánh giá",
+      "basedOn": "Dựa trên {count} đánh giá",
+      "empty": "Chưa có đánh giá.",
+      "anonymous": "Người mua",
+      "sellerReply": "Phản hồi của seller",
+      "additionalInfo": "Thuộc tính và hướng dẫn sử dụng sẽ hiện khi seller cung cấp.",
+      "comment": "Nhận xét",
+      "commentPh": "Chia sẻ trải nghiệm của bạn…",
+      "photos": "Ảnh",
+      "photosHint": "tối đa 5 · mỗi ảnh ≤ 5MB",
+      "submit": "Gửi đánh giá",
+      "save": "Lưu thay đổi",
+      "delete": "Xoá đánh giá",
+      "deleteConfirm": "Xoá đánh giá này?",
+      "ratingRequired": "Chọn điểm từ 1 đến 5.",
+      "invalidImage": "Loại ảnh không hợp lệ. Dùng JPEG, PNG, WebP hoặc GIF.",
+      "imageTooLarge": "Mỗi ảnh phải ≤ 5MB."
+    }
+  },
+  "orders": {
+    "review": {
+      "write": "Viết đánh giá",
+      "edit": "Sửa đánh giá",
+      "writeTitle": "Viết đánh giá",
+      "editTitle": "Sửa đánh giá"
+    }
   },
   "wishlist": {
     "emptyTitle": "Danh sách yêu thích trống",

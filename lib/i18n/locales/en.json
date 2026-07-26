@@ -252,7 +252,34 @@
     "buyNow": "Buy now",
     "soldBy": "Sold by",
     "visitShop": "View shop & more products",
-    "sellerShop": "Seller shop"
+    "sellerShop": "Seller shop",
+    "reviewsPage": {
+      "rating": "Rating",
+      "basedOn": "Based on {count} reviews",
+      "empty": "No reviews yet.",
+      "anonymous": "Buyer",
+      "sellerReply": "Seller reply",
+      "additionalInfo": "Product attributes and care details will appear here when provided by the seller.",
+      "comment": "Comment",
+      "commentPh": "Share your experience…",
+      "photos": "Photos",
+      "photosHint": "max 5 · 5MB each",
+      "submit": "Submit review",
+      "save": "Save changes",
+      "delete": "Delete review",
+      "deleteConfirm": "Delete this review?",
+      "ratingRequired": "Please choose a rating from 1 to 5.",
+      "invalidImage": "Invalid image type. Use JPEG, PNG, WebP, or GIF.",
+      "imageTooLarge": "Each image must be ≤ 5MB."
+    }
+  },
+  "orders": {
+    "review": {
+      "write": "Write a review",
+      "edit": "Edit your review",
+      "writeTitle": "Write a review",
+      "editTitle": "Edit your review"
+    }
   },
   "wishlist": {
     "emptyTitle": "Your wishlist is empty",
