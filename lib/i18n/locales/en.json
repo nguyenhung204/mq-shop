@@ -382,6 +382,7 @@
       "categories": "Categories",
       "users": "Users",
       "staff": "Staff",
+      "platformStaff": "Platform staff",
       "audit": "Audit",
       "orders": "Orders",
       "rma": "RMA",
@@ -585,8 +586,18 @@
       "description": "Lock, unlock, and soft-delete accounts."
     },
     "staff": {
-      "title": "Staff",
-      "description": "Manage staff accounts and roles."
+      "title": "Shop staff",
+      "description": "Manage shop staff accounts with dual-control approval."
+    },
+    "platformStaff": {
+      "title": "Platform staff",
+      "description": "Invite platform ADMIN accounts. Super Admin must approve Admin-initiated changes.",
+      "invite": "Invite ADMIN",
+      "empty": "No platform staff for this filter.",
+      "roleHint": "Assignable role: ADMIN only (SUPER_ADMIN cannot be assigned here).",
+      "createHint": "Admin create → PENDING until Super Admin approves. Super Admin create → ACTIVE with a temporary password.",
+      "pendingNotice": "Change saved as PENDING. Super Admin must approve before the account can sign in with the new roles.",
+      "reaffirmHint": "Re-submit ADMIN role for dual-control (Admin → PENDING; Super Admin applies immediately)."
     },
     "audit": {
       "title": "Audit logs",
@@ -729,7 +740,13 @@
       "shopRequired": "Shop is required for this role.",
       "passwordCopied": "Password copied",
       "role": "Role",
-      "selectShop": "Select shop"
+      "selectShop": "Select shop",
+      "pendingRoles": "Pending roles",
+      "pendingNotice": "Change saved as PENDING. Super Admin must approve before login with the new roles.",
+      "createHint": "Only when the email does not exist yet. Prefer Assign on a BUYER candidate. Admin create → PENDING until Super Admin approves.",
+      "tempPasswordTitle": "Temporary password",
+      "tempPasswordHint": "Copy now — it will not be shown again. Account: {email}",
+      "copy": "Copy"
     },
     "ordersPage": {
       "createForBuyer": "Create for buyer",
@@ -1372,6 +1389,12 @@
     "userDeleted": "User deleted",
     "staffCreated": "Staff created",
     "staffRolesUpdated": "Staff roles updated",
+    "staffApproved": "Staff approved",
+    "staffRejected": "Staff rejected",
+    "platformStaffCreated": "Platform staff created",
+    "platformStaffRolesUpdated": "Platform staff roles updated",
+    "platformStaffApproved": "Platform staff approved",
+    "platformStaffRejected": "Platform staff rejected",
     "categoryCreated": "Category created",
     "categoryUpdated": "Category updated",
     "checkoutFailed": "Checkout failed",

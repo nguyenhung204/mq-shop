@@ -382,6 +382,7 @@
       "categories": "Danh mục",
       "users": "Người dùng",
       "staff": "Nhân sự",
+      "platformStaff": "Nhân sự nền tảng",
       "audit": "Nhật ký",
       "orders": "Đơn hàng",
       "rma": "RMA",
@@ -585,8 +586,18 @@
       "description": "Khoá, mở khoá và xoá mềm tài khoản."
     },
     "staff": {
-      "title": "Nhân sự",
-      "description": "Quản lý tài khoản và vai trò nhân sự."
+      "title": "Nhân sự shop",
+      "description": "Quản lý nhân sự shop với phê duyệt dual-control."
+    },
+    "platformStaff": {
+      "title": "Nhân sự nền tảng",
+      "description": "Mời tài khoản ADMIN nền tảng. Super Admin phải phê duyệt thay đổi do Admin khởi tạo.",
+      "invite": "Mời ADMIN",
+      "empty": "Không có nhân sự nền tảng trong bộ lọc này.",
+      "roleHint": "Chỉ gán được ADMIN (không gán SUPER_ADMIN tại đây).",
+      "createHint": "Admin tạo → PENDING chờ Super Admin. Super Admin tạo → ACTIVE kèm mật khẩu tạm.",
+      "pendingNotice": "Thay đổi đã lưu PENDING. Super Admin phải duyệt trước khi đăng nhập với vai trò mới.",
+      "reaffirmHint": "Gửi lại vai trò ADMIN để dual-control (Admin → PENDING; Super Admin áp dụng ngay)."
     },
     "audit": {
       "title": "Nhật ký",
@@ -729,7 +740,13 @@
       "shopRequired": "Vai trò này bắt buộc chọn shop.",
       "passwordCopied": "Đã copy mật khẩu",
       "role": "Vai trò",
-      "selectShop": "Chọn shop"
+      "selectShop": "Chọn shop",
+      "pendingRoles": "Vai trò chờ duyệt",
+      "pendingNotice": "Thay đổi đã lưu PENDING. Super Admin phải duyệt trước khi đăng nhập với vai trò mới.",
+      "createHint": "Chỉ khi email chưa tồn tại. Nên Assign trên BUYER candidate. Admin tạo → PENDING chờ Super Admin.",
+      "tempPasswordTitle": "Mật khẩu tạm",
+      "tempPasswordHint": "Copy ngay — sẽ không hiện lại. Tài khoản: {email}",
+      "copy": "Copy"
     },
     "ordersPage": {
       "createForBuyer": "Tạo hộ người mua",
@@ -1372,6 +1389,12 @@
     "userDeleted": "Đã xoá user",
     "staffCreated": "Đã tạo nhân sự",
     "staffRolesUpdated": "Đã cập nhật vai trò",
+    "staffApproved": "Đã duyệt nhân sự",
+    "staffRejected": "Đã từ chối nhân sự",
+    "platformStaffCreated": "Đã tạo nhân sự nền tảng",
+    "platformStaffRolesUpdated": "Đã cập nhật vai trò nền tảng",
+    "platformStaffApproved": "Đã duyệt nhân sự nền tảng",
+    "platformStaffRejected": "Đã từ chối nhân sự nền tảng",
     "categoryCreated": "Đã tạo danh mục",
     "categoryUpdated": "Đã cập nhật danh mục",
     "checkoutFailed": "Thanh toán thất bại",

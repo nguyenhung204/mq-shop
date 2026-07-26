@@ -2,10 +2,11 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { adminApi, adminStaffApi, financeApi } from "@/lib/api";
+import { adminApi, adminPlatformStaffApi, adminStaffApi, financeApi } from "@/lib/api";
 import { ApiError } from "@/lib/api/client";
 import type { Banner } from "@/lib/api/promotions";
 import type { ApiProduct, ApiShop, AuthUser, StaffPoolRole, StaffRole } from "@/lib/api/types";
+import type { CreatePlatformStaffRequest } from "@/lib/api/staff";
 import { asArray, parsePage } from "@/lib/api/utils";
 import { tt } from "@/lib/i18n/tt";
 import { getErrorMessage } from "@/lib/queries/utils";
@@ -36,6 +37,8 @@ export const adminKeys = {
   banners: () => [...adminKeys.all, "banners"] as const,
   bannersLang: (lang: string, page: number) =>
     [...adminKeys.all, "banners", lang, page] as const,
+  staff: () => [...adminKeys.all, "staff"] as const,
+  platformStaff: () => [...adminKeys.all, "platform-staff"] as const,
 };
 
 export type FinanceBatch = { id: string; status?: string; netAmountUsd?: string | number };
@@ -395,7 +398,7 @@ export function useCreateStaff() {
       shopId: string;
     }) => adminStaffApi.create(body),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["admin", "staff"] });
+      void queryClient.invalidateQueries({ queryKey: adminKeys.staff() });
       toast.success(tt("toast.staffCreated"));
     },
     onError: (e) => toast.error(getErrorMessage(e)),
@@ -405,6 +408,7 @@ export function useCreateStaff() {
 export function useAdminStaffList(params: {
   shopId?: string;
   role?: StaffPoolRole | "";
+  status?: string;
   page?: number;
   pageSize?: number;
 }) {
@@ -412,10 +416,10 @@ export function useAdminStaffList(params: {
   const pageSize = params.pageSize ?? 20;
   return useQuery({
     queryKey: [
-      "admin",
-      "staff",
+      ...adminKeys.staff(),
       params.shopId ?? "",
       params.role ?? "",
+      params.status ?? "",
       page,
       pageSize,
     ],
@@ -424,6 +428,7 @@ export function useAdminStaffList(params: {
         await adminStaffApi.list({
           shopId: params.shopId || undefined,
           role: params.role || undefined,
+          status: params.status || undefined,
           page,
           pageSize,
         }),
@@ -445,8 +450,33 @@ export function useUpdateStaffRoles() {
       };
     }) => adminStaffApi.updateRoles(userId, body),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["admin", "staff"] });
+      void queryClient.invalidateQueries({ queryKey: adminKeys.staff() });
       toast.success(tt("toast.staffRolesUpdated"));
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  });
+}
+
+export function useStaffDualControlAction() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      kind,
+    }: {
+      userId: string;
+      kind: "approve" | "reject";
+    }) => {
+      if (kind === "approve") return adminStaffApi.approve(userId);
+      return adminStaffApi.reject(userId);
+    },
+    onSuccess: (_d, vars) => {
+      void queryClient.invalidateQueries({ queryKey: adminKeys.staff() });
+      toast.success(
+        vars.kind === "approve"
+          ? tt("toast.staffApproved")
+          : tt("toast.staffRejected"),
+      );
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
@@ -467,13 +497,89 @@ export function useStaffAccountAction() {
       return adminStaffApi.remove(userId);
     },
     onSuccess: (_d, vars) => {
-      void queryClient.invalidateQueries({ queryKey: ["admin", "staff"] });
+      void queryClient.invalidateQueries({ queryKey: adminKeys.staff() });
       toast.success(
         vars.kind === "lock"
           ? tt("toast.staffLocked")
           : vars.kind === "unlock"
             ? tt("toast.staffUnlocked")
             : tt("toast.staffDeleted"),
+      );
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  });
+}
+
+export function useAdminPlatformStaffList(params: {
+  status?: string;
+  page?: number;
+  pageSize?: number;
+}) {
+  const page = params.page ?? 1;
+  const pageSize = params.pageSize ?? 20;
+  return useQuery({
+    queryKey: [...adminKeys.platformStaff(), params.status ?? "", page, pageSize],
+    queryFn: async () =>
+      parsePage<AuthUser>(
+        await adminPlatformStaffApi.list({
+          status: params.status || undefined,
+          page,
+          pageSize,
+        }),
+      ),
+  });
+}
+
+export function useCreatePlatformStaff() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreatePlatformStaffRequest) =>
+      adminPlatformStaffApi.create(body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: adminKeys.platformStaff() });
+      toast.success(tt("toast.platformStaffCreated"));
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  });
+}
+
+export function useUpdatePlatformStaffRoles() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      userId,
+      roles,
+    }: {
+      userId: string;
+      roles: Array<"ADMIN">;
+    }) => adminPlatformStaffApi.updateRoles(userId, { roles }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: adminKeys.platformStaff() });
+      toast.success(tt("toast.platformStaffRolesUpdated"));
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  });
+}
+
+export function usePlatformStaffDualControlAction() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      kind,
+    }: {
+      userId: string;
+      kind: "approve" | "reject";
+    }) => {
+      if (kind === "approve") return adminPlatformStaffApi.approve(userId);
+      return adminPlatformStaffApi.reject(userId);
+    },
+    onSuccess: (_d, vars) => {
+      void queryClient.invalidateQueries({ queryKey: adminKeys.platformStaff() });
+      toast.success(
+        vars.kind === "approve"
+          ? tt("toast.platformStaffApproved")
+          : tt("toast.platformStaffRejected"),
       );
     },
     onError: (e) => toast.error(getErrorMessage(e)),

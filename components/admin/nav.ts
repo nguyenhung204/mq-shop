@@ -20,6 +20,7 @@ import {
   Settings,
   ShoppingBag,
   Store,
+  Shield,
   UserCog,
   Users,
   Wallet,
@@ -95,6 +96,14 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.staff",
     icon: UserCog,
     permissions: ["MANAGE_STAFF", "ASSIGN_ROLES"],
+    group: "ops",
+  },
+  {
+    href: "/admin/platform-staff",
+    labelKey: "admin.nav.platformStaff",
+    icon: Shield,
+    permissions: ["MANAGE_STAFF", "ASSIGN_ROLES"],
+    roles: ["ADMIN", "SUPER_ADMIN"],
     group: "ops",
   },
   {

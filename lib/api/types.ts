@@ -37,8 +37,10 @@ export type AuthUser = {
   fullName?: string | null;
   avatarUrl?: string | null;
   dateOfBirth?: string | null;
-  status?: "ACTIVE" | "LOCKED" | "DELETED" | string;
+  status?: "ACTIVE" | "LOCKED" | "DELETED" | "PENDING" | string;
   roles: Role[];
+  /** Dual-control (008): roles awaiting Super Admin approval. */
+  pendingRoles?: Role[] | null;
   permissions?: string[];
   /** Present for shop staff (WAREHOUSE / CS / ACCOUNTANT). */
   shopId?: string | null;

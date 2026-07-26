@@ -99,6 +99,8 @@ export function statusMessage(status?: string): string {
     case "PENDING_VERIFY":
       return "Please verify your email before signing in.";
     case "PENDING_APPROVAL":
+    case "ACCOUNT_PENDING":
+    case "PENDING":
       return "Your staff account is waiting for Super Admin approval.";
     case "LOCKED":
       return "This account is locked.";

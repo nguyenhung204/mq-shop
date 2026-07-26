@@ -284,12 +284,20 @@ export type {
   CreateSlipRequest,
 } from "./inventory";
 
-export { adminStaffApi } from "./staff";
+export {
+  adminStaffApi,
+  adminPlatformStaffApi,
+  hasPendingStaffChange,
+  formatPendingRoles,
+} from "./staff";
 export type {
   CreateStaffRequest,
   CreateStaffResponse,
   UpdateStaffRolesRequest,
   ListStaffParams,
+  CreatePlatformStaffRequest,
+  UpdatePlatformStaffRolesRequest,
+  ListPlatformStaffParams,
 } from "./staff";
 
 export {

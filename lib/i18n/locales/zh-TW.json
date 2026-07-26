@@ -382,6 +382,7 @@
       "categories": "分類",
       "users": "使用者",
       "staff": "員工",
+      "platformStaff": "平台員工",
       "audit": "稽核",
       "orders": "訂單",
       "rma": "RMA",
@@ -585,8 +586,18 @@
       "description": "鎖定、解鎖與軟刪除帳號。"
     },
     "staff": {
-      "title": "員工",
-      "description": "管理員工帳號與角色。"
+      "title": "商店員工",
+      "description": "以雙重審核管理商店員工帳號。"
+    },
+    "platformStaff": {
+      "title": "平台員工",
+      "description": "邀請平台 ADMIN。Admin 發起的變更需 Super Admin 核准。",
+      "invite": "邀請 ADMIN",
+      "empty": "此篩選條件無平台員工。",
+      "roleHint": "僅可指派 ADMIN（不可在此指派 SUPER_ADMIN）。",
+      "createHint": "Admin 建立 → PENDING 待 Super Admin。Super Admin 建立 → ACTIVE 並產生臨時密碼。",
+      "pendingNotice": "變更已存為 PENDING。需 Super Admin 核准後才能以新角色登入。",
+      "reaffirmHint": "重新送出 ADMIN 角色以雙重審核（Admin → PENDING；Super Admin 立即套用）。"
     },
     "audit": {
       "title": "稽核日誌",
@@ -729,7 +740,13 @@
       "shopRequired": "此角色必須選擇商店。",
       "passwordCopied": "已複製密碼",
       "role": "角色",
-      "selectShop": "選擇商店"
+      "selectShop": "選擇商店",
+      "pendingRoles": "待核准角色",
+      "pendingNotice": "變更已存為 PENDING。需 Super Admin 核准後才能以新角色登入。",
+      "createHint": "僅限尚未存在的 Email。建議對 BUYER 候選人使用指派。Admin 建立 → PENDING 待 Super Admin。",
+      "tempPasswordTitle": "臨時密碼",
+      "tempPasswordHint": "請立即複製 — 不會再顯示。帳號：{email}",
+      "copy": "複製"
     },
     "ordersPage": {
       "createForBuyer": "代客下單",
@@ -1372,6 +1389,12 @@
     "userDeleted": "已刪除使用者",
     "staffCreated": "已建立員工",
     "staffRolesUpdated": "已更新員工角色",
+    "staffApproved": "已核准員工",
+    "staffRejected": "已拒絕員工",
+    "platformStaffCreated": "已建立平台員工",
+    "platformStaffRolesUpdated": "已更新平台員工角色",
+    "platformStaffApproved": "已核准平台員工",
+    "platformStaffRejected": "已拒絕平台員工",
     "categoryCreated": "已建立分類",
     "categoryUpdated": "已更新分類",
     "checkoutFailed": "結帳失敗",
