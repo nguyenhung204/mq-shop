@@ -438,7 +438,8 @@
       "walletAdjust": "Wallet adjust",
       "mlm": "MLM ranks",
       "backups": "Backups",
-      "dsar": "DSAR"
+      "dsar": "DSAR",
+      "reviews": "Reviews"
     },
     "common": {
       "create": "Create",
@@ -981,6 +982,19 @@
       "userRequired": "Select a user.",
       "noConfigPerm": "Your role cannot set MLM rank (CONFIG_MLM is NONE for Admin). You can still look up network trees below.",
       "rankName": "Name"
+    },
+    "reviews": {
+      "title": "Product reviews",
+      "description": "Moderate buyer reviews — hide or unhide listings.",
+      "productId": "Product ID",
+      "shopId": "Shop ID",
+      "empty": "No reviews match these filters.",
+      "product": "Product",
+      "buyer": "Buyer",
+      "hide": "Hide",
+      "unhide": "Unhide",
+      "hideTitle": "Hide review",
+      "hideDesc": "Hidden reviews are removed from the public product page. Reason is optional."
     }
   },
   "seller": {
@@ -1005,7 +1019,8 @@
       "landingCost": "Landing cost",
       "promotions": "Promotions",
       "rma": "RMA",
-      "materials": "Materials"
+      "materials": "Materials",
+      "reviews": "Reviews"
     },
     "titles": {
       "overview": "Seller Center",
@@ -1041,7 +1056,9 @@
       "rma": "RMA",
       "rmaDesc": "Confirm returned stock.",
       "materials": "Marketing materials",
-      "materialsDesc": "Download seller assets."
+      "materialsDesc": "Download seller assets.",
+      "reviews": "Reviews",
+      "reviewsDesc": "Reply to buyer reviews on your products."
     },
     "promotions": {
       "newBtn": "New promotion",
@@ -1213,6 +1230,19 @@
       "empty": "No REFUND_APPROVED orders waiting for restock.",
       "openInventory": "Open inventory",
       "restockHint": "Restock SKUs via inventory slips after confirming returns."
+    },
+    "reviews": {
+      "empty": "No products yet. Publish a product to see reviews.",
+      "emptyProduct": "No visible reviews for this product.",
+      "filterProduct": "Filter by product",
+      "allProducts": "All products (first 8)",
+      "showingFirst": "Showing the first 8 products — pick one above to focus.",
+      "reply": "Reply",
+      "editReply": "Edit reply",
+      "deleteReply": "Delete reply",
+      "deleteReplyConfirm": "Delete your reply to this review?",
+      "replyingTo": "Reply to {name}",
+      "saveReply": "Save reply"
     }
   },
   "landingCost": {

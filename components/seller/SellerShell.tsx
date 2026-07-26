@@ -13,6 +13,7 @@ import {
   FolderOpen,
   Gift,
   LayoutDashboard,
+  MessageSquare,
   Network,
   Package,
   Receipt,
@@ -91,6 +92,7 @@ const links: NavEntry[] = [
   },
   { href: "/seller/shop", labelKey: "seller.nav.shop", icon: Store, sellerOnly: true },
   { href: "/seller/products", labelKey: "seller.nav.products", icon: Package, sellerOnly: true },
+  { href: "/seller/reviews", labelKey: "seller.nav.reviews", icon: MessageSquare, sellerOnly: true },
   { href: "/seller/inventory", labelKey: "seller.nav.inventory", icon: Boxes, sellerOnly: false },
   { href: "/seller/orders", labelKey: "seller.nav.orders", icon: ShoppingBag, sellerOnly: true },
   {
@@ -132,6 +134,9 @@ function titleKeysFromPath(pathname: string): { titleKey: string; descKey?: stri
   }
   if (pathname.startsWith("/seller/products")) {
     return { titleKey: "seller.titles.products", descKey: "seller.titles.productsDesc" };
+  }
+  if (pathname.startsWith("/seller/reviews")) {
+    return { titleKey: "seller.titles.reviews", descKey: "seller.titles.reviewsDesc" };
   }
   if (pathname.startsWith("/seller/inventory")) {
     return { titleKey: "seller.titles.inventory", descKey: "seller.titles.inventoryDesc" };

@@ -21,6 +21,7 @@ import {
   Settings,
   ShieldAlert,
   ShoppingBag,
+  Star,
   Store,
   Shield,
   UserCog,
@@ -71,6 +72,13 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.products",
     icon: Package,
     permissions: ["APPROVE_PRODUCT", "REJECT_PRODUCT", "HIDE_PRODUCT"],
+    group: "ops",
+  },
+  {
+    href: "/admin/reviews",
+    labelKey: "admin.nav.reviews",
+    icon: Star,
+    roles: ["ADMIN", "SUPER_ADMIN"],
     group: "ops",
   },
   {

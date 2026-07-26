@@ -438,7 +438,8 @@
       "walletAdjust": "Điều chỉnh ví",
       "mlm": "Rank MLM",
       "backups": "Sao lưu",
-      "dsar": "DSAR"
+      "dsar": "DSAR",
+      "reviews": "Đánh giá"
     },
     "common": {
       "create": "Tạo mới",
@@ -981,6 +982,19 @@
       "userRequired": "Chọn một user.",
       "noConfigPerm": "Role của bạn không được gán rank MLM (CONFIG_MLM = NONE với Admin). Vẫn có thể xem network bên dưới.",
       "rankName": "Tên"
+    },
+    "reviews": {
+      "title": "Đánh giá sản phẩm",
+      "description": "Kiểm duyệt đánh giá — ẩn hoặc hiện lại.",
+      "productId": "ID sản phẩm",
+      "shopId": "ID cửa hàng",
+      "empty": "Không có đánh giá phù hợp bộ lọc.",
+      "product": "Sản phẩm",
+      "buyer": "Người mua",
+      "hide": "Ẩn",
+      "unhide": "Hiện lại",
+      "hideTitle": "Ẩn đánh giá",
+      "hideDesc": "Đánh giá ẩn sẽ không hiện trên trang sản phẩm. Lý do là tùy chọn."
     }
   },
   "seller": {
@@ -1005,7 +1019,8 @@
       "landingCost": "Chi phí landing",
       "promotions": "Khuyến mãi",
       "rma": "RMA",
-      "materials": "Tài liệu"
+      "materials": "Tài liệu",
+      "reviews": "Đánh giá"
     },
     "titles": {
       "overview": "Kênh Seller",
@@ -1041,7 +1056,9 @@
       "rma": "RMA",
       "rmaDesc": "Xác nhận hàng hoàn về kho.",
       "materials": "Tài liệu marketing",
-      "materialsDesc": "Tải bộ tài liệu seller."
+      "materialsDesc": "Tải bộ tài liệu seller.",
+      "reviews": "Đánh giá",
+      "reviewsDesc": "Trả lời đánh giá của người mua trên sản phẩm của bạn."
     },
     "promotions": {
       "newBtn": "Tạo khuyến mãi",
@@ -1213,6 +1230,19 @@
       "empty": "Không có đơn REFUND_APPROVED chờ nhập lại.",
       "openInventory": "Mở kho",
       "restockHint": "Nhập lại SKU qua phiếu kho sau khi xác nhận hàng hoàn."
+    },
+    "reviews": {
+      "empty": "Chưa có sản phẩm. Đăng sản phẩm để xem đánh giá.",
+      "emptyProduct": "Chưa có đánh giá hiển thị cho sản phẩm này.",
+      "filterProduct": "Lọc theo sản phẩm",
+      "allProducts": "Tất cả sản phẩm (8 đầu)",
+      "showingFirst": "Đang hiện 8 sản phẩm đầu — chọn một ở trên để tập trung.",
+      "reply": "Trả lời",
+      "editReply": "Sửa trả lời",
+      "deleteReply": "Xóa trả lời",
+      "deleteReplyConfirm": "Xóa trả lời của bạn cho đánh giá này?",
+      "replyingTo": "Trả lời {name}",
+      "saveReply": "Lưu trả lời"
     }
   },
   "landingCost": {

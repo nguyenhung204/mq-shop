@@ -438,7 +438,8 @@
       "walletAdjust": "錢包調整",
       "mlm": "MLM 等級",
       "backups": "備份",
-      "dsar": "DSAR"
+      "dsar": "DSAR",
+      "reviews": "評價"
     },
     "common": {
       "create": "建立",
@@ -981,6 +982,19 @@
       "userRequired": "請選擇使用者。",
       "noConfigPerm": "您的角色無法設定 MLM 等級（Admin 的 CONFIG_MLM 為 NONE）。仍可在下方查詢網絡。",
       "rankName": "名稱"
+    },
+    "reviews": {
+      "title": "商品評價",
+      "description": "審核買家評價 — 隱藏或重新顯示。",
+      "productId": "商品 ID",
+      "shopId": "商店 ID",
+      "empty": "沒有符合篩選條件的評價。",
+      "product": "商品",
+      "buyer": "買家",
+      "hide": "隱藏",
+      "unhide": "取消隱藏",
+      "hideTitle": "隱藏評價",
+      "hideDesc": "隱藏後的評價不會出現在商品頁。原因為選填。"
     }
   },
   "seller": {
@@ -1005,7 +1019,8 @@
       "landingCost": "落地成本",
       "promotions": "促銷",
       "rma": "RMA",
-      "materials": "素材"
+      "materials": "素材",
+      "reviews": "評價"
     },
     "titles": {
       "overview": "賣家中心",
@@ -1041,7 +1056,9 @@
       "rma": "RMA",
       "rmaDesc": "確認退貨入庫。",
       "materials": "行銷素材",
-      "materialsDesc": "下載賣家素材包。"
+      "materialsDesc": "下載賣家素材包。",
+      "reviews": "評價",
+      "reviewsDesc": "回覆買家對您商品的評價。"
     },
     "promotions": {
       "newBtn": "新增促銷",
@@ -1213,6 +1230,19 @@
       "empty": "沒有等待入庫的 REFUND_APPROVED 訂單。",
       "openInventory": "開啟庫存",
       "restockHint": "確認退貨後請以庫存單補回 SKU。"
+    },
+    "reviews": {
+      "empty": "尚無商品。上架商品後即可查看評價。",
+      "emptyProduct": "此商品尚無可見評價。",
+      "filterProduct": "依商品篩選",
+      "allProducts": "全部商品（前 8 筆）",
+      "showingFirst": "目前顯示前 8 個商品 — 請上方選擇以聚焦。",
+      "reply": "回覆",
+      "editReply": "編輯回覆",
+      "deleteReply": "刪除回覆",
+      "deleteReplyConfirm": "要刪除此評價的回覆嗎？",
+      "replyingTo": "回覆 {name}",
+      "saveReply": "儲存回覆"
     }
   },
   "landingCost": {
