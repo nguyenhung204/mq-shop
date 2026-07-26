@@ -33,6 +33,24 @@ export function parsePage<T>(
     totalPages?: number;
   };
 
+  // Nested page payload: { data: { items, total, page, pageSize } } (e.g. audit-logs)
+  if (
+    o.data &&
+    typeof o.data === "object" &&
+    !Array.isArray(o.data) &&
+    ("items" in (o.data as object) ||
+      "total" in (o.data as object) ||
+      "page" in (o.data as object))
+  ) {
+    const nested = parsePage<T>(o.data);
+    if (nested.meta || nested.items.length || o.meta) {
+      return {
+        items: nested.items,
+        meta: nested.meta ?? o.meta,
+      };
+    }
+  }
+
   const items = asArray<T>(o.data ?? o.items ?? o);
   if (o.meta && typeof o.meta.totalPages === "number") {
     return { items, meta: o.meta };
@@ -44,7 +62,7 @@ export function parsePage<T>(
     const totalPages =
       typeof o.totalPages === "number"
         ? o.totalPages
-        : Math.max(1, Math.ceil(total / pageSize));
+        : Math.max(1, Math.ceil(total / pageSize) || 1);
     return {
       items,
       meta: {

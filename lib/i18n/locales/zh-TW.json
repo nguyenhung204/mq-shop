@@ -642,7 +642,7 @@
     },
     "audit": {
       "title": "稽核日誌",
-      "description": "追蹤後台操作紀錄。"
+      "description": "僅系統變更操作（不含登入／OTP）。以 title／summary 瀏覽；展開查看 action code 與 before／after。"
     },
     "orders": {
       "title": "訂單",
@@ -840,7 +840,7 @@
       "empty": "尚無分類。"
     },
     "auditPage": {
-      "filterAction": "依 action code 篩選…",
+      "filterAction": "例如 admin.shop.approve",
       "anyOutcome": "任何結果",
       "succeeded": "成功",
       "failed": "失敗",
@@ -855,10 +855,18 @@
       "ip": "IP",
       "ipPh": "用戶端 IP…",
       "resourceType": "資源類型",
-      "resourceTypePh": "資源類型",
+      "resourceTypePh": "例如 shop、product",
+      "resource": "資源",
+      "actionCode": "Action code",
       "before": "變更前",
       "after": "變更後",
-      "empty": "無稽核紀錄。"
+      "meta": "Meta",
+      "hasDiff": "有 diff",
+      "filters": "篩選",
+      "clearFilters": "清除篩選",
+      "allCategories": "全部",
+      "total": "符合總數",
+      "empty": "此篩選條件無變更類稽核事件。"
     },
     "settlementsPage": {
       "empty": "此篩選條件無結算。",

@@ -642,7 +642,7 @@
     },
     "audit": {
       "title": "Audit logs",
-      "description": "Trace admin actions across the platform."
+      "description": "Mutating admin actions only (no login/OTP noise). Prefer title and summary for scanning; expand a row for action codes and before/after diffs."
     },
     "orders": {
       "title": "Orders",
@@ -840,7 +840,7 @@
       "empty": "No categories yet."
     },
     "auditPage": {
-      "filterAction": "Filter by action code…",
+      "filterAction": "e.g. admin.shop.approve",
       "anyOutcome": "Any outcome",
       "succeeded": "Succeeded",
       "failed": "Failed",
@@ -855,10 +855,18 @@
       "ip": "IP",
       "ipPh": "Client IP…",
       "resourceType": "Resource type",
-      "resourceTypePh": "Resource type",
+      "resourceTypePh": "e.g. shop, product",
+      "resource": "Resource",
+      "actionCode": "Action code",
       "before": "Before",
       "after": "After",
-      "empty": "No audit logs."
+      "meta": "Meta",
+      "hasDiff": "Has diff",
+      "filters": "Filters",
+      "clearFilters": "Clear filters",
+      "allCategories": "All",
+      "total": "Total matches",
+      "empty": "No mutating audit events for this filter."
     },
     "settlementsPage": {
       "empty": "No settlements for this filter.",

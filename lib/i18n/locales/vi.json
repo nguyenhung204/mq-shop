@@ -642,7 +642,7 @@
     },
     "audit": {
       "title": "Nhật ký",
-      "description": "Theo dõi thao tác admin trên hệ thống."
+      "description": "Chỉ thao tác thay đổi hệ thống (không gồm login/OTP). Quét theo title/summary; mở rộng để xem mã action và before/after."
     },
     "orders": {
       "title": "Đơn hàng",
@@ -840,7 +840,7 @@
       "empty": "Chưa có danh mục."
     },
     "auditPage": {
-      "filterAction": "Lọc theo mã action…",
+      "filterAction": "vd. admin.shop.approve",
       "anyOutcome": "Mọi kết quả",
       "succeeded": "Thành công",
       "failed": "Thất bại",
@@ -855,10 +855,18 @@
       "ip": "IP",
       "ipPh": "IP client…",
       "resourceType": "Loại resource",
-      "resourceTypePh": "Loại resource",
+      "resourceTypePh": "vd. shop, product",
+      "resource": "Resource",
+      "actionCode": "Mã action",
       "before": "Trước",
       "after": "Sau",
-      "empty": "Không có nhật ký."
+      "meta": "Meta",
+      "hasDiff": "Có diff",
+      "filters": "Bộ lọc",
+      "clearFilters": "Xoá bộ lọc",
+      "allCategories": "Tất cả",
+      "total": "Tổng khớp",
+      "empty": "Không có sự kiện mutating trong bộ lọc này."
     },
     "settlementsPage": {
       "empty": "Không có đối soát trong bộ lọc này.",

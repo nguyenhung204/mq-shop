@@ -378,7 +378,17 @@ export const adminApi = {
     body: { name?: string; nameVi?: string | null; parentId?: string | null },
   ) => api.patch<ApiCategory>(`/admin/categories/${id}`, body),
   auditLogs: (query?: Record<string, string | number | undefined>) =>
-    api.get<ApiAuditLog[] | { data: ApiAuditLog[]; meta?: PageMeta }>("/admin/audit-logs", {
+    api.get<
+      | ApiAuditLog[]
+      | {
+          items: ApiAuditLog[];
+          total?: number;
+          page?: number;
+          pageSize?: number;
+          meta?: PageMeta;
+        }
+      | { data: ApiAuditLog[]; meta?: PageMeta }
+    >("/admin/audit-logs", {
       query,
       withMeta: true,
     }),
