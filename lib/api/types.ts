@@ -92,6 +92,9 @@ export type ListingCard = {
   watermarkText: null | { vi: string; zh: string; en: string };
   /** ISO-8601 — present when BE listing includes it. */
   createdAt?: string;
+  /** Product reviews (011). */
+  ratingAvg?: number | string | null;
+  reviewCount?: number | null;
 };
 
 export type ProductVariant = {
@@ -158,6 +161,9 @@ export type PublicProductDetail = {
   watermarkText: null | { vi: string; zh: string; en: string };
   createdAt?: string;
   updatedAt?: string;
+  /** Product reviews (011). */
+  ratingAvg?: number | string | null;
+  reviewCount?: number | null;
 };
 
 export type ApiProduct = {

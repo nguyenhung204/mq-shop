@@ -311,6 +311,22 @@ export type {
 } from "./compliance";
 
 export {
+  productReviewsApi,
+  adminReviewsApi,
+  toRatingNumber,
+} from "./reviews";
+export type {
+  ProductReview,
+  ProductReviewReply,
+  ReviewSummary,
+  ReviewStatus,
+  CreateReviewBody,
+  UpdateReviewBody,
+  ListProductReviewsParams,
+  ListAdminReviewsParams,
+} from "./reviews";
+
+export {
   promotionApi,
   adminPromotionApi,
   bannerApi,
