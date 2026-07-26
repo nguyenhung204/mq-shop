@@ -40,6 +40,7 @@ export const ACCOUNTANT_COMMERCE_PERMS = [
   "VIEW_MLM_TREE",
   "ADJUST_POINTS",
   "CONFIG_MLM",
+  "VIEW_AUDIT_LOG",
 ] as const;
 
 export type AdminNavItem = {
@@ -111,6 +112,7 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.audit",
     icon: ClipboardList,
     permissions: ["VIEW_AUDIT_LOG"],
+    roles: ["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"],
     group: "ops",
   },
   {

@@ -28,12 +28,28 @@ function outcomeBadgeClass(outcome: ApiAuditLog["outcome"] | undefined): string 
   return "mq-badge mq-badge-cyan";
 }
 
+function formatJson(value: unknown): string {
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return String(value);
+  }
+}
+
 function AuditRow({ log }: { log: ApiAuditLog }) {
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const title = log.title || log.action;
   const outcomeText = log.outcomeLabel || log.outcome;
-  const hasDetails = Boolean(log.summary || log.reason || log.category || log.resource?.type);
+  const hasDetails = Boolean(
+    log.summary ||
+      log.reason ||
+      log.category ||
+      log.resource?.type ||
+      log.actor?.ip ||
+      log.beforeJson != null ||
+      log.afterJson != null,
+  );
 
   return (
     <>
@@ -71,12 +87,17 @@ function AuditRow({ log }: { log: ApiAuditLog }) {
         <td className="p-3">
           <span className={outcomeBadgeClass(log.outcome)}>{outcomeText}</span>
         </td>
-        <td className="p-3 text-xs">{log.actor?.email || log.actor?.id || "—"}</td>
+        <td className="p-3 text-xs">
+          <div>{log.actor?.email || log.actor?.id || "—"}</div>
+          {log.actor?.ip ? (
+            <div className="text-[11px] text-mq-text-muted font-mono mt-0.5">{log.actor.ip}</div>
+          ) : null}
+        </td>
       </tr>
       {open && hasDetails ? (
         <tr className="bg-mq-surface-subtle/60">
           <td colSpan={4} className="px-3 pb-3 pt-0">
-            <div className="ml-5 rounded-lg border border-mq-border bg-mq-surface p-3 text-xs space-y-1.5">
+            <div className="ml-5 rounded-lg border border-mq-border bg-mq-surface p-3 text-xs space-y-2">
               {log.summary ? (
                 <p className="text-mq-text-secondary">{log.summary}</p>
               ) : null}
@@ -86,12 +107,34 @@ function AuditRow({ log }: { log: ApiAuditLog }) {
                   {log.reason}
                 </p>
               ) : null}
+              {log.actor?.ip ? (
+                <p>
+                  <span className="text-mq-text-muted">{t("admin.auditPage.ip")}: </span>
+                  <span className="font-mono">{log.actor.ip}</span>
+                </p>
+              ) : null}
               <p className="text-mq-text-muted font-mono">
                 {log.action}
                 {log.resource?.type
                   ? ` · ${log.resource.type}${log.resource.id ? `/${log.resource.id}` : ""}`
                   : ""}
               </p>
+              {log.beforeJson != null ? (
+                <div>
+                  <p className="text-mq-text-muted mb-1">{t("admin.auditPage.before")}</p>
+                  <pre className="overflow-auto max-h-48 rounded-md bg-mq-surface-subtle p-2 font-mono text-[11px]">
+                    {formatJson(log.beforeJson)}
+                  </pre>
+                </div>
+              ) : null}
+              {log.afterJson != null ? (
+                <div>
+                  <p className="text-mq-text-muted mb-1">{t("admin.auditPage.after")}</p>
+                  <pre className="overflow-auto max-h-48 rounded-md bg-mq-surface-subtle p-2 font-mono text-[11px]">
+                    {formatJson(log.afterJson)}
+                  </pre>
+                </div>
+              ) : null}
             </div>
           </td>
         </tr>
@@ -107,11 +150,25 @@ function AuditInner() {
   const [outcome, setOutcome] = useState("");
   const [resourceType, setResourceType] = useState("");
   const [actorId, setActorId] = useState("");
+  const [actorEmail, setActorEmail] = useState("");
+  const [ip, setIp] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["admin", "audit-logs", page, action, outcome, resourceType, actorId, from, to],
+    queryKey: [
+      "admin",
+      "audit-logs",
+      page,
+      action,
+      outcome,
+      resourceType,
+      actorId,
+      actorEmail,
+      ip,
+      from,
+      to,
+    ],
     queryFn: async () =>
       parsePage<ApiAuditLog>(
         await adminApi.auditLogs({
@@ -121,6 +178,8 @@ function AuditInner() {
           outcome: outcome || undefined,
           resourceType: resourceType || undefined,
           actorId: actorId || undefined,
+          actorEmail: actorEmail || undefined,
+          ip: ip || undefined,
           from: toIsoStart(from),
           to: toIsoEnd(to),
         }),
@@ -197,6 +256,30 @@ function AuditInner() {
             />
           </label>
           <label className="flex flex-col gap-1 text-sm">
+            <span className="text-mq-text-muted text-xs">{t("admin.auditPage.actorEmail")}</span>
+            <input
+              className="mq-input max-w-xs"
+              placeholder={t("admin.auditPage.actorEmailPh")}
+              value={actorEmail}
+              onChange={(e) => {
+                setActorEmail(e.target.value.trim());
+                setPage(1);
+              }}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-mq-text-muted text-xs">{t("admin.auditPage.ip")}</span>
+            <input
+              className="mq-input max-w-[10rem]"
+              placeholder={t("admin.auditPage.ipPh")}
+              value={ip}
+              onChange={(e) => {
+                setIp(e.target.value.trim());
+                setPage(1);
+              }}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
             <span className="text-mq-text-muted text-xs">{t("transactions.startDate")}</span>
             <input
               type="date"
@@ -266,7 +349,10 @@ function AuditInner() {
 
 export default function AdminAuditLogsPage() {
   return (
-    <AuthGuard roles={["ADMIN", "SUPER_ADMIN"]} permissions={["VIEW_AUDIT_LOG"]}>
+    <AuthGuard
+      roles={["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"]}
+      permissions={["VIEW_AUDIT_LOG"]}
+    >
       <AuditInner />
     </AuthGuard>
   );

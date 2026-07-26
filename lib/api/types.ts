@@ -381,9 +381,11 @@ export type ApiAuditLog = {
   summary?: string;
   category?: string;
   outcomeLabel?: string;
-  actor: { id: string | null; email: string | null };
+  actor: { id: string | null; email: string | null; ip?: string | null };
   resource: { type: string | null; id: string | null };
   reason: string | null;
+  beforeJson?: unknown;
+  afterJson?: unknown;
   meta?: Record<string, unknown>;
 };
 

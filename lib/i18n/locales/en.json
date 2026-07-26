@@ -809,8 +809,14 @@
       "outcome": "Outcome",
       "actor": "Actor",
       "actorPh": "Actor ID (UUID)",
+      "actorEmail": "Actor email",
+      "actorEmailPh": "Actor email…",
+      "ip": "IP",
+      "ipPh": "Client IP…",
       "resourceType": "Resource type",
       "resourceTypePh": "Resource type",
+      "before": "Before",
+      "after": "After",
       "empty": "No audit logs."
     },
     "settlementsPage": {

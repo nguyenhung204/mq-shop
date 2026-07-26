@@ -809,8 +809,14 @@
       "outcome": "結果",
       "actor": "操作者",
       "actorPh": "操作者 ID (UUID)",
+      "actorEmail": "操作者 Email",
+      "actorEmailPh": "Email…",
+      "ip": "IP",
+      "ipPh": "用戶端 IP…",
       "resourceType": "資源類型",
       "resourceTypePh": "資源類型",
+      "before": "變更前",
+      "after": "變更後",
       "empty": "無稽核紀錄。"
     },
     "settlementsPage": {

@@ -809,8 +809,14 @@
       "outcome": "Kết quả",
       "actor": "Người thực hiện",
       "actorPh": "Actor ID (UUID)",
+      "actorEmail": "Email người thực hiện",
+      "actorEmailPh": "Email…",
+      "ip": "IP",
+      "ipPh": "IP client…",
       "resourceType": "Loại resource",
       "resourceTypePh": "Loại resource",
+      "before": "Trước",
+      "after": "Sau",
       "empty": "Không có nhật ký."
     },
     "settlementsPage": {
