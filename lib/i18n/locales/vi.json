@@ -115,7 +115,9 @@
     "testimonial2": "Sản phẩm đẹp, giao hàng nhanh, dịch vụ tuyệt vời.",
     "testimonial3": "Cuối cùng cũng có thương hiệu hiểu chất lượng hơn số lượng.",
     "noCategories": "Chưa có danh mục.",
-    "loadProductsFailed": "Không tải được sản phẩm"
+    "loadProductsFailed": "Không tải được sản phẩm",
+    "noReviews": "Chưa có đánh giá để hiển thị.",
+    "productReviewMeta": "{avg} · {count} đánh giá"
   },
   "categories": {
     "accessories": "Phụ kiện",

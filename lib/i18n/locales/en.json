@@ -115,7 +115,9 @@
     "testimonial2": "Beautiful products, fast shipping, and excellent service.",
     "testimonial3": "Finally a brand that understands quality over quantity.",
     "noCategories": "No categories yet.",
-    "loadProductsFailed": "Failed to load products"
+    "loadProductsFailed": "Failed to load products",
+    "noReviews": "No reviews to show yet.",
+    "productReviewMeta": "{avg} · {count} reviews"
   },
   "categories": {
     "accessories": "Accessories",

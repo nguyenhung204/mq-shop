@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CreditCard, Headphones, RotateCcw, ShieldCheck, Star } from "lucide-react";
+import { CreditCard, Headphones, RotateCcw, ShieldCheck } from "lucide-react";
 import { catalogApi } from "@/lib/api";
 import { mapListingCard } from "@/lib/api/mapProduct";
 import type { ApiCategory } from "@/lib/api/types";
@@ -11,6 +11,7 @@ import { categoryImages, miscImages } from "@/lib/images";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { HeroSlider } from "@/components/home/HeroSlider";
 import { CategoryMarquee } from "@/components/home/CategoryMarquee";
+import { FeaturedReviews } from "@/components/home/FeaturedReviews";
 import { ProductCarousel } from "@/components/ui/ProductCarousel";
 import { Container, SectionHeading } from "@/components/ui/shared";
 
@@ -91,12 +92,6 @@ export function HomePageContent() {
     { title: t("home.trustSupport"), desc: t("home.trustSupportDesc"), Icon: Headphones },
     { title: t("home.trustReturns"), desc: t("home.trustReturnsDesc"), Icon: RotateCcw },
     { title: t("home.trustQuality"), desc: t("home.trustQualityDesc"), Icon: ShieldCheck },
-  ];
-
-  const testimonials = [
-    { quote: t("home.testimonial1"), name: "Sarah M.", date: "May 2026", rating: 5 },
-    { quote: t("home.testimonial2"), name: "James L.", date: "April 2026", rating: 5 },
-    { quote: t("home.testimonial3"), name: "Elena K.", date: "March 2026", rating: 5 },
   ];
 
   return (
@@ -183,32 +178,7 @@ export function HomePageContent() {
         </Container>
       </section>
 
-      <section className="py-14 md:py-20 bg-mq-surface-subtle">
-        <Container>
-          <SectionHeading label={t("home.reviews")} title={t("home.whatClientsSay")} />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testimonials.map((item) => (
-              <blockquote
-                key={item.name}
-                className="bg-mq-surface p-8 border border-mq-border rounded-[var(--mq-radius-lg)]"
-              >
-                <div className="flex gap-0.5 mb-4 text-mq-gold">
-                  {Array.from({ length: item.rating }).map((_, i) => (
-                    <Star key={i} size={14} fill="currentColor" strokeWidth={0} />
-                  ))}
-                </div>
-                <p className="text-mq-text-secondary text-sm leading-relaxed">
-                  &ldquo;{item.quote}&rdquo;
-                </p>
-                <footer className="mt-5">
-                  <p className="text-sm font-medium text-mq-text">{item.name}</p>
-                  <time className="text-xs text-mq-text-muted">{item.date}</time>
-                </footer>
-              </blockquote>
-            ))}
-          </div>
-        </Container>
-      </section>
+      <FeaturedReviews />
 
       <section className="py-14 md:py-20">
         <Container>

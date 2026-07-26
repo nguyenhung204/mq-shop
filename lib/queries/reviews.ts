@@ -22,6 +22,8 @@ export const reviewKeys = {
   list: (productId: string, page: number, pageSize: number) =>
     [...reviewKeys.product(productId), "list", page, pageSize] as const,
   summary: (productId: string) => [...reviewKeys.product(productId), "summary"] as const,
+  featured: (minRating: number, limit: number) =>
+    [...reviewKeys.all, "featured", minRating, limit] as const,
   admin: () => [...reviewKeys.all, "admin"] as const,
   adminList: (params: ListAdminReviewsParams) =>
     [
@@ -33,6 +35,17 @@ export const reviewKeys = {
       params.pageSize ?? 20,
     ] as const,
 };
+
+export function useFeaturedReviews(minRating = 4, limit = 12) {
+  return useQuery({
+    queryKey: reviewKeys.featured(minRating, limit),
+    queryFn: async () => {
+      const data = await productReviewsApi.featured({ minRating, limit });
+      return Array.isArray(data) ? data : [];
+    },
+    staleTime: 60_000,
+  });
+}
 
 export function useProductReviews(
   productId: string | undefined,

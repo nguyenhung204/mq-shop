@@ -24,6 +24,24 @@ export type ProductReview = {
   shopId?: string | null;
 };
 
+export type FeaturedReviewProduct = {
+  id: string;
+  title: string;
+  thumbnailUrl?: string | null;
+  ratingAvg?: number | string;
+  reviewCount?: number;
+};
+
+/** Homepage block: review + product snapshot from GET /reviews/featured */
+export type FeaturedReview = ProductReview & {
+  product: FeaturedReviewProduct;
+};
+
+export type FeaturedReviewsParams = {
+  minRating?: number;
+  limit?: number;
+};
+
 export type ReviewSummary = {
   ratingAvg: number | string;
   reviewCount: number;
@@ -66,6 +84,15 @@ export const productReviewsApi = {
     api.get<PageEnvelope<ProductReview>>(`/products/${productId}/reviews`, {
       query,
       withMeta: true,
+      auth: false,
+    }),
+
+  featured: (query?: FeaturedReviewsParams) =>
+    api.get<FeaturedReview[]>("/reviews/featured", {
+      query: {
+        minRating: query?.minRating ?? 4,
+        limit: query?.limit ?? 12,
+      },
       auth: false,
     }),
 

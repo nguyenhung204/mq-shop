@@ -115,7 +115,9 @@
     "testimonial2": "產品精美、出貨快速、服務優質。",
     "testimonial3": "終於有一個品牌真正重視品質而非數量。",
     "noCategories": "尚無分類。",
-    "loadProductsFailed": "無法載入商品"
+    "loadProductsFailed": "無法載入商品",
+    "noReviews": "尚無評價可顯示。",
+    "productReviewMeta": "{avg} · {count} 則評價"
   },
   "categories": {
     "accessories": "配件",

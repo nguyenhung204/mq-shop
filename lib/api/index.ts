@@ -318,6 +318,9 @@ export {
 export type {
   ProductReview,
   ProductReviewReply,
+  FeaturedReview,
+  FeaturedReviewProduct,
+  FeaturedReviewsParams,
   ReviewSummary,
   ReviewStatus,
   CreateReviewBody,
