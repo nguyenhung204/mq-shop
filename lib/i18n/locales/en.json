@@ -288,6 +288,7 @@
       "profile": "Profile",
       "password": "Password",
       "email": "Email",
+      "privacy": "Privacy",
       "activity": "Activity"
     },
     "sections": {
@@ -297,6 +298,8 @@
       "passwordDesc": "Use a strong password. You will sign in again after updating.",
       "emailTitle": "Change email",
       "emailDesc": "We will send a one-time code to your new email address.",
+      "privacyTitle": "Data erasure (DSAR)",
+      "privacyDesc": "Request anonymization of your personal data. Name, email, and avatar are scrubbed; the account is marked deleted.",
       "activityTitle": "Your activity",
       "activityDesc": "Jump to orders, transactions, wallet, returns, or open a shop."
     },
@@ -307,16 +310,24 @@
       "currentPassword": "Current password",
       "newPassword": "New password (min 8)",
       "newEmail": "New email",
-      "otp": "OTP code"
+      "otp": "OTP code",
+      "dsarNote": "Note (optional)",
+      "dsarNotePh": "Why you are requesting erasure…"
     },
     "actions": {
       "saveProfile": "Save profile",
       "updatePassword": "Update password",
       "requestOtp": "Request OTP",
-      "confirmEmail": "Confirm email"
+      "confirmEmail": "Confirm email",
+      "submitDsar": "Submit erasure request"
+    },
+    "dsar": {
+      "history": "Your requests",
+      "empty": "No erasure requests yet."
     },
     "messages": {
       "profileUpdated": "Profile updated.",
+      "dsarSubmitted": "Erasure request submitted.",
       "passwordTooShort": "Password must be at least 8 characters.",
       "otpSent": "OTP sent to the new email.",
       "emailUpdated": "Email updated."
@@ -399,7 +410,8 @@
       "walletPayouts": "Wallet payouts",
       "walletAdjust": "Wallet adjust",
       "mlm": "MLM ranks",
-      "backups": "Backups"
+      "backups": "Backups",
+      "dsar": "DSAR"
     },
     "common": {
       "create": "Create",
@@ -613,6 +625,20 @@
       "created": "Created",
       "download": "Download ZIP",
       "maintenanceNote": "While a dump is RUNNING, mutating API calls may return 503 (soft maintenance). GET requests still work."
+    },
+    "dsar": {
+      "title": "DSAR anonymization",
+      "description": "Approve and execute data subject erasure requests. Execute is Super Admin only.",
+      "create": "Create for user",
+      "empty": "No DSAR requests in this filter.",
+      "hint": "Approve moves SUBMITTED → APPROVED. Execute anonymizes PII and marks the user DELETED (force logout).",
+      "id": "Request",
+      "target": "Target user",
+      "note": "Note",
+      "created": "Created",
+      "targetUserId": "Target user ID",
+      "execute": "Execute",
+      "executeConfirm": "Anonymize this user’s name, email, and avatar and mark the account DELETED?"
     },
     "audit": {
       "title": "Audit logs",
@@ -1419,6 +1445,13 @@
     "backupStarted": "Full backup queued",
     "backupAlreadyRunning": "A backup is already queued or running",
     "backupFailed": "Could not start backup",
+    "dsarSubmitted": "Erasure request submitted",
+    "dsarCreated": "DSAR request created",
+    "dsarApproved": "DSAR approved",
+    "dsarRejected": "DSAR rejected",
+    "dsarExecuted": "DSAR executed — user anonymized",
+    "dsarOpenExists": "An open DSAR request already exists",
+    "dsarFailed": "DSAR action failed",
     "categoryCreated": "Category created",
     "categoryUpdated": "Category updated",
     "checkoutFailed": "Checkout failed",
@@ -1536,6 +1569,12 @@
     "requestCreated": "Request created: {id}",
     "anonRequestId": "Anonymization request ID",
     "execute": "Execute",
-    "executed": "Executed (or check blockedReason)"
+    "executed": "Executed (or check blockedReason)",
+    "hub": {
+      "intro": "Compliance tools moved into the Admin console. Use the links below.",
+      "backupsDesc": "FULL backup create, progress, and ZIP download.",
+      "dsarDesc": "Approve and execute data subject erasure requests.",
+      "auditDesc": "Filterable platform audit trail with before/after diffs."
+    }
   }
 }

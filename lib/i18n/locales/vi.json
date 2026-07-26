@@ -288,6 +288,7 @@
       "profile": "Hồ sơ",
       "password": "Mật khẩu",
       "email": "Email",
+      "privacy": "Quyền riêng tư",
       "activity": "Hoạt động"
     },
     "sections": {
@@ -297,6 +298,8 @@
       "passwordDesc": "Dùng mật khẩu mạnh. Bạn sẽ đăng nhập lại sau khi đổi.",
       "emailTitle": "Đổi email",
       "emailDesc": "Chúng tôi sẽ gửi mã OTP tới email mới.",
+      "privacyTitle": "Xoá dữ liệu (DSAR)",
+      "privacyDesc": "Yêu cầu ẩn danh hoá dữ liệu cá nhân. Tên, email và avatar sẽ bị xoá; tài khoản đánh dấu đã xoá.",
       "activityTitle": "Hoạt động của bạn",
       "activityDesc": "Đến đơn hàng, giao dịch, ví, đổi trả hoặc mở gian hàng."
     },
@@ -307,16 +310,24 @@
       "currentPassword": "Mật khẩu hiện tại",
       "newPassword": "Mật khẩu mới (tối thiểu 8)",
       "newEmail": "Email mới",
-      "otp": "Mã OTP"
+      "otp": "Mã OTP",
+      "dsarNote": "Ghi chú (tuỳ chọn)",
+      "dsarNotePh": "Lý do yêu cầu xoá dữ liệu…"
     },
     "actions": {
       "saveProfile": "Lưu hồ sơ",
       "updatePassword": "Cập nhật mật khẩu",
       "requestOtp": "Gửi OTP",
-      "confirmEmail": "Xác nhận email"
+      "confirmEmail": "Xác nhận email",
+      "submitDsar": "Gửi yêu cầu xoá dữ liệu"
+    },
+    "dsar": {
+      "history": "Yêu cầu của bạn",
+      "empty": "Chưa có yêu cầu xoá dữ liệu."
     },
     "messages": {
       "profileUpdated": "Đã cập nhật hồ sơ.",
+      "dsarSubmitted": "Đã gửi yêu cầu xoá dữ liệu.",
       "passwordTooShort": "Mật khẩu phải có ít nhất 8 ký tự.",
       "otpSent": "Đã gửi OTP tới email mới.",
       "emailUpdated": "Đã cập nhật email."
@@ -398,7 +409,9 @@
       "system": "Hệ thống",
       "walletPayouts": "Rút ví cá nhân",
       "walletAdjust": "Điều chỉnh ví",
-      "mlm": "Rank MLM"
+      "mlm": "Rank MLM",
+      "backups": "Sao lưu",
+      "dsar": "DSAR"
     },
     "common": {
       "create": "Tạo mới",
@@ -612,6 +625,20 @@
       "created": "Tạo lúc",
       "download": "Tải ZIP",
       "maintenanceNote": "Khi dump đang RUNNING, API ghi có thể trả 503 (bảo trì mềm). GET vẫn hoạt động."
+    },
+    "dsar": {
+      "title": "Ẩn danh DSAR",
+      "description": "Duyệt và thực thi yêu cầu xoá dữ liệu. Execute chỉ Super Admin.",
+      "create": "Tạo hộ user",
+      "empty": "Không có yêu cầu DSAR trong bộ lọc này.",
+      "hint": "Approve: SUBMITTED → APPROVED. Execute ẩn danh PII và đánh dấu user DELETED (force logout).",
+      "id": "Yêu cầu",
+      "target": "User đích",
+      "note": "Ghi chú",
+      "created": "Tạo lúc",
+      "targetUserId": "ID user đích",
+      "execute": "Thực thi",
+      "executeConfirm": "Ẩn danh tên, email, avatar và đánh dấu tài khoản DELETED?"
     },
     "audit": {
       "title": "Nhật ký",
@@ -1418,6 +1445,13 @@
     "backupStarted": "Đã xếp hàng backup FULL",
     "backupAlreadyRunning": "Đã có backup đang xếp hàng hoặc chạy",
     "backupFailed": "Không bắt đầu được backup",
+    "dsarSubmitted": "Đã gửi yêu cầu xoá dữ liệu",
+    "dsarCreated": "Đã tạo yêu cầu DSAR",
+    "dsarApproved": "Đã duyệt DSAR",
+    "dsarRejected": "Đã từ chối DSAR",
+    "dsarExecuted": "Đã thực thi DSAR — user đã ẩn danh",
+    "dsarOpenExists": "Đã có yêu cầu DSAR đang mở",
+    "dsarFailed": "Thao tác DSAR thất bại",
     "categoryCreated": "Đã tạo danh mục",
     "categoryUpdated": "Đã cập nhật danh mục",
     "checkoutFailed": "Thanh toán thất bại",
@@ -1535,6 +1569,12 @@
     "requestCreated": "Đã tạo yêu cầu: {id}",
     "anonRequestId": "ID yêu cầu ẩn danh",
     "execute": "Thực thi",
-    "executed": "Đã thực thi (hoặc kiểm tra blockedReason)"
+    "executed": "Đã thực thi (hoặc kiểm tra blockedReason)",
+    "hub": {
+      "intro": "Công cụ compliance đã chuyển vào Admin. Dùng các liên kết bên dưới.",
+      "backupsDesc": "Tạo backup FULL, theo dõi tiến độ và tải ZIP.",
+      "dsarDesc": "Duyệt và thực thi yêu cầu xoá dữ liệu.",
+      "auditDesc": "Nhật ký audit có lọc và before/after."
+    }
   }
 }

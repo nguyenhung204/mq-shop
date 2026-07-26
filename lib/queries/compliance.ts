@@ -3,7 +3,14 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { adminBackupApi, isBackupInProgress, type ApiBackup } from "@/lib/api/compliance";
+import {
+  adminBackupApi,
+  adminDsarApi,
+  dsarApi,
+  isBackupInProgress,
+  type ApiBackup,
+  type ApiDsarRequest,
+} from "@/lib/api/compliance";
 import { ApiError } from "@/lib/api/client";
 import { createIdempotencyKeyStore } from "@/lib/api/idempotency";
 import { parsePage } from "@/lib/api/utils";
@@ -16,6 +23,10 @@ export const complianceKeys = {
   backupList: (page: number, pageSize: number) =>
     [...complianceKeys.backups(), "list", page, pageSize] as const,
   backup: (id: string) => [...complianceKeys.backups(), id] as const,
+  dsar: () => [...complianceKeys.all, "dsar"] as const,
+  dsarList: (status: string, page: number, pageSize: number) =>
+    [...complianceKeys.dsar(), "list", status, page, pageSize] as const,
+  myDsar: () => [...complianceKeys.dsar(), "me"] as const,
 };
 
 export function useAdminBackups(page = 1, pageSize = 20) {
@@ -81,5 +92,98 @@ export function useDownloadBackup() {
     },
     onSuccess: () => toast.success(tt("toast.downloadStarted")),
     onError: (e) => toast.error(getErrorMessage(e, tt("toast.downloadFailed"))),
+  });
+}
+
+export function useMyDsarRequests() {
+  return useQuery({
+    queryKey: complianceKeys.myDsar(),
+    queryFn: async () => parsePage<ApiDsarRequest>(await dsarApi.myList()),
+  });
+}
+
+export function useCreateMyDsar() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (note?: string) =>
+      dsarApi.myCreate(note?.trim() ? { note: note.trim() } : {}),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: complianceKeys.myDsar() });
+      toast.success(tt("toast.dsarSubmitted"));
+    },
+    onError: (e) => {
+      if (e instanceof ApiError && e.status === 409) {
+        toast.error(tt("toast.dsarOpenExists"));
+        return;
+      }
+      toast.error(getErrorMessage(e, tt("toast.dsarFailed")));
+    },
+  });
+}
+
+export function useAdminDsarList(params: {
+  status?: string;
+  page?: number;
+  pageSize?: number;
+}) {
+  const page = params.page ?? 1;
+  const pageSize = params.pageSize ?? 20;
+  return useQuery({
+    queryKey: complianceKeys.dsarList(params.status ?? "", page, pageSize),
+    queryFn: async () =>
+      parsePage<ApiDsarRequest>(
+        await adminDsarApi.list({
+          status: params.status || undefined,
+          page,
+          pageSize,
+        }),
+      ),
+  });
+}
+
+export function useCreateAdminDsar() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { targetUserId: string; note?: string }) =>
+      adminDsarApi.create(body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: complianceKeys.dsar() });
+      toast.success(tt("toast.dsarCreated"));
+    },
+    onError: (e) => {
+      if (e instanceof ApiError && e.status === 409) {
+        toast.error(tt("toast.dsarOpenExists"));
+        return;
+      }
+      toast.error(getErrorMessage(e, tt("toast.dsarFailed")));
+    },
+  });
+}
+
+export function useAdminDsarAction() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      kind,
+    }: {
+      id: string;
+      kind: "approve" | "reject" | "execute";
+    }) => {
+      if (kind === "approve") return adminDsarApi.approve(id);
+      if (kind === "reject") return adminDsarApi.reject(id);
+      return adminDsarApi.execute(id);
+    },
+    onSuccess: (_d, vars) => {
+      void queryClient.invalidateQueries({ queryKey: complianceKeys.dsar() });
+      toast.success(
+        vars.kind === "approve"
+          ? tt("toast.dsarApproved")
+          : vars.kind === "reject"
+            ? tt("toast.dsarRejected")
+            : tt("toast.dsarExecuted"),
+      );
+    },
+    onError: (e) => toast.error(getErrorMessage(e, tt("toast.dsarFailed"))),
   });
 }

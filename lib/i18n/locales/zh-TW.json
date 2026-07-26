@@ -288,6 +288,7 @@
       "profile": "個人資料",
       "password": "密碼",
       "email": "電子郵件",
+      "privacy": "隱私",
       "activity": "活動"
     },
     "sections": {
@@ -297,6 +298,8 @@
       "passwordDesc": "請使用強密碼。更新後需重新登入。",
       "emailTitle": "變更電子郵件",
       "emailDesc": "我們會寄送一次性驗證碼至新的電子郵件。",
+      "privacyTitle": "資料刪除（DSAR）",
+      "privacyDesc": "申請匿名化個人資料。姓名、電子郵件與頭像會被清除；帳號標記為已刪除。",
       "activityTitle": "您的活動",
       "activityDesc": "前往訂單、交易、錢包、退換貨或申請開店。"
     },
@@ -307,16 +310,24 @@
       "currentPassword": "目前密碼",
       "newPassword": "新密碼（至少 8 碼）",
       "newEmail": "新電子郵件",
-      "otp": "OTP 驗證碼"
+      "otp": "OTP 驗證碼",
+      "dsarNote": "備註（選填）",
+      "dsarNotePh": "申請刪除資料的原因…"
     },
     "actions": {
       "saveProfile": "儲存個人資料",
       "updatePassword": "更新密碼",
       "requestOtp": "請求 OTP",
-      "confirmEmail": "確認電子郵件"
+      "confirmEmail": "確認電子郵件",
+      "submitDsar": "送出刪除申請"
+    },
+    "dsar": {
+      "history": "您的申請",
+      "empty": "尚無刪除申請。"
     },
     "messages": {
       "profileUpdated": "個人資料已更新。",
+      "dsarSubmitted": "已送出刪除申請。",
       "passwordTooShort": "密碼至少需要 8 個字元。",
       "otpSent": "OTP 已寄至新電子郵件。",
       "emailUpdated": "電子郵件已更新。"
@@ -399,7 +410,8 @@
       "walletPayouts": "錢包提領",
       "walletAdjust": "錢包調整",
       "mlm": "MLM 等級",
-      "backups": "備份"
+      "backups": "備份",
+      "dsar": "DSAR"
     },
     "common": {
       "create": "建立",
@@ -613,6 +625,20 @@
       "created": "建立時間",
       "download": "下載 ZIP",
       "maintenanceNote": "dump 進行中時，寫入 API 可能回傳 503（軟維護）。GET 仍可用。"
+    },
+    "dsar": {
+      "title": "DSAR 匿名化",
+      "description": "核准並執行資料主體刪除申請。Execute 僅 Super Admin。",
+      "create": "代使用者建立",
+      "empty": "此篩選條件無 DSAR 申請。",
+      "hint": "Approve：SUBMITTED → APPROVED。Execute 會匿名化 PII 並將使用者標記為 DELETED（強制登出）。",
+      "id": "申請",
+      "target": "目標使用者",
+      "note": "備註",
+      "created": "建立時間",
+      "targetUserId": "目標使用者 ID",
+      "execute": "執行",
+      "executeConfirm": "匿名化此使用者的姓名、電子郵件與頭像，並將帳號標記為 DELETED？"
     },
     "audit": {
       "title": "稽核日誌",
@@ -1416,6 +1442,16 @@
     "platformStaffRolesUpdated": "已更新平台員工角色",
     "platformStaffApproved": "已核准平台員工",
     "platformStaffRejected": "已拒絕平台員工",
+    "backupStarted": "已排隊完整備份",
+    "backupAlreadyRunning": "已有備份排隊或執行中",
+    "backupFailed": "無法啟動備份",
+    "dsarSubmitted": "已送出刪除申請",
+    "dsarCreated": "已建立 DSAR 申請",
+    "dsarApproved": "已核准 DSAR",
+    "dsarRejected": "已拒絕 DSAR",
+    "dsarExecuted": "已執行 DSAR — 使用者已匿名化",
+    "dsarOpenExists": "已有未結案的 DSAR 申請",
+    "dsarFailed": "DSAR 操作失敗",
     "categoryCreated": "已建立分類",
     "categoryUpdated": "已更新分類",
     "checkoutFailed": "結帳失敗",
@@ -1533,6 +1569,12 @@
     "requestCreated": "已建立請求：{id}",
     "anonRequestId": "匿名化請求 ID",
     "execute": "執行",
-    "executed": "已執行（或檢查 blockedReason）"
+    "executed": "已執行（或檢查 blockedReason）",
+    "hub": {
+      "intro": "合規工具已移至 Admin 後台。請使用下方連結。",
+      "backupsDesc": "建立 FULL 備份、查看進度並下載 ZIP。",
+      "dsarDesc": "核准並執行資料主體刪除申請。",
+      "auditDesc": "可篩選的平台稽核軌跡，含 before/after。"
+    }
   }
 }

@@ -26,6 +26,34 @@ export type ListBackupsParams = {
   pageSize?: number;
 };
 
+export type DsarStatus =
+  | "SUBMITTED"
+  | "APPROVED"
+  | "REJECTED"
+  | "EXECUTED"
+  | "DELETED"
+  | string;
+
+export type ApiDsarRequest = {
+  id: string;
+  targetUserId?: string;
+  status: DsarStatus;
+  note?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  approvedAt?: string | null;
+  executedAt?: string | null;
+  rejectedAt?: string | null;
+  targetEmail?: string | null;
+  targetName?: string | null;
+};
+
+export type ListDsarParams = {
+  status?: string;
+  page?: number;
+  pageSize?: number;
+};
+
 type PageEnvelope<T> =
   | T[]
   | { data: T[]; meta?: PageMeta }
@@ -49,6 +77,30 @@ export const adminBackupApi = {
     ),
 
   download: (id: string) => api.getBlob(`/admin/backups/${id}/download`),
+};
+
+export const dsarApi = {
+  myList: () => api.get<PageEnvelope<ApiDsarRequest>>("/users/me/dsar", { withMeta: true }),
+
+  myCreate: (body?: { note?: string }) =>
+    api.post<ApiDsarRequest>("/users/me/dsar", body ?? {}),
+};
+
+export const adminDsarApi = {
+  list: (query?: ListDsarParams) =>
+    api.get<PageEnvelope<ApiDsarRequest>>("/admin/dsar", {
+      query,
+      withMeta: true,
+    }),
+
+  create: (body: { targetUserId: string; note?: string }) =>
+    api.post<ApiDsarRequest>("/admin/dsar", body),
+
+  approve: (id: string) => api.post<ApiDsarRequest>(`/admin/dsar/${id}/approve`, {}),
+
+  reject: (id: string) => api.post<ApiDsarRequest>(`/admin/dsar/${id}/reject`, {}),
+
+  execute: (id: string) => api.post<ApiDsarRequest>(`/admin/dsar/${id}/execute`, {}),
 };
 
 export function isBackupInProgress(status: string | undefined): boolean {

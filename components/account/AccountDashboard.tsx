@@ -11,6 +11,7 @@ import {
   Package,
   Receipt,
   RefreshCw,
+  ShieldAlert,
   Store,
   UserRound,
   Wallet,
@@ -22,10 +23,11 @@ import { AuthGuard } from "@/components/guards/AuthGuard";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useSellerShop } from "@/lib/queries/seller";
+import { useCreateMyDsar, useMyDsarRequests } from "@/lib/queries/compliance";
 import { Container } from "@/components/ui/shared";
 import "./account.css";
 
-type AccountSection = "profile" | "password" | "email" | "links";
+type AccountSection = "profile" | "password" | "email" | "privacy" | "links";
 
 function userInitials(user: AuthUser | null | undefined): string {
   const name = user?.fullName?.trim();
@@ -70,6 +72,10 @@ function AccountInner() {
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+  const [dsarNote, setDsarNote] = useState("");
+  const { data: dsarPage, isLoading: dsarLoading } = useMyDsarRequests();
+  const createDsar = useCreateMyDsar();
+  const dsarItems = dsarPage?.items ?? [];
 
   const navItems = useMemo(
     () =>
@@ -77,6 +83,7 @@ function AccountInner() {
         { id: "profile" as const, label: t("account.nav.profile"), icon: UserRound },
         { id: "password" as const, label: t("account.nav.password"), icon: KeyRound },
         { id: "email" as const, label: t("account.nav.email"), icon: Mail },
+        { id: "privacy" as const, label: t("account.nav.privacy"), icon: ShieldAlert },
         { id: "links" as const, label: t("account.nav.activity"), icon: Package },
       ] as const,
     [t],
@@ -335,6 +342,70 @@ function AccountInner() {
                 >
                   {t("account.actions.confirmEmail")}
                 </button>
+              </div>
+            </section>
+          ) : null}
+
+          {section === "privacy" ? (
+            <section className="mq-account-panel">
+              <header className="mq-account-panel-head">
+                <h2>{t("account.sections.privacyTitle")}</h2>
+                <p>{t("account.sections.privacyDesc")}</p>
+              </header>
+              <form
+                className="mq-account-form"
+                onSubmit={(e: FormEvent) => {
+                  e.preventDefault();
+                  void run(async () => {
+                    await createDsar.mutateAsync(dsarNote || undefined);
+                    setDsarNote("");
+                    setMsg(t("account.messages.dsarSubmitted"));
+                  });
+                }}
+              >
+                <div className="mq-account-field">
+                  <label htmlFor="account-dsar-note">{t("account.fields.dsarNote")}</label>
+                  <textarea
+                    id="account-dsar-note"
+                    className="mq-input min-h-[5rem]"
+                    value={dsarNote}
+                    onChange={(e) => setDsarNote(e.target.value)}
+                    maxLength={500}
+                    placeholder={t("account.fields.dsarNotePh")}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="mq-btn mq-btn-primary"
+                  disabled={busy || createDsar.isPending}
+                >
+                  {t("account.actions.submitDsar")}
+                </button>
+              </form>
+              <div className="mt-6 space-y-2">
+                <h3 className="text-sm font-medium text-mq-text">{t("account.dsar.history")}</h3>
+                {dsarLoading ? (
+                  <p className="text-sm text-mq-text-muted">{t("admin.common.loading")}</p>
+                ) : dsarItems.length === 0 ? (
+                  <p className="text-sm text-mq-text-muted">{t("account.dsar.empty")}</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {dsarItems.map((r) => (
+                      <li
+                        key={r.id}
+                        className="rounded-lg border border-mq-border bg-mq-surface-subtle px-3 py-2 text-sm flex flex-wrap gap-2 justify-between"
+                      >
+                        <span className="font-mono text-xs text-mq-text-muted">
+                          {r.id.slice(0, 8)}…
+                        </span>
+                        <span className="mq-badge mq-badge-muted">{r.status}</span>
+                        <span className="text-xs text-mq-text-muted w-full sm:w-auto">
+                          {r.createdAt ? new Date(r.createdAt).toLocaleString() : "—"}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </section>
           ) : null}
