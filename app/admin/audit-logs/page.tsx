@@ -49,11 +49,33 @@ function formatRelativeTime(iso: string, locale: string): string {
   return new Date(iso).toLocaleString(locale);
 }
 
+function pickTargetEmail(log: ApiAuditLog): string | null {
+  const meta = log.meta;
+  if (meta && typeof meta === "object") {
+    for (const key of ["email", "targetEmail", "userEmail", "actorEmail"] as const) {
+      const v = meta[key];
+      if (typeof v === "string" && v.includes("@")) return v;
+    }
+  }
+  const fromJson = (value: unknown): string | null => {
+    if (!value || typeof value !== "object") return null;
+    const o = value as Record<string, unknown>;
+    for (const key of ["email", "targetEmail", "userEmail"] as const) {
+      const v = o[key];
+      if (typeof v === "string" && v.includes("@")) return v;
+    }
+    return null;
+  };
+  return fromJson(log.afterJson) || fromJson(log.beforeJson);
+}
+
 function AuditCard({ log, locale }: { log: ApiAuditLog; locale: string }) {
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const title = log.title || log.action;
   const outcomeText = log.outcomeLabel || log.outcome;
+  const actorEmail = log.actor?.email?.trim() || null;
+  const targetEmail = pickTargetEmail(log);
   const hasDiff = log.beforeJson != null || log.afterJson != null;
   const hasDetails = Boolean(
     log.summary ||
@@ -108,11 +130,25 @@ function AuditCard({ log, locale }: { log: ApiAuditLog; locale: string }) {
             </p>
           ) : null}
 
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-mq-text-muted pt-0.5">
-            <span>
-              <span className="text-mq-text-muted/80">{t("admin.auditPage.actor")}: </span>
-              {log.actor?.email || log.actor?.id || "—"}
-            </span>
+          <div className="flex flex-col gap-0.5 text-xs pt-0.5">
+            <p className="text-mq-text">
+              <span className="text-mq-text-muted">{t("admin.auditPage.actorEmail")}: </span>
+              <span className="font-medium break-all">{actorEmail || "—"}</span>
+            </p>
+            {targetEmail && targetEmail !== actorEmail ? (
+              <p className="text-mq-text">
+                <span className="text-mq-text-muted">{t("admin.auditPage.targetEmail")}: </span>
+                <span className="font-medium break-all">{targetEmail}</span>
+              </p>
+            ) : null}
+          </div>
+
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-mq-text-muted">
+            {log.actor?.id ? (
+              <span className="font-mono truncate max-w-[12rem]" title={log.actor.id}>
+                {log.actor.id.slice(0, 8)}…
+              </span>
+            ) : null}
             {log.resource?.type ? (
               <span className="font-mono">
                 {log.resource.type}
@@ -141,16 +177,20 @@ function AuditCard({ log, locale }: { log: ApiAuditLog; locale: string }) {
               <dd>{new Date(log.ts).toLocaleString(locale)}</dd>
             </div>
             <div>
-              <dt className="text-mq-text-muted">{t("admin.auditPage.actor")}</dt>
-              <dd>
-                {log.actor?.email || "—"}
-                {log.actor?.id ? (
-                  <span className="block font-mono text-[10px] text-mq-text-muted mt-0.5">
-                    {log.actor.id}
-                  </span>
-                ) : null}
-              </dd>
+              <dt className="text-mq-text-muted">{t("admin.auditPage.actorEmail")}</dt>
+              <dd className="break-all font-medium">{actorEmail || "—"}</dd>
+              {log.actor?.id ? (
+                <dd className="font-mono text-[10px] text-mq-text-muted mt-0.5">
+                  {log.actor.id}
+                </dd>
+              ) : null}
             </div>
+            {targetEmail && targetEmail !== actorEmail ? (
+              <div>
+                <dt className="text-mq-text-muted">{t("admin.auditPage.targetEmail")}</dt>
+                <dd className="break-all font-medium">{targetEmail}</dd>
+              </div>
+            ) : null}
             {log.actor?.ip ? (
               <div>
                 <dt className="text-mq-text-muted">{t("admin.auditPage.ip")}</dt>
