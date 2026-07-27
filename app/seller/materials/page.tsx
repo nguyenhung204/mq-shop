@@ -30,42 +30,45 @@ function MaterialsInner() {
       {isLoading && <AdminCardListSkeleton count={4} />}
 
       <div className="grid gap-3 sm:grid-cols-2">
-        {items.map((folder) => (
-          <div key={folder.id} className="mq-card p-4 flex flex-col gap-3">
-            <div className="flex items-start gap-3">
-              <span className="mt-0.5 text-mq-text-muted" aria-hidden>
-                <FolderOpen size={20} strokeWidth={1.75} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="font-medium text-mq-text truncate">{folder.name}</p>
-                {folder.description && (
-                  <p className="text-sm text-mq-text-muted mt-0.5 line-clamp-2">
-                    {folder.description}
-                  </p>
-                )}
-                <p className="text-xs text-mq-text-muted mt-1">
-                  {t(
-                    folder.assetCount === 1
-                      ? "seller.materials.files"
-                      : "seller.materials.files_plural",
-                    { count: String(folder.assetCount) },
+        {items.map((folder) => {
+          const busy = download.isPending && download.variables === folder.id;
+          return (
+            <div key={folder.id} className="mq-card p-4 flex flex-col gap-3">
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 text-mq-text-muted" aria-hidden>
+                  <FolderOpen size={20} strokeWidth={1.75} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-mq-text truncate">{folder.name}</p>
+                  {folder.description && (
+                    <p className="text-sm text-mq-text-muted mt-0.5 line-clamp-2">
+                      {folder.description}
+                    </p>
                   )}
-                </p>
+                  <p className="text-xs text-mq-text-muted mt-1">
+                    {t(
+                      folder.assetCount === 1
+                        ? "seller.materials.files"
+                        : "seller.materials.files_plural",
+                      { count: String(folder.assetCount) },
+                    )}
+                  </p>
+                </div>
               </div>
+              <button
+                type="button"
+                className="mq-btn mq-btn-outline text-xs w-fit"
+                disabled={folder.assetCount === 0 || download.isPending}
+                onClick={() => void download.mutateAsync(folder.id)}
+              >
+                <Download size={14} aria-hidden />
+                {busy
+                  ? t("seller.materials.downloading")
+                  : t("seller.materials.download")}
+              </button>
             </div>
-            <button
-              type="button"
-              className="mq-btn mq-btn-outline text-xs w-fit"
-              disabled={download.isPending || folder.assetCount === 0}
-              onClick={() => void download.mutateAsync(folder.id)}
-            >
-              <Download size={14} aria-hidden />
-              {download.isPending
-                ? t("seller.materials.downloading")
-                : t("seller.materials.download")}
-            </button>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {!isLoading && items.length === 0 && (
@@ -81,7 +84,10 @@ function MaterialsInner() {
 
 export default function SellerMaterialsPage() {
   return (
-    <AuthGuard permissions={["VIEW_MKT_MAT"]}>
+    <AuthGuard
+      roles={["SELLER", "CS", "ADMIN", "SUPER_ADMIN"]}
+      permissions={["VIEW_MKT_MAT"]}
+    >
       <MaterialsInner />
     </AuthGuard>
   );

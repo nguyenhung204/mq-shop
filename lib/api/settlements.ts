@@ -2,7 +2,10 @@ import { api } from "./client";
 import type { PageMeta } from "./types";
 import { asArray } from "./utils";
 
-export type SettlementStatus = "PENDING_RECONCILE";
+export type SettlementStatus =
+  | "PENDING_RECONCILE"
+  | "INCLUDED_IN_PAYOUT"
+  | "PAID_OUT";
 
 export type SettlementView = {
   id: string;
@@ -125,7 +128,7 @@ export const settlementApi = {
   list: async (query?: ListSettlementsParams) => {
     const raw = await api.get<unknown>("/settlements", {
       query: {
-        status: query?.status ?? "PENDING_RECONCILE",
+        ...(query?.status ? { status: query.status } : {}),
         page: query?.page ?? 1,
         pageSize: query?.pageSize ?? 20,
       },
@@ -139,7 +142,7 @@ export const adminSettlementApi = {
   list: async (query?: AdminListSettlementsParams) => {
     const raw = await api.get<unknown>("/admin/settlements", {
       query: {
-        status: query?.status ?? "PENDING_RECONCILE",
+        ...(query?.status ? { status: query.status } : {}),
         shopId: query?.shopId,
         page: query?.page ?? 1,
         pageSize: query?.pageSize ?? 20,

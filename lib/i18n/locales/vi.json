@@ -292,7 +292,7 @@
       "emailTitle": "Đổi email",
       "emailDesc": "Chúng tôi sẽ gửi mã OTP tới email mới.",
       "activityTitle": "Hoạt động của bạn",
-      "activityDesc": "Đến đơn hàng, ví, đổi trả hoặc mở gian hàng."
+      "activityDesc": "Đến đơn hàng, giao dịch, ví, đổi trả hoặc mở gian hàng."
     },
     "fields": {
       "fullName": "Họ và tên",
@@ -318,6 +318,8 @@
     "links": {
       "orders": "Đơn hàng",
       "ordersDesc": "Theo dõi mua sắm và giao hàng",
+      "transactions": "Giao dịch",
+      "transactionsDesc": "Lịch sử thanh toán đơn hàng của bạn",
       "wallet": "Ví",
       "walletDesc": "Số dư, chuyển khoản và rút tiền",
       "rma": "RMA",
@@ -376,7 +378,11 @@
       "orders": "Đơn hàng",
       "rma": "RMA",
       "settlements": "Đối soát",
-      "finance": "Tài chính",
+      "transactions": "Giao dịch",
+      "payouts": "Chi trả seller",
+      "landingCost": "Chi phí landing",
+      "finance": "Tài chính (cũ)",
+      "financeConfigs": "Cấu hình phí",
       "promotions": "Khuyến mãi",
       "banners": "Banner",
       "marketing": "Marketing",
@@ -457,11 +463,17 @@
         "audit": "Theo dõi thao tác admin trên hệ thống",
         "orders": "Hộp thư đơn, huỷ, tạo hộ người mua",
         "rma": "Xử lý yêu cầu đổi trả / hoàn tiền",
-        "finance": "Chi trả, rút điểm và duyệt cổng thanh toán",
+        "settlements": "Theo dõi đối soát từ chờ duyệt đến đã chi",
+        "transactions": "Xem ORDER và PAYOUT; xuất báo cáo",
+        "payouts": "Tạo và duyệt phiếu chi trả seller",
+        "landingCost": "Tính landing cost từ dòng hàng và phí",
+        "financeConfigs": "Cấu hình phí dual-control (SA gửi, Acc duyệt)",
+        "finance": "Legacy: rút ví, lô chi trả và duyệt cổng",
         "promotions": "Duyệt KM seller và tạo KM nền tảng",
         "banners": "Banner CMS trang chủ / khuyến mãi",
         "marketing": "Upload bộ tài liệu marketing cho seller"
-      }
+      },
+      "noModules": "Không có module admin cho tài khoản này. Kiểm tra role/permission."
     },
     "banners": {
       "title": "Banner",
@@ -576,11 +588,100 @@
     },
     "settlements": {
       "title": "Đối soát",
-      "description": "Xem và quản lý đối soát shop."
+      "description": "Theo dõi settlement từ chờ đối soát đến đã chi trả."
+    },
+    "landingCost": {
+      "title": "Chi phí landing",
+      "description": "Máy tính stateless cho dòng hàng, phí và giảm promo."
+    },
+    "transactions": {
+      "title": "Giao dịch",
+      "description": "Xem ORDER và PAYOUT, xuất báo cáo CSV/XLSX."
+    },
+    "payouts": {
+      "title": "Chi trả seller",
+      "description": "Gom settlement chờ đối soát thành phiếu chi trả, rồi duyệt (stub gateway) hoặc từ chối.",
+      "activeFee": "Phí nền tảng đang ACTIVE",
+      "noActiveFee": "Chưa có cấu hình phí ACTIVE — tạo payout sẽ thất bại cho đến khi được duyệt.",
+      "openFeeConfig": "Mở cấu hình phí",
+      "platformFee": "Phí nền tảng",
+      "commission": "Commission",
+      "createNew": "Tạo payout",
+      "createHeading": "Tạo phiếu chi trả seller",
+      "createHint": "Chọn shop và kỳ. Settlement PENDING_RECONCILE trong khoảng thời gian đó sẽ được gom.",
+      "formError": "Cần chọn shop và kỳ.",
+      "periodInvalid": "Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.",
+      "needActiveConfig": "Cần có finance config ACTIVE trước khi tạo payout.",
+      "noSettlements": "Không có settlement chờ đối soát trong kỳ của shop này.",
+      "selectShop": "Chọn shop",
+      "periodStart": "Bắt đầu kỳ",
+      "periodEnd": "Kết thúc kỳ",
+      "previewTitle": "Xem trước settlement (PENDING_RECONCILE)",
+      "previewNeedShop": "Chọn shop để xem trước settlement.",
+      "gross": "Gross",
+      "fee": "Phí nền tảng",
+      "shipping": "Shipping",
+      "net": "Net",
+      "estimatedFee": "Ước tính phí ({pct}%): {amount}",
+      "shippingAfterCreate": "Shipping và net cuối do server tính khi tạo phiếu.",
+      "createBtn": "Tạo phiếu chi trả",
+      "creating": "Đang tạo…",
+      "empty": "Không có payout trong bộ lọc này.",
+      "gatewayRef": "Gateway ref",
+      "rejectionReason": "Từ chối: {reason}",
+      "rejectTitle": "Từ chối chi trả seller",
+      "rejectDesc": "Từ chối phiếu net {net}. Settlement quay lại PENDING_RECONCILE.",
+      "rejectBtn": "Từ chối",
+      "detailTitle": "Chi tiết payout",
+      "detailDescription": "Phân bổ net và các dòng settlement.",
+      "backToList": "Về danh sách",
+      "completedAt": "Hoàn tất {when}",
+      "itemsTitle": "Dòng ({count})",
+      "itemsEmpty": "Phiếu này không có dòng nào.",
+      "settlementId": "Settlement",
+      "status": {
+        "PENDING": "Chờ duyệt",
+        "COMPLETED": "Hoàn tất",
+        "REJECTED": "Từ chối"
+      }
     },
     "finance": {
-      "title": "Tài chính",
-      "description": "Chi trả, rút điểm và duyệt cổng thanh toán."
+      "title": "Tài chính (cũ)",
+      "description": "Rút ví, lô chi trả và duyệt cổng. Nên dùng Chi trả seller cho module 007."
+    },
+    "financeConfigs": {
+      "title": "Cấu hình phí",
+      "description": "Dual-control: Super Admin gửi cấu hình, Accountant duyệt.",
+      "activeBanner": "Cấu hình phí đang ACTIVE",
+      "noActive": "Chưa có cấu hình ACTIVE. Gửi mới và chờ Accountant duyệt.",
+      "submitNew": "Gửi cấu hình",
+      "createHeading": "Gửi cấu hình phí (PENDING_APPROVAL)",
+      "createHint": "API key chỉ gửi một lần — sau đó chỉ còn cờ hasApiKey / hasSecretKey.",
+      "formError": "Phí nền tảng và commission phải là số từ 0 đến 100.",
+      "platformFee": "Phí nền tảng",
+      "commission": "Commission",
+      "gateway": "Gateway",
+      "gatewayOptional": "Tên gateway (tuỳ chọn)",
+      "apiKeyOptional": "API key (tuỳ chọn)",
+      "secretKeyOptional": "Secret key (tuỳ chọn)",
+      "submitBtn": "Gửi chờ duyệt",
+      "submitting": "Đang gửi…",
+      "empty": "Không có cấu hình trong bộ lọc này.",
+      "noGateway": "Chưa có tên gateway",
+      "keysHint": "API key: {api} · Secret: {secret}",
+      "keySet": "đã set",
+      "keyMissing": "chưa set",
+      "createdAt": "Tạo lúc {when}",
+      "activatedAt": "Kích hoạt {when}",
+      "rejectionReason": "Từ chối: {reason}",
+      "rejectTitle": "Từ chối cấu hình phí",
+      "rejectDesc": "Từ chối cấu hình phí nền tảng {fee}%. Người gửi sẽ thấy lý do này.",
+      "rejectBtn": "Từ chối",
+      "status": {
+        "PENDING_APPROVAL": "Chờ duyệt",
+        "ACTIVE": "Đang ACTIVE",
+        "REJECTED": "Từ chối"
+      }
     },
     "productsPage": {
       "pendingReview": "Chờ duyệt",
@@ -651,7 +752,11 @@
       "paymentGateways": "Cổng thanh toán",
       "loadRefundReport": "Tải báo cáo hoàn tiền ngày",
       "invalidBank": "Ngân hàng không hợp lệ",
-      "invalid": "Không hợp lệ"
+      "invalid": "Không hợp lệ",
+      "createBatch": "Tạo lô",
+      "markCompletedHint": "Đánh dấu hoàn tất = đã thanh toán ngoài hệ thống. Không có bank API.",
+      "legacyHint": "Trang legacy (ví / lô / duyệt cổng). Phiếu chi trả seller nằm ở Chi trả seller.",
+      "openSellerPayouts": "Mở chi trả seller"
     },
     "categoriesPage": {
       "create": "Tạo danh mục",
@@ -675,7 +780,14 @@
       "empty": "Không có nhật ký."
     },
     "settlementsPage": {
-      "empty": "Không có đối soát trong bộ lọc này."
+      "empty": "Không có đối soát trong bộ lọc này.",
+      "pendingTotal": "Tổng chờ đối soát",
+      "openPayouts": "Chi trả seller",
+      "status": {
+        "PENDING_RECONCILE": "Chờ đối soát",
+        "INCLUDED_IN_PAYOUT": "Đã vào phiếu chi trả",
+        "PAID_OUT": "Đã chi trả"
+      }
     }
   },
   "seller": {
@@ -690,6 +802,8 @@
       "inventory": "Kho",
       "orders": "Đơn hàng",
       "settlements": "Đối soát",
+      "transactions": "Giao dịch",
+      "landingCost": "Chi phí landing",
       "promotions": "Khuyến mãi",
       "rma": "RMA",
       "materials": "Tài liệu"
@@ -707,6 +821,10 @@
       "ordersDesc": "Đơn hàng của shop bạn.",
       "settlements": "Đối soát",
       "settlementsDesc": "Doanh thu chờ đối soát từ đơn đã giao.",
+      "transactions": "Giao dịch",
+      "transactionsDesc": "Lịch sử ORDER và PAYOUT của shop, có thể xuất báo cáo.",
+      "landingCost": "Chi phí landing",
+      "landingCostDesc": "Ước tính chi phí cuối từ dòng hàng, phí và giảm giá.",
       "promotions": "Khuyến mãi",
       "promotionsDesc": "Tạo KM shop — gửi admin duyệt.",
       "rma": "RMA",
@@ -779,6 +897,8 @@
       "inventoryCard": "Kho, SKU & phiếu",
       "ordersCard": "Đơn bán",
       "settlementsCard": "Đối soát",
+      "transactionsCard": "Giao dịch",
+      "landingCostCard": "Chi phí landing",
       "promotionsCard": "Khuyến mãi",
       "rmaCard": "RMA",
       "materialsCard": "Tài liệu marketing"
@@ -868,8 +988,13 @@
     },
     "settlementsPage": {
       "pendingTotal": "Tổng chờ đối soát",
-      "empty": "Không có đối soát chờ.",
-      "intro": "Doanh thu từ đơn đã giao đang chờ đối soát."
+      "empty": "Không có đối soát trong bộ lọc này.",
+      "intro": "Doanh thu từ đơn đã giao — chờ đối soát, trong phiếu chi trả, hoặc đã chi.",
+      "status": {
+        "PENDING_RECONCILE": "Chờ đối soát",
+        "INCLUDED_IN_PAYOUT": "Đã vào phiếu chi trả",
+        "PAID_OUT": "Đã chi trả"
+      }
     },
     "rmaPage": {
       "intro": "Xác nhận hàng hoàn về kho cho hoàn tiền đã duyệt.",
@@ -878,7 +1003,48 @@
       "restockHint": "Nhập lại SKU qua phiếu kho sau khi xác nhận hàng hoàn."
     }
   },
-  "toast": {
+  "landingCost": {
+    "intro": "Nhập giá dòng thủ công. Giảm promo không lấy từ API khuyến mãi — tự điền số.",
+    "itemsHeading": "Dòng hàng",
+    "addLine": "Thêm dòng",
+    "removeLine": "Xóa dòng",
+    "unitPrice": "Đơn giá",
+    "quantity": "SL",
+    "lineDiscount": "Giảm theo dòng",
+      "shippingFee": "Vận chuyển",
+      "vatAmount": "VAT",
+      "packagingFee": "Đóng gói",
+      "promoDiscount": "Giảm promo",
+      "calculate": "Tính",
+      "calculating": "Đang tính…",
+      "formError": "Số phải ≥ 0. Số lượng phải là số nguyên ≥ 1.",
+      "resultHeading": "Kết quả",
+      "itemsSubtotal": "Tạm tính hàng",
+      "finalAmount": "Tổng cuối"
+    },
+    "transactions": {
+      "title": "Giao dịch",
+      "intro": "Lọc theo khoảng ngày và loại. Xuất sẽ mở file báo cáo.",
+      "introBuyer": "Thanh toán đơn hàng của bạn. Lọc theo khoảng ngày.",
+      "startDate": "Từ ngày",
+      "endDate": "Đến ngày",
+      "type": "Loại",
+      "format": "Định dạng",
+      "export": "Xuất",
+      "exporting": "Đang xuất…",
+      "exportHint": "MVP: XLSX vẫn là nội dung CSV với đuôi .xlsx.",
+      "periodInvalid": "Chọn khoảng ngày hợp lệ (ngày kết thúc ≥ ngày bắt đầu).",
+      "empty": "Không có giao dịch trong bộ lọc này.",
+      "shop": "Shop",
+      "shopOwner": "Chủ shop",
+      "buyer": "Buyer",
+      "types": {
+        "ALL": "Tất cả",
+        "ORDER": "Đơn hàng",
+        "PAYOUT": "Chi trả"
+      }
+    },
+    "toast": {
     "somethingWentWrong": "Đã xảy ra lỗi",
     "promoSubmitted": "Đã gửi khuyến mãi chờ duyệt",
     "promoCreated": "Đã tạo khuyến mãi",
@@ -1005,7 +1171,28 @@
     "productNotPending": "Sản phẩm không ở PENDING.",
     "staffLocked": "Đã khoá nhân sự",
     "staffUnlocked": "Đã mở khoá nhân sự",
-    "staffDeleted": "Đã xoá nhân sự"
+    "staffDeleted": "Đã xoá nhân sự",
+    "accessDenied": "Bạn không có quyền thực hiện thao tác này.",
+    "financeConfigNotFound": "Không tìm thấy cấu hình tài chính đang ACTIVE.",
+    "financeConfigNotPending": "Chỉ cấu hình đang chờ duyệt mới được xét duyệt.",
+    "financeConfigSubmitted": "Đã gửi cấu hình tài chính chờ duyệt",
+    "financeConfigCreateFailed": "Gửi cấu hình tài chính thất bại",
+    "financeConfigApproved": "Đã duyệt và kích hoạt cấu hình tài chính",
+    "financeConfigApproveFailed": "Duyệt cấu hình tài chính thất bại",
+    "financeConfigRejected": "Đã từ chối cấu hình tài chính",
+    "financeConfigRejectFailed": "Từ chối cấu hình tài chính thất bại",
+    "payoutNotFound": "Không tìm thấy phiếu chi trả.",
+    "payoutNotPending": "Chỉ phiếu chi trả đang chờ mới được duyệt hoặc từ chối.",
+    "payoutNoSettlements": "Không có settlement chờ đối soát trong kỳ của shop này.",
+    "shopNotFound": "Không tìm thấy shop.",
+    "payoutCreated": "Đã tạo phiếu chi trả seller",
+    "payoutCreateFailed": "Tạo phiếu chi trả thất bại",
+    "payoutApproveFailed": "Duyệt phiếu chi trả thất bại",
+    "payoutRejectFailed": "Từ chối phiếu chi trả thất bại",
+    "payoutApprovedWithRef": "Đã duyệt chi trả — gateway ref {ref}",
+    "landingCostFailed": "Tính landing cost thất bại",
+    "financeExportReady": "Xuất báo cáo sẵn sàng ({count} dòng)",
+    "financeExportFailed": "Xuất báo cáo tài chính thất bại"
   },
   "superAdmin": {
     "title": "Quản trị hệ thống",

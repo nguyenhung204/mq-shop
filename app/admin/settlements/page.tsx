@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import type { SettlementStatus } from "@/lib/api/settlements";
 import { formatMoney } from "@/lib/api/utils";
 import { useAdminSettlements } from "@/lib/queries/settlements";
 import { useAdminShops } from "@/lib/queries/admin";
@@ -11,15 +12,37 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 
+const STATUSES: Array<SettlementStatus | ""> = [
+  "",
+  "PENDING_RECONCILE",
+  "INCLUDED_IN_PAYOUT",
+  "PAID_OUT",
+];
+
+function statusBadgeClass(status: SettlementStatus): string {
+  switch (status) {
+    case "PENDING_RECONCILE":
+      return "mq-badge mq-badge-cyan";
+    case "INCLUDED_IN_PAYOUT":
+      return "mq-badge mq-badge-orange";
+    case "PAID_OUT":
+      return "mq-badge mq-badge-teal";
+    default:
+      return "mq-badge mq-badge-muted";
+  }
+}
+
 function SettlementsInner() {
   const { t } = useLanguage();
   const [shopId, setShopId] = useState("");
+  const [status, setStatus] = useState<SettlementStatus | "">("PENDING_RECONCILE");
   const [page, setPage] = useState(1);
   const { data: shopsPage } = useAdminShops("APPROVED", 1, 100);
   const shops = shopsPage?.items ?? [];
+  const shopName = (id: string) => shops.find((s) => s.id === id)?.name ?? `${id.slice(0, 8)}…`;
 
   const { data, isLoading, isError, error } = useAdminSettlements({
-    status: "PENDING_RECONCILE",
+    status: status || undefined,
     shopId: shopId || undefined,
     page,
     pageSize: 20,
@@ -27,15 +50,41 @@ function SettlementsInner() {
   const items = data?.items ?? [];
   const meta = data?.meta;
   const pendingTotal = data?.summary.pendingTotal ?? 0;
+  const showPendingTotal = !status || status === "PENDING_RECONCILE";
 
   return (
     <>
       <AdminPageHeader
         title={t("admin.settlements.title")}
         description={t("admin.settlements.description")}
+        actions={
+          <Link href="/admin/payouts" className="mq-btn mq-btn-outline shrink-0 whitespace-nowrap">
+            {t("admin.settlementsPage.openPayouts")}
+          </Link>
+        }
       />
       <div className="space-y-4">
         <div className="flex flex-wrap gap-3 items-end">
+          <label className="block text-sm">
+            <span className="text-mq-text-muted text-xs">{t("admin.common.filterStatus")}</span>
+            <select
+              className="mq-input mt-1 !w-[16rem] max-w-full"
+              value={status}
+              aria-label={t("admin.common.filterStatus")}
+              onChange={(e) => {
+                setStatus(e.target.value as SettlementStatus | "");
+                setPage(1);
+              }}
+            >
+              {STATUSES.map((s) => (
+                <option key={s || "all"} value={s}>
+                  {s
+                    ? t(`admin.settlementsPage.status.${s}`)
+                    : t("admin.common.allStatuses")}
+                </option>
+              ))}
+            </select>
+          </label>
           <label className="block text-sm">
             <span className="text-mq-text-muted text-xs">{t("admin.common.shop")}</span>
             <select
@@ -57,21 +106,27 @@ function SettlementsInner() {
           </label>
         </div>
 
-        <div className="mq-card p-4 flex flex-wrap items-baseline justify-between gap-2">
-          <div>
-            <p className="text-xs uppercase tracking-wide text-mq-text-muted">
-              Pending reconcile total
-            </p>
-            <p className="text-xl font-medium tabular-nums mt-1">
-              {formatMoney(pendingTotal)}
-            </p>
+        {showPendingTotal ? (
+          <div className="mq-card p-4 flex flex-wrap items-baseline justify-between gap-2">
+            <div>
+              <p className="text-xs uppercase tracking-wide text-mq-text-muted">
+                {t("admin.settlementsPage.pendingTotal")}
+              </p>
+              <p className="text-xl font-medium tabular-nums mt-1">
+                {formatMoney(pendingTotal)}
+              </p>
+            </div>
+            {typeof meta?.total === "number" ? (
+              <p className="text-sm text-mq-text-muted">
+                {t("admin.common.items", { count: String(meta.total) })}
+              </p>
+            ) : null}
           </div>
-          {typeof meta?.total === "number" ? (
-            <p className="text-sm text-mq-text-muted">
-              {t("admin.common.items", { count: String(meta.total) })}
-            </p>
-          ) : null}
-        </div>
+        ) : typeof meta?.total === "number" ? (
+          <p className="text-sm text-mq-text-muted">
+            {t("admin.common.items", { count: String(meta.total) })}
+          </p>
+        ) : null}
 
         {isLoading && <AdminCardListSkeleton count={6} />}
         {isError && (
@@ -95,9 +150,9 @@ function SettlementsInner() {
                   {s.orderCode ?? s.orderId.slice(0, 8)}
                 </span>
               </Link>
-              <span className="mq-badge mq-badge-cyan ml-2">{s.status}</span>
+              <span className={`${statusBadgeClass(s.status)} ml-2`}>{s.status}</span>
               <p className="text-xs text-mq-text-muted mt-1">
-                Shop {s.shopId.slice(0, 8)}… · {new Date(s.createdAt).toLocaleString()}
+                {shopName(s.shopId)} · {new Date(s.createdAt).toLocaleString()}
               </p>
             </div>
             <span className="tabular-nums font-medium">{formatMoney(s.amount)}</span>

@@ -5,16 +5,23 @@ import {
   BadgeDollarSign,
   BadgePercent,
   Boxes,
+  Calculator,
   ClipboardList,
   FolderOpen,
   FolderTree,
+  HandCoins,
   ImageIcon,
   Package,
+  Percent,
+  Receipt,
   RotateCcw,
+  Scale,
   ShoppingBag,
   Store,
   Users,
 } from "lucide-react";
+import type { Role } from "@/lib/api/types";
+import { ACCOUNTANT_COMMERCE_PERMS } from "@/components/admin/nav";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -24,6 +31,7 @@ const cards: {
   href: string;
   navKey: string;
   permissions: string[];
+  roles?: Role[];
   icon: typeof Store;
 }[] = [
   {
@@ -75,6 +83,37 @@ const cards: {
     icon: RotateCcw,
   },
   {
+    href: "/admin/settlements",
+    navKey: "settlements",
+    permissions: ["VIEW_TRANSACT"],
+    icon: Scale,
+  },
+  {
+    href: "/admin/transactions",
+    navKey: "transactions",
+    permissions: ["VIEW_TRANSACT"],
+    icon: Receipt,
+  },
+  {
+    href: "/admin/payouts",
+    navKey: "payouts",
+    permissions: ["PAYOUT_SELLER"],
+    icon: HandCoins,
+  },
+  {
+    href: "/admin/landing-cost",
+    navKey: "landingCost",
+    permissions: ["CALC_LAND_COST"],
+    icon: Calculator,
+  },
+  {
+    href: "/admin/finance/configs",
+    navKey: "financeConfigs",
+    permissions: ["CONFIG_FEE"],
+    roles: ["SUPER_ADMIN", "ACCOUNTANT"],
+    icon: Percent,
+  },
+  {
     href: "/admin/finance",
     navKey: "finance",
     permissions: ["MANAGE_PAYOUT", "MANAGE_WALLET_WITHDRAW", "VIEW_REFUND_REPORT"],
@@ -104,10 +143,13 @@ function AdminHome() {
   const { hasAnyPermission, hasRole } = useAuth();
   const { t } = useLanguage();
   const visible = cards.filter((c) => {
-    if (hasAnyPermission(c.permissions)) return true;
+    if (c.roles?.length && !c.roles.some((r) => hasRole(r))) return false;
+    if (hasAnyPermission(c.permissions) || hasRole("ADMIN") || hasRole("SUPER_ADMIN")) {
+      return true;
+    }
     if (hasRole("ACCOUNTANT")) {
       return c.permissions.some((p) =>
-        ["PROCESS_RMA", "MANAGE_RMA", "VIEW_TRANSACT"].includes(p),
+        (ACCOUNTANT_COMMERCE_PERMS as readonly string[]).includes(p),
       );
     }
     return false;
@@ -122,7 +164,7 @@ function AdminHome() {
 
       {visible.length === 0 ? (
         <div className="mq-alert mq-alert-error">
-          No admin modules available for this account. Check roles/permissions from BE.
+          {t("admin.overview.noModules")}
         </div>
       ) : (
         <div className="mq-admin-stat-grid">

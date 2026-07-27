@@ -50,10 +50,16 @@ function shopActionError(e: unknown): string {
   return getErrorMessage(e);
 }
 
-export function useAdminShops(status: string, page = 1, pageSize = 20) {
+export function useAdminShops(
+  status: string,
+  page = 1,
+  pageSize = 20,
+  options?: { enabled?: boolean },
+) {
   return useQuery({
     queryKey: adminKeys.shops(status, page),
     queryFn: async () => parsePage<ApiShop>(await adminApi.shops(status, page, pageSize)),
+    enabled: options?.enabled ?? true,
   });
 }
 

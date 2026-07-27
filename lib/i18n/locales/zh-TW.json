@@ -292,7 +292,7 @@
       "emailTitle": "變更電子郵件",
       "emailDesc": "我們會寄送一次性驗證碼至新的電子郵件。",
       "activityTitle": "您的活動",
-      "activityDesc": "前往訂單、錢包、退換貨或申請開店。"
+      "activityDesc": "前往訂單、交易、錢包、退換貨或申請開店。"
     },
     "fields": {
       "fullName": "全名",
@@ -318,6 +318,8 @@
     "links": {
       "orders": "訂單",
       "ordersDesc": "追蹤購買與配送",
+      "transactions": "交易",
+      "transactionsDesc": "您的訂單付款紀錄",
       "wallet": "錢包",
       "walletDesc": "餘額、轉帳與提領",
       "rma": "RMA",
@@ -376,7 +378,11 @@
       "orders": "訂單",
       "rma": "RMA",
       "settlements": "結算",
-      "finance": "財務",
+      "transactions": "交易",
+      "payouts": "賣家撥款",
+      "landingCost": "落地成本",
+      "finance": "財務（舊版）",
+      "financeConfigs": "費用設定",
       "promotions": "促銷",
       "banners": "橫幅",
       "marketing": "行銷",
@@ -457,11 +463,17 @@
         "audit": "追蹤後台操作紀錄",
         "orders": "跨店訂單匣、取消、代客下單",
         "rma": "處理退換貨／退款申請",
-        "finance": "撥款、提領與金流審核",
+        "settlements": "追蹤結算：待對帳到已撥款",
+        "transactions": "瀏覽 ORDER／PAYOUT；匯出報表",
+        "payouts": "建立並核准賣家撥款單",
+        "landingCost": "依行項目與費用計算落地成本",
+        "financeConfigs": "雙重控管平台費與閘道設定",
+        "finance": "舊版：錢包提領、批次與金流審核",
         "promotions": "審核賣家活動並建立平台促銷",
         "banners": "首頁／促銷 CMS 橫幅",
         "marketing": "上傳賣家行銷素材包"
-      }
+      },
+      "noModules": "此帳號沒有可用的管理模組。請檢查角色與權限。"
     },
     "banners": {
       "title": "橫幅",
@@ -576,11 +588,100 @@
     },
     "settlements": {
       "title": "結算",
-      "description": "查看與管理商店結算。"
+      "description": "追蹤商店結算：待對帳、撥款中、已撥款。"
+    },
+    "landingCost": {
+      "title": "落地成本",
+      "description": "無狀態計算器：行項目、費用與促銷折抵。"
+    },
+    "transactions": {
+      "title": "交易",
+      "description": "瀏覽 ORDER 與 PAYOUT，並匯出 CSV/XLSX 報表。"
+    },
+    "payouts": {
+      "title": "賣家撥款",
+      "description": "將待對帳結算彙總為撥款單，再核准（stub gateway）或拒絕。",
+      "activeFee": "啟用中的平台費",
+      "noActiveFee": "尚無 ACTIVE 費用設定 — 核准前建立撥款會失敗。",
+      "openFeeConfig": "開啟費用設定",
+      "platformFee": "平台費",
+      "commission": "佣金",
+      "createNew": "建立撥款",
+      "createHeading": "建立賣家撥款",
+      "createHint": "選擇商店與期間。該期間內 PENDING_RECONCILE 的結算會被彙總。",
+      "formError": "必須選擇商店與期間。",
+      "periodInvalid": "結束日必須晚於或等於開始日。",
+      "needActiveConfig": "建立撥款前需要 ACTIVE 財務設定。",
+      "noSettlements": "此商店在該期間沒有待對帳結算。",
+      "selectShop": "選擇商店",
+      "periodStart": "期間開始",
+      "periodEnd": "期間結束",
+      "previewTitle": "結算預覽（PENDING_RECONCILE）",
+      "previewNeedShop": "請先選擇商店以預覽結算。",
+      "gross": "總額",
+      "fee": "平台費",
+      "shipping": "運費",
+      "net": "淨額",
+      "estimatedFee": "預估費用（{pct}%）：{amount}",
+      "shippingAfterCreate": "運費與最終淨額由伺服器在建立時計算。",
+      "createBtn": "建立撥款單",
+      "creating": "建立中…",
+      "empty": "此篩選條件無撥款單。",
+      "gatewayRef": "Gateway ref",
+      "rejectionReason": "已拒絕：{reason}",
+      "rejectTitle": "拒絕賣家撥款",
+      "rejectDesc": "拒絕淨額 {net} 的撥款。結算將回到 PENDING_RECONCILE。",
+      "rejectBtn": "拒絕撥款",
+      "detailTitle": "撥款詳情",
+      "detailDescription": "淨額明細與結算行項目。",
+      "backToList": "返回列表",
+      "completedAt": "完成於 {when}",
+      "itemsTitle": "行項目（{count}）",
+      "itemsEmpty": "此撥款沒有行項目。",
+      "settlementId": "結算",
+      "status": {
+        "PENDING": "待處理",
+        "COMPLETED": "已完成",
+        "REJECTED": "已拒絕"
+      }
     },
     "finance": {
-      "title": "財務",
-      "description": "撥款、提領與金流審核。"
+      "title": "財務（舊版）",
+      "description": "錢包提領、撥款批次與金流審核。007 請改用賣家撥款。"
+    },
+    "financeConfigs": {
+      "title": "費用設定",
+      "description": "雙重控管：Super Admin 送出，Accountant 核准。",
+      "activeBanner": "啟用中的費用設定",
+      "noActive": "尚無 ACTIVE 財務設定。請送出後等待 Accountant 核准。",
+      "submitNew": "送出設定",
+      "createHeading": "送出費用設定（PENDING_APPROVAL）",
+      "createHint": "API 金鑰只傳送一次 — 之後僅顯示 hasApiKey / hasSecretKey。",
+      "formError": "平台費與佣金必須為 0 到 100 的數字。",
+      "platformFee": "平台費",
+      "commission": "佣金",
+      "gateway": "閘道",
+      "gatewayOptional": "閘道名稱（選填）",
+      "apiKeyOptional": "API 金鑰（選填）",
+      "secretKeyOptional": "密鑰（選填）",
+      "submitBtn": "送出待審核",
+      "submitting": "送出中…",
+      "empty": "此篩選條件無財務設定。",
+      "noGateway": "無閘道名稱",
+      "keysHint": "API 金鑰：{api} · 密鑰：{secret}",
+      "keySet": "已設定",
+      "keyMissing": "未設定",
+      "createdAt": "建立於 {when}",
+      "activatedAt": "啟用於 {when}",
+      "rejectionReason": "已拒絕：{reason}",
+      "rejectTitle": "拒絕財務設定",
+      "rejectDesc": "拒絕平台費 {fee}% 的設定。送出者將看到此原因。",
+      "rejectBtn": "拒絕設定",
+      "status": {
+        "PENDING_APPROVAL": "待審核",
+        "ACTIVE": "啟用中",
+        "REJECTED": "已拒絕"
+      }
     },
     "productsPage": {
       "pendingReview": "待審核",
@@ -651,7 +752,11 @@
       "paymentGateways": "金流閘道",
       "loadRefundReport": "載入每日退款報告",
       "invalidBank": "銀行無效",
-      "invalid": "無效"
+      "invalid": "無效",
+      "createBatch": "建立批次",
+      "markCompletedHint": "標記完成 = 已在系統外付款。無銀行 API。",
+      "legacyHint": "此為舊版頁面（錢包／批次／金流審核）。賣家撥款單請至賣家撥款。",
+      "openSellerPayouts": "開啟賣家撥款"
     },
     "categoriesPage": {
       "create": "建立分類",
@@ -675,7 +780,14 @@
       "empty": "無稽核紀錄。"
     },
     "settlementsPage": {
-      "empty": "此篩選條件無結算。"
+      "empty": "此篩選條件無結算。",
+      "pendingTotal": "待對帳總額",
+      "openPayouts": "賣家撥款",
+      "status": {
+        "PENDING_RECONCILE": "待對帳",
+        "INCLUDED_IN_PAYOUT": "已納入撥款",
+        "PAID_OUT": "已撥款"
+      }
     }
   },
   "seller": {
@@ -690,6 +802,8 @@
       "inventory": "庫存",
       "orders": "訂單",
       "settlements": "結算",
+      "transactions": "交易",
+      "landingCost": "落地成本",
       "promotions": "促銷",
       "rma": "RMA",
       "materials": "素材"
@@ -707,6 +821,10 @@
       "ordersDesc": "商店收到的訂單。",
       "settlements": "結算",
       "settlementsDesc": "已配達訂單待對帳營收。",
+      "transactions": "交易",
+      "transactionsDesc": "商店 ORDER 與 PAYOUT 紀錄，可匯出報表。",
+      "landingCost": "落地成本",
+      "landingCostDesc": "依行項目、費用與折扣估算最終成本。",
       "promotions": "促銷",
       "promotionsDesc": "建立商店促銷 — 送交後台審核。",
       "rma": "RMA",
@@ -779,6 +897,8 @@
       "inventoryCard": "倉庫、SKU 與單據",
       "ordersCard": "銷售訂單",
       "settlementsCard": "結算",
+      "transactionsCard": "交易",
+      "landingCostCard": "落地成本",
       "promotionsCard": "促銷",
       "rmaCard": "RMA",
       "materialsCard": "行銷素材"
@@ -868,14 +988,60 @@
     },
     "settlementsPage": {
       "pendingTotal": "待對帳總額",
-      "empty": "沒有待對帳結算。",
-      "intro": "已配達訂單待對帳營收。"
+      "empty": "此篩選條件無結算。",
+      "intro": "已配達訂單營收 — 待對帳、撥款中或已撥款。",
+      "status": {
+        "PENDING_RECONCILE": "待對帳",
+        "INCLUDED_IN_PAYOUT": "已納入撥款",
+        "PAID_OUT": "已撥款"
+      }
     },
     "rmaPage": {
       "intro": "確認已核准退款的退貨入庫。",
       "empty": "沒有等待入庫的 REFUND_APPROVED 訂單。",
       "openInventory": "開啟庫存",
       "restockHint": "確認退貨後請以庫存單補回 SKU。"
+    }
+  },
+  "landingCost": {
+    "intro": "請手動輸入行價。促銷折抵不會從促銷 API 載入 — 請自行填數字。",
+    "itemsHeading": "行項目",
+    "addLine": "新增行",
+    "removeLine": "移除行",
+    "unitPrice": "單價",
+    "quantity": "數量",
+    "lineDiscount": "行折扣",
+    "shippingFee": "運費",
+    "vatAmount": "VAT",
+    "packagingFee": "包裝費",
+    "promoDiscount": "促銷折抵",
+    "calculate": "計算",
+    "calculating": "計算中…",
+    "formError": "金額須 ≥ 0。數量須為整數 ≥ 1。",
+    "resultHeading": "結果",
+    "itemsSubtotal": "商品小計",
+    "finalAmount": "最終金額"
+  },
+  "transactions": {
+    "title": "交易",
+    "intro": "依日期與類型篩選。匯出會開啟報表檔案。",
+    "introBuyer": "您的訂單付款。可依日期篩選。",
+    "startDate": "開始日期",
+    "endDate": "結束日期",
+    "type": "類型",
+    "format": "格式",
+    "export": "匯出",
+    "exporting": "匯出中…",
+    "exportHint": "MVP：XLSX 仍為 CSV 內容，副檔名 .xlsx。",
+    "periodInvalid": "請選擇有效日期區間（結束日 ≥ 開始日）。",
+    "empty": "此篩選條件無交易。",
+    "shop": "商店",
+    "shopOwner": "店主",
+    "buyer": "買家",
+    "types": {
+      "ALL": "全部",
+      "ORDER": "訂單",
+      "PAYOUT": "撥款"
     }
   },
   "toast": {
@@ -1005,7 +1171,28 @@
     "productNotPending": "商品非 PENDING。",
     "staffLocked": "已鎖定員工",
     "staffUnlocked": "已解鎖員工",
-    "staffDeleted": "已刪除員工"
+    "staffDeleted": "已刪除員工",
+    "accessDenied": "您沒有權限執行此操作。",
+    "financeConfigNotFound": "找不到啟用中的財務設定。",
+    "financeConfigNotPending": "僅待審核的財務設定可進行審核。",
+    "financeConfigSubmitted": "財務設定已送出待審核",
+    "financeConfigCreateFailed": "送出財務設定失敗",
+    "financeConfigApproved": "財務設定已核准並啟用",
+    "financeConfigApproveFailed": "核准財務設定失敗",
+    "financeConfigRejected": "財務設定已拒絕",
+    "financeConfigRejectFailed": "拒絕財務設定失敗",
+    "payoutNotFound": "找不到撥款單。",
+    "payoutNotPending": "僅待處理的撥款單可核准或拒絕。",
+    "payoutNoSettlements": "此商店在該期間沒有待對帳的結算。",
+    "shopNotFound": "找不到商店。",
+    "payoutCreated": "已建立賣家撥款單",
+    "payoutCreateFailed": "建立撥款單失敗",
+    "payoutApproveFailed": "核准撥款單失敗",
+    "payoutRejectFailed": "拒絕撥款單失敗",
+    "payoutApprovedWithRef": "撥款已核准 — gateway ref {ref}",
+    "landingCostFailed": "計算落地成本失敗",
+    "financeExportReady": "匯出就緒（{count} 列）",
+    "financeExportFailed": "匯出財務報表失敗"
   },
   "superAdmin": {
     "title": "系統管理",

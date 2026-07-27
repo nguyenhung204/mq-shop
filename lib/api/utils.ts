@@ -77,6 +77,14 @@ export function formatMoney(value: string | number | undefined | null): string {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
 }
 
+/** Format BE percent strings (e.g. `"5.0000"`) as `5%` / `6.5%`. */
+export function formatPercent(value: string | number | undefined | null): string {
+  const n = typeof value === "string" ? Number(value) : value ?? 0;
+  if (!Number.isFinite(n)) return "—";
+  const trimmed = Number(n.toFixed(4));
+  return `${trimmed}%`;
+}
+
 export function isStrongPassword(password: string): boolean {
   return password.length >= 8 && /[A-Z]/.test(password) && /\d/.test(password);
 }

@@ -3,12 +3,16 @@ import {
   BadgeDollarSign,
   BadgePercent,
   Boxes,
+  Calculator,
   ClipboardList,
   FolderOpen,
   FolderTree,
+  HandCoins,
   ImageIcon,
   LayoutDashboard,
   Package,
+  Percent,
+  Receipt,
   RotateCcw,
   Scale,
   Settings,
@@ -17,6 +21,17 @@ import {
   UserCog,
   Users,
 } from "lucide-react";
+import type { Role } from "@/lib/api/types";
+
+/** Commerce permissions accountants may access when `/me` omits a full grant list. */
+export const ACCOUNTANT_COMMERCE_PERMS = [
+  "PROCESS_RMA",
+  "MANAGE_RMA",
+  "VIEW_TRANSACT",
+  "CONFIG_FEE",
+  "PAYOUT_SELLER",
+  "CALC_LAND_COST",
+] as const;
 
 export type AdminNavItem = {
   href: string;
@@ -24,6 +39,8 @@ export type AdminNavItem = {
   labelKey: string;
   icon: LucideIcon;
   permissions?: string[];
+  /** When set, user must have at least one of these roles (in addition to permissions). */
+  roles?: Role[];
   sa?: boolean;
   group?: "ops" | "commerce" | "system";
 };
@@ -101,10 +118,39 @@ export const adminNavItems: AdminNavItem[] = [
     group: "commerce",
   },
   {
+    href: "/admin/transactions",
+    labelKey: "admin.nav.transactions",
+    icon: Receipt,
+    permissions: ["VIEW_TRANSACT"],
+    group: "commerce",
+  },
+  {
+    href: "/admin/payouts",
+    labelKey: "admin.nav.payouts",
+    icon: HandCoins,
+    permissions: ["PAYOUT_SELLER"],
+    group: "commerce",
+  },
+  {
+    href: "/admin/landing-cost",
+    labelKey: "admin.nav.landingCost",
+    icon: Calculator,
+    permissions: ["CALC_LAND_COST"],
+    group: "commerce",
+  },
+  {
     href: "/admin/finance",
     labelKey: "admin.nav.finance",
     icon: BadgeDollarSign,
     permissions: ["MANAGE_PAYOUT", "MANAGE_WALLET_WITHDRAW", "REVIEW_PAYMENT_GATEWAY", "VIEW_REFUND_REPORT"],
+    group: "commerce",
+  },
+  {
+    href: "/admin/finance/configs",
+    labelKey: "admin.nav.financeConfigs",
+    icon: Percent,
+    permissions: ["CONFIG_FEE"],
+    roles: ["SUPER_ADMIN", "ACCOUNTANT"],
     group: "commerce",
   },
   {
