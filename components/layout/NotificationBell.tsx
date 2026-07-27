@@ -4,16 +4,18 @@ import { useEffect, useRef, useState } from "react";
 import { Bell } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useNotifications } from "@/components/providers/NotificationProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 
-function statusLabel(status: string): string {
-  if (status === "live") return "Live";
-  if (status === "reconnecting") return "Reconnecting…";
-  if (status === "offline") return "Offline";
-  return "";
-}
+const STREAM_KEY_MAP: Record<string, string> = {
+  live: "connected",
+  reconnecting: "connecting",
+  offline: "disconnected",
+};
 
 export function NotificationBell() {
   const { isAuthenticated } = useAuth();
+  const { t } = useLanguage();
   const {
     items,
     unreadCount,
@@ -68,7 +70,7 @@ export function NotificationBell() {
               <span className="text-sm font-medium">Notifications</span>
               {streamStatus !== "idle" && (
                 <p className="text-[10px] text-mq-text-muted mt-0.5">
-                  {statusLabel(streamStatus)}
+                  {translateStatus(t, "stream", STREAM_KEY_MAP[streamStatus] ?? streamStatus)}
                   {streamStatus === "live" ? " · live updates" : ""}
                 </p>
               )}

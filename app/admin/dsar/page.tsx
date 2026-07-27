@@ -12,6 +12,7 @@ import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 
@@ -101,7 +102,7 @@ function DsarInner() {
           >
             {STATUS_FILTERS.map((s) => (
               <option key={s || "all"} value={s}>
-                {s ? s : t("admin.common.allStatuses")}
+                {s === "" ? t("admin.common.allStatuses") : translateStatus(t, "dsar", s)}
               </option>
             ))}
           </select>
@@ -137,7 +138,7 @@ function DsarInner() {
                       ) : null}
                     </td>
                     <td className="p-3">
-                      <span className={statusBadgeClass(r.status)}>{r.status}</span>
+                      <span className={statusBadgeClass(r.status)}>{translateStatus(t, "dsar", r.status)}</span>
                     </td>
                     <td className="p-3 text-xs text-mq-text-secondary max-w-xs truncate">
                       {r.note || "—"}

@@ -242,5 +242,5 @@ export const adminNavItems: AdminNavItem[] = [
     roles: ["ADMIN", "SUPER_ADMIN"],
     group: "system",
   },
-  { href: "/super-admin", labelKey: "admin.nav.system", icon: Settings, sa: true, group: "system" },
+  { href: "/admin/system", labelKey: "admin.nav.system", icon: Settings, sa: true, group: "system" },
 ];

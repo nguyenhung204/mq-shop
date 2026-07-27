@@ -14,6 +14,7 @@ import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 
 function RmaDetailInner({ id }: { id: string }) {
@@ -51,10 +52,10 @@ function RmaDetailInner({ id }: { id: string }) {
               <div className="space-y-1">
                 <p className="text-xs text-mq-text-muted font-mono">{rma.id}</p>
                 <div className="flex flex-wrap gap-2 items-center">
-                  <span className="mq-badge mq-badge-pink">{rma.status}</span>
+                  <span className="mq-badge mq-badge-pink">{translateStatus(t, "rma", rma.status)}</span>
                   {rma.orderStatus ? (
                     <span className="mq-badge mq-badge-cyan">
-                      {t("admin.rmaPage.order")} · {rma.orderStatus}
+                      {t("admin.rmaPage.order")} · {translateStatus(t, "order", rma.orderStatus)}
                     </span>
                   ) : null}
                 </div>

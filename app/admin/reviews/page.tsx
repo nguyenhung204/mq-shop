@@ -7,6 +7,7 @@ import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { Stars } from "@/components/ui/shared";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
@@ -71,7 +72,7 @@ function AdminReviewsInner() {
             >
               {STATUS_FILTERS.map((s) => (
                 <option key={s || "all"} value={s}>
-                  {s || t("admin.common.allStatuses")}
+                  {s === "" ? t("admin.common.allStatuses") : translateStatus(t, "review", s)}
                 </option>
               ))}
             </select>
@@ -138,7 +139,7 @@ function AdminReviewsInner() {
                     </td>
                     <td className="p-3">
                       <span className={statusBadgeClass(r.status)}>
-                        {r.status || "VISIBLE"}
+                        {translateStatus(t, "review", r.status || "VISIBLE")}
                       </span>
                     </td>
                     <td className="p-3 text-xs text-mq-text-secondary max-w-xs">

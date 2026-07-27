@@ -266,6 +266,7 @@ export function canRequestRma(
   return Date.now() - delivered <= sevenDays;
 }
 
+/** @deprecated Use translateStatus(t, "rmaMessage", status) instead. */
 export function rmaStatusLabel(status: RmaStatus): string {
   switch (status) {
     case "PENDING":

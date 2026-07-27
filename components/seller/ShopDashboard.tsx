@@ -5,6 +5,7 @@ import { FileText, ImageIcon, LayoutDashboard, Store } from "lucide-react";
 import { useApplyShop, useSellerShop } from "@/lib/queries/seller";
 import { ShopBrandingUpload } from "@/components/seller/ShopBrandingUpload";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { CountrySelect } from "@/components/ui/CountrySelect";
 import { ShopCardSkeleton } from "@/components/ui/Skeleton";
 import "./shop.css";
@@ -128,7 +129,7 @@ export function ShopDashboard({ initialSection }: Props) {
           </header>
           <div className="space-y-4 text-sm">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="mq-badge mq-badge-cyan">{shop.status}</span>
+              <span className="mq-badge mq-badge-cyan">{translateStatus(t, "shop", shop.status)}</span>
               {shop.isSuspended ? (
                 <span className="mq-badge mq-badge-pink">{t("seller.shop.suspended")}</span>
               ) : null}
@@ -191,7 +192,7 @@ export function ShopDashboard({ initialSection }: Props) {
             </div>
             <div>
               <dt>{t("seller.common.status")}</dt>
-              <dd>{shop.status}</dd>
+              <dd>{translateStatus(t, "shop", shop.status)}</dd>
             </div>
             <div>
               <dt>{t("seller.shop.taxId")}</dt>

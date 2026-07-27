@@ -9,7 +9,6 @@ const portals = [
   { href: "/seller", label: "Seller", role: "SELLER" as const, match: (p: string) => p.startsWith("/seller") },
   { href: "/admin", label: "Admin", roles: ["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"] as const, match: (p: string) => p.startsWith("/admin") },
   { href: "/wallet", label: "Wallet", match: (p: string) => p.startsWith("/wallet") || p.startsWith("/mlm") },
-  { href: "/super-admin", label: "System", role: "SUPER_ADMIN" as const, match: (p: string) => p.startsWith("/super-admin") },
 ];
 
 export function RoleSwitcher() {

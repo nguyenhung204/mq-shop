@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSellerOrders } from "@/lib/queries/seller";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { OrderListSkeleton } from "@/components/ui/Skeleton";
 
 function SellerRmaInner() {
@@ -33,7 +34,7 @@ function SellerRmaInner() {
             <Link href={`/orders/${o.id}`} className="font-mono font-medium hover:underline">
               {o.code}
             </Link>
-            <span className="mq-badge mq-badge-pink ml-2">{o.status}</span>
+            <span className="mq-badge mq-badge-pink ml-2">{translateStatus(t, "order", o.status)}</span>
             <p className="text-xs text-mq-text-muted mt-1">
               {t("seller.rmaPage.restockHint")}
             </p>

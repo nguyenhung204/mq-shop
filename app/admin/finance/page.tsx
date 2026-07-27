@@ -17,6 +17,7 @@ import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { BadgeCheck, Check, X } from "lucide-react";
 
@@ -77,7 +78,7 @@ function FinanceInner() {
               {batches.map((b) => (
                 <div key={b.id} className="mq-card p-4 flex flex-wrap justify-between gap-2 text-sm">
                   <span>
-                    {b.id.slice(0, 8)}… · {b.status} · {b.netAmountUsd}
+                    {b.id.slice(0, 8)}… · {translateStatus(t, "financeItem", b.status)} · {b.netAmountUsd}
                   </span>
                   <AdminActions>
                     {b.status === "PENDING" && (
@@ -117,7 +118,7 @@ function FinanceInner() {
               {withdraws.map((w) => (
                 <div key={w.id} className="mq-card p-4 flex flex-wrap justify-between gap-2 text-sm">
                   <span>
-                    {w.amountPoints} pts · {w.status}
+                    {w.amountPoints} pts · {translateStatus(t, "financeItem", w.status)}
                   </span>
                   <AdminActions>
                     {w.status === "PENDING" && (
@@ -168,7 +169,7 @@ function FinanceInner() {
               {gateways.map((g) => (
                 <div key={g.id} className="mq-card p-4 flex justify-between text-sm">
                   <span>
-                    {g.gatewayName || g.id.slice(0, 8)} · {g.status}
+                    {g.gatewayName || g.id.slice(0, 8)} · {translateStatus(t, "financeItem", g.status)}
                   </span>
                   {g.status === "PENDING_REVIEW" && (
                     <AdminActions>

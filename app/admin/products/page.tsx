@@ -16,6 +16,7 @@ import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 
@@ -120,7 +121,7 @@ function ProductsInner() {
                 <p className="font-medium">{title}</p>
                 <p className="text-xs text-mq-text-muted mt-0.5">
                   {productPriceLabel(p)} ·{" "}
-                  {t("admin.productsPage.stock", { n: String(p.stock ?? "—") })} · {p.status}
+                  {t("admin.productsPage.stock", { n: String(p.stock ?? "—") })} · {translateStatus(t, "product", p.status)}
                 </p>
                 {excerpt ? (
                   <p className="text-xs text-mq-text-secondary mt-2">{excerpt}</p>

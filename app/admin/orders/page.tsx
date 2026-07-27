@@ -19,6 +19,7 @@ import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { CountrySelect } from "@/components/ui/CountrySelect";
 import { PhoneInput } from "@/components/ui/PhoneInput";
 import { AddressRegionFields } from "@/components/ui/AddressRegionFields";
@@ -343,7 +344,7 @@ function OrdersInner() {
             ] as OrderStatus[]
           ).map((s) => (
             <option key={s} value={s}>
-              {s}
+              {translateStatus(t, "order", s)}
             </option>
           ))}
         </select>
@@ -384,7 +385,7 @@ function OrdersInner() {
               <Link href={`/orders/${o.id}`} className="font-mono font-medium hover:underline">
                 {o.code}
               </Link>
-              <span className="mq-badge mq-badge-cyan ml-2">{o.status}</span>
+              <span className="mq-badge mq-badge-cyan ml-2">{translateStatus(t, "order", o.status)}</span>
               <p className="text-xs text-mq-text-muted mt-1">
                 Shop {o.shopId.slice(0, 8)}… · Buyer {o.buyerId.slice(0, 8)}… ·{" "}
                 {formatMoney(o.total)} {o.currency}

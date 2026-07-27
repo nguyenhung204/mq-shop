@@ -27,6 +27,7 @@ import {
   AdminIconButton,
 } from "@/components/admin/AdminIconButton";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 import { categoryLabel } from "@/lib/api/categoryLabel";
@@ -100,23 +101,6 @@ function optionsEqual(
   return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 }
 
-function statusLabel(
-  status: ApiProduct["status"],
-  t: (key: string) => string,
-): string {
-  switch (status) {
-    case "PENDING":
-      return t("seller.productsPage.pendingReview");
-    case "ACTIVE":
-      return t("seller.common.active");
-    case "REJECTED":
-      return t("seller.common.rejected");
-    case "HIDDEN":
-      return t("admin.common.hidden");
-    default:
-      return status;
-  }
-}
 
 function statusBadgeClass(status: ApiProduct["status"]): string {
   switch (status) {
@@ -538,15 +522,7 @@ function ProductsInner() {
             >
               {statusOptions.map((s) => (
                 <option key={s || "all"} value={s}>
-                  {s === "PENDING"
-                    ? t("seller.productsPage.pendingReview")
-                    : s === "ACTIVE"
-                      ? t("seller.common.active")
-                      : s === "REJECTED"
-                        ? t("seller.common.rejected")
-                        : s === "HIDDEN"
-                          ? t("admin.common.hidden")
-                          : t("seller.common.all")}
+                  {s === "" ? t("seller.common.all") : translateStatus(t, "product", s)}
                 </option>
               ))}
             </select>
@@ -567,7 +543,7 @@ function ProductsInner() {
         <form className="mq-card p-6 grid sm:grid-cols-2 gap-3" onSubmit={(e) => void submit(e)}>
           <h2 className="sm:col-span-2 text-lg">
             {editing
-              ? `${t("seller.productsPage.edit")} (${statusLabel(editing.status, t)})`
+              ? `${t("seller.productsPage.edit")} (${translateStatus(t, "product", editing.status)})`
               : t("seller.productsPage.create")}
           </h2>
           {editing?.status === "REJECTED" ? (
@@ -888,7 +864,7 @@ function ProductsInner() {
                         </td>
                         <td className="p-3">
                           <span className={statusBadgeClass(p.status)}>
-                            {statusLabel(p.status, t)}
+                            {translateStatus(t, "product", p.status)}
                           </span>
                           {p.status === "REJECTED" ? (
                             <button

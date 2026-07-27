@@ -529,7 +529,7 @@
         "marketing": "Upload seller marketing kits and assets",
         "walletPayouts": "Approve personal wallet withdraw requests (≠ seller payouts)",
         "walletAdjust": "Credit or debit personal wallet balance (ADJUST_POINTS)",
-        "mlm": "Rank / referrer / referral rate (Acc+SA); network lookup for Admin"
+        "mlm": "Manage ranks, referrers, and referral rates; look up distribution networks"
       },
       "noModules": "No admin modules available for this account. Check roles and permissions."
     },
@@ -801,7 +801,7 @@
       "empty": "No users for this filter."
     },
     "staffPage": {
-      "allShopsUnassigned": "All shops (+ unassigned BUYER)",
+      "allShopsUnassigned": "All shops (+ unassigned buyers)",
       "allPool": "All pool",
       "empty": "No users for this filter.",
       "unassigned": "Unassigned",
@@ -814,10 +814,12 @@
       "selectShop": "Select shop",
       "pendingRoles": "Pending roles",
       "pendingNotice": "Change saved as PENDING. Super Admin must approve before login with the new roles.",
-      "createHint": "Only when the email does not exist yet. Prefer Assign on a BUYER candidate. Admin create → PENDING until Super Admin approves.",
+      "createHint": "Only when the email does not exist yet. Prefer Assign on a buyer candidate. Admin create stays pending until Super Admin approves.",
       "tempPasswordTitle": "Temporary password",
       "tempPasswordHint": "Copy now — it will not be shown again. Account: {email}",
-      "copy": "Copy"
+      "copy": "Copy",
+      "candidate": "Candidate",
+      "buyerCandidates": "Buyer (candidates)"
     },
     "ordersPage": {
       "createForBuyer": "Create for buyer",
@@ -943,21 +945,21 @@
     },
     "mlm": {
       "title": "MLM ranks",
-      "description": "Rank table / set rank (Accountant, Super Admin), referrer & referral rate, and network lookup by user (Admin+).",
-      "hint": "CONFIG_MLM: Accountant + Super Admin set rank / referrer / rate. Admin uses network lookup only (VIEW_MLM_TREE). Not finance commissionPercent.",
+      "description": "View the rank table, set ranks / referrers / referral rates (Accountant & Super Admin), and look up distribution networks.",
+      "hint": "Accountant and Super Admin can set rank, referrer, and referral rate. Admin can only look up networks. This is separate from shop finance commission settings.",
       "ranksTitle": "Rank table",
       "team": "Team %",
       "referral": "Referral %",
       "globalTier": "Global tier",
       "setRankTitle": "Set user rank",
-      "setRankHint": "Search a user by name or email, then choose rank 0–10 (0 = Seller). Accountant (APPROVE) and Super Admin (ALL) only. Setting rank may cascade auto-promote uplines.",
+      "setRankHint": "Search a user by name or email, then choose rank 0–10 (0 = Seller). Only Accountant and Super Admin can do this. Changing a rank may also auto-promote their uplines.",
       "userId": "User ID",
       "userIdRequired": "User ID is required.",
       "rankInvalid": "Rank must be an integer from 0 to 10.",
       "setRank": "Update rank",
       "rankUpdated": "Updated {email} → rank {rank} ({name})",
       "setReferrerTitle": "Set referrer",
-      "setReferrerHint": "Change a user’s direct upline (referrerId). Clear removes the referrer.",
+      "setReferrerHint": "Change a user’s direct upline. Clear removes the referrer.",
       "currentReferrer": "Current referrer",
       "newReferrer": "New referrer",
       "newReferrerPh": "Search upline user…",
@@ -977,34 +979,37 @@
       "rateCleared": "Referral rate override cleared.",
       "rateDefault": "Rank default",
       "treeTitle": "Distribution network",
-      "treeHint": "Ops lookup: load another user’s downline via userId (VIEW_MLM_TREE ALL).",
+      "treeHint": "Look up another user’s downline by searching their name or email.",
       "loadTree": "Load tree",
       "searchUser": "User",
       "searchUserPh": "Search by name or email…",
       "userRequired": "Select a user.",
-      "noConfigPerm": "Your role cannot set MLM rank (CONFIG_MLM is NONE for Admin). You can still look up network trees below.",
+      "noConfigPerm": "Your role cannot set MLM ranks. You can still look up network trees below.",
       "rankName": "Name",
       "runMonthlyTitle": "Run monthly commission",
-      "runMonthlyHint": "Pick a UTC month with DELIVERED volume, then run TEAM / LOYALTY / GLOBAL (same as cron). Prefer suggestedAction=RUN. Re-run is idempotent.",
+      "runMonthlyHint": "Pick a UTC month that has delivered-order volume, then run team, loyalty, and global commissions (same as the monthly job). Prefer months marked “Run”. Re-running a finished month is safe and won’t double-pay.",
       "runMonthly": "Run monthly commission",
       "runMonthlyDone": "Monthly job finished for {yearMonth}.",
       "yearMonth": "Year-month",
       "yearMonthInvalid": "Use YYYY-MM (e.g. 2026-06).",
-      "overviewEmpty": "No months with DELIVERED orders in the last 12 months — seed demo data or wait for volume.",
+      "overviewEmpty": "No months with delivered orders in the last 12 months — add demo data or wait for volume.",
       "gmv": "GMV",
       "orders": "Orders",
       "globalFund": "Global pool / tier",
-      "credited": "Credited (T/G/L)",
+      "credited": "Credited (team / global / loyalty)",
+      "creditedTeam": "Team",
+      "creditedGlobal": "Global",
+      "creditedLoyalty": "Loyalty",
       "suggestedAction": "Action",
       "selectMonth": "Select a month with GMV to run.",
       "selectedMonth": "Selected: {yearMonth}",
-      "reRunSafe": "Already credited — re-run is safe (idempotent).",
+      "reRunSafe": "Already credited — re-run is safe and won’t double-pay.",
       "yearMonthRequired": "Select a month from the overview.",
-      "yearMonthNoVolume": "That month has no DELIVERED volume.",
+      "yearMonthNoVolume": "That month has no delivered-order volume.",
       "action": {
-        "RUN": "RUN",
-        "RE_RUN_IDEMPOTENT": "RE-RUN",
-        "NO_VOLUME": "NO VOLUME"
+        "RUN": "Run",
+        "RE_RUN_IDEMPOTENT": "Re-run",
+        "NO_VOLUME": "No sales"
       },
       "poolPerTier": "Pool per tier",
       "totalPaidToUsers": "Paid to users",
@@ -1013,16 +1018,18 @@
       "companyKept": "Company kept",
       "beneficiaries": "Beneficiaries",
       "tier": "Tier",
-      "unscopedPaid": "Unscoped paid (no tier)",
+      "unscopedPaid": "Paid without a tier",
       "toggleGlobalFund": "Expand global fund breakdown",
       "paidKeptShort": "paid {paid} · kept {kept}",
       "tierStatus": {
-        "PAID": "PAID",
-        "COMPANY_KEPT": "COMPANY KEPT",
-        "PENDING": "PENDING"
+        "PAID": "Paid",
+        "COMPANY_KEPT": "Company kept",
+        "PENDING": "Pending"
       },
+      "rankActive": "Active",
+      "rankInactive": "Inactive",
       "reconcileTitle": "Reconcile ranks",
-      "reconcileHint": "Wake the Rank Engine when someone qualifies but wasn’t promoted yet (after seed, shop approve, or stuck ranks). One user, or a batch of ACTIVE users below rank 10.",
+      "reconcileHint": "Recheck and promote users who already qualify but weren’t upgraded yet (for example after demo seed, shop approval, or stuck ranks). Run for one user, or a batch of active users below rank 10.",
       "reconcileOneUser": "One user",
       "reconcileUser": "Reconcile user",
       "reconcileBatch": "Reconcile batch",
@@ -1245,8 +1252,8 @@
       "flags": "Flags",
       "slips": "Slips",
       "newSlip": "New slip",
-      "inGoods": "IN — goods received",
-      "outGoods": "OUT — goods shipped / adjust",
+      "inGoods": "Stock in — goods received",
+      "outGoods": "Adjust out — decrease stock",
       "items": "Items",
       "createSlip": "Create slip",
       "noSlips": "No slips yet.",
@@ -1256,7 +1263,8 @@
       "toDate": "To date",
       "warehouseName": "Warehouse name",
       "warehouseCode": "Warehouse code",
-      "warehouseAddress": "Address"
+      "warehouseAddress": "Address",
+      "adjustIn": "Adjust in — increase stock"
     },
     "ordersPage": {
       "help": "Orders placed for your shop.",
@@ -1377,7 +1385,7 @@
     "pinMismatch": "PIN must be 6 digits and match confirmation.",
     "otpInvalid": "OTP must be 6 digits.",
     "reasons": {
-      "P2P": "P2P",
+      "P2P": "P2P transfer",
       "WITHDRAW_FREEZE": "Withdraw freeze",
       "WITHDRAW_RELEASE": "Withdraw release",
       "WITHDRAW_COMPLETE": "Withdraw complete",
@@ -1385,7 +1393,7 @@
       "TEAM": "Team",
       "GLOBAL": "Global",
       "LOYALTY": "Loyalty",
-      "ADJUST": "Adjust"
+      "ADJUST": "Adjustment"
     },
     "pinRequiredBanner": "Set your wallet PIN before continuing.",
     "p2pEmail": "Recipient email",
@@ -1451,7 +1459,7 @@
     "commissionStatus": {
       "PENDING": "Pending",
       "CREDITED": "Credited",
-      "VOID": "Void"
+      "VOID": "Voided"
     },
     "txReason": "Reason",
     "txReasonAll": "All reasons",
@@ -1733,6 +1741,212 @@
       "backupsDesc": "FULL backup create, progress, and ZIP download.",
       "dsarDesc": "Approve and execute data subject erasure requests.",
       "auditDesc": "Filterable platform audit trail with before/after diffs."
+    }
+  },
+  "status": {
+    "order": {
+      "PENDING": "Pending",
+      "PAID": "Paid",
+      "CONFIRMED": "Confirmed",
+      "PACKED": "Packed",
+      "SHIPPED": "Shipped",
+      "DELIVERED": "Delivered",
+      "CANCELLED": "Cancelled",
+      "REFUND_APPROVED": "Refund approved",
+      "REFUNDED": "Refunded"
+    },
+    "rma": {
+      "PENDING": "Pending",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "CLOSED": "Closed"
+    },
+    "rmaMessage": {
+      "PENDING": "Return pending review",
+      "APPROVED": "Return approved",
+      "REJECTED": "Return rejected",
+      "CLOSED": "Return closed",
+      "REFUND_APPROVED": "Refund approved — waiting for accountant payout outside the system.",
+      "REFUNDED": "Refund completed"
+    },
+    "shop": {
+      "PENDING": "Pending",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "SUSPENDED": "Suspended"
+    },
+    "product": {
+      "PENDING": "Pending review",
+      "ACTIVE": "Active",
+      "REJECTED": "Rejected",
+      "HIDDEN": "Hidden"
+    },
+    "promo": {
+      "PENDING": "Pending",
+      "ACTIVE": "Active",
+      "REJECTED": "Rejected",
+      "EXPIRED": "Expired"
+    },
+    "inventorySlip": {
+      "PENDING": "Pending",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected"
+    },
+    "settlement": {
+      "PENDING_RECONCILE": "Pending reconcile",
+      "INCLUDED_IN_PAYOUT": "Included in payout",
+      "PAID_OUT": "Paid out"
+    },
+    "review": {
+      "VISIBLE": "Visible",
+      "HIDDEN": "Hidden"
+    },
+    "dsar": {
+      "SUBMITTED": "Submitted",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "EXECUTED": "Executed",
+      "DELETED": "Deleted"
+    },
+    "backup": {
+      "QUEUED": "Queued",
+      "RUNNING": "Running",
+      "SUCCESS": "Success",
+      "FAILED": "Failed"
+    },
+    "user": {
+      "ACTIVE": "Active",
+      "PENDING": "Pending",
+      "LOCKED": "Locked",
+      "DELETED": "Deleted"
+    },
+    "financeItem": {
+      "PENDING": "Pending",
+      "APPROVED": "Approved",
+      "COMPLETED": "Completed",
+      "REJECTED": "Rejected",
+      "PENDING_REVIEW": "Pending review"
+    },
+    "transaction": {
+      "PENDING": "Pending",
+      "PAID": "Paid",
+      "CONFIRMED": "Confirmed",
+      "PACKED": "Packed",
+      "SHIPPED": "Shipped",
+      "DELIVERED": "Delivered",
+      "CANCELLED": "Cancelled",
+      "REFUND_APPROVED": "Refund approved",
+      "REFUNDED": "Refunded",
+      "COMPLETED": "Completed",
+      "SUCCESS": "Success",
+      "FAILED": "Failed",
+      "REJECTED": "Rejected"
+    },
+    "paymentMethod": {
+      "COD": "Cash on delivery",
+      "MOCK": "Mock payment"
+    },
+    "stream": {
+      "connected": "Live",
+      "connecting": "Reconnecting…",
+      "disconnected": "Offline"
+    },
+    "inventorySlipType": {
+      "IN": "Stock in",
+      "ADJUST_IN": "Adjust in (+)",
+      "ADJUST_OUT": "Adjust out (−)"
+    },
+    "walletDirection": {
+      "IN": "In",
+      "OUT": "Out"
+    },
+    "promoType": {
+      "PERCENT": "Percent off",
+      "FIXED": "Fixed amount",
+      "FREE_SHIP": "Free shipping",
+      "VOUCHER": "Voucher"
+    },
+    "backupType": {
+      "FULL": "Full",
+      "PARTIAL": "Partial"
+    },
+    "promoScope": {
+      "PLATFORM": "Platform",
+      "TARGETED": "Targeted"
+    },
+    "role": {
+      "BUYER": "Buyer",
+      "SELLER": "Seller",
+      "WAREHOUSE": "Warehouse",
+      "CS": "Customer service",
+      "ACCOUNTANT": "Accountant",
+      "ADMIN": "Admin",
+      "SUPER_ADMIN": "Super admin"
+    },
+    "auditOutcome": {
+      "success": "Succeeded",
+      "failure": "Failed",
+      "denied": "Denied"
+    },
+    "auditCategory": {
+      "Account": "Account",
+      "Users": "Users",
+      "Shops": "Shops",
+      "Products": "Products",
+      "Catalog": "Catalog",
+      "Inventory": "Inventory",
+      "Orders": "Orders",
+      "Finance": "Finance",
+      "Promotions": "Promotions",
+      "Staff": "Staff",
+      "MLM": "MLM",
+      "Other": "Other"
+    },
+    "auditResource": {
+      "shop": "Shop",
+      "product": "Product",
+      "user": "User",
+      "category": "Category",
+      "warehouse": "Warehouse",
+      "slip": "Inventory slip",
+      "variant": "Variant",
+      "promotion": "Promotion",
+      "order": "Order",
+      "payout": "Payout",
+      "settlement": "Settlement",
+      "review": "Review",
+      "banner": "Banner",
+      "wallet": "Wallet"
+    },
+    "auditAction": {
+      "admin.shop.approve": "Shop approved",
+      "admin.shop.reject": "Shop rejected",
+      "admin.shop.violation_lock": "Shop suspended",
+      "admin.product.approve": "Product approved",
+      "admin.product.reject": "Product rejected",
+      "admin.product.hide": "Product hidden by admin",
+      "product.create": "Product created",
+      "product.update": "Product updated",
+      "product.hide": "Product hidden by seller",
+      "product.unhide": "Product unhidden by seller",
+      "product.images.upload": "Product images uploaded",
+      "product.variant.create": "Product variant added by seller",
+      "product.variant.images.upload": "Variant images uploaded",
+      "inventory.warehouse.create": "Warehouse created",
+      "inventory.variant.create": "Inventory variant created",
+      "inventory.slip.create": "Inventory slip created",
+      "inventory.slip.approve": "Inventory slip approved",
+      "inventory.slip.reject": "Inventory slip rejected",
+      "admin.inventory.slip.approve": "Admin approved inventory slip",
+      "admin.inventory.slip.reject": "Admin rejected inventory slip",
+      "admin.user.lock": "Account locked",
+      "admin.user.unlock": "Account unlocked",
+      "admin.user.delete": "Account deleted",
+      "admin.category.create": "Category created",
+      "admin.category.update": "Category updated",
+      "shop.apply": "Shop application submitted",
+      "user.password.change": "Password changed",
+      "auth.logout": "Signed out"
     }
   }
 }

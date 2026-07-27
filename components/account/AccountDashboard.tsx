@@ -22,6 +22,7 @@ import type { AuthUser } from "@/lib/api/types";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { useSellerShop } from "@/lib/queries/seller";
 import { useCreateMyDsar, useMyDsarRequests } from "@/lib/queries/compliance";
 import { Container } from "@/components/ui/shared";
@@ -398,7 +399,7 @@ function AccountInner() {
                         <span className="font-mono text-xs text-mq-text-muted">
                           {r.id.slice(0, 8)}…
                         </span>
-                        <span className="mq-badge mq-badge-muted">{r.status}</span>
+                        <span className="mq-badge mq-badge-muted">{translateStatus(t, "dsar", r.status)}</span>
                         <span className="text-xs text-mq-text-muted w-full sm:w-auto">
                           {r.createdAt ? new Date(r.createdAt).toLocaleString() : "—"}
                         </span>

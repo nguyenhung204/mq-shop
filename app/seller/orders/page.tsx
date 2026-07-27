@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import type { OrderStatus } from "@/lib/api/orders";
 import { nextFulfillmentStatus } from "@/lib/api/orders";
+import { translateStatus } from "@/lib/i18n/status";
 import { formatMoney } from "@/lib/api/utils";
 import { useSellerOrders } from "@/lib/queries/seller";
 import { useUpdateOrderStatus } from "@/lib/queries/orders";
@@ -56,7 +57,7 @@ function SellerOrdersInner() {
           ] as OrderStatus[]
         ).map((s) => (
           <option key={s} value={s}>
-            {s}
+            {translateStatus(t, "order", s)}
           </option>
         ))}
       </select>
@@ -79,7 +80,7 @@ function SellerOrdersInner() {
           >
             <Link href={`/orders/${o.id}`} className="hover:underline min-w-0">
               <span className="font-mono font-medium">{o.code}</span>
-              <span className="mq-badge mq-badge-cyan ml-2">{o.status}</span>
+              <span className="mq-badge mq-badge-cyan ml-2">{translateStatus(t, "order", o.status)}</span>
               <span className="block text-xs text-mq-text-muted mt-1">
                 {new Date(o.createdAt).toLocaleString()}
               </span>
@@ -98,7 +99,7 @@ function SellerOrdersInner() {
                     })
                   }
                 >
-                  → {next}
+                  → {translateStatus(t, "order", next)}
                 </button>
               ) : null}
             </div>

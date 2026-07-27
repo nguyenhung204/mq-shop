@@ -11,6 +11,7 @@ import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 import { useState } from "react";
@@ -104,7 +105,7 @@ function BackupsInner() {
                   <tr key={b.id} className="border-t border-mq-border">
                     <td className="p-3 font-mono text-xs">{b.id.slice(0, 8)}…</td>
                     <td className="p-3">
-                      <span className={statusBadgeClass(b.status)}>{b.status}</span>
+                      <span className={statusBadgeClass(b.status)}>{translateStatus(t, "backup", b.status)}</span>
                       {b.errorMessage ? (
                         <p className="text-[11px] text-mq-text-muted mt-1 max-w-xs truncate">
                           {b.errorMessage}

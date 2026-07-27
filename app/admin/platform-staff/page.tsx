@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Check, Copy, Pencil, Plus, X } from "lucide-react";
 import type { AuthUser } from "@/lib/api/types";
-import { formatPendingRoles, hasPendingStaffChange } from "@/lib/api/staff";
+import { hasPendingStaffChange } from "@/lib/api/staff";
 import {
   useAdminPlatformStaffList,
   useCreatePlatformStaff,
@@ -16,6 +16,7 @@ import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateRoles, translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 
@@ -172,7 +173,7 @@ function PlatformStaffInner() {
           >
             {STATUS_FILTERS.map((s) => (
               <option key={s || "all"} value={s}>
-                {s ? s : t("admin.common.allStatuses")}
+                {s === "" ? t("admin.common.allStatuses") : translateStatus(t, "user", s)}
               </option>
             ))}
           </select>
@@ -203,13 +204,15 @@ function PlatformStaffInner() {
                     <tr key={u.id} className="border-t border-mq-border">
                       <td className="p-3">{u.email}</td>
                       <td className="p-3">{u.fullName || "—"}</td>
-                      <td className="p-3">{(u.roles || []).join(", ") || "—"}</td>
+                      <td className="p-3">{translateRoles(t, u.roles)}</td>
                       <td className="p-3 text-xs text-mq-text-secondary">
-                        {formatPendingRoles(u.pendingRoles) || "—"}
+                        {u.pendingRoles?.length
+                          ? translateRoles(t, u.pendingRoles)
+                          : "—"}
                       </td>
                       <td className="p-3">
                         <span className={statusBadgeClass(u.status)}>
-                          {u.status || "—"}
+                          {u.status ? translateStatus(t, "user", u.status) : "—"}
                         </span>
                       </td>
                       <td className="p-3 whitespace-nowrap">
@@ -320,7 +323,12 @@ function PlatformStaffInner() {
                 <label className="block text-xs font-medium text-mq-text-muted mb-1.5">
                   {t("admin.common.roles")}
                 </label>
-                <input className="mq-input" value="ADMIN" disabled readOnly />
+                <input
+                  className="mq-input"
+                  value={translateStatus(t, "role", "ADMIN")}
+                  disabled
+                  readOnly
+                />
               </div>
               <div className="mq-admin-modal-actions">
                 <button
@@ -376,7 +384,12 @@ function PlatformStaffInner() {
               <p className="text-sm text-mq-text-secondary">
                 {t("admin.platformStaff.reaffirmHint")}
               </p>
-              <input className="mq-input" value="ADMIN" disabled readOnly />
+              <input
+                className="mq-input"
+                value={translateStatus(t, "role", "ADMIN")}
+                disabled
+                readOnly
+              />
               <div className="mq-admin-modal-actions">
                 <button
                   type="button"

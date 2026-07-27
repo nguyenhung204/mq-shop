@@ -15,6 +15,7 @@ import {
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { Container, PageHero } from "@/components/ui/shared";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { WalletSkeleton } from "@/components/ui/Skeleton";
@@ -215,7 +216,9 @@ function TxRow({ row }: { row: WalletTransaction }) {
           <span className={reasonBadgeClass(String(row.reason))}>
             {t(`wallet.reasons.${row.reason}`)}
           </span>
-          <span className="mq-badge mq-badge-muted">{row.direction}</span>
+          <span className="mq-badge mq-badge-muted">
+            {translateStatus(t, "walletDirection", row.direction)}
+          </span>
         </div>
         <p className="text-xs text-mq-text-muted">{formatWhen(row.createdAt)}</p>
       </div>

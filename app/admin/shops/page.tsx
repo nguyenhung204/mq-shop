@@ -17,6 +17,7 @@ import {
 } from "@/components/admin/AdminIconButton";
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 
@@ -80,7 +81,7 @@ function ShopsInner() {
             <div>
               <p className="font-medium">{s.name}</p>
               <p className="text-mq-text-muted text-xs">
-                {s.taxId || s.taxCode} · {s.countryCode} · {s.status}
+                {s.taxId || s.taxCode} · {s.countryCode} · {translateStatus(t, "shop", s.status)}
               </p>
             </div>
             <AdminActions>

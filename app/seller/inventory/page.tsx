@@ -27,6 +27,7 @@ import {
 import { useSellerProducts } from "@/lib/queries/seller";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import {
   AdminActions,
   AdminIconButton,
@@ -68,17 +69,11 @@ function slipStatusBadge(status: InventorySlipStatus): string {
   }
 }
 
-function slipTypeLabel(type: InventorySlipType): string {
-  switch (type) {
-    case "IN":
-      return "IN (+)";
-    case "ADJUST_IN":
-      return "ADJUST IN (+)";
-    case "ADJUST_OUT":
-      return "ADJUST OUT (−)";
-    default:
-      return type;
-  }
+function slipTypeLabel(
+  type: InventorySlipType,
+  t: (key: string, vars?: Record<string, string>) => string,
+): string {
+  return translateStatus(t, "inventorySlipType", type);
 }
 
 function WarehousesTab() {
@@ -533,7 +528,7 @@ function SlipsTab() {
               onChange={(e) => setType(e.target.value as InventorySlipType)}
             >
               <option value="IN">{t("seller.inventoryPage.inGoods")}</option>
-              <option value="ADJUST_IN">ADJUST_IN — increase</option>
+              <option value="ADJUST_IN">{t("seller.inventoryPage.adjustIn")}</option>
               <option value="ADJUST_OUT">{t("seller.inventoryPage.outGoods")}</option>
             </select>
             <select
@@ -674,7 +669,7 @@ function SlipsTab() {
                         {s.code}
                       </button>
                     </td>
-                    <td className="py-2.5 pr-3 text-xs">{slipTypeLabel(s.type)}</td>
+                    <td className="py-2.5 pr-3 text-xs">{slipTypeLabel(s.type, t)}</td>
                     <td className="py-2.5 pr-3">
                       <span className="font-medium">{slipItemsSummary(s)}</span>
                       {(s.items?.length ?? 0) > 1 ? (
@@ -693,7 +688,7 @@ function SlipsTab() {
                       ) : null}
                     </td>
                     <td className="py-2.5 pr-3">
-                      <span className={slipStatusBadge(s.status)}>{s.status}</span>
+                      <span className={slipStatusBadge(s.status)}>{translateStatus(t, "inventorySlip", s.status)}</span>
                     </td>
                     <td className="py-2.5 pr-3 text-mq-text-secondary">
                       {s.warehouseCode || "—"}
@@ -847,7 +842,7 @@ function LedgerTab() {
                       {formatDate(row.recordedAt)}
                     </td>
                     <td className="py-2.5 pr-3 font-medium">{row.sku}</td>
-                    <td className="py-2.5 pr-3 text-xs">{slipTypeLabel(row.type)}</td>
+                    <td className="py-2.5 pr-3 text-xs">{slipTypeLabel(row.type, t)}</td>
                     <td className="py-2.5 pr-3">{row.quantity}</td>
                     <td className="py-2.5 pr-3">
                       {row.quantityBefore} → {row.quantityAfter}

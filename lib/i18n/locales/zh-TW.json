@@ -529,7 +529,7 @@
         "marketing": "上傳賣家行銷素材包",
         "walletPayouts": "核准個人錢包提領（≠ 賣家撥款）",
         "walletAdjust": "加減個人錢包餘額（ADJUST_POINTS）",
-        "mlm": "等級／推薦人／推薦比率（Acc+SA）；Admin 查網絡"
+        "mlm": "管理等級、推薦人與推薦比率；查詢分銷網絡"
       },
       "noModules": "此帳號沒有可用的管理模組。請檢查角色與權限。"
     },
@@ -801,7 +801,7 @@
       "empty": "此篩選條件無使用者。"
     },
     "staffPage": {
-      "allShopsUnassigned": "全部商店（+ 未指派 BUYER）",
+      "allShopsUnassigned": "全部商店（+ 未指派買家）",
       "allPool": "全部池",
       "empty": "此篩選條件無使用者。",
       "unassigned": "未指派",
@@ -814,10 +814,12 @@
       "selectShop": "選擇商店",
       "pendingRoles": "待核准角色",
       "pendingNotice": "變更已存為 PENDING。需 Super Admin 核准後才能以新角色登入。",
-      "createHint": "僅限尚未存在的 Email。建議對 BUYER 候選人使用指派。Admin 建立 → PENDING 待 Super Admin。",
+      "createHint": "僅在電子郵件尚未存在時使用。建議對買家候選人指派。Admin 建立後需等 Super Admin 核准。",
       "tempPasswordTitle": "臨時密碼",
       "tempPasswordHint": "請立即複製 — 不會再顯示。帳號：{email}",
-      "copy": "複製"
+      "copy": "複製",
+      "candidate": "候選人",
+      "buyerCandidates": "買家（候選人）"
     },
     "ordersPage": {
       "createForBuyer": "代客下單",
@@ -905,7 +907,7 @@
       "openPayouts": "賣家撥款",
       "status": {
         "PENDING_RECONCILE": "待對帳",
-        "INCLUDED_IN_PAYOUT": "已納入撥款",
+        "INCLUDED_IN_PAYOUT": "已納入撥款單",
         "PAID_OUT": "已撥款"
       }
     },
@@ -943,21 +945,21 @@
     },
     "mlm": {
       "title": "MLM 等級",
-      "description": "等級表／設定等級、推薦人與推薦比率（Accountant、Super Admin）與依使用者查網絡（Admin+）。",
-      "hint": "CONFIG_MLM：Accountant 與 Super Admin 可設定等級／推薦人／比率。Admin 僅可查網絡（VIEW_MLM_TREE）。與財務 commissionPercent 無關。",
+      "description": "查看等級表、設定等級／推薦人／推薦比率（會計與 Super Admin），以及查詢分銷網絡。",
+      "hint": "會計與 Super Admin 可設定等級、推薦人與推薦比率。Admin 僅可查詢網絡。此功能與商店財務佣金設定無關。",
       "ranksTitle": "等級表",
       "team": "團隊 %",
       "referral": "推薦 %",
       "globalTier": "全球層級",
       "setRankTitle": "設定使用者等級",
-      "setRankHint": "依姓名或電子郵件搜尋使用者，再選擇等級 0–10（0 = Seller）。僅 Accountant（APPROVE）與 Super Admin（ALL）。設定等級可能連鎖自動升級上線。",
+      "setRankHint": "依姓名或電子郵件搜尋使用者，再選擇等級 0–10（0 = Seller）。僅會計與 Super Admin 可操作。變更等級可能一併自動升級其上線。",
       "userId": "使用者 ID",
       "userIdRequired": "需要使用者 ID。",
       "rankInvalid": "等級須為 0 到 10 的整數。",
       "setRank": "更新等級",
       "rankUpdated": "已更新 {email} → 等級 {rank}（{name}）",
       "setReferrerTitle": "設定推薦人",
-      "setReferrerHint": "變更使用者的直接上線（referrerId）。清除可移除推薦人。",
+      "setReferrerHint": "變更使用者的直接上線。清除可移除推薦人。",
       "currentReferrer": "目前推薦人",
       "newReferrer": "新推薦人",
       "newReferrerPh": "搜尋上線使用者…",
@@ -977,30 +979,33 @@
       "rateCleared": "已清除推薦比率覆寫。",
       "rateDefault": "等級預設",
       "treeTitle": "分銷網絡",
-      "treeHint": "營運查詢：以 userId 載入其他使用者下線（VIEW_MLM_TREE ALL）。",
+      "treeHint": "依姓名或電子郵件查詢其他使用者的下線網絡。",
       "loadTree": "載入樹",
       "searchUser": "使用者",
       "searchUserPh": "依姓名或電子郵件搜尋…",
       "userRequired": "請選擇使用者。",
-      "noConfigPerm": "您的角色無法設定 MLM 等級（Admin 的 CONFIG_MLM 為 NONE）。仍可在下方查詢網絡。",
+      "noConfigPerm": "您的角色無法設定 MLM 等級。仍可在下方查詢網絡。",
       "rankName": "名稱",
       "runMonthlyTitle": "執行月結獎金",
-      "runMonthlyHint": "選擇有 DELIVERED 營收的 UTC 月份，再執行 TEAM / LOYALTY / GLOBAL（同 cron）。優先 suggestedAction=RUN。重跑安全（冪等）。",
+      "runMonthlyHint": "選擇有已配達訂單業績的 UTC 月份，再執行團隊、忠誠與全球獎金（同月結作業）。優先選擇標示「執行」的月份。重跑已完成月份安全，不會重複發放。",
       "runMonthly": "執行月結獎金",
       "runMonthlyDone": "月結作業完成：{yearMonth}。",
       "yearMonth": "年月",
       "yearMonthInvalid": "請用 YYYY-MM（例如 2026-06）。",
-      "overviewEmpty": "近 12 個月沒有 DELIVERED 訂單月份 — 請 seed demo 或等待有業績。",
+      "overviewEmpty": "近 12 個月沒有已配達訂單的月份 — 請加入示範資料或等待有業績。",
       "gmv": "GMV",
       "orders": "訂單",
       "globalFund": "全球池 / 層級",
-      "credited": "已入帳 (T/G/L)",
+      "credited": "已入帳（團隊／全球／忠誠）",
+      "creditedTeam": "團隊",
+      "creditedGlobal": "全球",
+      "creditedLoyalty": "忠誠",
       "suggestedAction": "建議",
       "selectMonth": "請選擇有 GMV 的月份。",
       "selectedMonth": "已選：{yearMonth}",
-      "reRunSafe": "已入帳 — 重跑安全（冪等）。",
-      "yearMonthRequired": "請從 overview 選擇月份。",
-      "yearMonthNoVolume": "該月沒有 DELIVERED 業績。",
+      "reRunSafe": "已入帳 — 重跑安全，不會重複發放。",
+      "yearMonthRequired": "請從總覽選擇月份。",
+      "yearMonthNoVolume": "該月沒有已配達訂單業績。",
       "action": {
         "RUN": "執行",
         "RE_RUN_IDEMPOTENT": "重跑",
@@ -1021,8 +1026,10 @@
         "COMPANY_KEPT": "公司保留",
         "PENDING": "待執行"
       },
+      "rankActive": "啟用中",
+      "rankInactive": "未啟用",
       "reconcileTitle": "校正等級",
-      "reconcileHint": "當使用者已達標但尚未升級時喚醒 Rank Engine（seed、審核商店或等級卡住後）。可對單一使用者，或批次處理 ACTIVE 且未滿等級 10。",
+      "reconcileHint": "重新檢查並升級已達標但尚未升級的使用者（例如示範資料、審核商店或等級卡住後）。可對單一使用者，或批次處理未滿等級 10 的活躍使用者。",
       "reconcileOneUser": "單一使用者",
       "reconcileUser": "校正此使用者",
       "reconcileBatch": "批次校正",
@@ -1245,8 +1252,8 @@
       "flags": "標記",
       "slips": "單據",
       "newSlip": "新單據",
-      "inGoods": "IN — 進貨",
-      "outGoods": "OUT — 出貨／調整",
+      "inGoods": "入庫 — 進貨",
+      "outGoods": "調減 — 減少庫存",
       "items": "品項",
       "createSlip": "建立單據",
       "noSlips": "尚無單據。",
@@ -1256,7 +1263,8 @@
       "toDate": "結束日",
       "warehouseName": "倉庫名稱",
       "warehouseCode": "倉庫代碼",
-      "warehouseAddress": "地址"
+      "warehouseAddress": "地址",
+      "adjustIn": "調增 — 增加庫存"
     },
     "ordersPage": {
       "help": "商店收到的訂單。",
@@ -1270,7 +1278,7 @@
       "intro": "已配達訂單營收 — 待對帳、撥款中或已撥款。",
       "status": {
         "PENDING_RECONCILE": "待對帳",
-        "INCLUDED_IN_PAYOUT": "已納入撥款",
+        "INCLUDED_IN_PAYOUT": "已納入撥款單",
         "PAID_OUT": "已撥款"
       }
     },
@@ -1377,7 +1385,7 @@
     "pinMismatch": "PIN 須為 6 碼且與確認相符。",
     "otpInvalid": "OTP 須為 6 碼。",
     "reasons": {
-      "P2P": "P2P",
+      "P2P": "P2P 轉帳",
       "WITHDRAW_FREEZE": "提領凍結",
       "WITHDRAW_RELEASE": "提領釋放",
       "WITHDRAW_COMPLETE": "提領完成",
@@ -1451,7 +1459,7 @@
     "commissionStatus": {
       "PENDING": "待處理",
       "CREDITED": "已入帳",
-      "VOID": "作廢"
+      "VOID": "已作廢"
     },
     "txReason": "原因",
     "txReasonAll": "全部原因",
@@ -1733,6 +1741,212 @@
       "backupsDesc": "建立 FULL 備份、查看進度並下載 ZIP。",
       "dsarDesc": "核准並執行資料主體刪除申請。",
       "auditDesc": "可篩選的平台稽核軌跡，含 before/after。"
+    }
+  },
+  "status": {
+    "order": {
+      "PENDING": "待處理",
+      "PAID": "已付款",
+      "CONFIRMED": "已確認",
+      "PACKED": "已包裝",
+      "SHIPPED": "已出貨",
+      "DELIVERED": "已配達",
+      "CANCELLED": "已取消",
+      "REFUND_APPROVED": "退款已核准",
+      "REFUNDED": "已退款"
+    },
+    "rma": {
+      "PENDING": "待審核",
+      "APPROVED": "已核准",
+      "REJECTED": "已拒絕",
+      "CLOSED": "已結案"
+    },
+    "rmaMessage": {
+      "PENDING": "退貨申請審核中",
+      "APPROVED": "退貨已核准",
+      "REJECTED": "退貨已拒絕",
+      "CLOSED": "退貨已結案",
+      "REFUND_APPROVED": "退款已核准 — 等待會計於系統外撥款。",
+      "REFUNDED": "退款已完成"
+    },
+    "shop": {
+      "PENDING": "待審核",
+      "APPROVED": "已核准",
+      "REJECTED": "已拒絕",
+      "SUSPENDED": "已停權"
+    },
+    "product": {
+      "PENDING": "審核中",
+      "ACTIVE": "上架中",
+      "REJECTED": "已拒絕",
+      "HIDDEN": "已隱藏"
+    },
+    "promo": {
+      "PENDING": "待審核",
+      "ACTIVE": "進行中",
+      "REJECTED": "已拒絕",
+      "EXPIRED": "已過期"
+    },
+    "inventorySlip": {
+      "PENDING": "待審核",
+      "APPROVED": "已核准",
+      "REJECTED": "已拒絕"
+    },
+    "settlement": {
+      "PENDING_RECONCILE": "待對帳",
+      "INCLUDED_IN_PAYOUT": "已納入撥款單",
+      "PAID_OUT": "已撥款"
+    },
+    "review": {
+      "VISIBLE": "顯示中",
+      "HIDDEN": "已隱藏"
+    },
+    "dsar": {
+      "SUBMITTED": "已送出",
+      "APPROVED": "已核准",
+      "REJECTED": "已拒絕",
+      "EXECUTED": "已執行",
+      "DELETED": "已刪除"
+    },
+    "backup": {
+      "QUEUED": "排隊中",
+      "RUNNING": "執行中",
+      "SUCCESS": "成功",
+      "FAILED": "失敗"
+    },
+    "user": {
+      "ACTIVE": "啟用中",
+      "PENDING": "待處理",
+      "LOCKED": "已鎖定",
+      "DELETED": "已刪除"
+    },
+    "financeItem": {
+      "PENDING": "待處理",
+      "APPROVED": "已核准",
+      "COMPLETED": "已完成",
+      "REJECTED": "已拒絕",
+      "PENDING_REVIEW": "待審核"
+    },
+    "transaction": {
+      "PENDING": "待處理",
+      "PAID": "已付款",
+      "CONFIRMED": "已確認",
+      "PACKED": "已包裝",
+      "SHIPPED": "已出貨",
+      "DELIVERED": "已配達",
+      "CANCELLED": "已取消",
+      "REFUND_APPROVED": "退款已核准",
+      "REFUNDED": "已退款",
+      "COMPLETED": "已完成",
+      "SUCCESS": "成功",
+      "FAILED": "失敗",
+      "REJECTED": "已拒絕"
+    },
+    "paymentMethod": {
+      "COD": "貨到付款",
+      "MOCK": "模擬付款"
+    },
+    "stream": {
+      "connected": "即時連線",
+      "connecting": "重新連線中…",
+      "disconnected": "離線"
+    },
+    "inventorySlipType": {
+      "IN": "入庫",
+      "ADJUST_IN": "調增 (+)",
+      "ADJUST_OUT": "調減 (−)"
+    },
+    "walletDirection": {
+      "IN": "入帳",
+      "OUT": "出帳"
+    },
+    "promoType": {
+      "PERCENT": "百分比折扣",
+      "FIXED": "固定金額",
+      "FREE_SHIP": "免運",
+      "VOUCHER": "優惠券"
+    },
+    "backupType": {
+      "FULL": "完整",
+      "PARTIAL": "部分"
+    },
+    "promoScope": {
+      "PLATFORM": "全站",
+      "TARGETED": "指定目標"
+    },
+    "role": {
+      "BUYER": "買家",
+      "SELLER": "賣家",
+      "WAREHOUSE": "倉儲",
+      "CS": "客服",
+      "ACCOUNTANT": "會計",
+      "ADMIN": "管理員",
+      "SUPER_ADMIN": "超級管理員"
+    },
+    "auditOutcome": {
+      "success": "成功",
+      "failure": "失敗",
+      "denied": "拒絕"
+    },
+    "auditCategory": {
+      "Account": "帳號",
+      "Users": "使用者",
+      "Shops": "商店",
+      "Products": "商品",
+      "Catalog": "目錄",
+      "Inventory": "庫存",
+      "Orders": "訂單",
+      "Finance": "財務",
+      "Promotions": "促銷",
+      "Staff": "人員",
+      "MLM": "MLM",
+      "Other": "其他"
+    },
+    "auditResource": {
+      "shop": "商店",
+      "product": "商品",
+      "user": "使用者",
+      "category": "分類",
+      "warehouse": "倉庫",
+      "slip": "庫存單",
+      "variant": "規格",
+      "promotion": "促銷",
+      "order": "訂單",
+      "payout": "撥款",
+      "settlement": "對帳",
+      "review": "評價",
+      "banner": "橫幅",
+      "wallet": "錢包"
+    },
+    "auditAction": {
+      "admin.shop.approve": "已核准商店",
+      "admin.shop.reject": "已拒絕商店",
+      "admin.shop.violation_lock": "已停權商店",
+      "admin.product.approve": "已核准商品",
+      "admin.product.reject": "已拒絕商品",
+      "admin.product.hide": "管理員已隱藏商品",
+      "product.create": "已建立商品",
+      "product.update": "已更新商品",
+      "product.hide": "賣家已隱藏商品",
+      "product.unhide": "賣家已重新顯示商品",
+      "product.images.upload": "已上傳商品圖片",
+      "product.variant.create": "賣家已新增規格",
+      "product.variant.images.upload": "已上傳規格圖片",
+      "inventory.warehouse.create": "已建立倉庫",
+      "inventory.variant.create": "已建立庫存規格",
+      "inventory.slip.create": "已建立庫存單",
+      "inventory.slip.approve": "已核准庫存單",
+      "inventory.slip.reject": "已拒絕庫存單",
+      "admin.inventory.slip.approve": "管理員已核准庫存單",
+      "admin.inventory.slip.reject": "管理員已拒絕庫存單",
+      "admin.user.lock": "已鎖定帳號",
+      "admin.user.unlock": "已解鎖帳號",
+      "admin.user.delete": "已刪除帳號",
+      "admin.category.create": "已建立分類",
+      "admin.category.update": "已更新分類",
+      "shop.apply": "已提交商店申請",
+      "user.password.change": "已變更密碼",
+      "auth.logout": "已登出"
     }
   }
 }

@@ -6,11 +6,14 @@ import type { OrderStatus } from "@/lib/api/orders";
 import { useMyOrders } from "@/lib/queries/orders";
 import { formatMoney } from "@/lib/api/utils";
 import { AuthGuard } from "@/components/guards/AuthGuard";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Container, PageHero } from "@/components/ui/shared";
 import { OrderListSkeleton } from "@/components/ui/Skeleton";
 import { PaginationBar } from "@/components/ui/PaginationBar";
+import { translateStatus } from "@/lib/i18n/status";
 
 function OrdersInner() {
+  const { t } = useLanguage();
   const [status, setStatus] = useState<OrderStatus | "">("");
   const [page, setPage] = useState(1);
   const { data, isLoading, isError, error } = useMyOrders({
@@ -34,7 +37,7 @@ function OrdersInner() {
             setPage(1);
           }}
         >
-          <option value="">All statuses</option>
+          <option value="">{t("admin.common.allStatuses")}</option>
           {(
             [
               "PENDING",
@@ -48,7 +51,7 @@ function OrdersInner() {
             ] as OrderStatus[]
           ).map((s) => (
             <option key={s} value={s}>
-              {s}
+              {translateStatus(t, "order", s)}
             </option>
           ))}
         </select>
@@ -82,7 +85,7 @@ function OrdersInner() {
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="mq-badge mq-badge-cyan">{o.status}</span>
+                  <span className="mq-badge mq-badge-cyan">{translateStatus(t, "order", o.status)}</span>
                   <span className="text-sm font-medium">
                     {formatMoney(o.total)} {o.currency}
                   </span>

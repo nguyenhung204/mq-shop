@@ -529,7 +529,7 @@
         "marketing": "Upload bộ tài liệu marketing cho seller",
         "walletPayouts": "Duyệt yêu cầu rút ví cá nhân (≠ seller payouts)",
         "walletAdjust": "Cộng/trừ số dư ví cá nhân (ADJUST_POINTS)",
-        "mlm": "Rank / referrer / tỷ lệ referral (Acc+SA); Admin tra network"
+        "mlm": "Quản lý rank, referrer và tỷ lệ referral; tra cứu mạng lưới phân phối"
       },
       "noModules": "Không có module admin cho tài khoản này. Kiểm tra role/permission."
     },
@@ -775,7 +775,7 @@
       "rejectBtn": "Từ chối",
       "status": {
         "PENDING_APPROVAL": "Chờ duyệt",
-        "ACTIVE": "Đang ACTIVE",
+        "ACTIVE": "Đang hiệu lực",
         "REJECTED": "Từ chối"
       }
     },
@@ -801,7 +801,7 @@
       "empty": "Không có người dùng trong bộ lọc này."
     },
     "staffPage": {
-      "allShopsUnassigned": "Tất cả shop (+ BUYER chưa gán)",
+      "allShopsUnassigned": "Tất cả shop (+ buyer chưa gán)",
       "allPool": "Tất cả pool",
       "empty": "Không có user trong bộ lọc này.",
       "unassigned": "Chưa gán",
@@ -814,10 +814,12 @@
       "selectShop": "Chọn shop",
       "pendingRoles": "Vai trò chờ duyệt",
       "pendingNotice": "Thay đổi đã lưu PENDING. Super Admin phải duyệt trước khi đăng nhập với vai trò mới.",
-      "createHint": "Chỉ khi email chưa tồn tại. Nên Assign trên BUYER candidate. Admin tạo → PENDING chờ Super Admin.",
+      "createHint": "Chỉ khi email chưa tồn tại. Nên Assign trên ứng viên người mua. Admin tạo → chờ Super Admin duyệt.",
       "tempPasswordTitle": "Mật khẩu tạm",
       "tempPasswordHint": "Copy ngay — sẽ không hiện lại. Tài khoản: {email}",
-      "copy": "Copy"
+      "copy": "Copy",
+      "candidate": "Ứng viên",
+      "buyerCandidates": "Người mua (ứng viên)"
     },
     "ordersPage": {
       "createForBuyer": "Tạo hộ người mua",
@@ -905,7 +907,7 @@
       "openPayouts": "Chi trả seller",
       "status": {
         "PENDING_RECONCILE": "Chờ đối soát",
-        "INCLUDED_IN_PAYOUT": "Đã vào phiếu chi trả",
+        "INCLUDED_IN_PAYOUT": "Đã gom vào phiếu chi",
         "PAID_OUT": "Đã chi trả"
       }
     },
@@ -943,21 +945,21 @@
     },
     "mlm": {
       "title": "Rank MLM",
-      "description": "Bảng rank / gán rank, referrer & tỷ lệ referral (Accountant, Super Admin) và tra network theo user (Admin+).",
-      "hint": "CONFIG_MLM: Accountant + Super Admin gán rank / referrer / rate. Admin chỉ tra network (VIEW_MLM_TREE). Không liên quan commissionPercent finance.",
+      "description": "Xem bảng rank, gán rank / referrer / tỷ lệ referral (Kế toán & Super Admin), và tra cứu mạng lưới phân phối.",
+      "hint": "Kế toán và Super Admin được gán rank, referrer và tỷ lệ referral. Admin chỉ tra cứu mạng lưới. Phần này tách biệt với cấu hình hoa hồng tài chính của shop.",
       "ranksTitle": "Bảng rank",
       "team": "Team %",
       "referral": "Referral %",
       "globalTier": "Global tier",
       "setRankTitle": "Gán rank user",
-      "setRankHint": "Tìm user theo tên hoặc email, chọn rank 0–10 (0 = Seller). Chỉ Accountant (APPROVE) và Super Admin (ALL). Set rank có thể cascade auto-promote upline.",
+      "setRankHint": "Tìm user theo tên hoặc email, rồi chọn rank 0–10 (0 = Seller). Chỉ Kế toán và Super Admin được thao tác. Đổi rank có thể tự động thăng cấp thêm các upline.",
       "userId": "User ID",
       "userIdRequired": "Cần User ID.",
       "rankInvalid": "Rank phải là số nguyên từ 0 đến 10.",
       "setRank": "Cập nhật rank",
       "rankUpdated": "Đã cập nhật {email} → rank {rank} ({name})",
       "setReferrerTitle": "Gán referrer",
-      "setReferrerHint": "Đổi upline trực tiếp (referrerId). Clear để gỡ referrer.",
+      "setReferrerHint": "Đổi upline trực tiếp của user. Bấm gỡ để xóa referrer.",
       "currentReferrer": "Referrer hiện tại",
       "newReferrer": "Referrer mới",
       "newReferrerPh": "Tìm user upline…",
@@ -968,7 +970,7 @@
       "referrerUpdated": "Đã cập nhật referrer.",
       "referrerCleared": "Đã gỡ referrer.",
       "setRateTitle": "Override tỷ lệ referral",
-      "setRateHint": "Ghi đè % thưởng referral (0–10) cho user. Clear để dùng mặc định theo rank.",
+      "setRateHint": "Ghi đè % thưởng referral (0–10) cho user. Gỡ để dùng mặc định theo bảng rank.",
       "ratePercent": "Tỷ lệ % (0–10)",
       "rateInvalid": "Tỷ lệ phải từ 0 đến 10.",
       "setRate": "Đặt override",
@@ -977,57 +979,62 @@
       "rateCleared": "Đã xóa override tỷ lệ referral.",
       "rateDefault": "Mặc định theo rank",
       "treeTitle": "Mạng lưới phân phối",
-      "treeHint": "Ops: tải downline của user khác qua userId (VIEW_MLM_TREE ALL).",
+      "treeHint": "Tra cứu mạng lưới dưới của user khác bằng tên hoặc email.",
       "loadTree": "Tải cây",
       "searchUser": "User",
       "searchUserPh": "Tìm theo tên hoặc email…",
       "userRequired": "Chọn một user.",
-      "noConfigPerm": "Role của bạn không được gán rank MLM (CONFIG_MLM = NONE với Admin). Vẫn có thể xem network bên dưới.",
+      "noConfigPerm": "Bạn không có quyền gán rank MLM. Vẫn có thể xem mạng lưới bên dưới.",
       "rankName": "Tên",
       "runMonthlyTitle": "Chạy thưởng tháng",
-      "runMonthlyHint": "Chọn tháng UTC có doanh thu DELIVERED rồi chạy TEAM / LOYALTY / GLOBAL (giống cron). Ưu tiên suggestedAction=RUN. Chạy lại an toàn (idempotent).",
+      "runMonthlyHint": "Chọn tháng UTC có đơn đã giao, rồi chạy thưởng team, loyalty và global (giống job hàng tháng). Ưu tiên tháng ghi “Chạy”. Chạy lại tháng đã xong là an toàn, không trả trùng.",
       "runMonthly": "Chạy thưởng tháng",
       "runMonthlyDone": "Job tháng xong cho {yearMonth}.",
       "yearMonth": "Năm-tháng",
       "yearMonthInvalid": "Dùng YYYY-MM (vd. 2026-06).",
-      "overviewEmpty": "Không có tháng nào có đơn DELIVERED trong 12 tháng gần đây — seed demo hoặc chờ có volume.",
+      "overviewEmpty": "Không có tháng nào có đơn đã giao trong 12 tháng gần đây — thêm dữ liệu demo hoặc chờ có doanh số.",
       "gmv": "GMV",
       "orders": "Đơn",
       "globalFund": "Quỹ global / tier",
-      "credited": "Đã credit (T/G/L)",
+      "credited": "Đã ghi nhận (đội / toàn cầu / trung thành)",
+      "creditedTeam": "Đội",
+      "creditedGlobal": "Toàn cầu",
+      "creditedLoyalty": "Trung thành",
       "suggestedAction": "Gợi ý",
       "selectMonth": "Chọn tháng có GMV để chạy.",
       "selectedMonth": "Đang chọn: {yearMonth}",
-      "reRunSafe": "Đã credit — chạy lại an toàn (idempotent).",
-      "yearMonthRequired": "Chọn tháng từ bảng overview.",
-      "yearMonthNoVolume": "Tháng này không có volume DELIVERED.",
+      "reRunSafe": "Đã ghi nhận — chạy lại an toàn, không trả trùng.",
+      "yearMonthRequired": "Chọn tháng từ bảng tổng quan.",
+      "yearMonthNoVolume": "Tháng này không có doanh số đơn đã giao.",
       "action": {
-        "RUN": "CHẠY",
-        "RE_RUN_IDEMPOTENT": "CHẠY LẠI",
-        "NO_VOLUME": "KHÔNG VOLUME"
+        "RUN": "Chạy",
+        "RE_RUN_IDEMPOTENT": "Chạy lại",
+        "NO_VOLUME": "Không doanh số"
       },
-      "poolPerTier": "Quỹ mỗi tier",
+      "poolPerTier": "Quỹ mỗi bậc",
       "totalPaidToUsers": "Đã trả user",
       "totalCompanyKept": "Công ty giữ",
       "paidToUsers": "Đã trả",
       "companyKept": "Công ty giữ",
       "beneficiaries": "Người nhận",
-      "tier": "Tier",
-      "unscopedPaid": "Credit không gắn tier",
-      "toggleGlobalFund": "Mở chi tiết quỹ global",
+      "tier": "Bậc",
+      "unscopedPaid": "Đã trả nhưng không gắn bậc",
+      "toggleGlobalFund": "Mở chi tiết quỹ toàn cầu",
       "paidKeptShort": "trả {paid} · giữ {kept}",
       "tierStatus": {
-        "PAID": "ĐÃ TRẢ",
-        "COMPANY_KEPT": "CÔNG TY GIỮ",
-        "PENDING": "CHƯA CHẠY"
+        "PAID": "Đã trả",
+        "COMPANY_KEPT": "Công ty giữ",
+        "PENDING": "Chưa chạy"
       },
-      "reconcileTitle": "Reconcile rank",
-      "reconcileHint": "Đánh thức Rank Engine khi user đủ điều kiện mà chưa lên cấp (sau seed, duyệt shop, hoặc rank kẹt). Một user, hoặc batch ACTIVE dưới rank 10.",
+      "rankActive": "Đang dùng",
+      "rankInactive": "Ngưng",
+      "reconcileTitle": "Đối soát rank",
+      "reconcileHint": "Kiểm tra lại và thăng cấp user đã đủ điều kiện nhưng chưa lên hạng (ví dụ sau seed demo, duyệt shop, hoặc rank bị kẹt). Chạy cho một user, hoặc batch user đang hoạt động dưới rank 10.",
       "reconcileOneUser": "Một user",
-      "reconcileUser": "Reconcile user",
-      "reconcileBatch": "Reconcile batch",
+      "reconcileUser": "Đối soát user",
+      "reconcileBatch": "Đối soát hàng loạt",
       "reconcileBatchLimit": "Giới hạn batch (1–500)",
-      "reconcileLimitInvalid": "Limit phải là số nguyên từ 1 đến 500.",
+      "reconcileLimitInvalid": "Giới hạn phải là số nguyên từ 1 đến 500.",
       "reconcilePromoted": "Đã thăng {from} → {to}.",
       "reconcileNoChange": "Không đổi — user chưa đủ điều kiện.",
       "reconcileBatchDone": "Đã kiểm {checked} user · thăng {promoted}."
@@ -1245,8 +1252,8 @@
       "flags": "Cờ",
       "slips": "Phiếu",
       "newSlip": "Phiếu mới",
-      "inGoods": "IN — nhập hàng",
-      "outGoods": "OUT — xuất / điều chỉnh",
+      "inGoods": "Nhập kho — hàng nhận vào",
+      "outGoods": "Điều chỉnh giảm — trừ tồn",
       "items": "Dòng hàng",
       "createSlip": "Tạo phiếu",
       "noSlips": "Chưa có phiếu.",
@@ -1256,7 +1263,8 @@
       "toDate": "Đến ngày",
       "warehouseName": "Tên kho",
       "warehouseCode": "Mã kho",
-      "warehouseAddress": "Địa chỉ"
+      "warehouseAddress": "Địa chỉ",
+      "adjustIn": "Điều chỉnh tăng — cộng tồn"
     },
     "ordersPage": {
       "help": "Đơn hàng của shop bạn.",
@@ -1270,7 +1278,7 @@
       "intro": "Doanh thu từ đơn đã giao — chờ đối soát, trong phiếu chi trả, hoặc đã chi.",
       "status": {
         "PENDING_RECONCILE": "Chờ đối soát",
-        "INCLUDED_IN_PAYOUT": "Đã vào phiếu chi trả",
+        "INCLUDED_IN_PAYOUT": "Đã gom vào phiếu chi",
         "PAID_OUT": "Đã chi trả"
       }
     },
@@ -1377,14 +1385,14 @@
     "pinMismatch": "PIN phải 6 số và khớp xác nhận.",
     "otpInvalid": "OTP phải 6 số.",
     "reasons": {
-      "P2P": "P2P",
+      "P2P": "Chuyển P2P",
       "WITHDRAW_FREEZE": "Đóng băng rút",
       "WITHDRAW_RELEASE": "Giải phóng rút",
       "WITHDRAW_COMPLETE": "Hoàn tất rút",
       "REFERRAL": "Giới thiệu",
-      "TEAM": "Team",
-      "GLOBAL": "Global",
-      "LOYALTY": "Loyalty",
+      "TEAM": "Đội nhóm",
+      "GLOBAL": "Toàn cầu",
+      "LOYALTY": "Trung thành",
       "ADJUST": "Điều chỉnh"
     },
     "pinRequiredBanner": "Cần đặt PIN ví trước khi tiếp tục.",
@@ -1444,14 +1452,14 @@
     "commissionTypes": {
       "ALL": "Tất cả",
       "REFERRAL": "Giới thiệu",
-      "TEAM": "Team",
-      "GLOBAL": "Global",
-      "LOYALTY": "Loyalty"
+      "TEAM": "Đội nhóm",
+      "GLOBAL": "Toàn cầu",
+      "LOYALTY": "Trung thành"
     },
     "commissionStatus": {
-      "PENDING": "Chờ",
+      "PENDING": "Chờ xử lý",
       "CREDITED": "Đã vào ví",
-      "VOID": "Hủy"
+      "VOID": "Đã hủy"
     },
     "txReason": "Lý do",
     "txReasonAll": "Tất cả lý do",
@@ -1733,6 +1741,212 @@
       "backupsDesc": "Tạo backup FULL, theo dõi tiến độ và tải ZIP.",
       "dsarDesc": "Duyệt và thực thi yêu cầu xoá dữ liệu.",
       "auditDesc": "Nhật ký audit có lọc và before/after."
+    }
+  },
+  "status": {
+    "order": {
+      "PENDING": "Chờ xử lý",
+      "PAID": "Đã thanh toán",
+      "CONFIRMED": "Đã xác nhận",
+      "PACKED": "Đã đóng gói",
+      "SHIPPED": "Đã gửi hàng",
+      "DELIVERED": "Đã giao",
+      "CANCELLED": "Đã hủy",
+      "REFUND_APPROVED": "Đã duyệt hoàn",
+      "REFUNDED": "Đã hoàn tiền"
+    },
+    "rma": {
+      "PENDING": "Chờ duyệt",
+      "APPROVED": "Đã duyệt",
+      "REJECTED": "Từ chối",
+      "CLOSED": "Đã đóng"
+    },
+    "rmaMessage": {
+      "PENDING": "Yêu cầu đổi trả đang chờ duyệt",
+      "APPROVED": "Đổi trả đã được duyệt",
+      "REJECTED": "Đổi trả bị từ chối",
+      "CLOSED": "Đổi trả đã đóng",
+      "REFUND_APPROVED": "Đã duyệt hoàn — chờ kế toán chi ngoài hệ thống.",
+      "REFUNDED": "Đã hoàn tiền xong"
+    },
+    "shop": {
+      "PENDING": "Chờ duyệt",
+      "APPROVED": "Đã duyệt",
+      "REJECTED": "Từ chối",
+      "SUSPENDED": "Tạm khóa"
+    },
+    "product": {
+      "PENDING": "Chờ duyệt",
+      "ACTIVE": "Đang bán",
+      "REJECTED": "Từ chối",
+      "HIDDEN": "Đã ẩn"
+    },
+    "promo": {
+      "PENDING": "Chờ duyệt",
+      "ACTIVE": "Đang chạy",
+      "REJECTED": "Từ chối",
+      "EXPIRED": "Hết hạn"
+    },
+    "inventorySlip": {
+      "PENDING": "Chờ duyệt",
+      "APPROVED": "Đã duyệt",
+      "REJECTED": "Từ chối"
+    },
+    "settlement": {
+      "PENDING_RECONCILE": "Chờ đối soát",
+      "INCLUDED_IN_PAYOUT": "Đã gom vào phiếu chi",
+      "PAID_OUT": "Đã chi trả"
+    },
+    "review": {
+      "VISIBLE": "Hiển thị",
+      "HIDDEN": "Đã ẩn"
+    },
+    "dsar": {
+      "SUBMITTED": "Đã gửi",
+      "APPROVED": "Đã duyệt",
+      "REJECTED": "Từ chối",
+      "EXECUTED": "Đã thực thi",
+      "DELETED": "Đã xóa"
+    },
+    "backup": {
+      "QUEUED": "Trong hàng đợi",
+      "RUNNING": "Đang chạy",
+      "SUCCESS": "Thành công",
+      "FAILED": "Thất bại"
+    },
+    "user": {
+      "ACTIVE": "Đang hoạt động",
+      "PENDING": "Chờ xử lý",
+      "LOCKED": "Đã khóa",
+      "DELETED": "Đã xóa"
+    },
+    "financeItem": {
+      "PENDING": "Chờ xử lý",
+      "APPROVED": "Đã duyệt",
+      "COMPLETED": "Hoàn tất",
+      "REJECTED": "Từ chối",
+      "PENDING_REVIEW": "Chờ xem xét"
+    },
+    "transaction": {
+      "PENDING": "Chờ xử lý",
+      "PAID": "Đã thanh toán",
+      "CONFIRMED": "Đã xác nhận",
+      "PACKED": "Đã đóng gói",
+      "SHIPPED": "Đã gửi hàng",
+      "DELIVERED": "Đã giao",
+      "CANCELLED": "Đã hủy",
+      "REFUND_APPROVED": "Đã duyệt hoàn",
+      "REFUNDED": "Đã hoàn",
+      "COMPLETED": "Hoàn tất",
+      "SUCCESS": "Thành công",
+      "FAILED": "Thất bại",
+      "REJECTED": "Từ chối"
+    },
+    "paymentMethod": {
+      "COD": "Thanh toán khi nhận hàng",
+      "MOCK": "Thanh toán giả lập"
+    },
+    "stream": {
+      "connected": "Trực tuyến",
+      "connecting": "Đang kết nối lại…",
+      "disconnected": "Ngoại tuyến"
+    },
+    "inventorySlipType": {
+      "IN": "Nhập kho",
+      "ADJUST_IN": "Điều chỉnh tăng (+)",
+      "ADJUST_OUT": "Điều chỉnh giảm (−)"
+    },
+    "walletDirection": {
+      "IN": "Vào",
+      "OUT": "Ra"
+    },
+    "promoType": {
+      "PERCENT": "Giảm %",
+      "FIXED": "Giảm số tiền",
+      "FREE_SHIP": "Miễn phí ship",
+      "VOUCHER": "Voucher"
+    },
+    "backupType": {
+      "FULL": "Toàn bộ",
+      "PARTIAL": "Một phần"
+    },
+    "promoScope": {
+      "PLATFORM": "Toàn sàn",
+      "TARGETED": "Theo mục tiêu"
+    },
+    "role": {
+      "BUYER": "Người mua",
+      "SELLER": "Seller",
+      "WAREHOUSE": "Kho",
+      "CS": "Chăm sóc KH",
+      "ACCOUNTANT": "Kế toán",
+      "ADMIN": "Admin",
+      "SUPER_ADMIN": "Super admin"
+    },
+    "auditOutcome": {
+      "success": "Thành công",
+      "failure": "Thất bại",
+      "denied": "Từ chối"
+    },
+    "auditCategory": {
+      "Account": "Tài khoản",
+      "Users": "Người dùng",
+      "Shops": "Cửa hàng",
+      "Products": "Sản phẩm",
+      "Catalog": "Danh mục",
+      "Inventory": "Kho",
+      "Orders": "Đơn hàng",
+      "Finance": "Tài chính",
+      "Promotions": "Khuyến mãi",
+      "Staff": "Nhân sự",
+      "MLM": "MLM",
+      "Other": "Khác"
+    },
+    "auditResource": {
+      "shop": "Cửa hàng",
+      "product": "Sản phẩm",
+      "user": "Người dùng",
+      "category": "Danh mục",
+      "warehouse": "Kho",
+      "slip": "Phiếu kho",
+      "variant": "Biến thể",
+      "promotion": "Khuyến mãi",
+      "order": "Đơn hàng",
+      "payout": "Chi trả",
+      "settlement": "Đối soát",
+      "review": "Đánh giá",
+      "banner": "Banner",
+      "wallet": "Ví"
+    },
+    "auditAction": {
+      "admin.shop.approve": "Đã duyệt cửa hàng",
+      "admin.shop.reject": "Đã từ chối cửa hàng",
+      "admin.shop.violation_lock": "Đã khóa cửa hàng",
+      "admin.product.approve": "Đã duyệt sản phẩm",
+      "admin.product.reject": "Đã từ chối sản phẩm",
+      "admin.product.hide": "Admin đã ẩn sản phẩm",
+      "product.create": "Đã tạo sản phẩm",
+      "product.update": "Đã cập nhật sản phẩm",
+      "product.hide": "Seller đã ẩn sản phẩm",
+      "product.unhide": "Seller đã hiện lại sản phẩm",
+      "product.images.upload": "Đã tải ảnh sản phẩm",
+      "product.variant.create": "Seller đã thêm biến thể",
+      "product.variant.images.upload": "Đã tải ảnh biến thể",
+      "inventory.warehouse.create": "Đã tạo kho",
+      "inventory.variant.create": "Đã tạo biến thể kho",
+      "inventory.slip.create": "Đã tạo phiếu kho",
+      "inventory.slip.approve": "Đã duyệt phiếu kho",
+      "inventory.slip.reject": "Đã từ chối phiếu kho",
+      "admin.inventory.slip.approve": "Admin đã duyệt phiếu kho",
+      "admin.inventory.slip.reject": "Admin đã từ chối phiếu kho",
+      "admin.user.lock": "Đã khóa tài khoản",
+      "admin.user.unlock": "Đã mở khóa tài khoản",
+      "admin.user.delete": "Đã xóa tài khoản",
+      "admin.category.create": "Đã tạo danh mục",
+      "admin.category.update": "Đã cập nhật danh mục",
+      "shop.apply": "Đã nộp đơn mở shop",
+      "user.password.change": "Đã đổi mật khẩu",
+      "auth.logout": "Đã đăng xuất"
     }
   }
 }

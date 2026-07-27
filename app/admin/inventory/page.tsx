@@ -22,6 +22,7 @@ import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { SlipDetailBody } from "@/components/inventory/SlipDetailBody";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton, TableSkeleton } from "@/components/ui/Skeleton";
 
@@ -51,17 +52,11 @@ function formatWhen(iso: string | null | undefined): string {
   }
 }
 
-function slipTypeLabel(type: InventorySlipType): string {
-  switch (type) {
-    case "IN":
-      return "IN";
-    case "ADJUST_IN":
-      return "ADJUST IN";
-    case "ADJUST_OUT":
-      return "ADJUST OUT";
-    default:
-      return type;
-  }
+function slipTypeLabel(
+  type: InventorySlipType,
+  t: (key: string, vars?: Record<string, string>) => string,
+): string {
+  return translateStatus(t, "inventorySlipType", type);
 }
 
 function slipItemsSummary(
@@ -136,8 +131,10 @@ function SlipsTab() {
                   >
                     {s.code}
                   </button>
-                  <span className={statusBadge(s.status)}>{s.status}</span>
-                  <span className="text-xs text-mq-text-muted">{s.type}</span>
+                  <span className={statusBadge(s.status)}>{translateStatus(t, "inventorySlip", s.status)}</span>
+                  <span className="text-xs text-mq-text-muted">
+                    {slipTypeLabel(s.type, t)}
+                  </span>
                 </div>
                 <p className="text-mq-text-secondary">{slipItemsSummary(s, t)}</p>
                 {(s.items?.length ?? 0) > 0 ? (
@@ -315,7 +312,7 @@ function LedgerTab() {
                       {formatWhen(row.recordedAt)}
                     </td>
                     <td className="py-2.5 pr-3 font-medium">{row.sku}</td>
-                    <td className="py-2.5 pr-3 text-xs">{slipTypeLabel(row.type)}</td>
+                    <td className="py-2.5 pr-3 text-xs">{slipTypeLabel(row.type, t)}</td>
                     <td className="py-2.5 pr-3">{row.quantity}</td>
                     <td className="py-2.5 pr-3">
                       {row.quantityBefore} → {row.quantityAfter}

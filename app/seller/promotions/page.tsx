@@ -19,6 +19,7 @@ import { categoryLabel } from "@/lib/api/categoryLabel";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { TableSkeleton } from "@/components/ui/Skeleton";
@@ -241,7 +242,7 @@ function PromotionsInner() {
         >
           {STATUSES.map((s) => (
             <option key={s || "all"} value={s}>
-              {s || t("admin.common.allStatuses")}
+              {s === "" ? t("admin.common.allStatuses") : translateStatus(t, "promo", s)}
             </option>
           ))}
         </select>
@@ -287,7 +288,7 @@ function PromotionsInner() {
               >
                 {TYPES.map((promoType) => (
                   <option key={promoType} value={promoType}>
-                    {promoType}
+                    {translateStatus(t, "promoType", promoType)}
                   </option>
                 ))}
               </select>
@@ -464,13 +465,13 @@ function PromotionsInner() {
                     )}
                   </td>
                   <td className="py-2.5 px-3">
-                    {p.type}
+                    {translateStatus(t, "promoType", p.type)}
                     {p.type !== "FREE_SHIP" && (
                       <span className="text-mq-text-muted"> · {p.discountValue}</span>
                     )}
                   </td>
                   <td className="py-2.5 px-3">
-                    <span className={statusBadgeClass(p.status)}>{p.status}</span>
+                    <span className={statusBadgeClass(p.status)}>{translateStatus(t, "promo", p.status)}</span>
                   </td>
                   <td className="py-2.5 px-3 text-xs text-mq-text-muted whitespace-nowrap">
                     {new Date(p.startAt).toLocaleString()}

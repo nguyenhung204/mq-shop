@@ -22,6 +22,7 @@ import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 
@@ -216,7 +217,7 @@ function PromotionsInner() {
         >
           {STATUSES.map((s) => (
             <option key={s || "all"} value={s}>
-              {s || t("admin.common.allStatuses")}
+              {s === "" ? t("admin.common.allStatuses") : translateStatus(t, "promo", s)}
             </option>
           ))}
         </select>
@@ -269,7 +270,7 @@ function PromotionsInner() {
                 >
                   {TYPES.map((promoType) => (
                     <option key={promoType} value={promoType}>
-                      {promoType}
+                      {translateStatus(t, "promoType", promoType)}
                     </option>
                   ))}
                 </select>
@@ -404,9 +405,13 @@ function PromotionsInner() {
                   <div className="min-w-0 space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-medium">{p.name}</p>
-                      <span className={statusBadgeClass(p.status)}>{p.status}</span>
-                      <span className="mq-badge mq-badge-muted">{p.scopeType}</span>
-                      <span className="text-xs text-mq-text-muted">{p.type}</span>
+                      <span className={statusBadgeClass(p.status)}>{translateStatus(t, "promo", p.status)}</span>
+                      <span className="mq-badge mq-badge-muted">
+                        {translateStatus(t, "promoScope", p.scopeType)}
+                      </span>
+                      <span className="text-xs text-mq-text-muted">
+                        {translateStatus(t, "promoType", p.type)}
+                      </span>
                     </div>
                     <p className="text-xs text-mq-text-muted">{metaParts.join(" · ")}</p>
                     {(p.skus.length > 0 || p.categoryIds.length > 0) && (

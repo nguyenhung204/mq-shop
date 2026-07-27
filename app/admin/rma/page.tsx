@@ -18,6 +18,7 @@ import {
 } from "@/components/admin/AdminIconButton";
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 
 function RmaInner() {
@@ -68,7 +69,7 @@ function RmaInner() {
               >
                 {t("admin.rmaPage.order")} {r.orderId.slice(0, 8)}…
               </Link>
-              <span className="mq-badge mq-badge-pink ml-2">{r.status}</span>
+              <span className="mq-badge mq-badge-pink ml-2">{translateStatus(t, "rma", r.status)}</span>
               <p className="text-xs text-mq-text-muted line-clamp-2 mt-1">{r.reason}</p>
               {r.bankInfo ? (
                 <p className="text-xs text-mq-text-muted mt-1">

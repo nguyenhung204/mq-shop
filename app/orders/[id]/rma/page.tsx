@@ -4,12 +4,15 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { useCreateRma, useOrder } from "@/lib/queries/orders";
-import { canRequestRma, hasBlockingRma, rmaStatusLabel } from "@/lib/api/orders";
+import { canRequestRma, hasBlockingRma } from "@/lib/api/orders";
 import { AuthGuard } from "@/components/guards/AuthGuard";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Container, PageHero } from "@/components/ui/shared";
+import { translateStatus } from "@/lib/i18n/status";
 
 function CreateRmaInner() {
   const { id } = useParams<{ id: string }>();
+  const { t } = useLanguage();
   const router = useRouter();
   const { data: order } = useOrder(id);
   const createRma = useCreateRma(id);
@@ -62,7 +65,7 @@ function CreateRmaInner() {
             <p>
               {blockedByExisting
                 ? order.rma
-                  ? `${rmaStatusLabel(order.rma.status)}. You cannot submit another return for this order.`
+                  ? `${translateStatus(t, "rmaMessage", order.rma.status)}. You cannot submit another return for this order.`
                   : "A return / refund is already in progress for this order."
                 : "RMA is only available within 7 days after delivery."}
             </p>

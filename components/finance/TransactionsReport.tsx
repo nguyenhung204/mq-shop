@@ -13,6 +13,7 @@ import { useExportFinanceReport, useFinanceTransactions } from "@/lib/queries/fi
 import { useAdminShops } from "@/lib/queries/admin";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateTransactionStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 
@@ -289,7 +290,9 @@ export function TransactionsReport({
                   {t(`transactions.types.${row.type}`)}
                 </span>
                 {detail}
-                <span className="mq-badge mq-badge-muted">{row.status}</span>
+                <span className="mq-badge mq-badge-muted">
+                  {translateTransactionStatus(t, row.status)}
+                </span>
               </div>
               <p className="text-xs text-mq-text-muted">
                 {formatWhen(row.occurredAt)}

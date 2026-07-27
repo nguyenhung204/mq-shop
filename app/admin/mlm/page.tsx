@@ -55,16 +55,25 @@ function poolPerTier(row: MonthlyCommissionOverviewRow): string {
   return row.globalFund?.poolPerTier ?? row.globalFundEstimate ?? "0";
 }
 
-function creditedSummary(row: MonthlyCommissionOverviewRow): string {
+function creditedSummary(
+  row: MonthlyCommissionOverviewRow,
+  t: (key: string, vars?: Record<string, string>) => string,
+): string {
   const parts: string[] = [];
   if (row.credited.teamCount > 0) {
-    parts.push(`T ${formatMoney(row.credited.teamPayoutTotal)}×${row.credited.teamCount}`);
+    parts.push(
+      `${t("admin.mlm.creditedTeam")} ${formatMoney(row.credited.teamPayoutTotal)}×${row.credited.teamCount}`,
+    );
   }
   if (row.credited.globalCount > 0) {
-    parts.push(`G ${formatMoney(row.credited.globalPayoutTotal)}×${row.credited.globalCount}`);
+    parts.push(
+      `${t("admin.mlm.creditedGlobal")} ${formatMoney(row.credited.globalPayoutTotal)}×${row.credited.globalCount}`,
+    );
   }
   if (row.credited.loyaltyCount > 0) {
-    parts.push(`L ${formatMoney(row.credited.loyaltyPayoutTotal)}×${row.credited.loyaltyCount}`);
+    parts.push(
+      `${t("admin.mlm.creditedLoyalty")} ${formatMoney(row.credited.loyaltyPayoutTotal)}×${row.credited.loyaltyCount}`,
+    );
   }
   return parts.length ? parts.join(" · ") : "—";
 }
@@ -580,8 +589,8 @@ function MlmAdminInner() {
                             }
                           >
                             {r.isActive
-                              ? t("admin.common.active")
-                              : t("admin.common.hidden")}
+                              ? t("admin.mlm.rankActive")
+                              : t("admin.mlm.rankInactive")}
                           </span>
                         </td>
                       </tr>
@@ -722,7 +731,7 @@ function MlmAdminInner() {
                               ) : null}
                             </td>
                             <td className="px-3 py-2 text-mq-text-muted whitespace-nowrap">
-                              {creditedSummary(m)}
+                              {creditedSummary(m, t)}
                             </td>
                             <td className="px-3 py-2">
                               <span className={suggestedBadge(m.suggestedAction)}>

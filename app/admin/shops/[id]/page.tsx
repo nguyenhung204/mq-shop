@@ -14,6 +14,7 @@ import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { Check, ShieldAlert, X } from "lucide-react";
 
 function reasonText(reason: string | LocalizedText | null | undefined): string {
@@ -60,7 +61,7 @@ function ShopDetailInner({ id }: { id: string }) {
                 <h2 className="text-lg font-medium text-mq-text">{shop.name}</h2>
                 <p className="text-xs text-mq-text-muted mt-1 font-mono">{shop.id}</p>
               </div>
-              <span className="mq-badge mq-badge-cyan h-fit">{shop.status}</span>
+              <span className="mq-badge mq-badge-cyan h-fit">{translateStatus(t, "shop", shop.status)}</span>
             </div>
 
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">

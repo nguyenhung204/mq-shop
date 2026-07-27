@@ -200,7 +200,7 @@ export function UserMenu() {
         ) : null}
         {hasRole("SUPER_ADMIN") ? (
           <Link
-            href="/super-admin"
+            href="/admin/system"
             role="menuitem"
             className="mq-user-menu-item"
             onClick={() => setOpen(false)}

@@ -9,6 +9,7 @@ import { useAdminShops } from "@/lib/queries/admin";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 
@@ -78,9 +79,7 @@ function SettlementsInner() {
             >
               {STATUSES.map((s) => (
                 <option key={s || "all"} value={s}>
-                  {s
-                    ? t(`admin.settlementsPage.status.${s}`)
-                    : t("admin.common.allStatuses")}
+                  {s === "" ? t("admin.common.allStatuses") : translateStatus(t, "settlement", s)}
                 </option>
               ))}
             </select>
@@ -150,7 +149,7 @@ function SettlementsInner() {
                   {s.orderCode ?? s.orderId.slice(0, 8)}
                 </span>
               </Link>
-              <span className={`${statusBadgeClass(s.status)} ml-2`}>{s.status}</span>
+              <span className={`${statusBadgeClass(s.status)} ml-2`}>{translateStatus(t, "settlement", s.status)}</span>
               <p className="text-xs text-mq-text-muted mt-1">
                 {shopName(s.shopId)} · {new Date(s.createdAt).toLocaleString()}
               </p>

@@ -11,9 +11,9 @@ import {
   canRequestRma,
   hasBlockingRma,
   nextFulfillmentStatus,
-  rmaStatusLabel,
   type RmaStatus,
 } from "@/lib/api/orders";
+import { translateStatus } from "@/lib/i18n/status";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useCancelOrder, useOrder, useUpdateOrderStatus } from "@/lib/queries/orders";
@@ -173,20 +173,16 @@ function OrderDetailInner() {
           <div className="mq-card p-6 space-y-4">
             <div className="flex flex-wrap gap-2 items-center">
               <span className="font-mono text-sm font-medium">{order.code}</span>
-              <span className="mq-badge mq-badge-cyan">{order.status}</span>
-              <span className="mq-badge mq-badge-teal">{order.paymentMethod}</span>
+              <span className="mq-badge mq-badge-cyan">{translateStatus(t, "order", order.status)}</span>
+              <span className="mq-badge mq-badge-teal">{translateStatus(t, "paymentMethod", order.paymentMethod)}</span>
               {order.rma ? (
-                <span className="mq-badge mq-badge-pink">RMA · {order.rma.status}</span>
+                <span className="mq-badge mq-badge-pink">RMA · {translateStatus(t, "rma", order.rma.status)}</span>
               ) : null}
             </div>
             {rmaInfo ? (
               <div className="rounded-[var(--mq-radius-sm)] border border-mq-border bg-mq-surface-subtle p-4 space-y-1.5 text-sm">
                 <p className="font-medium">
-                  {rmaInfo.status === "REFUNDED"
-                    ? "Refund completed"
-                    : rmaInfo.status === "REFUND_APPROVED"
-                      ? "Refund approved — waiting for accountant payout outside the system."
-                      : rmaStatusLabel(rmaInfo.status)}
+                  {translateStatus(t, "rmaMessage", rmaInfo.status)}
                 </p>
                 {rmaInfo.reason ? (
                   <p className="text-mq-text-secondary">Reason: {rmaInfo.reason}</p>
@@ -267,7 +263,7 @@ function OrderDetailInner() {
                     })
                   }
                 >
-                  {updateStatus.isPending ? "Updating…" : `Mark ${nextStatus}`}
+                  {updateStatus.isPending ? "Updating…" : `Mark ${translateStatus(t, "order", nextStatus)}`}
                 </button>
               </div>
             ) : null}

@@ -11,6 +11,8 @@ import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
+import { translateStatus, translateStatusMap } from "@/lib/i18n/status";
+import type { Locale } from "@/lib/i18n/types";
 
 function toIsoStart(date: string): string | undefined {
   if (!date) return undefined;
@@ -69,11 +71,32 @@ function pickTargetEmail(log: ApiAuditLog): string | null {
   return fromJson(log.afterJson) || fromJson(log.beforeJson);
 }
 
-function AuditCard({ log, locale }: { log: ApiAuditLog; locale: string }) {
+function resourceLabel(
+  t: (key: string, vars?: Record<string, string>) => string,
+  type: string | null | undefined,
+): string {
+  return translateStatus(t, "auditResource", type);
+}
+
+function AuditCard({
+  log,
+  locale,
+}: {
+  log: ApiAuditLog;
+  locale: string;
+}) {
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
-  const title = log.title || log.action;
-  const outcomeText = log.outcomeLabel || log.outcome;
+  const title = translateStatusMap(
+    locale as Locale,
+    "auditAction",
+    log.action,
+    log.title || log.action,
+  );
+  const outcomeText = translateStatus(t, "auditOutcome", log.outcome);
+  const categoryText = log.category
+    ? translateStatus(t, "auditCategory", log.category)
+    : null;
   const actorEmail = log.actor?.email?.trim() || null;
   const targetEmail = pickTargetEmail(log);
   const hasDiff = log.beforeJson != null || log.afterJson != null;
@@ -110,8 +133,8 @@ function AuditCard({ log, locale }: { log: ApiAuditLog; locale: string }) {
 
         <div className="min-w-0 flex-1 space-y-1.5">
           <div className="flex flex-wrap items-center gap-2">
-            {log.category ? (
-              <span className="mq-badge mq-badge-cyan text-[10px]">{log.category}</span>
+            {categoryText ? (
+              <span className="mq-badge mq-badge-cyan text-[10px]">{categoryText}</span>
             ) : null}
             <span className={outcomeBadgeClass(log.outcome)}>{outcomeText}</span>
             <span
@@ -150,9 +173,14 @@ function AuditCard({ log, locale }: { log: ApiAuditLog; locale: string }) {
               </span>
             ) : null}
             {log.resource?.type ? (
-              <span className="font-mono">
-                {log.resource.type}
-                {log.resource.id ? `/${log.resource.id.slice(0, 8)}…` : ""}
+              <span>
+                {resourceLabel(t, log.resource.type)}
+                {log.resource.id ? (
+                  <span className="font-mono">
+                    {" "}
+                    / {log.resource.id.slice(0, 8)}…
+                  </span>
+                ) : null}
               </span>
             ) : null}
             {hasDiff ? (
@@ -204,9 +232,14 @@ function AuditCard({ log, locale }: { log: ApiAuditLog; locale: string }) {
             {log.resource?.type ? (
               <div className="sm:col-span-2">
                 <dt className="text-mq-text-muted">{t("admin.auditPage.resource")}</dt>
-                <dd className="font-mono">
-                  {log.resource.type}
-                  {log.resource.id ? ` / ${log.resource.id}` : ""}
+                <dd>
+                  {resourceLabel(t, log.resource.type)}
+                  {log.resource.id ? (
+                    <span className="font-mono text-mq-text-muted">
+                      {" "}
+                      / {log.resource.id}
+                    </span>
+                  ) : null}
                 </dd>
               </div>
             ) : null}
@@ -429,7 +462,7 @@ function AuditInner() {
                   }`}
                   onClick={() => setCategoryFilter(c === categoryFilter ? "" : c)}
                 >
-                  {c}
+                  {translateStatus(t, "auditCategory", c)}
                 </button>
               ))}
             </div>

@@ -7,6 +7,7 @@ import { formatMoney } from "@/lib/api/utils";
 import { useSellerSettlements } from "@/lib/queries/settlements";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { OrderListSkeleton } from "@/components/ui/Skeleton";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 
@@ -61,9 +62,7 @@ function SellerSettlementsInner() {
         >
           {STATUSES.map((s) => (
             <option key={s || "all"} value={s}>
-              {s
-                ? t(`seller.settlementsPage.status.${s}`)
-                : t("admin.common.allStatuses")}
+              {s === "" ? t("admin.common.allStatuses") : translateStatus(t, "settlement", s)}
             </option>
           ))}
         </select>
@@ -113,7 +112,7 @@ function SellerSettlementsInner() {
                 {s.orderCode ?? s.orderId.slice(0, 8)}
               </span>
             </Link>
-            <span className={`${statusBadgeClass(s.status)} ml-2`}>{s.status}</span>
+            <span className={`${statusBadgeClass(s.status)} ml-2`}>{translateStatus(t, "settlement", s.status)}</span>
             <p className="text-xs text-mq-text-muted mt-1">
               {new Date(s.createdAt).toLocaleString()}
             </p>

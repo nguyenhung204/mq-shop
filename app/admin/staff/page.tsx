@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Check, Copy, Lock, Pencil, Plus, Trash2, Unlock, UserPlus, X } from "lucide-react";
 import type { AuthUser, StaffPoolRole, StaffRole } from "@/lib/api/types";
-import { formatPendingRoles, hasPendingStaffChange } from "@/lib/api/staff";
+import { hasPendingStaffChange } from "@/lib/api/staff";
 import {
   useAdminShops,
   useAdminStaffList,
@@ -18,6 +18,7 @@ import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateRoles, translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 
@@ -247,7 +248,9 @@ function StaffInner() {
             <option value="">{t("admin.staffPage.allPool")}</option>
             {POOL_FILTERS.map((r) => (
               <option key={r} value={r}>
-                {r === "BUYER" ? "BUYER (candidates)" : r}
+                {r === "BUYER"
+                  ? t("admin.staffPage.buyerCandidates")
+                  : translateStatus(t, "role", r)}
               </option>
             ))}
           </select>
@@ -262,7 +265,7 @@ function StaffInner() {
           >
             {STATUS_FILTERS.map((s) => (
               <option key={s || "all"} value={s}>
-                {s ? s : t("admin.common.allStatuses")}
+                {s === "" ? t("admin.common.allStatuses") : translateStatus(t, "user", s)}
               </option>
             ))}
           </select>
@@ -300,19 +303,21 @@ function StaffInner() {
                         )}
                       </td>
                       <td className="p-3">
-                        {(u.roles || []).join(", ")}
+                        {translateRoles(t, u.roles)}
                         {candidate ? (
                           <span className="ml-2 mq-badge mq-badge-cyan text-[10px]">
-                            Candidate
+                            {t("admin.staffPage.candidate")}
                           </span>
                         ) : null}
                       </td>
                       <td className="p-3 text-xs text-mq-text-secondary">
-                        {formatPendingRoles(u.pendingRoles) || "—"}
+                        {u.pendingRoles?.length
+                          ? translateRoles(t, u.pendingRoles)
+                          : "—"}
                       </td>
                       <td className="p-3">
                         <span className={statusBadgeClass(u.status)}>
-                          {u.status || "—"}
+                          {u.status ? translateStatus(t, "user", u.status) : "—"}
                         </span>
                       </td>
                       <td className="p-3 whitespace-nowrap">
@@ -483,7 +488,7 @@ function StaffInner() {
                 >
                   {STAFF_ROLES.map((r) => (
                     <option key={r} value={r}>
-                      {r}
+                      {translateStatus(t, "role", r)}
                     </option>
                   ))}
                 </select>
@@ -572,7 +577,7 @@ function StaffInner() {
                 >
                   {STAFF_ROLES.map((r) => (
                     <option key={r} value={r}>
-                      {r}
+                      {translateStatus(t, "role", r)}
                     </option>
                   ))}
                 </select>
