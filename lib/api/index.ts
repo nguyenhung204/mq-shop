@@ -1,27 +1,142 @@
 import { api } from "./client";
+import { bannerApi, marketingApi } from "./promotions";
 import type {
   ApiAuditLog,
   ApiCategory,
-  ApiOrder,
   ApiProduct,
-  ApiRma,
   ApiShop,
   AddProductVariantRequest,
   AuthUser,
-  Cart,
   CreateProductRequest,
   ListingCard,
   LocalizedText,
   PageMeta,
   Paginated,
-  PaymentMethod,
   ProductVariant,
   PublicProductDetail,
+  ShopStorefront,
   UpdateProductRequest,
   UpdateProductVariantRequest,
-  WalletBalance,
 } from "./types";
 import { asArray, parsePage } from "./utils";
+
+export {
+  orderApi,
+  adminOrdersApi,
+  nextFulfillmentStatus,
+  canCancelOrder,
+  canRequestRma,
+  hasActiveRma,
+  hasBlockingRma,
+  rmaStatusLabel,
+} from "./orders";
+export type {
+  OrderStatus,
+  PaymentMethod,
+  RmaStatus,
+  ShippingAddress,
+  ShippingQuoteRequest,
+  ShippingQuoteView,
+  CheckoutRequest,
+  AdminCheckoutRequest,
+  OrderView,
+  OrderItemView,
+  RmaView,
+  AdminRmaDetailView,
+  CreateRmaRequest,
+  ListOrdersParams,
+  AdminListOrdersParams,
+  UpdateOrderStatusRequest,
+} from "./orders";
+export { settlementApi, adminSettlementApi } from "./settlements";
+export {
+  financeConfigApi,
+  adminPayoutApi,
+  landingCostApi,
+  financeReportApi,
+} from "./finance";
+export type {
+  FinanceConfigStatus,
+  PayoutStatus,
+  FinanceTransactionType,
+  FinanceExportFormat,
+  FinanceConfig,
+  CreateFinanceConfigBody,
+  ListFinanceConfigsParams,
+  SellerPayout,
+  SellerPayoutItem,
+  CreateSellerPayoutBody,
+  ListSellerPayoutsParams,
+  LandingCostItemInput,
+  LandingCostRequest,
+  LandingCostItemResult,
+  LandingCostBreakdown,
+  LandingCostResult,
+  FinanceTransaction,
+  ListFinanceTransactionsParams,
+  ExportFinanceReportBody,
+  ExportFinanceReportResult,
+} from "./finance";
+export { walletApi, adminWalletPayoutApi, adminWalletApi } from "./wallet";
+export type {
+  Wallet,
+  WalletTxReason,
+  WalletTxDirection,
+  WalletTransaction,
+  ListWalletTransactionsParams,
+  ConfirmWalletPinBody,
+  TransferPreviewBody,
+  TransferPreviewResult,
+  TransferRecipient,
+  ListTransferRecipientsParams,
+  TransferBody,
+  BankInfo,
+  WithdrawBody,
+  PayoutRequestStatus,
+  UserPayoutRequest,
+  ListAdminWalletPayoutsParams,
+  ListWalletWithdrawalsParams,
+  AdjustWalletBody,
+  AdjustWalletResult,
+} from "./wallet";
+export { mlmApi, adminMlmApi } from "./mlm";
+export type {
+  ReferralLink,
+  NetworkNode,
+  NetworkTree,
+  ListNetworkTreeParams,
+  RankProgressMode,
+  MlmRankProgress,
+  CommissionType,
+  CommissionLedgerStatus,
+  CommissionRow,
+  ListCommissionsParams,
+  MlmRankConfig,
+  SetMlmRankBody,
+  SetMlmRankResult,
+  SetMlmReferrerBody,
+  SetMlmReferrerResult,
+  SetMlmReferralRateBody,
+  SetMlmReferralRateResult,
+  RankReconcileResult,
+  RankReconcileBatchResult,
+  MonthlyCommissionSuggestedAction,
+  MonthlyCommissionOverviewRow,
+  MonthlyCommissionOverview,
+  GlobalFundTierStatus,
+  GlobalFundBeneficiary,
+  GlobalFundTierBreakdown,
+  GlobalFundOverview,
+} from "./mlm";
+export type {
+  SettlementStatus,
+  SettlementView,
+  SettlementSummary,
+  SettlementListResult,
+  SettlementPageMeta,
+  ListSettlementsParams,
+  AdminListSettlementsParams,
+} from "./settlements";
 
 export const catalogApi = {
   categories: async () => {
@@ -33,6 +148,9 @@ export const catalogApi = {
   listing: async (query: {
     q?: string;
     categoryId?: string;
+    shopId?: string;
+    minPrice?: number;
+    maxPrice?: number;
     page?: number;
     pageSize?: number;
   }) => {
@@ -43,6 +161,9 @@ export const catalogApi = {
         query: {
           q: query.q,
           categoryId: query.categoryId,
+          shopId: query.shopId,
+          minPrice: query.minPrice,
+          maxPrice: query.maxPrice,
           page: query.page ?? 1,
           pageSize: query.pageSize ?? 20,
         },
@@ -54,6 +175,11 @@ export const catalogApi = {
   /** Public PDP — ACTIVE products of approved shops only. */
   productDetail: (productId: string) =>
     api.get<PublicProductDetail>(`/products/listing/${productId}`, { auth: false }),
+
+  /** Public shop profile — APPROVED + not suspended. */
+  shopStorefront: (shopId: string) =>
+    api.get<ShopStorefront>(`/shops/${shopId}/storefront`, { auth: false }),
+
   /** @deprecated prefer listing() */
   searchProducts: async (query: {
     q?: string;
@@ -86,36 +212,6 @@ export const catalogApi = {
   },
   /** @deprecated prefer productDetail() for storefront PDP */
   product: (id: string) => api.get<ApiProduct>(`/products/${id}`, { auth: false }),
-};
-
-export const cartApi = {
-  get: () => api.get<Cart>("/cart"),
-  addItem: (body: { productId: string; quantity: number }) =>
-    api.post<Cart>("/cart/items", body),
-  updateItem: (id: string, body: { quantity: number }) =>
-    api.put<Cart>(`/cart/items/${id}`, body),
-  removeItem: (id: string) => api.delete<Cart>(`/cart/items/${id}`),
-  clear: () => api.delete<Cart>("/cart"),
-};
-
-export const orderApi = {
-  checkout: (body: {
-    paymentMethod: PaymentMethod;
-    shippingAddress: string;
-    shippingCountry?: string;
-    cartItemIds?: string[];
-  }) => api.post<ApiOrder>("/checkout", body),
-  myOrders: () => api.get<ApiOrder[] | Paginated<ApiOrder>>("/orders/me"),
-  get: (id: string) => api.get<ApiOrder>(`/orders/${id}`),
-  cancel: (id: string, body: { reason: string }) =>
-    api.put<ApiOrder>(`/orders/${id}/cancel`, body),
-  createRma: (
-    orderId: string,
-    body: { reason: string; evidenceUrls?: string[]; refundAccountInfo?: string },
-  ) => api.post<ApiRma>(`/orders/${orderId}/rma`, body),
-  myRma: () => api.get<ApiRma[] | Paginated<ApiRma>>("/rma/me"),
-  getRma: (id: string) => api.get<ApiRma>(`/rma/${id}`),
-  withdrawRma: (id: string) => api.put<ApiRma>(`/rma/${id}/withdraw`, {}),
 };
 
 export const shopApi = {
@@ -180,18 +276,6 @@ export const sellerApi = {
   hideProduct: (id: string) => api.post(`/products/${id}/hide`, {}),
   /** HIDDEN → PENDING (re-enter admin review queue) */
   unhideProduct: (id: string) => api.post(`/products/${id}/unhide`, {}),
-  orders: () => api.get<ApiOrder[] | Paginated<ApiOrder>>("/seller/orders"),
-  rma: () => api.get<ApiRma[] | Paginated<ApiRma>>("/seller/rma"),
-  confirmStockReturn: (
-    id: string,
-    body: {
-      warehouseId: string;
-      sku: string;
-      quantity: number;
-      kind: "RETURNED" | "NEW";
-      note?: string;
-    },
-  ) => api.put(`/seller/rma/${id}/confirm-stock-return`, body),
   landingCost: (productId: string) =>
     api.get("/seller/landing-cost", { query: { product_id: productId, productId } }),
 };
@@ -211,34 +295,75 @@ export type {
   CreateSlipRequest,
 } from "./inventory";
 
-export { adminStaffApi } from "./staff";
+export {
+  adminStaffApi,
+  adminPlatformStaffApi,
+  hasPendingStaffChange,
+  formatPendingRoles,
+} from "./staff";
 export type {
   CreateStaffRequest,
   CreateStaffResponse,
   UpdateStaffRolesRequest,
   ListStaffParams,
+  CreatePlatformStaffRequest,
+  UpdatePlatformStaffRolesRequest,
+  ListPlatformStaffParams,
 } from "./staff";
 
-export const walletApi = {
-  affiliateLink: () => api.get<{ code: string; link?: string }>("/wallet/affiliate-link"),
-  networkTree: () => api.get("/wallet/network-tree"),
-  commissionStats: () => api.get("/wallet/commission-stats"),
-  balance: () => api.get<WalletBalance>("/wallet/balance"),
-  requestP2pOtp: (body: { recipient: string; amountPoints: number }) =>
-    api.post("/wallet/p2p-transfer/request-otp", body),
-  p2pTransfer: (body: {
-    recipient: string;
-    amountPoints: number;
-    password: string;
-    otpCode: string;
-    idempotencyKey: string;
-  }) => api.post("/wallet/p2p-transfer", body),
-  withdraw: (body: {
-    amountPoints: number;
-    bankInfo: { bankName: string; accountNumber: string; accountName: string };
-  }) => api.post("/wallet/withdraw", body),
-  myWithdrawals: () => api.get("/wallet/withdraw-requests/me"),
-};
+export { adminBackupApi, adminDsarApi, dsarApi, isBackupInProgress } from "./compliance";
+export type {
+  ApiBackup,
+  BackupStatus,
+  ListBackupsParams,
+  ApiDsarRequest,
+  DsarStatus,
+  ListDsarParams,
+} from "./compliance";
+
+export {
+  productReviewsApi,
+  adminReviewsApi,
+  toRatingNumber,
+} from "./reviews";
+export type {
+  ProductReview,
+  ProductReviewReply,
+  FeaturedReview,
+  FeaturedReviewProduct,
+  FeaturedReviewsParams,
+  ReviewSummary,
+  ReviewStatus,
+  CreateReviewBody,
+  UpdateReviewBody,
+  ListProductReviewsParams,
+  ListAdminReviewsParams,
+} from "./reviews";
+
+export {
+  promotionApi,
+  adminPromotionApi,
+  bannerApi,
+  marketingApi,
+} from "./promotions";
+export type {
+  PromotionType,
+  PromotionScope,
+  PromotionStatus,
+  BannerLang,
+  Promotion,
+  CreatePromotionBody,
+  UpdatePromotionBody,
+  ListPromotionsParams,
+  Banner,
+  ListBannersParams,
+  MarketingFolder,
+  MarketingAsset,
+  MarketingFolderDetail,
+  CreateMarketingFolderBody,
+  UpdateMarketingFolderBody,
+} from "./promotions";
+export { BANNER_LANGS, BANNER_LANG_LABELS } from "./promotions";
 
 export const adminApi = {
   users: (query?: { page?: number; pageSize?: number; status?: string }) =>
@@ -283,26 +408,37 @@ export const adminApi = {
     body: { name?: string; nameVi?: string | null; parentId?: string | null },
   ) => api.patch<ApiCategory>(`/admin/categories/${id}`, body),
   auditLogs: (query?: Record<string, string | number | undefined>) =>
-    api.get<ApiAuditLog[] | { data: ApiAuditLog[]; meta?: PageMeta }>("/admin/audit-logs", {
+    api.get<
+      | ApiAuditLog[]
+      | {
+          items: ApiAuditLog[];
+          total?: number;
+          page?: number;
+          pageSize?: number;
+          meta?: PageMeta;
+        }
+      | { data: ApiAuditLog[]; meta?: PageMeta }
+    >("/admin/audit-logs", {
       query,
       withMeta: true,
     }),
-  forceCancelOrder: (id: string, body?: { reason?: string }) =>
-    api.put(`/admin/orders/${id}/force-cancel`, body ?? {}),
-  confirmCod: (id: string) => api.put(`/admin/orders/${id}/confirm-cod`, {}),
   dailyRefundReport: () => api.get("/admin/finance/daily-refund-report"),
-  rma: () => api.get("/admin/rma"),
-  rmaDecision: (id: string, body: { decision: "APPROVED" | "REJECTED"; reason?: string }) =>
-    api.put(`/admin/rma/${id}/decision`, body),
   commissionOverride: (shopId: string, body: { commissionRate: number }) =>
     api.put(`/admin/shops/${shopId}/commission-override`, body),
   createGateway: (body: unknown) => api.post("/admin/payment-gateway-configs", body),
-  banners: () => api.get("/admin/banners"),
-  createBanner: (body: unknown) => api.post("/admin/banners", body),
-  updateBanner: (id: string, body: unknown) => api.put(`/admin/banners/${id}`, body),
-  createMaterial: (body: unknown) => api.post("/admin/marketing-materials", body),
+  /** Prefer `bannerApi` from `@/lib/api/promotions`. */
+  banners: (query?: { lang?: string; page?: number; pageSize?: number }) =>
+    bannerApi.adminList(query as Parameters<typeof bannerApi.adminList>[0]),
+  createBanner: (formData: FormData) => bannerApi.adminCreate(formData),
+  updateBanner: (id: string, formData: FormData) => bannerApi.adminUpdate(id, formData),
+  deleteBanner: (id: string) => bannerApi.adminDelete(id),
 };
 
+/**
+ * @deprecated Legacy payout-batch / withdraw / gateway-review paths (pre-007).
+ * Prefer `financeConfigApi`, `adminPayoutApi`, `landingCostApi`, `financeReportApi`
+ * from `@/lib/api/finance`. Wallet withdraw stays out of scope (module 009).
+ */
 export const financeApi = {
   createPayoutBatch: (body: unknown) => api.post("/finance/payout-batches", body),
   payoutBatches: () => api.get("/finance/payout-batches"),
@@ -324,11 +460,11 @@ export const financeApi = {
     api.put(`/finance/withdraw-requests/${id}/mark-completed`, {}),
 };
 
+/** Prefer `marketingApi` from `@/lib/api/promotions`. */
 export const cmsApi = {
-  materials: (folder?: string) =>
-    api.get("/marketing-materials", { query: { folder } }),
-  downloadMaterials: (folder: string) =>
-    api.get("/marketing-materials/download", { query: { folder } }),
+  folders: (query?: { page?: number; pageSize?: number }) => marketingApi.folders(query),
+  folder: (folderId: string) => marketingApi.folder(folderId),
+  downloadFolderZip: (folderId: string) => marketingApi.downloadZip(folderId),
 };
 
 export const systemApi = {

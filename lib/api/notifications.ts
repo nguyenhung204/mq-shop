@@ -8,62 +8,65 @@ export type NotificationListResult = {
   meta?: PageMeta;
 };
 
-type ListPayload = {
-  items?: ApiNotification[];
-  notifications?: ApiNotification[];
-  data?: ApiNotification[];
-  unreadCount?: number;
-  meta?: PageMeta & { unreadCount?: number };
-};
-
+/**
+ * Contract (in envelope `data`):
+ * {
+ *   items: NotificationView[],
+ *   meta: { page, pageSize, total, totalPages },
+ *   unreadCount: number  // global unread, not page-scoped
+ * }
+ */
 function parseListPayload(raw: unknown): NotificationListResult {
-  if (Array.isArray(raw)) {
-    const items = raw as ApiNotification[];
-    return {
-      items,
-      unreadCount: items.filter((n) => !n.readAt).length,
-    };
-  }
+  // withMeta → { data, meta }; data may be the contract object or a bare array
+  const root = raw as {
+    data?: unknown;
+    meta?: PageMeta & { unreadCount?: number };
+    items?: ApiNotification[];
+    unreadCount?: number;
+  };
 
-  const envelope = raw as { data?: unknown; meta?: PageMeta & { unreadCount?: number } };
-  const payload = (envelope?.data ?? raw) as ListPayload | ApiNotification[];
+  const candidate =
+    root?.data && typeof root.data === "object" && !Array.isArray(root.data)
+      ? (root.data as {
+          items?: ApiNotification[];
+          meta?: PageMeta;
+          unreadCount?: number;
+        })
+      : root;
 
-  if (Array.isArray(payload)) {
-    const items = payload;
-    const unreadFromMeta = envelope?.meta?.unreadCount;
+  if (Array.isArray(root?.data)) {
+    const items = root.data as ApiNotification[];
     return {
       items,
       unreadCount:
-        typeof unreadFromMeta === "number"
-          ? unreadFromMeta
+        typeof root.meta?.unreadCount === "number"
+          ? root.meta.unreadCount
           : items.filter((n) => !n.readAt).length,
-      meta: envelope?.meta,
+      meta: root.meta,
     };
   }
 
-  const items = asArray<ApiNotification>(
-    payload.items ?? payload.notifications ?? payload.data ?? [],
-  );
+  const items = asArray<ApiNotification>(candidate?.items ?? []);
+  const meta = candidate?.meta ?? root?.meta;
   const unreadCount =
-    typeof payload.unreadCount === "number"
-      ? payload.unreadCount
-      : typeof envelope?.meta?.unreadCount === "number"
-        ? envelope.meta.unreadCount
-        : items.filter((n) => !n.readAt).length;
+    typeof candidate?.unreadCount === "number"
+      ? candidate.unreadCount
+      : typeof root?.unreadCount === "number"
+        ? root.unreadCount
+        : typeof (meta as { unreadCount?: number } | undefined)?.unreadCount ===
+            "number"
+          ? (meta as { unreadCount: number }).unreadCount
+          : items.filter((n) => !n.readAt).length;
 
-  return {
-    items,
-    unreadCount,
-    meta: payload.meta ?? envelope?.meta,
-  };
+  return { items, unreadCount, meta };
 }
 
 export const notificationApi = {
   list: async (query?: { page?: number; pageSize?: number }) => {
     const raw = await api.get<unknown>("/notifications", {
       query: {
-        page: query?.page,
-        pageSize: query?.pageSize ?? 50,
+        page: query?.page ?? 1,
+        pageSize: query?.pageSize ?? 8,
       },
       withMeta: true,
     });

@@ -16,6 +16,8 @@ import {
   AdminIconLink,
 } from "@/components/admin/AdminIconButton";
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 
@@ -26,6 +28,7 @@ type ReasonAction = {
 };
 
 function ShopsInner() {
+  const { t } = useLanguage();
   const [status, setStatus] = useState("PENDING");
   const [page, setPage] = useState(1);
   const [reasonAction, setReasonAction] = useState<ReasonAction | null>(null);
@@ -42,23 +45,21 @@ function ShopsInner() {
   return (
     <>
       <AdminPageHeader
-        title="Shops"
-        description="Review seller applications and violation locks."
+        title={t("admin.shops.title")}
+        description={t("admin.shops.description")}
         actions={
           <select
             className="mq-input max-w-[11rem]"
             value={status}
-            aria-label="Filter by status"
+            aria-label={t("admin.common.filterStatus")}
             onChange={(e) => {
               setStatus(e.target.value);
               setPage(1);
             }}
           >
-            {["PENDING", "APPROVED", "REJECTED"].map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
+            <option value="PENDING">{t("admin.common.pending")}</option>
+            <option value="APPROVED">{t("admin.common.approved")}</option>
+            <option value="REJECTED">{t("admin.common.rejected")}</option>
           </select>
         }
       />
@@ -66,29 +67,38 @@ function ShopsInner() {
       <div className="space-y-4">
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : "Failed"}
+            {error instanceof Error ? error.message : t("admin.common.failed")}
           </div>
         )}
         {isLoading && <AdminCardListSkeleton />}
+        {!isLoading && shops.length === 0 && (
+          <p className="text-sm text-mq-text-muted py-6 text-center">
+            {t("admin.shops.empty")}
+          </p>
+        )}
         {shops.map((s) => (
           <div key={s.id} className="mq-card p-4 flex flex-wrap justify-between gap-3 text-sm">
             <div>
               <p className="font-medium">{s.name}</p>
               <p className="text-mq-text-muted text-xs">
-                {s.taxId || s.taxCode} · {s.countryCode} · {s.status}
+                {s.taxId || s.taxCode} · {s.countryCode} · {translateStatus(t, "shop", s.status)}
               </p>
             </div>
             <AdminActions>
-              <AdminIconLink href={`/admin/shops/${s.id}`} label="View details" icon={Eye} />
+              <AdminIconLink
+                href={`/admin/shops/${s.id}`}
+                label={t("admin.common.viewDetails")}
+                icon={Eye}
+              />
               <AdminIconButton
-                label="Approve"
+                label={t("admin.common.approve")}
                 icon={Check}
                 tone="approve"
                 disabled={approveShop.isPending || s.status !== "PENDING"}
                 onClick={() => void approveShop.mutateAsync(s.id)}
               />
               <AdminIconButton
-                label="Reject"
+                label={t("admin.common.reject")}
                 icon={X}
                 tone="reject"
                 disabled={rejectShop.isPending || s.status !== "PENDING"}
@@ -97,7 +107,7 @@ function ShopsInner() {
                 }
               />
               <AdminIconButton
-                label="Violation lock"
+                label={t("admin.shops.violationLock")}
                 icon={ShieldAlert}
                 tone="warn"
                 disabled={suspendShop.isPending || s.status !== "APPROVED"}
@@ -113,7 +123,11 @@ function ShopsInner() {
 
       <AdminReasonModal
         open={!!reasonAction}
-        title={reasonAction?.kind === "reject" ? "Reject shop" : "Violation lock"}
+        title={
+          reasonAction?.kind === "reject"
+            ? t("admin.shops.rejectTitle")
+            : t("admin.shops.violationLock")
+        }
         description={
           reasonAction
             ? reasonAction.kind === "reject"
@@ -121,7 +135,11 @@ function ShopsInner() {
               : `Optional note for locking “${reasonAction.shopName}”.`
             : undefined
         }
-        confirmLabel={reasonAction?.kind === "reject" ? "Reject" : "Lock shop"}
+        confirmLabel={
+          reasonAction?.kind === "reject"
+            ? t("admin.common.reject")
+            : t("admin.shops.lockTitle")
+        }
         required={reasonAction?.kind === "reject"}
         busy={modalBusy}
         onClose={() => {

@@ -1,6 +1,7 @@
 "use client";
 
 import type { PageMeta } from "@/lib/api/types";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export function PaginationBar({
   page,
@@ -13,6 +14,7 @@ export function PaginationBar({
   onPageChange: (page: number) => void;
   className?: string;
 }) {
+  const { t } = useLanguage();
   if (!meta || meta.totalPages <= 1) return null;
 
   return (
@@ -23,12 +25,15 @@ export function PaginationBar({
         disabled={page <= 1}
         onClick={() => onPageChange(page - 1)}
       >
-        Prev
+        {t("admin.common.prev")}
       </button>
       <span className="text-sm text-mq-text-muted">
         {page} / {meta.totalPages}
         {typeof meta.total === "number" ? (
-          <span className="text-mq-text-muted/80"> · {meta.total} items</span>
+          <span className="text-mq-text-muted/80">
+            {" "}
+            · {t("admin.common.items", { count: String(meta.total) })}
+          </span>
         ) : null}
       </span>
       <button
@@ -37,7 +42,7 @@ export function PaginationBar({
         disabled={page >= meta.totalPages}
         onClick={() => onPageChange(page + 1)}
       >
-        Next
+        {t("admin.common.next")}
       </button>
     </div>
   );

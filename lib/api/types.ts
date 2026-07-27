@@ -37,13 +37,28 @@ export type AuthUser = {
   fullName?: string | null;
   avatarUrl?: string | null;
   dateOfBirth?: string | null;
-  status?: "ACTIVE" | "LOCKED" | "DELETED" | string;
+  status?: "ACTIVE" | "LOCKED" | "DELETED" | "PENDING" | string;
   roles: Role[];
+  /** Dual-control (008): roles awaiting Super Admin approval. */
+  pendingRoles?: Role[] | null;
   permissions?: string[];
   /** Present for shop staff (WAREHOUSE / CS / ACCOUNTANT). */
   shopId?: string | null;
   emailVerifiedAt?: string | null;
   createdAt?: string;
+  /** Direct upline (MLM 009). */
+  referrerId?: string | null;
+  /** Shareable referral code. */
+  referralCode?: string | null;
+  /** MLM rank 1–10. */
+  mlmRank?: number | null;
+  /**
+   * Optional override for referral commission % (0–10).
+   * `null` / omitted → use rank table default.
+   */
+  referralRateOverride?: string | number | null;
+  /** Gate P2P / withdraw until PIN is set. */
+  hasWalletPin?: boolean;
 };
 
 export type LoginResponse = {
@@ -64,6 +79,7 @@ export type Paginated<T> = {
 
 export type ListingCard = {
   id: string;
+  shopId?: string;
   title: string;
   /** Derived min variant price (backward-friendly). */
   price: number;
@@ -74,6 +90,11 @@ export type ListingCard = {
   stock: number;
   displayMode: "NORMAL" | "OUT_OF_STOCK_WATERMARK";
   watermarkText: null | { vi: string; zh: string; en: string };
+  /** ISO-8601 — present when BE listing includes it. */
+  createdAt?: string;
+  /** Product reviews (011). */
+  ratingAvg?: number | string | null;
+  reviewCount?: number | null;
 };
 
 export type ProductVariant = {
@@ -104,10 +125,28 @@ export type PublicProductVariant = {
   isEnrollmentPackage?: boolean;
 };
 
+/** GET /shops/:shopId/storefront */
+export type ShopStorefront = {
+  id: string;
+  name: string;
+  logoUrl: string | null;
+  bannerUrl: string | null;
+  countryCode: string;
+};
+
+/** Nested on PDP — GET /products/listing/:productId */
+export type ProductShopSummary = {
+  id: string;
+  name: string;
+  logoUrl: string | null;
+};
+
 /** GET /products/listing/:productId */
 export type PublicProductDetail = {
   id: string;
   shopId?: string;
+  /** Present when shop is public; otherwise null (shopId still set). */
+  shop?: ProductShopSummary | null;
   title: string;
   description?: string | null;
   categoryId?: string;
@@ -122,6 +161,9 @@ export type PublicProductDetail = {
   watermarkText: null | { vi: string; zh: string; en: string };
   createdAt?: string;
   updatedAt?: string;
+  /** Product reviews (011). */
+  ratingAvg?: number | string | null;
+  reviewCount?: number | null;
 };
 
 export type ApiProduct = {
@@ -196,14 +238,17 @@ export type ApiCategory = {
   parentId?: string | null;
 };
 
+/** @deprecated Prefer `Banner` from `@/lib/api/promotions`. */
 export type ApiBanner = {
   id: string;
-  imageUrl: string;
-  targetUrl: string;
-  locale: string;
   title: string;
-  displayOrder: number;
+  imageUrl: string;
+  linkUrl: string | null;
+  lang: "VI" | "EN" | "TW" | "ALL";
+  sortOrder: number;
   isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type CartItem = {
@@ -220,41 +265,62 @@ export type Cart = {
   items: CartItem[];
 };
 
+/** @deprecated Prefer OrderView / PaymentMethod from `@/lib/api/orders`. */
 export type OrderStatus =
   | "PENDING"
+  | "PAID"
   | "CONFIRMED"
-  | "PROCESSING"
+  | "PACKED"
   | "SHIPPED"
   | "DELIVERED"
   | "CANCELLED"
+  | "REFUND_APPROVED"
+  | "REFUNDED"
+  | "PROCESSING"
   | "EXPIRED";
 
 export type PaymentStatus = "UNPAID" | "PAID" | "FAILED" | "REFUND_PENDING";
-export type PaymentMethod = "COD" | "BANK_TRANSFER" | "CARD";
+/** @deprecated Prefer COD | MOCK from `@/lib/api/orders`. */
+export type PaymentMethod = "COD" | "MOCK" | "BANK_TRANSFER" | "CARD";
 
+/** @deprecated Prefer OrderView from `@/lib/api/orders`. */
 export type ApiOrder = {
   id: string;
+  code?: string;
   shopId: string;
+  buyerId?: string;
   status: OrderStatus;
   paymentMethod: PaymentMethod;
-  paymentStatus: PaymentStatus;
-  totalAmountUsd: string | number;
+  paymentStatus?: PaymentStatus;
+  total?: number;
+  totalAmountUsd?: string | number;
+  subtotal?: number;
+  shippingFee?: number;
   shippingFeeUsd?: string | number;
-  shippingAddress: string;
+  currency?: string;
+  shippingAddress: string | Record<string, unknown>;
   createdAt: string;
+  deliveredAt?: string | null;
   items?: {
+    id?: string;
     sku: string;
     quantity: number;
-    unitPriceUsd: string | number;
+    unitPrice?: number;
+    unitPriceUsd?: string | number;
+    titleSnapshot?: string;
     productId?: string;
     name?: string;
+    lineTotal?: number;
+    variantId?: string;
   }[];
 };
 
 export type RmaStatus =
-  | "REQUESTED"
+  | "PENDING"
   | "APPROVED"
   | "REJECTED"
+  | "CLOSED"
+  | "REQUESTED"
   | "STOCK_RETURNED"
   | "WITHDRAWN";
 
@@ -264,8 +330,15 @@ export type ApiRma = {
   status: RmaStatus;
   reason: string;
   evidenceUrls?: string[];
+  bankInfo?: {
+    bankName: string;
+    accountNumber: string;
+    accountName: string;
+  };
+  reviewNote?: string | null;
   autoApproveAt?: string;
   requestedAt?: string;
+  createdAt?: string;
 };
 
 export type ShopStatus = "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED";
@@ -314,15 +387,22 @@ export type ApiAuditLog = {
   summary?: string;
   category?: string;
   outcomeLabel?: string;
-  actor: { id: string | null; email: string | null };
+  actor: { id: string | null; email: string | null; ip?: string | null };
   resource: { type: string | null; id: string | null };
   reason: string | null;
+  beforeJson?: unknown;
+  afterJson?: unknown;
   meta?: Record<string, unknown>;
 };
 
+/**
+ * @deprecated Prefer `Wallet` from `@/lib/api/wallet` (`availableBalance` / `frozenBalance`).
+ */
 export type WalletBalance = {
   available: string | number;
   frozen: string | number;
+  availableBalance?: string | number;
+  frozenBalance?: string | number;
   pointUsdRate?: string | number;
 };
 

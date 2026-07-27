@@ -13,6 +13,8 @@ import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { Check, ShieldAlert, X } from "lucide-react";
 
 function reasonText(reason: string | LocalizedText | null | undefined): string {
@@ -22,6 +24,7 @@ function reasonText(reason: string | LocalizedText | null | undefined): string {
 }
 
 function ShopDetailInner({ id }: { id: string }) {
+  const { t } = useLanguage();
   const [reasonKind, setReasonKind] = useState<"reject" | "violation" | null>(null);
   const { data: shop, isLoading, isError, error } = useAdminShop(id);
   const approveShop = useApproveShop();
@@ -36,8 +39,8 @@ function ShopDetailInner({ id }: { id: string }) {
   return (
     <>
       <AdminPageHeader
-        title={shop?.name || "Shop detail"}
-        description="Review shop documents and take moderation actions."
+        title={shop?.name || t("admin.shops.detailTitle")}
+        description={t("admin.shops.description")}
       />
       <div className="space-y-6 max-w-3xl">
         <Link href="/admin/shops" className="text-sm text-mq-text-muted hover:text-mq-text">
@@ -46,10 +49,10 @@ function ShopDetailInner({ id }: { id: string }) {
 
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : "Failed to load shop"}
+            {error instanceof Error ? error.message : t("admin.common.failed")}
           </div>
         )}
-        {isLoading && <p className="text-sm text-mq-text-muted">Loading…</p>}
+        {isLoading && <p className="text-sm text-mq-text-muted">{t("admin.common.loading")}</p>}
 
         {shop && (
           <div className="mq-card p-6 space-y-4 text-sm">
@@ -58,12 +61,12 @@ function ShopDetailInner({ id }: { id: string }) {
                 <h2 className="text-lg font-medium text-mq-text">{shop.name}</h2>
                 <p className="text-xs text-mq-text-muted mt-1 font-mono">{shop.id}</p>
               </div>
-              <span className="mq-badge mq-badge-cyan h-fit">{shop.status}</span>
+              <span className="mq-badge mq-badge-cyan h-fit">{translateStatus(t, "shop", shop.status)}</span>
             </div>
 
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <dt className="text-xs text-mq-text-muted">Tax ID</dt>
+                <dt className="text-xs text-mq-text-muted">{t("admin.shops.taxId")}</dt>
                 <dd>{shop.taxId || shop.taxCode || "—"}</dd>
               </div>
               <div>
@@ -86,13 +89,13 @@ function ShopDetailInner({ id }: { id: string }) {
               </div>
               {shop.pickupAddress && (
                 <div className="sm:col-span-2">
-                  <dt className="text-xs text-mq-text-muted">Pickup address</dt>
+                  <dt className="text-xs text-mq-text-muted">{t("admin.shops.pickupAddress")}</dt>
                   <dd>{shop.pickupAddress}</dd>
                 </div>
               )}
               {reasonText(shop.rejectionReason) && (
                 <div className="sm:col-span-2">
-                  <dt className="text-xs text-mq-text-muted">Rejection reason</dt>
+                  <dt className="text-xs text-mq-text-muted">{t("admin.common.reason")}</dt>
                   <dd>{reasonText(shop.rejectionReason)}</dd>
                 </div>
               )}
@@ -100,12 +103,12 @@ function ShopDetailInner({ id }: { id: string }) {
 
             {docUrl && (
               <div>
-                <p className="text-xs text-mq-text-muted mb-2">Legal document</p>
+                <p className="text-xs text-mq-text-muted mb-2">{t("admin.shops.legalDocument")}</p>
                 {/\.(jpg|jpeg|png|webp|gif)$/i.test(docUrl) ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={docUrl}
-                    alt="Shop document"
+                    alt={t("admin.shops.legalDocument")}
                     className="max-h-64 rounded border border-mq-border object-contain bg-mq-surface-subtle"
                   />
                 ) : (
@@ -145,21 +148,21 @@ function ShopDetailInner({ id }: { id: string }) {
             <div className="pt-2 border-t border-mq-border">
               <AdminActions>
                 <AdminIconButton
-                  label="Approve"
+                  label={t("admin.common.approve")}
                   icon={Check}
                   tone="approve"
                   disabled={busy || shop.status !== "PENDING"}
                   onClick={() => void approveShop.mutateAsync(shop.id)}
                 />
                 <AdminIconButton
-                  label="Reject"
+                  label={t("admin.common.reject")}
                   icon={X}
                   tone="reject"
                   disabled={busy || shop.status !== "PENDING"}
                   onClick={() => setReasonKind("reject")}
                 />
                 <AdminIconButton
-                  label="Violation lock"
+                  label={t("admin.shops.violationLock")}
                   icon={ShieldAlert}
                   tone="warn"
                   disabled={busy || shop.status !== "APPROVED"}
@@ -173,7 +176,11 @@ function ShopDetailInner({ id }: { id: string }) {
 
       <AdminReasonModal
         open={!!reasonKind && !!shop}
-        title={reasonKind === "reject" ? "Reject shop" : "Violation lock"}
+        title={
+          reasonKind === "reject"
+            ? t("admin.shops.rejectTitle")
+            : t("admin.shops.violationLock")
+        }
         description={
           shop
             ? reasonKind === "reject"
@@ -181,7 +188,9 @@ function ShopDetailInner({ id }: { id: string }) {
               : `Optional note for locking “${shop.name}”.`
             : undefined
         }
-        confirmLabel={reasonKind === "reject" ? "Reject" : "Lock shop"}
+        confirmLabel={
+          reasonKind === "reject" ? t("admin.common.reject") : t("admin.shops.lockTitle")
+        }
         required={reasonKind === "reject"}
         busy={modalBusy}
         onClose={() => {

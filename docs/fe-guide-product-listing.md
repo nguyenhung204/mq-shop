@@ -280,16 +280,27 @@ const thumbs =
 ### 5.1 Browse / search
 
 ```
-GET /products/listing?q=mouse&categoryId=cat-electronics&page=1&pageSize=20
+GET /products/listing?q=mouse&categoryId=cat-electronics&shopId=<uuid>&minPrice=10&maxPrice=100&page=1&pageSize=20
 ```
 
 No auth. Only `ACTIVE` products of **APPROVED**, non-suspended shops.
+
+**Query filters (additive AND):**
+
+| Param | Notes |
+|-------|--------|
+| `q` | Title search |
+| `categoryId` | `cat-…` |
+| `shopId` | Shop storefront; non-public shop → empty list |
+| `minPrice` / `maxPrice` | ≥ 0; `minPrice > maxPrice` → 400 |
+| `page` / `pageSize` | Pagination |
 
 **Card:**
 
 ```json
 {
   "id": "prod-uuid",
+  "shopId": "shop-uuid",
   "title": "Wireless Mouse Pro",
   "price": 29.99,
   "minPrice": 29.99,
@@ -303,6 +314,7 @@ No auth. Only `ACTIVE` products of **APPROVED**, non-suspended shops.
 
 | Field | Meaning |
 |-------|---------|
+| `shopId` | Seller shop (link to `/shops/:shopId`) |
 | `price` | Same as `minPrice` (backward-friendly) |
 | `minPrice` / `maxPrice` | Range when multi-variant pricing differs |
 | `stock` | Sum of variant `availableStock` |
@@ -310,6 +322,26 @@ No auth. Only `ACTIVE` products of **APPROVED**, non-suspended shops.
 | `watermarkText` | `{ vi, zh, en }` when OOS; else `null` |
 
 **UI tip:** if `minPrice !== maxPrice`, show e.g. `Từ {minPrice}` / `{minPrice} – {maxPrice}`.
+
+### 5.1b Public shop storefront
+
+```
+GET /shops/:shopId/storefront
+```
+
+No auth. Only `APPROVED` + not suspended → else `404 SHOP_NOT_FOUND`.
+
+```json
+{
+  "id": "shop-uuid",
+  "name": "Seed Electronics",
+  "logoUrl": "https://…/logo.webp",
+  "bannerUrl": "https://…/banner.webp",
+  "countryCode": "VN"
+}
+```
+
+FE route: `/shops/[id]` — search (`q`), category, `minPrice`/`maxPrice`, sort (client), pagination via listing `?shopId=`.
 
 ### 5.2 Product detail (PDP)
 
@@ -319,12 +351,21 @@ GET /products/listing/:productId
 
 No auth. Same visibility rules as listing (`ACTIVE` + approved shop). `404` if missing / not public.
 
+Also returns nested `shop` when the seller shop is public:
+
+```json
+"shop": { "id": "shop-uuid", "name": "Seed Electronics", "logoUrl": "https://…" }
+```
+
+or `"shop": null` (still keep `shopId`).
+
 ```json
 {
   "message": "Product retrieved successfully",
   "data": {
     "id": "prod-uuid",
     "shopId": "shop-uuid",
+    "shop": { "id": "shop-uuid", "name": "Seed Electronics", "logoUrl": null },
     "title": "Cotton T-Shirt",
     "description": "Soft cotton tee",
     "categoryId": "cat-fashion",

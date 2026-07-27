@@ -7,8 +7,13 @@ import { Check } from "lucide-react";
 import { Product, formatPrice } from "@/lib/data/products";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { ProductActions } from "@/components/cart/ProductActions";
+import { ProductShopCard } from "@/components/product/ProductShopCard";
+import { ReviewList } from "@/components/reviews/ReviewList";
+import { ReviewSummaryPanel } from "@/components/reviews/ReviewSummary";
 import { ProductCarousel } from "@/components/ui/ProductCarousel";
 import { Container, PageHero, Stars } from "@/components/ui/shared";
+import { PaginationBar } from "@/components/ui/PaginationBar";
+import { useProductReviews, useProductReviewSummary } from "@/lib/queries/reviews";
 
 const TAB_KEYS = [
   "product.tabDescription",
@@ -26,6 +31,36 @@ function variantLabel(v: NonNullable<Product["variants"]>[number]): string {
   return v.sku;
 }
 
+function ProductReviewsTab({ productId }: { productId: string }) {
+  const { t } = useLanguage();
+  const [page, setPage] = useState(1);
+  const { data: summary, isLoading: summaryLoading } = useProductReviewSummary(productId);
+  const { data, isLoading, isError, error } = useProductReviews(productId, page, 10);
+  const items = data?.items ?? [];
+  const meta = data?.meta;
+
+  return (
+    <div className="space-y-6">
+      {summaryLoading ? (
+        <p className="text-sm text-mq-text-muted">{t("admin.common.loading")}</p>
+      ) : summary ? (
+        <ReviewSummaryPanel summary={summary} />
+      ) : null}
+      {isError ? (
+        <div className="mq-alert mq-alert-error text-sm">
+          {error instanceof Error ? error.message : t("admin.common.failed")}
+        </div>
+      ) : null}
+      {isLoading ? (
+        <p className="text-sm text-mq-text-muted">{t("admin.common.loading")}</p>
+      ) : (
+        <ReviewList items={items} />
+      )}
+      <PaginationBar page={page} meta={meta} onPageChange={setPage} />
+    </div>
+  );
+}
+
 export function ProductPageContent({
   product,
   related,
@@ -38,6 +73,7 @@ export function ProductPageContent({
   const [selectedId, setSelectedId] = useState(
     product.selectedVariantId || variants[0]?.id || "",
   );
+  const [tab, setTab] = useState(0);
 
   const selected = useMemo(
     () => variants.find((v) => v.id === selectedId) ?? variants[0],
@@ -59,7 +95,9 @@ export function ProductPageContent({
     image: displayImage,
     inStock: displayStock,
     selectedVariantId: selected?.id,
-    features: outOfStock ? ["Out of stock"] : product.features.filter((f) => f !== "Out of stock"),
+    features: outOfStock
+      ? ["Out of stock"]
+      : product.features.filter((f) => f !== "Out of stock"),
   };
 
   return (
@@ -111,15 +149,19 @@ export function ProductPageContent({
               <span className="mq-badge mq-badge-teal">{t("product.badgeFreeShipping")}</span>
             </div>
             <p className="text-xs text-mq-text-muted uppercase tracking-[0.15em] mb-2">
-              {product.brand}
+              {product.shop?.name || product.brand}
             </p>
             <h1 className="text-2xl md:text-[26px] font-sans text-mq-text mb-3">{product.name}</h1>
-            <div className="flex items-center gap-3 mb-4">
+            <button
+              type="button"
+              className="flex items-center gap-3 mb-4 hover:opacity-80"
+              onClick={() => setTab(2)}
+            >
               <Stars rating={product.rating} />
               <span className="text-sm text-mq-text-muted">
                 ({product.reviewCount} {t("product.reviews")})
               </span>
-            </div>
+            </button>
             <div className="flex items-center gap-3 mb-6">
               <span className="text-2xl font-medium">{formatPrice(displayPrice)}</span>
               {product.originalPrice && (
@@ -194,7 +236,23 @@ export function ProductPageContent({
               <ProductActions product={cartProduct} />
             )}
 
-            <div className="flex gap-6 text-sm text-mq-text-secondary mb-8">
+            {product.shop ? (
+              <div className="mt-8 mb-2">
+                <ProductShopCard shop={product.shop} />
+              </div>
+            ) : product.shopId ? (
+              <div className="mt-8 mb-2">
+                <ProductShopCard
+                  shop={{
+                    id: product.shopId,
+                    name: t("product.sellerShop"),
+                    logoUrl: null,
+                  }}
+                />
+              </div>
+            ) : null}
+
+            <div className="flex gap-6 text-sm text-mq-text-secondary mb-8 mt-6">
               <button type="button" className="hover:text-mq-text">
                 {t("product.compare")}
               </button>
@@ -220,19 +278,38 @@ export function ProductPageContent({
               <button
                 key={key}
                 type="button"
-                className={`pb-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${i === 0 ? "border-mq-gold text-mq-text" : "border-transparent text-mq-text-muted hover:text-mq-text"}`}
+                onClick={() => setTab(i)}
+                className={`pb-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                  i === tab
+                    ? "border-mq-gold text-mq-text"
+                    : "border-transparent text-mq-text-muted hover:text-mq-text"
+                }`}
               >
                 {t(key)}
               </button>
             ))}
           </div>
-          <div className="prose prose-sm max-w-none text-mq-text-secondary">
-            <p>{product.description}</p>
-            <p className="mt-4">
-              {t("product.stock")}: {displayStock} {t("product.unitsAvailable")}
-              {selected ? ` · SKU ${selected.sku}` : null}
+          {tab === 0 ? (
+            <div className="prose prose-sm max-w-none text-mq-text-secondary">
+              <p>{product.description}</p>
+              <p className="mt-4">
+                {t("product.stock")}: {displayStock} {t("product.unitsAvailable")}
+                {selected ? ` · SKU ${selected.sku}` : null}
+              </p>
+            </div>
+          ) : null}
+          {tab === 1 ? (
+            <p className="text-sm text-mq-text-secondary">
+              {t("product.reviewsPage.additionalInfo")}
             </p>
-          </div>
+          ) : null}
+          {tab === 2 ? <ProductReviewsTab productId={product.id} /> : null}
+          {tab === 3 ? (
+            <div className="text-sm text-mq-text-secondary space-y-2">
+              <p>{t("product.deliveryEstimate")}</p>
+              <p>{t("product.freeShippingNote")}</p>
+            </div>
+          ) : null}
         </div>
 
         {related.length > 0 && (

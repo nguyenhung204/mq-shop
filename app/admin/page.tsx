@@ -3,113 +3,184 @@
 import Link from "next/link";
 import {
   BadgeDollarSign,
+  BadgePercent,
   Boxes,
+  Calculator,
   ClipboardList,
+  FolderOpen,
   FolderTree,
+  HandCoins,
   ImageIcon,
+  Network,
   Package,
+  Percent,
+  Receipt,
   RotateCcw,
+  Scale,
   ShoppingBag,
   Store,
   Users,
+  Wallet,
 } from "lucide-react";
+import type { Role } from "@/lib/api/types";
+import { ACCOUNTANT_COMMERCE_PERMS } from "@/components/admin/nav";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 const cards: {
   href: string;
-  label: string;
-  desc: string;
+  navKey: string;
   permissions: string[];
+  roles?: Role[];
   icon: typeof Store;
 }[] = [
   {
     href: "/admin/shops",
-    label: "Shops",
-    desc: "Approve, reject, and violation-lock seller applications",
+    navKey: "shops",
     permissions: ["APPROVE_SELLER", "APPROVE_SHOP", "SUSPEND_SHOP"],
     icon: Store,
   },
   {
     href: "/admin/products",
-    label: "Products",
-    desc: "Review listings — approve, reject, or hide",
+    navKey: "products",
     permissions: ["APPROVE_PRODUCT"],
     icon: Package,
   },
   {
     href: "/admin/inventory",
-    label: "Inventory",
-    desc: "Approve or reject cross-shop stock slips",
+    navKey: "inventory",
     permissions: ["VIEW_INVENTORY", "EDIT_INVENTORY"],
     icon: Boxes,
   },
   {
     href: "/admin/categories",
-    label: "Categories",
-    desc: "Maintain the storefront catalog tree",
+    navKey: "categories",
     permissions: ["MANAGE_CONTENT"],
     icon: FolderTree,
   },
   {
     href: "/admin/users",
-    label: "Users",
-    desc: "Lock, unlock, and soft-delete accounts",
+    navKey: "users",
     permissions: ["VIEW_USERS", "DELETE_ACCOUNT", "LOCK_USER"],
     icon: Users,
   },
   {
     href: "/admin/audit-logs",
-    label: "Audit logs",
-    desc: "Trace admin actions across the platform",
+    navKey: "audit",
     permissions: ["VIEW_AUDIT_LOG"],
     icon: ClipboardList,
   },
   {
     href: "/admin/orders",
-    label: "Orders",
-    desc: "Confirm COD payments or force-cancel",
-    permissions: ["FORCE_CANCEL_ORDER", "CONFIRM_ORDER"],
+    navKey: "orders",
+    permissions: ["VIEW_ORDER", "CREATE_ORDER"],
     icon: ShoppingBag,
   },
   {
     href: "/admin/rma",
-    label: "RMA",
-    desc: "Decide return and refund requests",
-    permissions: ["MANAGE_RMA"],
+    navKey: "rma",
+    permissions: ["PROCESS_RMA", "MANAGE_RMA"],
     icon: RotateCcw,
   },
   {
+    href: "/admin/settlements",
+    navKey: "settlements",
+    permissions: ["VIEW_TRANSACT"],
+    icon: Scale,
+  },
+  {
+    href: "/admin/transactions",
+    navKey: "transactions",
+    permissions: ["VIEW_TRANSACT"],
+    icon: Receipt,
+  },
+  {
+    href: "/admin/payouts",
+    navKey: "payouts",
+    permissions: ["PAYOUT_SELLER"],
+    icon: HandCoins,
+  },
+  {
+    href: "/admin/wallet/payouts",
+    navKey: "walletPayouts",
+    permissions: ["APPROVE_PAYOUT"],
+    roles: ["ACCOUNTANT", "ADMIN", "SUPER_ADMIN"],
+    icon: Wallet,
+  },
+  {
+    href: "/admin/mlm",
+    navKey: "mlm",
+    permissions: ["CONFIG_MLM", "VIEW_MLM_TREE"],
+    roles: ["SUPER_ADMIN", "ACCOUNTANT", "ADMIN"],
+    icon: Network,
+  },
+  {
+    href: "/admin/landing-cost",
+    navKey: "landingCost",
+    permissions: ["CALC_LAND_COST"],
+    icon: Calculator,
+  },
+  {
+    href: "/admin/finance/configs",
+    navKey: "financeConfigs",
+    permissions: ["CONFIG_FEE"],
+    roles: ["SUPER_ADMIN", "ACCOUNTANT"],
+    icon: Percent,
+  },
+  {
     href: "/admin/finance",
-    label: "Finance",
-    desc: "Payouts, withdraws, and gateway reviews",
+    navKey: "finance",
     permissions: ["MANAGE_PAYOUT", "MANAGE_WALLET_WITHDRAW", "VIEW_REFUND_REPORT"],
     icon: BadgeDollarSign,
   },
   {
+    href: "/admin/promotions",
+    navKey: "promotions",
+    permissions: ["APPROVE_PROMO", "MANAGE_PROMO"],
+    icon: BadgePercent,
+  },
+  {
     href: "/admin/banners",
-    label: "Banners",
-    desc: "Homepage and promo CMS creatives",
-    permissions: ["MANAGE_BANNERS"],
+    navKey: "banners",
+    permissions: ["MANAGE_CONTENT"],
     icon: ImageIcon,
+  },
+  {
+    href: "/admin/marketing",
+    navKey: "marketing",
+    permissions: ["MANAGE_CONTENT"],
+    icon: FolderOpen,
   },
 ];
 
 function AdminHome() {
-  const { user, hasAnyPermission } = useAuth();
-  const visible = cards.filter((c) => hasAnyPermission(c.permissions));
+  const { hasAnyPermission, hasRole } = useAuth();
+  const { t } = useLanguage();
+  const visible = cards.filter((c) => {
+    if (c.roles?.length && !c.roles.some((r) => hasRole(r))) return false;
+    if (hasAnyPermission(c.permissions) || hasRole("ADMIN") || hasRole("SUPER_ADMIN")) {
+      return true;
+    }
+    if (hasRole("ACCOUNTANT")) {
+      return c.permissions.some((p) =>
+        (ACCOUNTANT_COMMERCE_PERMS as readonly string[]).includes(p),
+      );
+    }
+    return false;
+  });
 
   return (
     <>
       <AdminPageHeader
-        title="Overview"
-        description={`Welcome back${user?.fullName ? `, ${user.fullName}` : ""}. Pick a module to continue.`}
+        title={t("admin.overview.title")}
+        description={t("admin.overview.description")}
       />
 
       {visible.length === 0 ? (
         <div className="mq-alert mq-alert-error">
-          No admin modules available for this account. Check roles/permissions from BE.
+          {t("admin.overview.noModules")}
         </div>
       ) : (
         <div className="mq-admin-stat-grid">
@@ -120,8 +191,10 @@ function AdminHome() {
                 <span className="mq-admin-module-icon">
                   <Icon size={18} strokeWidth={1.75} />
                 </span>
-                <span className="mq-admin-module-title">{c.label}</span>
-                <p className="mq-admin-module-desc">{c.desc}</p>
+                <span className="mq-admin-module-title">{t(`admin.nav.${c.navKey}`)}</span>
+                <p className="mq-admin-module-desc">
+                  {t(`admin.overview.cards.${c.navKey}`)}
+                </p>
               </Link>
             );
           })}
@@ -133,7 +206,7 @@ function AdminHome() {
 
 export default function AdminPage() {
   return (
-    <AuthGuard roles={["ADMIN", "SUPER_ADMIN"]}>
+    <AuthGuard roles={["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"]}>
       <AdminHome />
     </AuthGuard>
   );

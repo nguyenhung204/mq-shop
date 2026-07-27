@@ -15,6 +15,8 @@ import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 
@@ -51,6 +53,7 @@ type RejectTarget = {
 };
 
 function ProductsInner() {
+  const { t } = useLanguage();
   const [status, setStatus] = useState("PENDING");
   const [page, setPage] = useState(1);
   const [rejectTarget, setRejectTarget] = useState<RejectTarget | null>(null);
@@ -65,23 +68,22 @@ function ProductsInner() {
   return (
     <>
       <AdminPageHeader
-        title="Products"
-        description="Approve, reject, or hide catalog listings."
+        title={t("admin.products.title")}
+        description={t("admin.products.description")}
         actions={
           <select
             className="mq-input max-w-[11rem]"
             value={status}
-            aria-label="Filter by status"
+            aria-label={t("admin.common.filterStatus")}
             onChange={(e) => {
               setStatus(e.target.value);
               setPage(1);
             }}
           >
-            {["PENDING", "ACTIVE", "REJECTED", "HIDDEN"].map((s) => (
-              <option key={s} value={s}>
-                {s === "PENDING" ? "Pending review" : s}
-              </option>
-            ))}
+            <option value="PENDING">{t("admin.productsPage.pendingReview")}</option>
+            <option value="ACTIVE">{t("admin.common.active")}</option>
+            <option value="REJECTED">{t("admin.common.rejected")}</option>
+            <option value="HIDDEN">{t("admin.common.hidden")}</option>
           </select>
         }
       />
@@ -89,10 +91,15 @@ function ProductsInner() {
       <div className="space-y-4">
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : "Failed"}
+            {error instanceof Error ? error.message : t("admin.common.failed")}
           </div>
         )}
         {isLoading && <AdminCardListSkeleton />}
+        {!isLoading && items.length === 0 && (
+          <p className="text-sm text-mq-text-muted py-6 text-center">
+            {t("admin.productsPage.empty")}
+          </p>
+        )}
         {items.map((p) => {
           const thumb = productThumb(p);
           const excerpt = productExcerpt(p);
@@ -113,7 +120,8 @@ function ProductsInner() {
               <div className="flex-1 min-w-[200px]">
                 <p className="font-medium">{title}</p>
                 <p className="text-xs text-mq-text-muted mt-0.5">
-                  {productPriceLabel(p)} · stock {p.stock ?? "—"} · {p.status}
+                  {productPriceLabel(p)} ·{" "}
+                  {t("admin.productsPage.stock", { n: String(p.stock ?? "—") })} · {translateStatus(t, "product", p.status)}
                 </p>
                 {excerpt ? (
                   <p className="text-xs text-mq-text-secondary mt-2">{excerpt}</p>
@@ -124,7 +132,9 @@ function ProductsInner() {
                       <li key={v.id} className="flex flex-wrap gap-x-2">
                         <span className="font-medium text-mq-text-secondary">{v.sku}</span>
                         <span>{formatMoney(v.sellingPrice)}</span>
-                        <span>qty {v.availableStock}</span>
+                        <span>
+                          {t("admin.productsPage.qty", { n: String(v.availableStock) })}
+                        </span>
                         {v.options && Object.keys(v.options).length > 0 ? (
                           <span>
                             {Object.entries(v.options)
@@ -139,14 +149,14 @@ function ProductsInner() {
               </div>
               <AdminActions>
                 <AdminIconButton
-                  label="Approve"
+                  label={t("admin.common.approve")}
                   icon={Check}
                   tone="approve"
                   disabled={approveProduct.isPending || p.status !== "PENDING"}
                   onClick={() => void approveProduct.mutateAsync(p.id)}
                 />
                 <AdminIconButton
-                  label="Reject"
+                  label={t("admin.common.reject")}
                   icon={X}
                   tone="reject"
                   disabled={rejectProduct.isPending || p.status !== "PENDING"}
@@ -154,7 +164,7 @@ function ProductsInner() {
                 />
                 {p.status === "HIDDEN" ? (
                   <AdminIconButton
-                    label="Unhide"
+                    label={t("admin.common.unhide")}
                     icon={Eye}
                     tone="approve"
                     disabled={unhideProduct.isPending}
@@ -162,7 +172,7 @@ function ProductsInner() {
                   />
                 ) : (
                   <AdminIconButton
-                    label="Hide"
+                    label={t("admin.common.hide")}
                     icon={EyeOff}
                     tone="warn"
                     disabled={hideProduct.isPending}
@@ -178,13 +188,13 @@ function ProductsInner() {
 
       <AdminReasonModal
         open={!!rejectTarget}
-        title="Reject product"
+        title={t("admin.productsPage.rejectTitle")}
         description={
           rejectTarget
             ? `Tell the seller why “${rejectTarget.title}” was rejected.`
             : undefined
         }
-        confirmLabel="Reject"
+        confirmLabel={t("admin.common.reject")}
         required
         maxLength={500}
         busy={rejectProduct.isPending}

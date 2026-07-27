@@ -1,8 +1,10 @@
 "use client";
 
+import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/client";
+import { createIdempotencyKeyStore } from "@/lib/api/idempotency";
 import {
   adminInventoryApi,
   inventoryApi,
@@ -21,6 +23,7 @@ import {
   type Warehouse,
 } from "@/lib/api/inventory";
 import { asArray, parsePage } from "@/lib/api/utils";
+import { tt } from "@/lib/i18n/tt";
 import { getErrorMessage } from "@/lib/queries/utils";
 
 export const inventoryKeys = {
@@ -106,6 +109,12 @@ function inventoryErrorMessage(e: unknown, fallback: string): string {
         return "Shop must be approved and not suspended.";
       case "FORBIDDEN":
         return "You do not have permission for this action.";
+      case "IDEMPOTENCY_KEY_REQUIRED":
+        return "Missing idempotency key. Please try again.";
+      case "IDEMPOTENCY_KEY_REUSE_MISMATCH":
+        return "Request data changed with a reused key. Please try again.";
+      case "IDEMPOTENCY_REQUEST_IN_PROGRESS":
+        return "This request is already in progress. Please wait a moment.";
       default:
         break;
     }
@@ -192,9 +201,9 @@ export function useCreateWarehouse() {
     mutationFn: (body: CreateWarehouseRequest) => inventoryApi.createWarehouse(body),
     onSuccess: () => {
       invalidate();
-      toast.success("Warehouse created");
+      toast.success(tt("toast.warehouseCreated"));
     },
-    onError: (e) => toast.error(inventoryErrorMessage(e, "Create warehouse failed")),
+    onError: (e) => toast.error(inventoryErrorMessage(e, tt("toast.createWarehouseFailed"))),
   });
 }
 
@@ -204,33 +213,54 @@ export function useCreateVariant() {
     mutationFn: (body: CreateVariantRequest) => inventoryApi.createVariant(body),
     onSuccess: () => {
       invalidate();
-      toast.success("SKU created");
+      toast.success(tt("toast.skuCreated"));
     },
-    onError: (e) => toast.error(inventoryErrorMessage(e, "Create SKU failed")),
+    onError: (e) => toast.error(inventoryErrorMessage(e, tt("toast.createSkuFailed"))),
   });
+}
+
+function onIdempotencyError(
+  e: unknown,
+  idempotency: ReturnType<typeof createIdempotencyKeyStore>,
+) {
+  if (e instanceof ApiError && e.code === "IDEMPOTENCY_KEY_REUSE_MISMATCH") {
+    idempotency.invalidate();
+  }
 }
 
 export function useCreateSlip() {
   const invalidate = useInventoryInvalidate();
+  const idempotency = useMemo(() => createIdempotencyKeyStore(), []);
   return useMutation({
-    mutationFn: (body: CreateSlipRequest) => inventoryApi.createSlip(body),
+    mutationFn: (body: CreateSlipRequest) =>
+      inventoryApi.createSlip(body, idempotency.keyFor(body)),
     onSuccess: () => {
+      idempotency.invalidate();
       invalidate();
-      toast.success("Slip created (pending approval)");
+      toast.success(tt("toast.slipCreated"));
     },
-    onError: (e) => toast.error(inventoryErrorMessage(e, "Create slip failed")),
+    onError: (e) => {
+      onIdempotencyError(e, idempotency);
+      toast.error(inventoryErrorMessage(e, tt("toast.createSlipFailed")));
+    },
   });
 }
 
 export function useApproveSlip() {
   const invalidate = useInventoryInvalidate();
+  const idempotency = useMemo(() => createIdempotencyKeyStore(), []);
   return useMutation({
-    mutationFn: (slipId: string) => inventoryApi.approveSlip(slipId),
+    mutationFn: (slipId: string) =>
+      inventoryApi.approveSlip(slipId, idempotency.keyFor({ slipId, action: "approve" })),
     onSuccess: () => {
+      idempotency.invalidate();
       invalidate();
-      toast.success("Slip approved — stock updated");
+      toast.success(tt("toast.slipApproved"));
     },
-    onError: (e) => toast.error(inventoryErrorMessage(e, "Approve failed")),
+    onError: (e) => {
+      onIdempotencyError(e, idempotency);
+      toast.error(inventoryErrorMessage(e, tt("toast.approveFailed")));
+    },
   });
 }
 
@@ -240,9 +270,9 @@ export function useRejectSlip() {
     mutationFn: (slipId: string) => inventoryApi.rejectSlip(slipId),
     onSuccess: () => {
       invalidate();
-      toast.success("Slip rejected");
+      toast.success(tt("toast.slipRejected"));
     },
-    onError: (e) => toast.error(inventoryErrorMessage(e, "Reject failed")),
+    onError: (e) => toast.error(inventoryErrorMessage(e, tt("toast.rejectFailed"))),
   });
 }
 
@@ -295,13 +325,22 @@ export function useAdminInventoryLedger(params: Partial<AdminListLedgerParams> =
 
 export function useAdminApproveSlip() {
   const invalidate = useInventoryInvalidate();
+  const idempotency = useMemo(() => createIdempotencyKeyStore(), []);
   return useMutation({
-    mutationFn: (slipId: string) => adminInventoryApi.approveSlip(slipId),
+    mutationFn: (slipId: string) =>
+      adminInventoryApi.approveSlip(
+        slipId,
+        idempotency.keyFor({ slipId, action: "admin-approve" }),
+      ),
     onSuccess: () => {
+      idempotency.invalidate();
       invalidate();
-      toast.success("Slip approved — stock updated");
+      toast.success(tt("toast.slipApproved"));
     },
-    onError: (e) => toast.error(inventoryErrorMessage(e, "Approve failed")),
+    onError: (e) => {
+      onIdempotencyError(e, idempotency);
+      toast.error(inventoryErrorMessage(e, tt("toast.approveFailed")));
+    },
   });
 }
 
@@ -311,9 +350,9 @@ export function useAdminRejectSlip() {
     mutationFn: (slipId: string) => adminInventoryApi.rejectSlip(slipId),
     onSuccess: () => {
       invalidate();
-      toast.success("Slip rejected");
+      toast.success(tt("toast.slipRejected"));
     },
-    onError: (e) => toast.error(inventoryErrorMessage(e, "Reject failed")),
+    onError: (e) => toast.error(inventoryErrorMessage(e, tt("toast.rejectFailed"))),
   });
 }
 

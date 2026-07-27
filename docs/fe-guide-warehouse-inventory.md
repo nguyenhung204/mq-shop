@@ -269,9 +269,12 @@ A slip represents a **request** to change stock. It is `PENDING` until explicitl
 
 ```
 POST /inventory/slips
+Header: Idempotency-Key: <uuid-v4>
 ```
 
 **Permission:** `ADD_INVENTORY`
+
+**Idempotency (bắt buộc):** cùng cơ chế checkout — UUID mới khi body đổi; retry giữ key + body; Redis TTL 24h. Reject **không** cần key.
 
 > **Breaking:** 1 slip = **header + N items**. `sku` / `quantity` / `unitCost` live on `items[]`, not the header.
 
@@ -402,11 +405,12 @@ GET /inventory/slips/:slipId
 
 ```
 POST /inventory/slips/:slipId/approve
+Header: Idempotency-Key: <uuid-v4>
 ```
 
 **Permission:** `EDIT_INVENTORY` (SELLER, WAREHOUSE)
 
-No request body.
+No request body. **Idempotency bắt buộc** (retry cùng key; slip khác / lần approve mới → key mới).
 
 **What happens server-side (atomic transaction — all-or-nothing):**
 1. Load all `inventory_slip_items` for the slip
@@ -438,6 +442,9 @@ No request body.
 | 404 | `INVENTORY_SLIP_NOT_FOUND` | Slip not found |
 | 409 | `INVENTORY_SLIP_ALREADY_PROCESSED` | Already approved or rejected |
 | 422 | `INSUFFICIENT_STOCK` | `ADJUST_OUT` — not enough stock |
+| 400 | `IDEMPOTENCY_KEY_REQUIRED` | Missing / invalid `Idempotency-Key` |
+| 409 | `IDEMPOTENCY_REQUEST_IN_PROGRESS` | Same key still processing |
+| 422 | `IDEMPOTENCY_KEY_REUSE_MISMATCH` | Same key, different body |
 
 ---
 
@@ -448,6 +455,8 @@ POST /inventory/slips/:slipId/reject
 ```
 
 **Permission:** `EDIT_INVENTORY`
+
+No request body. **Không** bắt `Idempotency-Key` — domain đã gate `INVENTORY_SLIP_ALREADY_PROCESSED`.
 
 No request body. Stock is **not** changed.
 
@@ -583,11 +592,12 @@ GET /admin/inventory/slips/:slipId
 
 ```
 POST /admin/inventory/slips/:slipId/approve
+Header: Idempotency-Key: <uuid-v4>
 ```
 
 **Permission:** `EDIT_INVENTORY` (ADMIN / SUPER_ADMIN — `APPROVE` scope)
 
-No request body. Same atomic logic as seller approve.
+No request body. Same atomic logic as seller approve. **Idempotency bắt buộc** như seller approve.
 
 **Response `200`:** same shape as seller approve.
 
@@ -601,7 +611,7 @@ POST /admin/inventory/slips/:slipId/reject
 
 **Permission:** `EDIT_INVENTORY` (APPROVE scope)
 
-No request body.
+No request body. **Không** bắt `Idempotency-Key`.
 
 **Response `200`:** same shape as seller reject.
 

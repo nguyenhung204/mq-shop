@@ -127,11 +127,18 @@ export function ProductCard({
   );
 }
 
-export function ProductCardMini({ product }: { product: Product }) {
+export function ProductCardMini({
+  product,
+  onNavigate,
+}: {
+  product: Product;
+  onNavigate?: () => void;
+}) {
   return (
     <Link
       href={`/product/${product.slug}`}
       className="flex items-center gap-3 group py-2"
+      onClick={onNavigate}
     >
       <div className="relative w-[4.25rem] h-[4.25rem] shrink-0 mq-product-image-bg mq-product-media">
         <Image

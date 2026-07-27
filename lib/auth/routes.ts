@@ -4,7 +4,7 @@ import type { AuthUser, Role } from "@/lib/api/types";
 export function postAuthPath(user: AuthUser | null | undefined): string {
   const roles = user?.roles ?? [];
   if (roles.includes("SUPER_ADMIN") || roles.includes("ADMIN")) return "/admin";
-  if (roles.includes("ACCOUNTANT")) return "/admin/audit-logs";
+  if (roles.includes("ACCOUNTANT")) return "/admin/rma";
   if (roles.includes("WAREHOUSE")) return "/seller/inventory";
   if (roles.includes("SELLER")) return "/seller";
   return "/account";

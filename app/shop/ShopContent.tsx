@@ -1,117 +1,110 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { X } from "lucide-react";
-import { catalogApi } from "@/lib/api";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { FormEvent, useEffect, useMemo, useState, useTransition } from "react";
+import { Search, X } from "lucide-react";
 import { categoryLabel } from "@/lib/api/categoryLabel";
-import { mapListingCard } from "@/lib/api/mapProduct";
-import type { ApiCategory, PageMeta } from "@/lib/api/types";
-import type { Product } from "@/lib/data/products";
+import {
+  rootCategories,
+  useCatalogCategories,
+  useCatalogListingPage,
+} from "@/lib/queries/catalog";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { Container, PageHero } from "@/components/ui/shared";
 
-function CategoryFilters({
-  categories,
-  categoryId,
-  onSelect,
-}: {
-  categories: ApiCategory[];
-  categoryId: string | null;
-  onSelect?: () => void;
-}) {
-  const { t, locale } = useLanguage();
-
-  return (
-    <ul className="space-y-2">
-      <li>
-        <a href="/shop" className="text-sm text-mq-text-secondary hover:text-mq-text" onClick={onSelect}>
-          {t("shop.allProducts")}
-        </a>
-      </li>
-      {categories.map((cat) => {
-        const label = locale ? categoryLabel(cat, locale) : cat.name || cat.slug;
-        return (
-          <li key={cat.id}>
-            <a
-              href={`/shop?category=${encodeURIComponent(cat.id)}`}
-              className={`text-sm hover:text-mq-text ${
-                categoryId === cat.id ? "text-mq-text font-medium" : "text-mq-text-secondary"
-              }`}
-              onClick={onSelect}
-            >
-              {label}
-            </a>
-          </li>
-        );
-      })}
-    </ul>
-  );
+function parseOptionalNumber(value: string | null): number | undefined {
+  if (value == null || value === "") return undefined;
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? n : undefined;
 }
 
 export function ShopContent() {
   const { t, locale } = useLanguage();
   const searchParams = useSearchParams();
-  const categoryId = searchParams.get("category");
-  const sort = searchParams.get("sort");
+  const router = useRouter();
+  const pathname = usePathname();
+  const [pending, startTransition] = useTransition();
+
   const q = searchParams.get("q") || "";
+  const categoryId = searchParams.get("category") || undefined;
+  const sort = searchParams.get("sort") || "";
   const page = Number(searchParams.get("page") || "1") || 1;
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [apiProducts, setApiProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<ApiCategory[]>([]);
-  const [meta, setMeta] = useState<PageMeta | undefined>();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const minPrice = parseOptionalNumber(searchParams.get("minPrice"));
+  const maxPrice = parseOptionalNumber(searchParams.get("maxPrice"));
+
+  const [searchDraft, setSearchDraft] = useState(q);
+  const [minDraft, setMinDraft] = useState(
+    minPrice != null ? String(minPrice) : "",
+  );
+  const [maxDraft, setMaxDraft] = useState(
+    maxPrice != null ? String(maxPrice) : "",
+  );
 
   useEffect(() => {
-    if (filterOpen) document.body.classList.add("mq-mobile-nav-open");
-    else document.body.classList.remove("mq-mobile-nav-open");
-    return () => document.body.classList.remove("mq-mobile-nav-open");
-  }, [filterOpen]);
+    setSearchDraft(q);
+    setMinDraft(minPrice != null ? String(minPrice) : "");
+    setMaxDraft(maxPrice != null ? String(maxPrice) : "");
+  }, [q, minPrice, maxPrice]);
 
-  useEffect(() => {
-    void catalogApi
-      .categories()
-      .then(setCategories)
-      .catch(() => setCategories([]));
-  }, []);
+  const categoriesQuery = useCatalogCategories();
+  const listingQuery = useCatalogListingPage({
+    q: q || undefined,
+    categoryId,
+    minPrice,
+    maxPrice,
+    page,
+    pageSize: 24,
+  });
 
-  const load = useCallback(() => {
-    setLoading(true);
-    setError(null);
-    void catalogApi
-      .listing({
-        q: q || undefined,
-        categoryId: categoryId || undefined,
-        page,
-        pageSize: 24,
-      })
-      .then((res) => {
-        setApiProducts(
-          res.items.map((p) => mapListingCard(p, categoryId || "all")),
-        );
-        setMeta(res.meta);
-      })
-      .catch((err: unknown) => {
-        setApiProducts([]);
-        setMeta(undefined);
-        setError(err instanceof Error ? err.message : "Failed to load products");
-      })
-      .finally(() => setLoading(false));
-  }, [q, categoryId, page]);
+  const categories = useMemo(
+    () => rootCategories(categoriesQuery.data ?? []),
+    [categoriesQuery.data],
+  );
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  const products = useMemo(() => {
+    const items = listingQuery.data?.items ?? [];
+    if (sort === "price-low") return [...items].sort((a, b) => a.price - b.price);
+    if (sort === "price-high") return [...items].sort((a, b) => b.price - a.price);
+    return items;
+  }, [listingQuery.data?.items, sort]);
 
-  const filtered = useMemo(() => {
-    let list = [...apiProducts];
-    if (sort === "price-low") list.sort((a, b) => a.price - b.price);
-    else if (sort === "price-high") list.sort((a, b) => b.price - a.price);
-    return list;
-  }, [apiProducts, sort]);
+  const updateParams = (patch: Record<string, string | null>) => {
+    const next = new URLSearchParams(searchParams.toString());
+    Object.entries(patch).forEach(([key, value]) => {
+      if (value == null || value === "") next.delete(key);
+      else next.set(key, value);
+    });
+    if (!("page" in patch)) next.delete("page");
+    const qs = next.toString();
+    startTransition(() => {
+      router.push(qs ? `${pathname}?${qs}` : pathname);
+    });
+  };
+
+  const onSearch = (e: FormEvent) => {
+    e.preventDefault();
+    updateParams({ q: searchDraft.trim() || null });
+  };
+
+  const onApplyPrice = (e: FormEvent) => {
+    e.preventDefault();
+    const min = parseOptionalNumber(minDraft);
+    const max = parseOptionalNumber(maxDraft);
+    if (min != null && max != null && min > max) return;
+    updateParams({
+      minPrice: min != null ? String(min) : null,
+      maxPrice: max != null ? String(max) : null,
+    });
+  };
+
+  const clearFilters = () => {
+    setSearchDraft("");
+    setMinDraft("");
+    setMaxDraft("");
+    startTransition(() => router.push(pathname));
+  };
 
   const activeCategory = categories.find((c) => c.id === categoryId);
   const pageTitle = activeCategory
@@ -119,43 +112,48 @@ export function ShopContent() {
       ? categoryLabel(activeCategory, locale)
       : activeCategory.name || activeCategory.slug
     : t("nav.shop");
-  const closeFilter = () => setFilterOpen(false);
-
-  const setPage = (next: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (next <= 1) params.delete("page");
-    else params.set("page", String(next));
-    window.location.search = params.toString();
-  };
+  const hasFilters = Boolean(q || categoryId || minPrice != null || maxPrice != null);
 
   return (
     <>
       <PageHero title={pageTitle} breadcrumb={[{ label: t("nav.shop") }]} />
-      <Container className="py-10 md:py-14">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-8 pb-4 border-b border-mq-border">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <button
-              type="button"
-              onClick={() => setFilterOpen(!filterOpen)}
-              className="mq-btn mq-btn-outline text-sm"
-            >
-              {t("shop.filter")}
-            </button>
-            <span className="text-sm text-mq-text-muted">
-              {loading
-                ? "…"
-                : `${meta?.total ?? filtered.length} ${t("shop.products")}`}
-            </span>
-          </div>
+      <Container className="py-8 md:py-12">
+        <div className="mq-storefront-toolbar mb-8">
+          <form onSubmit={onSearch} className="mq-storefront-search">
+            <Search size={16} strokeWidth={1.75} className="text-mq-text-muted shrink-0" />
+            <input
+              value={searchDraft}
+              onChange={(e) => setSearchDraft(e.target.value)}
+              placeholder={t("nav.searchPlaceholder")}
+              aria-label={t("nav.searchPlaceholder")}
+              className="mq-storefront-search-input"
+            />
+            {searchDraft ? (
+              <button
+                type="button"
+                className="text-mq-text-muted hover:text-mq-text"
+                aria-label="Clear"
+                onClick={() => {
+                  setSearchDraft("");
+                  updateParams({ q: null });
+                }}
+              >
+                <X size={14} />
+              </button>
+            ) : null}
+          </form>
+
+          <span className="text-sm text-mq-text-muted whitespace-nowrap">
+            {listingQuery.isLoading
+              ? "…"
+              : `${listingQuery.data?.meta?.total ?? products.length} ${t("shop.products")}`}
+          </span>
+
           <select
-            className="mq-input w-full sm:w-auto"
-            defaultValue={sort ?? ""}
-            onChange={(e) => {
-              const params = new URLSearchParams(searchParams.toString());
-              if (e.target.value) params.set("sort", e.target.value);
-              else params.delete("sort");
-              window.location.search = params.toString();
-            }}
+            className="mq-input mq-storefront-sort"
+            value={sort}
+            aria-label={t("shop.sortDefault")}
+            onChange={(e) => updateParams({ sort: e.target.value || null })}
           >
             <option value="">{t("shop.sortDefault")}</option>
             <option value="price-low">{t("shop.sortPriceLow")}</option>
@@ -163,72 +161,125 @@ export function ShopContent() {
           </select>
         </div>
 
-        {error && (
-          <div className="mq-alert mq-alert-error mb-6">
-            {error}
-            <button type="button" className="ml-3 underline text-sm" onClick={load}>
-              Retry
-            </button>
-          </div>
-        )}
-
-        {filterOpen && (
-          <>
-            <button
-              type="button"
-              className="fixed inset-0 z-40 bg-black/40 md:hidden"
-              aria-label="Close filter"
-              onClick={closeFilter}
-            />
-            <aside className="fixed inset-y-0 left-0 z-50 w-[min(300px,88vw)] md:hidden bg-mq-surface border-r border-mq-border p-6 overflow-y-auto rounded-r-[var(--mq-radius-lg)] shadow-[var(--mq-shadow-lg)]">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-sm font-semibold uppercase tracking-wider">
-                  {t("nav.categories")}
-                </h3>
+        <div className="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)] gap-8">
+          <aside className="mq-storefront-filters">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-mq-text">
+                {t("shop.filter")}
+              </h2>
+              {hasFilters ? (
                 <button
                   type="button"
-                  onClick={closeFilter}
-                  className="mq-icon-btn text-mq-text-muted hover:text-mq-text"
-                  aria-label="Close filter"
+                  className="text-xs text-mq-text-muted hover:text-mq-text"
+                  onClick={clearFilters}
                 >
-                  <X size={20} strokeWidth={1.5} />
+                  {t("storefront.clearFilters")}
                 </button>
-              </div>
-              <CategoryFilters
-                categories={categories}
-                categoryId={categoryId}
-                onSelect={closeFilter}
-              />
-            </aside>
-          </>
-        )}
+              ) : null}
+            </div>
 
-        <div className="flex gap-8">
-          {filterOpen && (
-            <aside className="hidden md:block w-[280px] shrink-0 border border-mq-border p-6 h-fit rounded-[var(--mq-radius-lg)] shadow-[var(--mq-shadow-sm)]">
-              <h3 className="text-sm font-semibold uppercase tracking-wider mb-4">
-                {t("nav.categories")}
-              </h3>
-              <CategoryFilters categories={categories} categoryId={categoryId} />
-            </aside>
-          )}
-          <div className="flex-1 min-w-0">
-            {loading ? (
-              <p className="text-sm text-mq-text-muted py-12">Loading…</p>
-            ) : filtered.length === 0 ? (
-              <p className="text-sm text-mq-text-muted py-12">No products found.</p>
+            <div className="mb-6">
+              <p className="text-xs text-mq-text-muted mb-2">{t("nav.categories")}</p>
+              <ul className="space-y-1.5">
+                <li>
+                  <button
+                    type="button"
+                    className={`mq-storefront-chip ${!categoryId ? "is-active" : ""}`}
+                    onClick={() => updateParams({ category: null })}
+                  >
+                    {t("shop.allProducts")}
+                  </button>
+                </li>
+                {categories.map((cat) => {
+                  const label = locale
+                    ? categoryLabel(cat, locale)
+                    : cat.name || cat.slug;
+                  return (
+                    <li key={cat.id}>
+                      <button
+                        type="button"
+                        className={`mq-storefront-chip ${
+                          categoryId === cat.id ? "is-active" : ""
+                        }`}
+                        onClick={() => updateParams({ category: cat.id })}
+                      >
+                        {label}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+
+            <form onSubmit={onApplyPrice} className="space-y-3">
+              <p className="text-xs text-mq-text-muted">{t("storefront.priceRange")}</p>
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  className="mq-input"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  placeholder={t("storefront.minPrice")}
+                  value={minDraft}
+                  onChange={(e) => setMinDraft(e.target.value)}
+                />
+                <input
+                  className="mq-input"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  placeholder={t("storefront.maxPrice")}
+                  value={maxDraft}
+                  onChange={(e) => setMaxDraft(e.target.value)}
+                />
+              </div>
+              <button type="submit" className="mq-btn mq-btn-outline w-full text-sm">
+                {t("storefront.applyPrice")}
+              </button>
+            </form>
+          </aside>
+
+          <div className={`min-w-0 ${pending ? "opacity-70 transition-opacity" : ""}`}>
+            {listingQuery.isError ? (
+              <div className="mq-alert mq-alert-error">
+                {listingQuery.error instanceof Error
+                  ? listingQuery.error.message
+                  : t("storefront.loadFailed")}
+              </div>
+            ) : listingQuery.isLoading ? (
+              <p className="text-sm text-mq-text-muted py-16 text-center">
+                {t("storefront.loadingProducts")}
+              </p>
+            ) : products.length === 0 ? (
+              <div className="py-16 text-center">
+                <p className="text-sm text-mq-text-muted mb-4">
+                  {t("storefront.empty")}
+                </p>
+                {hasFilters ? (
+                  <button
+                    type="button"
+                    className="mq-btn mq-btn-outline text-sm"
+                    onClick={clearFilters}
+                  >
+                    {t("storefront.clearFilters")}
+                  </button>
+                ) : null}
+              </div>
             ) : (
               <div className="mq-product-grid">
-                {filtered.map((p, i) => (
+                {products.map((p, i) => (
                   <ProductCard key={p.id} product={p} priority={i < 4} />
                 ))}
               </div>
             )}
+
             <PaginationBar
               className="mt-10"
               page={page}
-              meta={meta}
-              onPageChange={setPage}
+              meta={listingQuery.data?.meta}
+              onPageChange={(next) =>
+                updateParams({ page: next <= 1 ? null : String(next) })
+              }
             />
           </div>
         </div>

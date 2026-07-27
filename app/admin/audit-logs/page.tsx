@@ -1,15 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Filter } from "lucide-react";
 import { adminApi } from "@/lib/api";
 import type { ApiAuditLog } from "@/lib/api/types";
 import { parsePage } from "@/lib/api/utils";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { PaginationBar } from "@/components/ui/PaginationBar";
-import { TableSkeleton } from "@/components/ui/Skeleton";
+import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
+import { translateStatus, translateStatusMap } from "@/lib/i18n/status";
+import type { Locale } from "@/lib/i18n/types";
 
 function toIsoStart(date: string): string | undefined {
   if (!date) return undefined;
@@ -24,100 +27,298 @@ function toIsoEnd(date: string): string | undefined {
 function outcomeBadgeClass(outcome: ApiAuditLog["outcome"] | undefined): string {
   if (outcome === "failure") return "mq-badge mq-badge-pink";
   if (outcome === "denied") return "mq-badge mq-badge-muted";
-  return "mq-badge mq-badge-cyan";
+  return "mq-badge mq-badge-teal";
 }
 
-function AuditRow({ log }: { log: ApiAuditLog }) {
+function formatJson(value: unknown): string {
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return String(value);
+  }
+}
+
+function formatRelativeTime(iso: string, locale: string): string {
+  const ts = new Date(iso).getTime();
+  if (Number.isNaN(ts)) return iso;
+  const diffSec = Math.round((Date.now() - ts) / 1000);
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
+  const abs = Math.abs(diffSec);
+  if (abs < 60) return rtf.format(-diffSec, "second");
+  if (abs < 3600) return rtf.format(-Math.round(diffSec / 60), "minute");
+  if (abs < 86400) return rtf.format(-Math.round(diffSec / 3600), "hour");
+  if (abs < 86400 * 7) return rtf.format(-Math.round(diffSec / 86400), "day");
+  return new Date(iso).toLocaleString(locale);
+}
+
+function pickTargetEmail(log: ApiAuditLog): string | null {
+  const meta = log.meta;
+  if (meta && typeof meta === "object") {
+    for (const key of ["email", "targetEmail", "userEmail", "actorEmail"] as const) {
+      const v = meta[key];
+      if (typeof v === "string" && v.includes("@")) return v;
+    }
+  }
+  const fromJson = (value: unknown): string | null => {
+    if (!value || typeof value !== "object") return null;
+    const o = value as Record<string, unknown>;
+    for (const key of ["email", "targetEmail", "userEmail"] as const) {
+      const v = o[key];
+      if (typeof v === "string" && v.includes("@")) return v;
+    }
+    return null;
+  };
+  return fromJson(log.afterJson) || fromJson(log.beforeJson);
+}
+
+function resourceLabel(
+  t: (key: string, vars?: Record<string, string>) => string,
+  type: string | null | undefined,
+): string {
+  return translateStatus(t, "auditResource", type);
+}
+
+function AuditCard({
+  log,
+  locale,
+}: {
+  log: ApiAuditLog;
+  locale: string;
+}) {
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
-  const title = log.title || log.action;
-  const outcomeText = log.outcomeLabel || log.outcome;
-  const hasDetails = Boolean(log.summary || log.reason || log.category || log.resource?.type);
+  const title = translateStatusMap(
+    locale as Locale,
+    "auditAction",
+    log.action,
+    log.title || log.action,
+  );
+  const outcomeText = translateStatus(t, "auditOutcome", log.outcome);
+  const categoryText = log.category
+    ? translateStatus(t, "auditCategory", log.category)
+    : null;
+  const actorEmail = log.actor?.email?.trim() || null;
+  const targetEmail = pickTargetEmail(log);
+  const hasDiff = log.beforeJson != null || log.afterJson != null;
+  const hasDetails = Boolean(
+    log.summary ||
+      log.reason ||
+      log.resource?.type ||
+      log.actor?.ip ||
+      log.action ||
+      hasDiff ||
+      (log.meta && Object.keys(log.meta).length > 0),
+  );
 
   return (
-    <>
-      <tr className="border-t border-mq-border align-middle">
-        <td className="p-3 whitespace-nowrap text-xs text-mq-text-muted">
-          {new Date(log.ts).toLocaleString()}
-        </td>
-        <td className="p-3">
-          <button
-            type="button"
-            className="flex items-start gap-1.5 text-left w-full group"
-            onClick={() => hasDetails && setOpen((v) => !v)}
-            disabled={!hasDetails}
-            aria-expanded={open}
-          >
-            {hasDetails ? (
-              open ? (
-                <ChevronDown size={14} className="mt-0.5 shrink-0 text-mq-text-muted" />
-              ) : (
-                <ChevronRight size={14} className="mt-0.5 shrink-0 text-mq-text-muted" />
-              )
+    <article className="mq-card overflow-hidden">
+      <button
+        type="button"
+        className="w-full text-left p-4 flex gap-3 items-start hover:bg-mq-surface-subtle/50 transition-colors"
+        onClick={() => hasDetails && setOpen((v) => !v)}
+        disabled={!hasDetails}
+        aria-expanded={open}
+      >
+        <span className="mt-0.5 shrink-0 text-mq-text-muted">
+          {hasDetails ? (
+            open ? (
+              <ChevronDown size={16} />
             ) : (
-              <span className="w-3.5 shrink-0" />
-            )}
-            <span>
-              <span className="text-sm font-medium text-mq-text group-hover:underline decoration-mq-border underline-offset-2">
-                {title}
-              </span>
-              {log.category ? (
-                <span className="block text-[11px] text-mq-text-muted mt-0.5">{log.category}</span>
-              ) : null}
+              <ChevronRight size={16} />
+            )
+          ) : (
+            <span className="inline-block w-4" />
+          )}
+        </span>
+
+        <div className="min-w-0 flex-1 space-y-1.5">
+          <div className="flex flex-wrap items-center gap-2">
+            {categoryText ? (
+              <span className="mq-badge mq-badge-cyan text-[10px]">{categoryText}</span>
+            ) : null}
+            <span className={outcomeBadgeClass(log.outcome)}>{outcomeText}</span>
+            <span
+              className="text-[11px] text-mq-text-muted ml-auto whitespace-nowrap"
+              title={new Date(log.ts).toLocaleString(locale)}
+            >
+              {formatRelativeTime(log.ts, locale)}
             </span>
-          </button>
-        </td>
-        <td className="p-3">
-          <span className={outcomeBadgeClass(log.outcome)}>{outcomeText}</span>
-        </td>
-        <td className="p-3 text-xs">{log.actor?.email || log.actor?.id || "—"}</td>
-      </tr>
-      {open && hasDetails ? (
-        <tr className="bg-mq-surface-subtle/60">
-          <td colSpan={4} className="px-3 pb-3 pt-0">
-            <div className="ml-5 rounded-lg border border-mq-border bg-mq-surface p-3 text-xs space-y-1.5">
-              {log.summary ? (
-                <p className="text-mq-text-secondary">{log.summary}</p>
-              ) : null}
-              {log.reason ? (
-                <p>
-                  <span className="text-mq-text-muted">Reason: </span>
-                  {log.reason}
-                </p>
-              ) : null}
-              <p className="text-mq-text-muted font-mono">
-                {log.action}
-                {log.resource?.type
-                  ? ` · ${log.resource.type}${log.resource.id ? `/${log.resource.id}` : ""}`
-                  : ""}
+          </div>
+
+          <h3 className="text-sm font-semibold text-mq-text leading-snug">{title}</h3>
+
+          {log.summary ? (
+            <p className="text-sm text-mq-text-secondary leading-relaxed line-clamp-2">
+              {log.summary}
+            </p>
+          ) : null}
+
+          <div className="flex flex-col gap-0.5 text-xs pt-0.5">
+            <p className="text-mq-text">
+              <span className="text-mq-text-muted">{t("admin.auditPage.actorEmail")}: </span>
+              <span className="font-medium break-all">{actorEmail || "—"}</span>
+            </p>
+            {targetEmail && targetEmail !== actorEmail ? (
+              <p className="text-mq-text">
+                <span className="text-mq-text-muted">{t("admin.auditPage.targetEmail")}: </span>
+                <span className="font-medium break-all">{targetEmail}</span>
               </p>
+            ) : null}
+          </div>
+
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-mq-text-muted">
+            {log.actor?.id ? (
+              <span className="font-mono truncate max-w-[12rem]" title={log.actor.id}>
+                {log.actor.id.slice(0, 8)}…
+              </span>
+            ) : null}
+            {log.resource?.type ? (
+              <span>
+                {resourceLabel(t, log.resource.type)}
+                {log.resource.id ? (
+                  <span className="font-mono">
+                    {" "}
+                    / {log.resource.id.slice(0, 8)}…
+                  </span>
+                ) : null}
+              </span>
+            ) : null}
+            {hasDiff ? (
+              <span className="text-mq-accent-teal">{t("admin.auditPage.hasDiff")}</span>
+            ) : null}
+          </div>
+        </div>
+      </button>
+
+      {open && hasDetails ? (
+        <div className="border-t border-mq-border bg-mq-surface-subtle/40 px-4 py-3 space-y-3 text-xs">
+          {log.reason ? (
+            <p>
+              <span className="text-mq-text-muted">{t("admin.common.reasonPrefix")}</span>
+              {log.reason}
+            </p>
+          ) : null}
+
+          <dl className="grid sm:grid-cols-2 gap-x-4 gap-y-2">
+            <div>
+              <dt className="text-mq-text-muted">{t("admin.auditPage.time")}</dt>
+              <dd>{new Date(log.ts).toLocaleString(locale)}</dd>
             </div>
-          </td>
-        </tr>
+            <div>
+              <dt className="text-mq-text-muted">{t("admin.auditPage.actorEmail")}</dt>
+              <dd className="break-all font-medium">{actorEmail || "—"}</dd>
+              {log.actor?.id ? (
+                <dd className="font-mono text-[10px] text-mq-text-muted mt-0.5">
+                  {log.actor.id}
+                </dd>
+              ) : null}
+            </div>
+            {targetEmail && targetEmail !== actorEmail ? (
+              <div>
+                <dt className="text-mq-text-muted">{t("admin.auditPage.targetEmail")}</dt>
+                <dd className="break-all font-medium">{targetEmail}</dd>
+              </div>
+            ) : null}
+            {log.actor?.ip ? (
+              <div>
+                <dt className="text-mq-text-muted">{t("admin.auditPage.ip")}</dt>
+                <dd className="font-mono">{log.actor.ip}</dd>
+              </div>
+            ) : null}
+            <div>
+              <dt className="text-mq-text-muted">{t("admin.auditPage.actionCode")}</dt>
+              <dd className="font-mono break-all">{log.action}</dd>
+            </div>
+            {log.resource?.type ? (
+              <div className="sm:col-span-2">
+                <dt className="text-mq-text-muted">{t("admin.auditPage.resource")}</dt>
+                <dd>
+                  {resourceLabel(t, log.resource.type)}
+                  {log.resource.id ? (
+                    <span className="font-mono text-mq-text-muted">
+                      {" "}
+                      / {log.resource.id}
+                    </span>
+                  ) : null}
+                </dd>
+              </div>
+            ) : null}
+          </dl>
+
+          {hasDiff ? (
+            <div className="grid md:grid-cols-2 gap-3">
+              <div>
+                <p className="text-mq-text-muted mb-1 font-medium">{t("admin.auditPage.before")}</p>
+                <pre className="overflow-auto max-h-56 rounded-md border border-mq-border bg-mq-surface p-2 font-mono text-[11px]">
+                  {log.beforeJson != null ? formatJson(log.beforeJson) : "—"}
+                </pre>
+              </div>
+              <div>
+                <p className="text-mq-text-muted mb-1 font-medium">{t("admin.auditPage.after")}</p>
+                <pre className="overflow-auto max-h-56 rounded-md border border-mq-border bg-mq-surface p-2 font-mono text-[11px]">
+                  {log.afterJson != null ? formatJson(log.afterJson) : "—"}
+                </pre>
+              </div>
+            </div>
+          ) : null}
+
+          {log.meta && Object.keys(log.meta).length > 0 ? (
+            <div>
+              <p className="text-mq-text-muted mb-1 font-medium">{t("admin.auditPage.meta")}</p>
+              <pre className="overflow-auto max-h-40 rounded-md border border-mq-border bg-mq-surface p-2 font-mono text-[11px]">
+                {formatJson(log.meta)}
+              </pre>
+            </div>
+          ) : null}
+        </div>
       ) : null}
-    </>
+    </article>
   );
 }
 
 function AuditInner() {
+  const { t, locale } = useLanguage();
+  const displayLocale = locale || "en";
   const [page, setPage] = useState(1);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [action, setAction] = useState("");
   const [outcome, setOutcome] = useState("");
   const [resourceType, setResourceType] = useState("");
   const [actorId, setActorId] = useState("");
+  const [actorEmail, setActorEmail] = useState("");
+  const [ip, setIp] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+
+  const pageSize = 20;
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["admin", "audit-logs", page, action, outcome, resourceType, actorId, from, to],
+    queryKey: [
+      "admin",
+      "audit-logs",
+      page,
+      pageSize,
+      action,
+      outcome,
+      resourceType,
+      actorId,
+      actorEmail,
+      ip,
+      from,
+      to,
+    ],
     queryFn: async () =>
       parsePage<ApiAuditLog>(
         await adminApi.auditLogs({
           page,
-          pageSize: 30,
+          pageSize,
           action: action || undefined,
           outcome: outcome || undefined,
           resourceType: resourceType || undefined,
           actorId: actorId || undefined,
+          actorEmail: actorEmail || undefined,
+          ip: ip || undefined,
           from: toIsoStart(from),
           to: toIsoEnd(to),
         }),
@@ -127,111 +328,261 @@ function AuditInner() {
   const items = data?.items ?? [];
   const meta = data?.meta;
 
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    for (const log of items) {
+      if (log.category) set.add(log.category);
+    }
+    return Array.from(set).sort();
+  }, [items]);
+
+  const visible = useMemo(() => {
+    if (!categoryFilter) return items;
+    return items.filter((l) => l.category === categoryFilter);
+  }, [items, categoryFilter]);
+
+  const overview = useMemo(() => {
+    const counts = { success: 0, failure: 0, denied: 0 };
+    for (const log of items) {
+      if (log.outcome === "failure") counts.failure += 1;
+      else if (log.outcome === "denied") counts.denied += 1;
+      else counts.success += 1;
+    }
+    return counts;
+  }, [items]);
+
+  const activeFilterCount = [
+    action,
+    outcome,
+    resourceType,
+    actorId,
+    actorEmail,
+    ip,
+    from,
+    to,
+  ].filter(Boolean).length;
+
+  const clearFilters = () => {
+    setAction("");
+    setOutcome("");
+    setResourceType("");
+    setActorId("");
+    setActorEmail("");
+    setIp("");
+    setFrom("");
+    setTo("");
+    setCategoryFilter("");
+    setPage(1);
+  };
+
   return (
     <>
       <AdminPageHeader
-        title="Audit logs"
-        description="Human-readable activity trail. Use action code only when filtering."
+        title={t("admin.audit.title")}
+        description={t("admin.audit.description")}
       />
-      <div className="space-y-6">
+      <div className="space-y-5">
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : "Failed"}
+            {error instanceof Error ? error.message : t("admin.common.failed")}
           </div>
         )}
 
-        <div className="mq-admin-panel p-4 flex flex-wrap gap-3">
-          <input
-            className="mq-input max-w-xs"
-            placeholder="Filter by action code…"
-            value={action}
-            onChange={(e) => {
-              setAction(e.target.value);
-              setPage(1);
-            }}
-          />
-          <select
-            className="mq-input max-w-[160px]"
-            value={outcome}
-            onChange={(e) => {
-              setOutcome(e.target.value);
-              setPage(1);
-            }}
+        {!isLoading && items.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="mq-admin-panel px-3 py-2.5">
+              <p className="text-[11px] text-mq-text-muted">{t("admin.auditPage.total")}</p>
+              <p className="text-lg font-semibold tabular-nums">
+                {meta?.total ?? items.length}
+              </p>
+            </div>
+            <div className="mq-admin-panel px-3 py-2.5">
+              <p className="text-[11px] text-mq-text-muted">{t("admin.auditPage.succeeded")}</p>
+              <p className="text-lg font-semibold tabular-nums text-mq-accent-teal">
+                {overview.success}
+              </p>
+            </div>
+            <div className="mq-admin-panel px-3 py-2.5">
+              <p className="text-[11px] text-mq-text-muted">{t("admin.auditPage.failed")}</p>
+              <p className="text-lg font-semibold tabular-nums text-mq-accent-pink">
+                {overview.failure}
+              </p>
+            </div>
+            <div className="mq-admin-panel px-3 py-2.5">
+              <p className="text-[11px] text-mq-text-muted">{t("admin.auditPage.denied")}</p>
+              <p className="text-lg font-semibold tabular-nums text-mq-text-muted">
+                {overview.denied}
+              </p>
+            </div>
+          </div>
+        ) : null}
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            className="mq-admin-btn mq-admin-btn-secondary"
+            onClick={() => setFiltersOpen((v) => !v)}
           >
-            <option value="">Any outcome</option>
-            <option value="success">Succeeded</option>
-            <option value="failure">Failed</option>
-            <option value="denied">Denied</option>
-          </select>
-          <input
-            className="mq-input max-w-xs"
-            placeholder="Resource type"
-            value={resourceType}
-            onChange={(e) => {
-              setResourceType(e.target.value);
-              setPage(1);
-            }}
-          />
-          <input
-            className="mq-input max-w-xs"
-            placeholder="Actor ID (UUID)"
-            value={actorId}
-            onChange={(e) => {
-              setActorId(e.target.value.trim());
-              setPage(1);
-            }}
-          />
-          <label className="flex items-center gap-2 text-xs text-mq-text-muted">
-            From
-            <input
-              type="date"
-              className="mq-input max-w-[160px]"
-              value={from}
-              onChange={(e) => {
-                setFrom(e.target.value);
-                setPage(1);
-              }}
-            />
-          </label>
-          <label className="flex items-center gap-2 text-xs text-mq-text-muted">
-            To
-            <input
-              type="date"
-              className="mq-input max-w-[160px]"
-              value={to}
-              onChange={(e) => {
-                setTo(e.target.value);
-                setPage(1);
-              }}
-            />
-          </label>
+            <Filter size={14} />
+            {t("admin.auditPage.filters")}
+            {activeFilterCount > 0 ? (
+              <span className="mq-badge mq-badge-cyan text-[10px]">{activeFilterCount}</span>
+            ) : null}
+          </button>
+          {activeFilterCount > 0 ? (
+            <button
+              type="button"
+              className="text-xs underline text-mq-text-muted"
+              onClick={clearFilters}
+            >
+              {t("admin.auditPage.clearFilters")}
+            </button>
+          ) : null}
+          {categories.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5 ml-auto">
+              <button
+                type="button"
+                className={`text-[11px] px-2 py-1 rounded-md border ${
+                  !categoryFilter
+                    ? "border-mq-accent-teal bg-mq-surface text-mq-text"
+                    : "border-mq-border text-mq-text-muted"
+                }`}
+                onClick={() => setCategoryFilter("")}
+              >
+                {t("admin.auditPage.allCategories")}
+              </button>
+              {categories.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  className={`text-[11px] px-2 py-1 rounded-md border ${
+                    categoryFilter === c
+                      ? "border-mq-accent-teal bg-mq-surface text-mq-text"
+                      : "border-mq-border text-mq-text-muted"
+                  }`}
+                  onClick={() => setCategoryFilter(c === categoryFilter ? "" : c)}
+                >
+                  {translateStatus(t, "auditCategory", c)}
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
 
+        {filtersOpen ? (
+          <div className="mq-admin-panel p-4 flex flex-wrap gap-3 items-end">
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-mq-text-muted text-xs">{t("admin.auditPage.actionCode")}</span>
+              <input
+                className="mq-input max-w-xs"
+                placeholder={t("admin.auditPage.filterAction")}
+                value={action}
+                onChange={(e) => {
+                  setAction(e.target.value);
+                  setPage(1);
+                }}
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-mq-text-muted text-xs">{t("admin.auditPage.outcome")}</span>
+              <select
+                className="mq-input !w-[10rem] max-w-full"
+                value={outcome}
+                onChange={(e) => {
+                  setOutcome(e.target.value);
+                  setPage(1);
+                }}
+              >
+                <option value="">{t("admin.auditPage.anyOutcome")}</option>
+                <option value="success">{t("admin.auditPage.succeeded")}</option>
+                <option value="failure">{t("admin.auditPage.failed")}</option>
+                <option value="denied">{t("admin.auditPage.denied")}</option>
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-mq-text-muted text-xs">{t("admin.auditPage.resourceType")}</span>
+              <input
+                className="mq-input max-w-xs"
+                placeholder={t("admin.auditPage.resourceTypePh")}
+                value={resourceType}
+                onChange={(e) => {
+                  setResourceType(e.target.value);
+                  setPage(1);
+                }}
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-mq-text-muted text-xs">{t("admin.auditPage.actorEmail")}</span>
+              <input
+                className="mq-input max-w-xs"
+                placeholder={t("admin.auditPage.actorEmailPh")}
+                value={actorEmail}
+                onChange={(e) => {
+                  setActorEmail(e.target.value.trim());
+                  setPage(1);
+                }}
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-mq-text-muted text-xs">{t("admin.auditPage.actor")}</span>
+              <input
+                className="mq-input max-w-xs"
+                placeholder={t("admin.auditPage.actorPh")}
+                value={actorId}
+                onChange={(e) => {
+                  setActorId(e.target.value.trim());
+                  setPage(1);
+                }}
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-mq-text-muted text-xs">{t("admin.auditPage.ip")}</span>
+              <input
+                className="mq-input max-w-[10rem]"
+                placeholder={t("admin.auditPage.ipPh")}
+                value={ip}
+                onChange={(e) => {
+                  setIp(e.target.value.trim());
+                  setPage(1);
+                }}
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-mq-text-muted text-xs">{t("transactions.startDate")}</span>
+              <input
+                type="date"
+                className="mq-input"
+                value={from}
+                onChange={(e) => {
+                  setFrom(e.target.value);
+                  setPage(1);
+                }}
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-mq-text-muted text-xs">{t("transactions.endDate")}</span>
+              <input
+                type="date"
+                className="mq-input"
+                value={to}
+                onChange={(e) => {
+                  setTo(e.target.value);
+                  setPage(1);
+                }}
+              />
+            </label>
+          </div>
+        ) : null}
+
         {isLoading ? (
-          <TableSkeleton rows={8} cols={4} />
+          <AdminCardListSkeleton count={6} />
+        ) : visible.length === 0 ? (
+          <p className="text-sm text-mq-text-muted py-8 text-center">{t("admin.auditPage.empty")}</p>
         ) : (
-          <div className="mq-table-wrap mq-admin-panel overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-mq-surface-subtle text-left">
-                <tr>
-                  <th className="p-3 font-medium text-xs text-mq-text-muted">Time</th>
-                  <th className="p-3 font-medium text-xs text-mq-text-muted">Event</th>
-                  <th className="p-3 font-medium text-xs text-mq-text-muted">Outcome</th>
-                  <th className="p-3 font-medium text-xs text-mq-text-muted">Actor</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="p-8 text-center text-sm text-mq-text-muted">
-                      No audit events in this range.
-                    </td>
-                  </tr>
-                ) : (
-                  items.map((log) => <AuditRow key={log.id} log={log} />)
-                )}
-              </tbody>
-            </table>
+          <div className="space-y-2.5">
+            {visible.map((log) => (
+              <AuditCard key={log.id} log={log} locale={displayLocale} />
+            ))}
           </div>
         )}
 
@@ -243,7 +594,10 @@ function AuditInner() {
 
 export default function AdminAuditLogsPage() {
   return (
-    <AuthGuard roles={["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"]} permissions={["VIEW_AUDIT_LOG"]}>
+    <AuthGuard
+      roles={["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"]}
+      permissions={["VIEW_AUDIT_LOG"]}
+    >
       <AuditInner />
     </AuthGuard>
   );

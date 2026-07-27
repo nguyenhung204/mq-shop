@@ -4,6 +4,7 @@ import type {
   ListingCard as BeListing,
   PublicProductDetail,
 } from "@/lib/api/types";
+import { toRatingNumber } from "@/lib/api/reviews";
 
 export type { Product };
 
@@ -26,11 +27,21 @@ function reasonText(reason: BeProduct["rejectionReason"]): string | undefined {
   return reason.vi || reason.en || reason["zh-TW"] || undefined;
 }
 
+function mapReviewStats(
+  ratingAvg: number | string | null | undefined,
+  reviewCount: number | null | undefined,
+): { rating: number; reviewCount: number } {
+  const count = Math.max(0, Number(reviewCount) || 0);
+  const rating = count > 0 ? toRatingNumber(ratingAvg) : 0;
+  return { rating, reviewCount: count };
+}
+
 /** Map public listing card → storefront ProductCard shape. */
 export function mapListingCard(p: BeListing, categorySlug = "all"): Product {
   const outOfStock = p.displayMode === "OUT_OF_STOCK_WATERMARK" || p.stock <= 0;
   const minPrice = Number(p.minPrice ?? p.price) || 0;
   const maxPrice = Number(p.maxPrice ?? p.price) || minPrice;
+  const stats = mapReviewStats(p.ratingAvg, p.reviewCount);
   return {
     id: p.id,
     slug: p.id,
@@ -42,13 +53,15 @@ export function mapListingCard(p: BeListing, categorySlug = "all"): Product {
     image: p.thumbnailUrl || "/images/products/1.jpg",
     category: "Shop",
     categorySlug,
-    rating: 5,
-    reviewCount: 0,
+    rating: stats.rating,
+    reviewCount: stats.reviewCount,
     description: "",
     features: outOfStock ? ["Out of stock"] : [],
     inStock: Math.max(0, p.stock),
     displayMode: p.displayMode,
     watermarkText: p.watermarkText,
+    shopId: p.shopId,
+    createdAt: p.createdAt,
   };
 }
 
@@ -69,6 +82,7 @@ export function mapPublicProductDetail(p: PublicProductDetail): Product {
   const outOfStock =
     p.displayMode === "OUT_OF_STOCK_WATERMARK" ||
     (firstInStock ? firstInStock.availableStock <= 0 : p.stock <= 0);
+  const stats = mapReviewStats(p.ratingAvg, p.reviewCount);
 
   return {
     id: p.id,
@@ -82,8 +96,8 @@ export function mapPublicProductDetail(p: PublicProductDetail): Product {
     images: gallery.length ? gallery : selectedImages,
     category: "Shop",
     categorySlug: p.categoryId || "all",
-    rating: 5,
-    reviewCount: 0,
+    rating: stats.rating,
+    reviewCount: stats.reviewCount,
     description: p.description || "",
     features: outOfStock ? ["Out of stock"] : [],
     inStock: firstInStock?.availableStock ?? Math.max(0, p.stock),
@@ -91,6 +105,17 @@ export function mapPublicProductDetail(p: PublicProductDetail): Product {
     watermarkText: p.watermarkText,
     variants,
     selectedVariantId: firstInStock?.id,
+    shopId: p.shopId,
+    shop: p.shop
+      ? {
+          id: p.shop.id,
+          name: p.shop.name,
+          logoUrl: p.shop.logoUrl ?? null,
+        }
+      : p.shop === null
+        ? null
+        : undefined,
+    createdAt: p.createdAt,
   };
 }
 
@@ -112,6 +137,11 @@ export function mapApiProduct(p: BeProduct, locale = "vi"): Product {
     options: v.options ?? null,
     images: Array.isArray(v.images) ? v.images.filter(Boolean) : [],
   }));
+  const be = p as BeProduct & {
+    ratingAvg?: number | string | null;
+    reviewCount?: number | null;
+  };
+  const stats = mapReviewStats(be.ratingAvg, be.reviewCount);
 
   return {
     id: p.id,
@@ -125,8 +155,8 @@ export function mapApiProduct(p: BeProduct, locale = "vi"): Product {
     images: galleryImages(p.images),
     category: "Shop",
     categorySlug: p.categoryId || "all",
-    rating: 5,
-    reviewCount: 0,
+    rating: stats.rating,
+    reviewCount: stats.reviewCount,
     description: translation?.description || p.description || "",
     features: outOfStock ? ["Out of stock"] : [],
     inStock: stock,
@@ -138,5 +168,6 @@ export function mapApiProduct(p: BeProduct, locale = "vi"): Product {
     status: p.status,
     variants,
     selectedVariantId: variants[0]?.id,
+    shopId: p.shopId,
   };
 }

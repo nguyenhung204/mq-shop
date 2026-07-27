@@ -21,15 +21,14 @@ import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { SlipDetailBody } from "@/components/inventory/SlipDetailBody";
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton, TableSkeleton } from "@/components/ui/Skeleton";
 
 type TabId = "slips" | "ledger";
 
-const TABS: { id: TabId; label: string }[] = [
-  { id: "slips", label: "Slips" },
-  { id: "ledger", label: "Ledger" },
-];
+const TAB_IDS: TabId[] = ["slips", "ledger"];
 
 function statusBadge(status: InventorySlipStatus): string {
   switch (status) {
@@ -53,29 +52,27 @@ function formatWhen(iso: string | null | undefined): string {
   }
 }
 
-function slipTypeLabel(type: InventorySlipType): string {
-  switch (type) {
-    case "IN":
-      return "IN";
-    case "ADJUST_IN":
-      return "ADJUST IN";
-    case "ADJUST_OUT":
-      return "ADJUST OUT";
-    default:
-      return type;
-  }
+function slipTypeLabel(
+  type: InventorySlipType,
+  t: (key: string, vars?: Record<string, string>) => string,
+): string {
+  return translateStatus(t, "inventorySlipType", type);
 }
 
-function slipItemsSummary(s: InventorySlip): string {
+function slipItemsSummary(
+  s: InventorySlip,
+  t: (key: string, vars?: Record<string, string>) => string,
+): string {
   const lines = s.items ?? [];
-  if (!lines.length) return "No items";
+  if (!lines.length) return t("admin.inventoryPage.noItems");
   const first = lines[0];
   const head = `${first.sku} ×${first.quantity}`;
   if (lines.length === 1) return head;
-  return `${head} +${lines.length - 1} more`;
+  return `${head} ${t("admin.inventoryPage.more", { n: String(lines.length - 1) })}`;
 }
 
 function SlipsTab() {
+  const { t } = useLanguage();
   const [status, setStatus] = useState<InventorySlipStatus | "">("PENDING");
   const [page, setPage] = useState(1);
   const [detailId, setDetailId] = useState<string | null>(null);
@@ -97,28 +94,28 @@ function SlipsTab() {
         <select
           className="mq-input max-w-[11rem]"
           value={status}
-          aria-label="Filter by status"
+          aria-label={t("admin.common.filterStatus")}
           onChange={(e) => {
             setStatus(e.target.value as InventorySlipStatus | "");
             setPage(1);
           }}
         >
-          <option value="">All</option>
-          <option value="PENDING">Pending</option>
-          <option value="APPROVED">Approved</option>
-          <option value="REJECTED">Rejected</option>
+          <option value="">{t("admin.common.all")}</option>
+          <option value="PENDING">{t("admin.common.pending")}</option>
+          <option value="APPROVED">{t("admin.common.approved")}</option>
+          <option value="REJECTED">{t("admin.common.rejected")}</option>
         </select>
       </div>
 
       {isError && (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : "Failed"}
+          {error instanceof Error ? error.message : t("admin.common.failed")}
         </div>
       )}
       {isLoading ? (
         <AdminCardListSkeleton count={4} />
       ) : items.length === 0 ? (
-        <p className="text-sm text-mq-text-muted">No slips for this filter.</p>
+        <p className="text-sm text-mq-text-muted">{t("admin.inventoryPage.emptySlips")}</p>
       ) : (
         items.map((s: InventorySlip) => (
           <div key={s.id} className="mq-card p-4 space-y-3 text-sm">
@@ -134,10 +131,12 @@ function SlipsTab() {
                   >
                     {s.code}
                   </button>
-                  <span className={statusBadge(s.status)}>{s.status}</span>
-                  <span className="text-xs text-mq-text-muted">{s.type}</span>
+                  <span className={statusBadge(s.status)}>{translateStatus(t, "inventorySlip", s.status)}</span>
+                  <span className="text-xs text-mq-text-muted">
+                    {slipTypeLabel(s.type, t)}
+                  </span>
                 </div>
-                <p className="text-mq-text-secondary">{slipItemsSummary(s)}</p>
+                <p className="text-mq-text-secondary">{slipItemsSummary(s, t)}</p>
                 {(s.items?.length ?? 0) > 0 ? (
                   <ul className="text-xs text-mq-text-muted space-y-0.5">
                     {s.items.map((it) => (
@@ -165,14 +164,14 @@ function SlipsTab() {
               {s.status === "PENDING" ? (
                 <AdminActions>
                   <AdminIconButton
-                    label="Approve"
+                    label={t("admin.common.approve")}
                     icon={Check}
                     tone="approve"
                     disabled={busy}
                     onClick={() => void approveSlip.mutateAsync(s.id)}
                   />
                   <AdminIconButton
-                    label="Reject"
+                    label={t("admin.common.reject")}
                     icon={X}
                     tone="reject"
                     disabled={busy}
@@ -189,7 +188,7 @@ function SlipsTab() {
                   detailQuery.isError
                     ? detailQuery.error instanceof Error
                       ? detailQuery.error.message
-                      : "Failed to load"
+                      : t("admin.common.failed")
                     : null
                 }
               />
@@ -203,6 +202,7 @@ function SlipsTab() {
 }
 
 function LedgerTab() {
+  const { t } = useLanguage();
   const [shopId, setShopId] = useState("");
   const [sku, setSku] = useState("");
   const [from, setFrom] = useState("");
@@ -234,13 +234,13 @@ function LedgerTab() {
         <select
           className="mq-input max-w-[16rem]"
           value={shopId}
-          aria-label="Shop"
+          aria-label={t("admin.common.shop")}
           onChange={(e) => {
             setShopId(e.target.value);
             setPage(1);
           }}
         >
-          <option value="">Select shop…</option>
+          <option value="">{t("admin.common.selectShop")}</option>
           {shops.map((s) => (
             <option key={s.id} value={s.id}>
               {s.name}
@@ -249,7 +249,7 @@ function LedgerTab() {
         </select>
         <input
           className="mq-input max-w-[10rem]"
-          placeholder="SKU filter"
+          placeholder={t("admin.inventoryPage.skuFilter")}
           value={sku}
           disabled={!shopId}
           onChange={(e) => {
@@ -282,26 +282,26 @@ function LedgerTab() {
       </div>
 
       {!shopId ? (
-        <p className="text-sm text-mq-text-muted">Select a shop to load its stock ledger.</p>
+        <p className="text-sm text-mq-text-muted">{t("admin.inventoryPage.selectShopLoad")}</p>
       ) : isError ? (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : "Failed to load ledger"}
+          {error instanceof Error ? error.message : t("admin.common.failed")}
         </div>
       ) : isLoading || (isFetching && !data) ? (
         <TableSkeleton rows={5} cols={6} />
       ) : items.length === 0 ? (
-        <p className="text-sm text-mq-text-muted">No ledger entries for this shop.</p>
+        <p className="text-sm text-mq-text-muted">{t("admin.inventoryPage.emptyLedger")}</p>
       ) : (
         <>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-mq-text-muted border-b border-mq-border">
-                  <th className="py-2 pr-3 font-medium">When</th>
+                  <th className="py-2 pr-3 font-medium">{t("admin.common.when")}</th>
                   <th className="py-2 pr-3 font-medium">SKU</th>
                   <th className="py-2 pr-3 font-medium">Type</th>
                   <th className="py-2 pr-3 font-medium">Qty</th>
-                  <th className="py-2 pr-3 font-medium">Before → After</th>
+                  <th className="py-2 pr-3 font-medium">{t("admin.inventoryPage.beforeAfter")}</th>
                   <th className="py-2 font-medium">Slip</th>
                 </tr>
               </thead>
@@ -312,7 +312,7 @@ function LedgerTab() {
                       {formatWhen(row.recordedAt)}
                     </td>
                     <td className="py-2.5 pr-3 font-medium">{row.sku}</td>
-                    <td className="py-2.5 pr-3 text-xs">{slipTypeLabel(row.type)}</td>
+                    <td className="py-2.5 pr-3 text-xs">{slipTypeLabel(row.type, t)}</td>
                     <td className="py-2.5 pr-3">{row.quantity}</td>
                     <td className="py-2.5 pr-3">
                       {row.quantityBefore} → {row.quantityAfter}
@@ -333,13 +333,17 @@ function LedgerTab() {
 }
 
 function InventoryInner() {
+  const { t } = useLanguage();
   const [tab, setTab] = useState<TabId>("slips");
+
+  const tabLabel = (id: TabId) =>
+    id === "slips" ? t("admin.inventoryPage.slips") : t("admin.inventoryPage.ledger");
 
   return (
     <>
       <AdminPageHeader
-        title="Inventory"
-        description="Cross-shop slips inbox and per-shop stock ledger."
+        title={t("admin.inventory.title")}
+        description={t("admin.inventory.description")}
       />
 
       <div className="space-y-5">
@@ -348,11 +352,11 @@ function InventoryInner() {
           role="tablist"
           aria-label="Inventory sections"
         >
-          {TABS.map((t) => {
-            const active = tab === t.id;
+          {TAB_IDS.map((id) => {
+            const active = tab === id;
             return (
               <button
-                key={t.id}
+                key={id}
                 type="button"
                 role="tab"
                 aria-selected={active}
@@ -361,9 +365,9 @@ function InventoryInner() {
                     ? "bg-mq-surface text-mq-text border border-mq-border border-b-mq-surface -mb-px"
                     : "text-mq-text-muted hover:text-mq-text"
                 }`}
-                onClick={() => setTab(t.id)}
+                onClick={() => setTab(id)}
               >
-                {t.label}
+                {tabLabel(id)}
               </button>
             );
           })}

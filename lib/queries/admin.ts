@@ -2,20 +2,43 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { adminApi, adminStaffApi, financeApi } from "@/lib/api";
+import { adminApi, adminPlatformStaffApi, adminStaffApi, financeApi } from "@/lib/api";
 import { ApiError } from "@/lib/api/client";
-import type { ApiBanner, ApiProduct, ApiRma, ApiShop, AuthUser, StaffPoolRole, StaffRole } from "@/lib/api/types";
+import type { Banner } from "@/lib/api/promotions";
+import type { ApiProduct, ApiShop, AuthUser, StaffPoolRole, StaffRole } from "@/lib/api/types";
+import type { CreatePlatformStaffRequest } from "@/lib/api/staff";
 import { asArray, parsePage } from "@/lib/api/utils";
+import { tt } from "@/lib/i18n/tt";
 import { getErrorMessage } from "@/lib/queries/utils";
+import {
+  useCreateBannerMultipart,
+  useDeleteBanner,
+  useUpdateBannerMultipart,
+} from "@/lib/queries/promotions";
+
+export {
+  useAdminRma,
+  useAdminRmaDetail,
+  useAdminRmaDecision,
+  useAdminRmaMarkRefunded,
+  useAdminOrders,
+  useAdminCancelOrder,
+  useAdminCheckout,
+  useAdminShippingQuote,
+} from "@/lib/queries/orders";
 
 export const adminKeys = {
   all: ["admin"] as const,
   shops: (status: string, page: number) => [...adminKeys.all, "shops", status, page] as const,
   shop: (id: string) => [...adminKeys.all, "shop", id] as const,
-  products: (status: string, page: number) => [...adminKeys.all, "products", status, page] as const,
-  rma: () => [...adminKeys.all, "rma"] as const,
+  products: (status: string, page: number, pageSize = 20) =>
+    [...adminKeys.all, "products", status, page, pageSize] as const,
   finance: () => [...adminKeys.all, "finance"] as const,
   banners: () => [...adminKeys.all, "banners"] as const,
+  bannersLang: (lang: string, page: number) =>
+    [...adminKeys.all, "banners", lang, page] as const,
+  staff: () => [...adminKeys.all, "staff"] as const,
+  platformStaff: () => [...adminKeys.all, "platform-staff"] as const,
 };
 
 export type FinanceBatch = { id: string; status?: string; netAmountUsd?: string | number };
@@ -24,16 +47,22 @@ export type FinanceGateway = { id: string; gatewayName?: string; status?: string
 
 function shopActionError(e: unknown): string {
   if (e instanceof ApiError) {
-    if (e.code === "SHOP_NOT_PENDING") return "Shop is not PENDING — cannot approve/reject.";
-    if (e.code === "SHOP_NOT_APPROVED") return "Shop is not APPROVED — cannot violation-lock.";
+    if (e.code === "SHOP_NOT_PENDING") return tt("toast.shopNotPending");
+    if (e.code === "SHOP_NOT_APPROVED") return tt("toast.shopNotApprovedLock");
   }
   return getErrorMessage(e);
 }
 
-export function useAdminShops(status: string, page = 1, pageSize = 20) {
+export function useAdminShops(
+  status: string,
+  page = 1,
+  pageSize = 20,
+  options?: { enabled?: boolean },
+) {
   return useQuery({
     queryKey: adminKeys.shops(status, page),
     queryFn: async () => parsePage<ApiShop>(await adminApi.shops(status, page, pageSize)),
+    enabled: options?.enabled ?? true,
   });
 }
 
@@ -50,17 +79,11 @@ export function useAdminShop(id: string) {
 
 export function useAdminProducts(status: string, page = 1, pageSize = 20) {
   return useQuery({
-    queryKey: adminKeys.products(status, page),
+    queryKey: adminKeys.products(status, page, pageSize),
     queryFn: async () => parsePage<ApiProduct>(await adminApi.products(status, page, pageSize)),
   });
 }
 
-export function useAdminRma() {
-  return useQuery({
-    queryKey: adminKeys.rma(),
-    queryFn: async () => asArray<ApiRma>(await adminApi.rma()),
-  });
-}
 export function useAdminFinance() {
   return useQuery({
     queryKey: adminKeys.finance(),
@@ -79,10 +102,17 @@ export function useAdminFinance() {
   });
 }
 
-export function useAdminBanners() {
+export function useAdminBanners(lang?: string, page = 1, pageSize = 20) {
   return useQuery({
-    queryKey: adminKeys.banners(),
-    queryFn: async () => asArray<ApiBanner>(await adminApi.banners()),
+    queryKey: adminKeys.bannersLang(lang ?? "", page),
+    queryFn: async () =>
+      parsePage<Banner>(
+        await adminApi.banners({
+          lang,
+          page,
+          pageSize,
+        }),
+      ),
   });
 }
 
@@ -92,12 +122,16 @@ function useAdminInvalidate() {
 }
 
 export function useApproveShop() {
+  const queryClient = useQueryClient();
   const invalidate = useAdminInvalidate();
   return useMutation({
     mutationFn: (id: string) => adminApi.approveShop(id),
     onSuccess: () => {
       invalidate();
-      toast.success("Shop approved");
+      // Shop APPROVED → seller_granted may auto-promote owner (realtime on BE).
+      void queryClient.invalidateQueries({ queryKey: ["mlm"] });
+      void queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+      toast.success(tt("toast.shopApproved"));
     },
     onError: (e) => toast.error(shopActionError(e)),
   });
@@ -110,7 +144,7 @@ export function useRejectShop() {
       adminApi.rejectShop(id, { reason }),
     onSuccess: () => {
       invalidate();
-      toast.success("Shop rejected");
+      toast.success(tt("toast.shopRejected"));
     },
     onError: (e) => toast.error(shopActionError(e)),
   });
@@ -123,7 +157,7 @@ export function useSuspendShop() {
       adminApi.suspendShop(id, reason ? { reason } : undefined),
     onSuccess: () => {
       invalidate();
-      toast.success("Shop locked (violation)");
+      toast.success(tt("toast.shopLocked"));
     },
     onError: (e) => toast.error(shopActionError(e)),
   });
@@ -132,10 +166,10 @@ export function useSuspendShop() {
 function productActionError(e: unknown): string {
   if (e instanceof ApiError) {
     if (e.code === "PRODUCT_NOT_PENDING") {
-      return "Product is not PENDING — cannot approve/reject.";
+      return tt("toast.productNotPending");
     }
     if (e.code === "PRODUCT_NOT_HIDDEN") {
-      return "Product is not hidden.";
+      return tt("toast.productNotHidden");
     }
   }
   return getErrorMessage(e);
@@ -147,7 +181,7 @@ export function useApproveProduct() {
     mutationFn: (id: string) => adminApi.approveProduct(id),
     onSuccess: () => {
       invalidate();
-      toast.success("Product approved");
+      toast.success(tt("toast.productApproved"));
     },
     onError: (e) => toast.error(productActionError(e)),
   });
@@ -160,7 +194,7 @@ export function useRejectProduct() {
       adminApi.rejectProduct(id, { reason }),
     onSuccess: () => {
       invalidate();
-      toast.success("Product rejected");
+      toast.success(tt("toast.productRejected"));
     },
     onError: (e) => toast.error(productActionError(e)),
   });
@@ -172,7 +206,7 @@ export function useHideAdminProduct() {
     mutationFn: (id: string) => adminApi.hideProduct(id),
     onSuccess: () => {
       invalidate();
-      toast.success("Product hidden");
+      toast.success(tt("toast.productHidden"));
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
@@ -184,35 +218,15 @@ export function useUnhideAdminProduct() {
     mutationFn: (id: string) => adminApi.unhideProduct(id),
     onSuccess: () => {
       invalidate();
-      toast.success("Product unhidden — pending review");
+      toast.success(tt("toast.productUnhidden"));
     },
     onError: (e) => {
       if (e instanceof ApiError && e.code === "PRODUCT_NOT_HIDDEN") {
-        toast.error("Product is not hidden.");
+        toast.error(tt("toast.productNotHidden"));
         return;
       }
       toast.error(getErrorMessage(e));
     },
-  });
-}
-
-export function useAdminRmaDecision() {
-  const invalidate = useAdminInvalidate();
-  return useMutation({
-    mutationFn: ({
-      id,
-      decision,
-      reason,
-    }: {
-      id: string;
-      decision: "APPROVED" | "REJECTED";
-      reason?: string;
-    }) => adminApi.rmaDecision(id, { decision, reason }),
-    onSuccess: (_, { decision }) => {
-      invalidate();
-      toast.success(decision === "APPROVED" ? "RMA approved" : "RMA rejected");
-    },
-    onError: (e) => toast.error(getErrorMessage(e)),
   });
 }
 
@@ -222,7 +236,7 @@ export function useCreatePayoutBatch() {
     mutationFn: () => financeApi.createPayoutBatch({}),
     onSuccess: () => {
       invalidate();
-      toast.success("Payout batch created");
+      toast.success(tt("toast.payoutBatchCreated"));
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
@@ -234,7 +248,7 @@ export function useApprovePayout() {
     mutationFn: (id: string) => financeApi.approvePayout(id),
     onSuccess: () => {
       invalidate();
-      toast.success("Payout approved");
+      toast.success(tt("toast.payoutApproved"));
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
@@ -246,7 +260,7 @@ export function useRejectPayout() {
     mutationFn: (id: string) => financeApi.rejectPayout(id, { reason: "Invalid" }),
     onSuccess: () => {
       invalidate();
-      toast.success("Payout rejected");
+      toast.success(tt("toast.payoutRejected"));
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
@@ -258,7 +272,7 @@ export function useCompletePayout() {
     mutationFn: (id: string) => financeApi.completePayout(id),
     onSuccess: () => {
       invalidate();
-      toast.success("Payout marked completed");
+      toast.success(tt("toast.payoutCompleted"));
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
@@ -278,7 +292,9 @@ export function useWithdrawDecision() {
     }) => financeApi.withdrawDecision(id, { decision, reason }),
     onSuccess: (_, { decision }) => {
       invalidate();
-      toast.success(decision === "APPROVED" ? "Withdraw approved" : "Withdraw rejected");
+      toast.success(
+        decision === "APPROVED" ? tt("toast.withdrawApproved") : tt("toast.withdrawRejected"),
+      );
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
@@ -290,7 +306,7 @@ export function useCompleteWithdraw() {
     mutationFn: (id: string) => financeApi.completeWithdraw(id),
     onSuccess: () => {
       invalidate();
-      toast.success("Withdraw marked paid");
+      toast.success(tt("toast.withdrawPaid"));
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
@@ -310,7 +326,9 @@ export function useReviewGateway() {
     }) => financeApi.reviewGateway(id, { decision, reason }),
     onSuccess: (_, { decision }) => {
       invalidate();
-      toast.success(decision === "APPROVED" ? "Gateway approved" : "Gateway rejected");
+      toast.success(
+        decision === "APPROVED" ? tt("toast.gatewayApproved") : tt("toast.gatewayRejected"),
+      );
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
@@ -319,35 +337,35 @@ export function useReviewGateway() {
 export function useDailyRefundReport() {
   return useMutation({
     mutationFn: () => adminApi.dailyRefundReport(),
-    onSuccess: () => toast.success("Refund report loaded"),
+    onSuccess: () => toast.success(tt("toast.refundReportLoaded")),
     onError: (e) => toast.error(getErrorMessage(e)),
   });
 }
 
+/** @deprecated Prefer `useCreateBannerMultipart` from `@/lib/queries/promotions`. */
 export function useCreateBanner() {
-  const invalidate = useAdminInvalidate();
+  return useCreateBannerMultipart();
+}
+
+/** Toggle active via multipart PATCH (no image). */
+export function useToggleBanner() {
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: unknown) => adminApi.createBanner(body),
+    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) => {
+      const fd = new FormData();
+      fd.append("isActive", String(isActive));
+      return adminApi.updateBanner(id, fd);
+    },
     onSuccess: () => {
-      invalidate();
-      toast.success("Banner created");
+      void qc.invalidateQueries({ queryKey: adminKeys.all });
+      void qc.invalidateQueries({ queryKey: ["banners"] });
+      toast.success(tt("toast.bannerUpdated"));
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
 }
 
-export function useToggleBanner() {
-  const invalidate = useAdminInvalidate();
-  return useMutation({
-    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
-      adminApi.updateBanner(id, { isActive }),
-    onSuccess: () => {
-      invalidate();
-      toast.success("Banner updated");
-    },
-    onError: (e) => toast.error(getErrorMessage(e)),
-  });
-}
+export { useDeleteBanner, useUpdateBannerMultipart };
 
 export function useAdminUserAction() {
   return useMutation({
@@ -363,7 +381,11 @@ export function useAdminUserAction() {
       return adminApi.deleteUser(userId);
     },
     onSuccess: (_, { action }) => {
-      const labels = { lock: "User locked", unlock: "User unlocked", delete: "User soft-deleted" };
+      const labels = {
+        lock: tt("toast.userLocked"),
+        unlock: tt("toast.userUnlocked"),
+        delete: tt("toast.userDeleted"),
+      };
       toast.success(labels[action]);
     },
     onError: (e) => toast.error(getErrorMessage(e)),
@@ -380,8 +402,8 @@ export function useCreateStaff() {
       shopId: string;
     }) => adminStaffApi.create(body),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["admin", "staff"] });
-      toast.success("Staff created");
+      void queryClient.invalidateQueries({ queryKey: adminKeys.staff() });
+      toast.success(tt("toast.staffCreated"));
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
@@ -390,6 +412,7 @@ export function useCreateStaff() {
 export function useAdminStaffList(params: {
   shopId?: string;
   role?: StaffPoolRole | "";
+  status?: string;
   page?: number;
   pageSize?: number;
 }) {
@@ -397,10 +420,10 @@ export function useAdminStaffList(params: {
   const pageSize = params.pageSize ?? 20;
   return useQuery({
     queryKey: [
-      "admin",
-      "staff",
+      ...adminKeys.staff(),
       params.shopId ?? "",
       params.role ?? "",
+      params.status ?? "",
       page,
       pageSize,
     ],
@@ -409,6 +432,7 @@ export function useAdminStaffList(params: {
         await adminStaffApi.list({
           shopId: params.shopId || undefined,
           role: params.role || undefined,
+          status: params.status || undefined,
           page,
           pageSize,
         }),
@@ -430,8 +454,33 @@ export function useUpdateStaffRoles() {
       };
     }) => adminStaffApi.updateRoles(userId, body),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["admin", "staff"] });
-      toast.success("Staff roles updated");
+      void queryClient.invalidateQueries({ queryKey: adminKeys.staff() });
+      toast.success(tt("toast.staffRolesUpdated"));
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  });
+}
+
+export function useStaffDualControlAction() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      kind,
+    }: {
+      userId: string;
+      kind: "approve" | "reject";
+    }) => {
+      if (kind === "approve") return adminStaffApi.approve(userId);
+      return adminStaffApi.reject(userId);
+    },
+    onSuccess: (_d, vars) => {
+      void queryClient.invalidateQueries({ queryKey: adminKeys.staff() });
+      toast.success(
+        vars.kind === "approve"
+          ? tt("toast.staffApproved")
+          : tt("toast.staffRejected"),
+      );
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
@@ -452,34 +501,89 @@ export function useStaffAccountAction() {
       return adminStaffApi.remove(userId);
     },
     onSuccess: (_d, vars) => {
-      void queryClient.invalidateQueries({ queryKey: ["admin", "staff"] });
+      void queryClient.invalidateQueries({ queryKey: adminKeys.staff() });
       toast.success(
         vars.kind === "lock"
-          ? "Staff locked"
+          ? tt("toast.staffLocked")
           : vars.kind === "unlock"
-            ? "Staff unlocked"
-            : "Staff deleted",
+            ? tt("toast.staffUnlocked")
+            : tt("toast.staffDeleted"),
       );
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
 }
 
-export function useAdminOrderAction() {
+export function useAdminPlatformStaffList(params: {
+  status?: string;
+  page?: number;
+  pageSize?: number;
+}) {
+  const page = params.page ?? 1;
+  const pageSize = params.pageSize ?? 20;
+  return useQuery({
+    queryKey: [...adminKeys.platformStaff(), params.status ?? "", page, pageSize],
+    queryFn: async () =>
+      parsePage<AuthUser>(
+        await adminPlatformStaffApi.list({
+          status: params.status || undefined,
+          page,
+          pageSize,
+        }),
+      ),
+  });
+}
+
+export function useCreatePlatformStaff() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreatePlatformStaffRequest) =>
+      adminPlatformStaffApi.create(body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: adminKeys.platformStaff() });
+      toast.success(tt("toast.platformStaffCreated"));
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  });
+}
+
+export function useUpdatePlatformStaffRoles() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      userId,
+      roles,
+    }: {
+      userId: string;
+      roles: Array<"ADMIN">;
+    }) => adminPlatformStaffApi.updateRoles(userId, { roles }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: adminKeys.platformStaff() });
+      toast.success(tt("toast.platformStaffRolesUpdated"));
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  });
+}
+
+export function usePlatformStaffDualControlAction() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({
-      action,
-      orderId,
+      userId,
+      kind,
     }: {
-      action: "confirmCod" | "forceCancel";
-      orderId: string;
+      userId: string;
+      kind: "approve" | "reject";
     }) => {
-      if (action === "confirmCod") return adminApi.confirmCod(orderId);
-      return adminApi.forceCancelOrder(orderId, { reason: "Admin force cancel" });
+      if (kind === "approve") return adminPlatformStaffApi.approve(userId);
+      return adminPlatformStaffApi.reject(userId);
     },
-    onSuccess: (_, { action }) => {
+    onSuccess: (_d, vars) => {
+      void queryClient.invalidateQueries({ queryKey: adminKeys.platformStaff() });
       toast.success(
-        action === "confirmCod" ? "COD confirmed" : "Force cancelled (audit logged on BE)",
+        vars.kind === "approve"
+          ? tt("toast.platformStaffApproved")
+          : tt("toast.platformStaffRejected"),
       );
     },
     onError: (e) => toast.error(getErrorMessage(e)),

@@ -3,6 +3,7 @@ import type {
   AuthUser,
   PageMeta,
   Paginated,
+  Role,
   StaffPoolRole,
   StaffRole,
 } from "./types";
@@ -16,7 +17,8 @@ export type CreateStaffRequest = {
 
 export type CreateStaffResponse = {
   user: AuthUser;
-  temporaryPassword: string;
+  /** Present when SA creates ACTIVE; omitted when Admin creates PENDING. */
+  temporaryPassword?: string;
 };
 
 export type UpdateStaffRolesRequest = {
@@ -29,6 +31,24 @@ export type ListStaffParams = {
   shopId?: string;
   /** BUYER = candidates; WAREHOUSE|CS|ACCOUNTANT = assigned staff. */
   role?: StaffPoolRole;
+  status?: string;
+  page?: number;
+  pageSize?: number;
+};
+
+export type CreatePlatformStaffRequest = {
+  email: string;
+  fullName?: string;
+  /** Only ADMIN is assignable from this UI (SA escalate blocked by BE). */
+  roles: Array<"ADMIN">;
+};
+
+export type UpdatePlatformStaffRolesRequest = {
+  roles: Array<"ADMIN">;
+};
+
+export type ListPlatformStaffParams = {
+  status?: string;
   page?: number;
   pageSize?: number;
 };
@@ -51,6 +71,12 @@ export const adminStaffApi = {
   updateRoles: (userId: string, body: UpdateStaffRolesRequest) =>
     api.patch<AuthUser>(`/admin/staff/${userId}/roles`, body),
 
+  approve: (userId: string) =>
+    api.post<AuthUser>(`/admin/staff/${userId}/approve`, {}),
+
+  reject: (userId: string) =>
+    api.post<AuthUser>(`/admin/staff/${userId}/reject`, {}),
+
   lock: (userId: string) => api.post<AuthUser>(`/admin/staff/${userId}/lock`, {}),
 
   unlock: (userId: string) =>
@@ -58,3 +84,35 @@ export const adminStaffApi = {
 
   remove: (userId: string) => api.delete<AuthUser>(`/admin/staff/${userId}`),
 };
+
+export const adminPlatformStaffApi = {
+  list: (query?: ListPlatformStaffParams) =>
+    api.get<PageEnvelope<AuthUser>>("/admin/platform-staff", {
+      query,
+      withMeta: true,
+    }),
+
+  create: (body: CreatePlatformStaffRequest) =>
+    api.post<CreateStaffResponse>("/admin/platform-staff", body),
+
+  updateRoles: (userId: string, body: UpdatePlatformStaffRolesRequest) =>
+    api.patch<AuthUser>(`/admin/platform-staff/${userId}/roles`, body),
+
+  approve: (userId: string) =>
+    api.post<AuthUser>(`/admin/platform-staff/${userId}/approve`, {}),
+
+  reject: (userId: string) =>
+    api.post<AuthUser>(`/admin/platform-staff/${userId}/reject`, {}),
+};
+
+export function hasPendingStaffChange(u: AuthUser): boolean {
+  return (
+    u.status === "PENDING" ||
+    (Array.isArray(u.pendingRoles) && u.pendingRoles.length > 0)
+  );
+}
+
+export function formatPendingRoles(roles: Role[] | null | undefined): string {
+  if (!roles?.length) return "";
+  return roles.join(", ");
+}

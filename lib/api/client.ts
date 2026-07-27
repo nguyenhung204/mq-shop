@@ -231,6 +231,58 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   return json as T;
 }
 
+/** Binary GET (ZIP downloads). Parses JSON error envelopes when the response is not ok. */
+export async function apiGetBlob(
+  path: string,
+  options: Omit<RequestOptions, "method" | "body" | "formData" | "withMeta"> = {},
+): Promise<Blob> {
+  const { auth = true, headers = {}, query, _retried } = options;
+  const reqHeaders: Record<string, string> = { ...headers };
+
+  if (auth) {
+    const token = getAccessToken();
+    if (token) reqHeaders.Authorization = `Bearer ${token}`;
+  }
+
+  const res = await fetch(buildUrl(path, query), {
+    method: "GET",
+    headers: reqHeaders,
+    credentials: "include",
+  });
+
+  if (res.status === 401 && auth && !_retried) {
+    if (!refreshPromise) {
+      refreshPromise = refreshAccessToken().finally(() => {
+        refreshPromise = null;
+      });
+    }
+    const ok = await refreshPromise;
+    if (ok) {
+      return apiGetBlob(path, { ...options, _retried: true });
+    }
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("mq:auth-logout"));
+    }
+    throw new ApiError(401, "Unauthorized");
+  }
+
+  if (!res.ok) {
+    const text = await res.text();
+    let json: unknown = null;
+    if (text) {
+      try {
+        json = JSON.parse(text);
+      } catch {
+        json = { message: text };
+      }
+    }
+    const errBody = json as ApiErrorBody | null;
+    throw new ApiError(res.status, messageFromBody(errBody, res.statusText), errBody);
+  }
+
+  return res.blob();
+}
+
 export const api = {
   get: <T>(path: string, opts?: Omit<RequestOptions, "method" | "body" | "formData">) =>
     apiRequest<T>(path, { ...opts, method: "GET" }),
@@ -244,4 +296,10 @@ export const api = {
     apiRequest<T>(path, { ...opts, method: "DELETE" }),
   postForm: <T>(path: string, formData: FormData, opts?: Omit<RequestOptions, "method" | "body" | "formData">) =>
     apiRequest<T>(path, { ...opts, method: "POST", formData }),
+  patchForm: <T>(path: string, formData: FormData, opts?: Omit<RequestOptions, "method" | "body" | "formData">) =>
+    apiRequest<T>(path, { ...opts, method: "PATCH", formData }),
+  getBlob: (
+    path: string,
+    opts?: Omit<RequestOptions, "method" | "body" | "formData" | "withMeta">,
+  ) => apiGetBlob(path, opts),
 };

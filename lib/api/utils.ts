@@ -33,6 +33,24 @@ export function parsePage<T>(
     totalPages?: number;
   };
 
+  // Nested page payload: { data: { items, total, page, pageSize } } (e.g. audit-logs)
+  if (
+    o.data &&
+    typeof o.data === "object" &&
+    !Array.isArray(o.data) &&
+    ("items" in (o.data as object) ||
+      "total" in (o.data as object) ||
+      "page" in (o.data as object))
+  ) {
+    const nested = parsePage<T>(o.data);
+    if (nested.meta || nested.items.length || o.meta) {
+      return {
+        items: nested.items,
+        meta: nested.meta ?? o.meta,
+      };
+    }
+  }
+
   const items = asArray<T>(o.data ?? o.items ?? o);
   if (o.meta && typeof o.meta.totalPages === "number") {
     return { items, meta: o.meta };
@@ -44,7 +62,7 @@ export function parsePage<T>(
     const totalPages =
       typeof o.totalPages === "number"
         ? o.totalPages
-        : Math.max(1, Math.ceil(total / pageSize));
+        : Math.max(1, Math.ceil(total / pageSize) || 1);
     return {
       items,
       meta: {
@@ -73,8 +91,21 @@ export function getErrorCode(error: unknown): string | null {
 
 export function formatMoney(value: string | number | undefined | null): string {
   const n = typeof value === "string" ? Number(value) : value ?? 0;
-  if (Number.isNaN(n)) return "$0.00";
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
+  if (Number.isNaN(n)) return "$0";
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(n);
+}
+
+/** Format BE percent strings (e.g. `"5.0000"`) as `5%` / `6.5%`. */
+export function formatPercent(value: string | number | undefined | null): string {
+  const n = typeof value === "string" ? Number(value) : value ?? 0;
+  if (!Number.isFinite(n)) return "—";
+  const trimmed = Number(n.toFixed(4));
+  return `${trimmed}%`;
 }
 
 export function isStrongPassword(password: string): boolean {
@@ -86,6 +117,8 @@ export function statusMessage(status?: string): string {
     case "PENDING_VERIFY":
       return "Please verify your email before signing in.";
     case "PENDING_APPROVAL":
+    case "ACCOUNT_PENDING":
+    case "PENDING":
       return "Your staff account is waiting for Super Admin approval.";
     case "LOCKED":
       return "This account is locked.";

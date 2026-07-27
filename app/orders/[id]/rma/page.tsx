@@ -1,20 +1,30 @@
 "use client";
 
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
-import { orderApi } from "@/lib/api";
-import { ApiError } from "@/lib/api/client";
+import { useCreateRma, useOrder } from "@/lib/queries/orders";
+import { canRequestRma, hasBlockingRma } from "@/lib/api/orders";
 import { AuthGuard } from "@/components/guards/AuthGuard";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Container, PageHero } from "@/components/ui/shared";
+import { translateStatus } from "@/lib/i18n/status";
 
 function CreateRmaInner() {
   const { id } = useParams<{ id: string }>();
+  const { t } = useLanguage();
   const router = useRouter();
+  const { data: order } = useOrder(id);
+  const createRma = useCreateRma(id);
   const [reason, setReason] = useState("");
-  const [evidence, setEvidence] = useState("");
-  const [refundAccountInfo, setRefund] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [accountName, setAccountName] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
+
+  const allowed = order ? canRequestRma(order) : false;
+  const blockedByExisting = order ? hasBlockingRma(order) : false;
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -22,24 +32,18 @@ function CreateRmaInner() {
       setError("Reason must be 5–1000 characters.");
       return;
     }
-    setBusy(true);
     setError("");
     try {
-      const evidenceUrls = evidence
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean)
-        .slice(0, 10);
-      await orderApi.createRma(id, {
-        reason,
-        evidenceUrls: evidenceUrls.length ? evidenceUrls : undefined,
-        refundAccountInfo: refundAccountInfo || undefined,
+      await createRma.mutateAsync({
+        body: {
+          reason,
+          bankInfo: { bankName, accountNumber, accountName },
+        },
+        evidence: files.length ? files.slice(0, 5) : undefined,
       });
-      router.push("/rma");
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to create RMA");
-    } finally {
-      setBusy(false);
+      router.push(`/orders/${id}`);
+    } catch {
+      setError("Failed to create RMA");
     }
   };
 
@@ -54,16 +58,74 @@ function CreateRmaInner() {
         ]}
       />
       <Container className="py-10 max-w-lg mx-auto">
-        <form onSubmit={onSubmit} className="mq-card p-6 space-y-4">
-          <p className="text-sm text-mq-text-secondary">
-            Within 7 days of delivery. Seller cannot approve/reject in-app — after 3 days the system may auto-approve unless Admin intervenes. Refunds are recorded only (paid outside the system).
-          </p>
-          {error && <div className="mq-alert mq-alert-error">{error}</div>}
-          <textarea className="mq-textarea" placeholder="Reason" value={reason} onChange={(e) => setReason(e.target.value)} required />
-          <input className="mq-input" placeholder="Evidence URLs (comma-separated)" value={evidence} onChange={(e) => setEvidence(e.target.value)} />
-          <input className="mq-input" placeholder="Refund account info" value={refundAccountInfo} onChange={(e) => setRefund(e.target.value)} />
-          <button className="mq-btn mq-btn-primary w-full" disabled={busy}>Submit RMA</button>
-        </form>
+        {!order ? (
+          <p className="text-sm text-mq-text-muted">Loading order…</p>
+        ) : !allowed ? (
+          <div className="mq-alert mq-alert-error space-y-2">
+            <p>
+              {blockedByExisting
+                ? order.rma
+                  ? `${translateStatus(t, "rmaMessage", order.rma.status)}. You cannot submit another return for this order.`
+                  : "A return / refund is already in progress for this order."
+                : "RMA is only available within 7 days after delivery."}
+            </p>
+            <Link href={`/orders/${id}`} className="underline">
+              Back to order
+            </Link>
+          </div>
+        ) : (
+          <form onSubmit={(e) => void onSubmit(e)} className="mq-card p-6 space-y-4">
+            <p className="text-sm text-mq-text-secondary">
+              Submit reason + bank details for refund. Evidence images are optional (max 5). After
+              admin approval, order becomes REFUND_APPROVED — payout is handled outside the system.
+            </p>
+            {error ? <div className="mq-alert mq-alert-error">{error}</div> : null}
+            <textarea
+              className="mq-textarea"
+              placeholder="Reason"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              required
+            />
+            <input
+              className="mq-input"
+              placeholder="Bank name"
+              value={bankName}
+              onChange={(e) => setBankName(e.target.value)}
+              required
+            />
+            <input
+              className="mq-input"
+              placeholder="Account number"
+              value={accountNumber}
+              onChange={(e) => setAccountNumber(e.target.value)}
+              required
+            />
+            <input
+              className="mq-input"
+              placeholder="Account name"
+              value={accountName}
+              onChange={(e) => setAccountName(e.target.value)}
+              required
+            />
+            <div>
+              <label className="block text-sm mb-1.5" htmlFor="evidence">
+                Evidence images (optional, max 5)
+              </label>
+              <input
+                id="evidence"
+                className="mq-input"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                multiple
+                onChange={(e) => setFiles(Array.from(e.target.files ?? []).slice(0, 5))}
+              />
+            </div>
+            <button className="mq-btn mq-btn-primary w-full" disabled={createRma.isPending}>
+              {createRma.isPending ? "Submitting…" : "Submit RMA"}
+            </button>
+          </form>
+        )}
       </Container>
     </>
   );

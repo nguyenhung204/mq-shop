@@ -7,9 +7,7 @@ import { ApiError } from "@/lib/api/client";
 import type {
   AddProductVariantRequest,
   ApiCategory,
-  ApiOrder,
   ApiProduct,
-  ApiRma,
   ApiShop,
   CreateProductRequest,
   PageMeta,
@@ -17,7 +15,9 @@ import type {
   UpdateProductVariantRequest,
 } from "@/lib/api/types";
 import { asArray, parsePage } from "@/lib/api/utils";
+import { tt } from "@/lib/i18n/tt";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { useOrders } from "@/lib/queries/orders";
 
 export { useWarehouses } from "@/lib/queries/inventory";
 
@@ -27,13 +27,26 @@ export const sellerKeys = {
     [...sellerKeys.all, "products", status, page, pageSize] as const,
   product: (id: string) => [...sellerKeys.all, "product", id] as const,
   categories: () => [...sellerKeys.all, "categories"] as const,
-  orders: () => [...sellerKeys.all, "orders"] as const,
-  rma: () => [...sellerKeys.all, "rma"] as const,
   shop: () => [...sellerKeys.all, "shop"] as const,
   materials: () => [...sellerKeys.all, "materials"] as const,
 };
 
-export type MarketingMaterial = { folderPath?: string; fileName?: string; fileUrl?: string };
+export type MarketingMaterialFolder = {
+  id: string;
+  name: string;
+  description: string | null;
+  assetCount: number;
+};
+
+export function useMarketingMaterials(page = 1, pageSize = 20) {
+  return useQuery({
+    queryKey: [...sellerKeys.materials(), page, pageSize] as const,
+    queryFn: async () =>
+      parsePage<import("@/lib/api/promotions").MarketingFolder>(
+        await cmsApi.folders({ page, pageSize }),
+      ),
+  });
+}
 
 function useSellerInvalidate() {
   const queryClient = useQueryClient();
@@ -63,17 +76,16 @@ export function useCategories() {
   });
 }
 
-export function useSellerOrders() {
-  return useQuery({
-    queryKey: sellerKeys.orders(),
-    queryFn: async () => asArray<ApiOrder>(await sellerApi.orders()),
-  });
-}
-
-export function useSellerRma() {
-  return useQuery({
-    queryKey: sellerKeys.rma(),
-    queryFn: async () => asArray<ApiRma>(await sellerApi.rma()),
+export function useSellerOrders(params: {
+  status?: import("@/lib/api/orders").OrderStatus;
+  page?: number;
+  pageSize?: number;
+} = {}) {
+  return useOrders({
+    page: params.page ?? 1,
+    pageSize: params.pageSize ?? 20,
+    status: params.status,
+    view: "shop",
   });
 }
 
@@ -92,23 +104,16 @@ export function useSellerShop() {
   });
 }
 
-export function useMarketingMaterials() {
-  return useQuery({
-    queryKey: sellerKeys.materials(),
-    queryFn: async () => asArray<MarketingMaterial>(await cmsApi.materials()),
-  });
-}
-
 function productImageErrorMessage(e: unknown, fallback: string): string {
   if (e instanceof ApiError) {
     switch (e.code) {
       case "INVALID_PRODUCT_IMAGE":
-        return "Invalid image type. Use JPEG, PNG, WebP, or GIF.";
+        return tt("toast.invalidProductImage");
       case "PRODUCT_IMAGE_TOO_LARGE":
       case "FILE_TOO_LARGE":
-        return "Each image must be ≤ 5MB.";
+        return tt("toast.productImageTooLarge");
       case "SHOP_NOT_ELIGIBLE":
-        return "Shop must be APPROVED and not suspended.";
+        return tt("toast.shopNotEligible");
       default:
         break;
     }
@@ -120,7 +125,7 @@ function productErrorMessage(e: unknown, fallback: string): string {
   if (e instanceof ApiError) {
     switch (e.code) {
       case "SHOP_NOT_ELIGIBLE":
-        return "Shop must be APPROVED and not suspended.";
+        return tt("toast.shopNotEligible");
       case "CATEGORY_NOT_FOUND":
         return "Category not found.";
       case "VARIANT_SKU_TAKEN":
@@ -144,7 +149,7 @@ export function useUploadProductImages() {
     onSuccess: () => {
       invalidate();
     },
-    onError: (e) => toast.error(productImageErrorMessage(e, "Image upload failed")),
+    onError: (e) => toast.error(productImageErrorMessage(e, tt("toast.imageUploadFailed"))),
   });
 }
 
@@ -156,7 +161,7 @@ export function useDeleteProductImages() {
     onSuccess: () => {
       invalidate();
     },
-    onError: (e) => toast.error(productImageErrorMessage(e, "Remove images failed")),
+    onError: (e) => toast.error(productImageErrorMessage(e, tt("toast.removeImagesFailed"))),
   });
 }
 
@@ -174,9 +179,9 @@ export function useUploadVariantImages() {
     }) => sellerApi.uploadVariantImages(productId, variantId, files),
     onSuccess: () => {
       invalidate();
-      toast.success("SKU images uploaded");
+      toast.success(tt("toast.skuImagesUploaded"));
     },
-    onError: (e) => toast.error(productImageErrorMessage(e, "SKU image upload failed")),
+    onError: (e) => toast.error(productImageErrorMessage(e, tt("toast.skuImageUploadFailed"))),
   });
 }
 
@@ -194,9 +199,9 @@ export function useDeleteVariantImages() {
     }) => sellerApi.deleteVariantImages(productId, variantId, urls),
     onSuccess: () => {
       invalidate();
-      toast.success("SKU image removed");
+      toast.success(tt("toast.skuImageRemoved"));
     },
-    onError: (e) => toast.error(productImageErrorMessage(e, "Remove SKU images failed")),
+    onError: (e) => toast.error(productImageErrorMessage(e, tt("toast.removeSkuImagesFailed"))),
   });
 }
 
@@ -206,9 +211,9 @@ export function useCreateSellerProduct() {
     mutationFn: (body: CreateProductRequest) => sellerApi.createProduct(body),
     onSuccess: () => {
       invalidate();
-      toast.success("Product created — Pending review");
+      toast.success(tt("toast.productCreatedPending"));
     },
-    onError: (e) => toast.error(productErrorMessage(e, "Create failed")),
+    onError: (e) => toast.error(productErrorMessage(e, tt("toast.createFailed"))),
   });
 }
 
@@ -227,9 +232,9 @@ export function useUpdateSellerProduct() {
     onSuccess: (_product, vars) => {
       invalidate();
       if (vars.silent) return;
-      toast.success("Product updated");
+      toast.success(tt("toast.productUpdated"));
     },
-    onError: (e) => toast.error(productErrorMessage(e, "Update failed")),
+    onError: (e) => toast.error(productErrorMessage(e, tt("toast.updateFailed"))),
   });
 }
 
@@ -247,9 +252,9 @@ export function useAddSellerVariant() {
     }) => sellerApi.addVariant(productId, body),
     onSuccess: (_data, vars) => {
       invalidate();
-      if (!vars.silent) toast.success("SKU added");
+      if (!vars.silent) toast.success(tt("toast.skuAdded"));
     },
-    onError: (e) => toast.error(productErrorMessage(e, "Add SKU failed")),
+    onError: (e) => toast.error(productErrorMessage(e, tt("toast.addSkuFailed"))),
   });
 }
 
@@ -269,9 +274,9 @@ export function useUpdateSellerVariant() {
     }) => sellerApi.updateVariant(productId, variantId, body),
     onSuccess: (_data, vars) => {
       invalidate();
-      if (!vars.silent) toast.success("SKU updated");
+      if (!vars.silent) toast.success(tt("toast.skuUpdated"));
     },
-    onError: (e) => toast.error(productErrorMessage(e, "Update SKU failed")),
+    onError: (e) => toast.error(productErrorMessage(e, tt("toast.updateSkuFailed"))),
   });
 }
 
@@ -281,7 +286,7 @@ export function useHideSellerProduct() {
     mutationFn: (id: string) => sellerApi.hideProduct(id),
     onSuccess: () => {
       invalidate();
-      toast.success("Product hidden");
+      toast.success(tt("toast.productHidden"));
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
@@ -293,39 +298,15 @@ export function useUnhideSellerProduct() {
     mutationFn: (id: string) => sellerApi.unhideProduct(id),
     onSuccess: () => {
       invalidate();
-      toast.success("Product unhidden — pending review");
+      toast.success(tt("toast.productUnhidden"));
     },
     onError: (e) => {
       if (e instanceof ApiError && e.code === "PRODUCT_NOT_HIDDEN") {
-        toast.error("Product is not hidden.");
+        toast.error(tt("toast.productNotHidden"));
         return;
       }
       toast.error(getErrorMessage(e));
     },
-  });
-}
-
-export function useConfirmStockReturn() {
-  const invalidate = useSellerInvalidate();
-  return useMutation({
-    mutationFn: ({
-      id,
-      body,
-    }: {
-      id: string;
-      body: {
-        warehouseId: string;
-        sku: string;
-        quantity: number;
-        kind: "RETURNED" | "NEW";
-        note?: string;
-      };
-    }) => sellerApi.confirmStockReturn(id, body),
-    onSuccess: () => {
-      invalidate();
-      toast.success("Stock return confirmed");
-    },
-    onError: (e) => toast.error(getErrorMessage(e, "Confirm failed")),
   });
 }
 
@@ -335,9 +316,9 @@ export function useApplyShop() {
     mutationFn: (formData: FormData) => shopApi.apply(formData),
     onSuccess: (shop: ApiShop) => {
       queryClient.setQueryData(sellerKeys.shop(), shop);
-      toast.success("Application submitted. Waiting for Admin approval.");
+      toast.success(tt("toast.applicationSubmitted"));
     },
-    onError: (e) => toast.error(getErrorMessage(e, "Apply failed")),
+    onError: (e) => toast.error(getErrorMessage(e, tt("toast.applyFailed"))),
   });
 }
 
@@ -347,13 +328,13 @@ function shopMediaErrorMessage(e: unknown, fallback: string): string {
       case "INVALID_SHOP_LOGO":
       case "INVALID_SHOP_BANNER":
       case "INVALID_SHOP_IMAGE":
-        return "Invalid image type. Use JPEG, PNG, WebP, or GIF.";
+        return tt("toast.invalidImageType");
       case "SHOP_LOGO_TOO_LARGE":
       case "SHOP_BANNER_TOO_LARGE":
       case "SHOP_IMAGE_TOO_LARGE":
-        return "Image must be ≤ 5MB.";
+        return tt("toast.imageTooLarge");
       case "SHOP_NOT_ELIGIBLE":
-        return "Shop must be APPROVED and not suspended.";
+        return tt("toast.shopNotEligible");
       case "FORBIDDEN":
         return "You do not have permission to edit this shop.";
       default:
@@ -369,9 +350,9 @@ export function useUploadShopLogo() {
     mutationFn: (file: File) => shopApi.uploadLogo(file),
     onSuccess: (shop: ApiShop) => {
       queryClient.setQueryData(sellerKeys.shop(), shop);
-      toast.success("Logo updated");
+      toast.success(tt("toast.logoUpdated"));
     },
-    onError: (e) => toast.error(shopMediaErrorMessage(e, "Logo upload failed")),
+    onError: (e) => toast.error(shopMediaErrorMessage(e, tt("toast.logoUploadFailed"))),
   });
 }
 
@@ -381,16 +362,26 @@ export function useUploadShopBanner() {
     mutationFn: (file: File) => shopApi.uploadBanner(file),
     onSuccess: (shop: ApiShop) => {
       queryClient.setQueryData(sellerKeys.shop(), shop);
-      toast.success("Banner updated");
+      toast.success(tt("toast.shopBannerUpdated"));
     },
-    onError: (e) => toast.error(shopMediaErrorMessage(e, "Banner upload failed")),
+    onError: (e) => toast.error(shopMediaErrorMessage(e, tt("toast.shopBannerUploadFailed"))),
   });
 }
 
+/** @deprecated Prefer `useDownloadMarketingFolder` from `@/lib/queries/promotions`. */
 export function useDownloadMaterials() {
   return useMutation({
-    mutationFn: (folder: string) => cmsApi.downloadMaterials(folder),
-    onSuccess: () => toast.success("Download info loaded"),
-    onError: (e) => toast.error(getErrorMessage(e, "Download failed")),
+    mutationFn: async (folderId: string) => {
+      const blob = await cmsApi.downloadFolderZip(folderId);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `marketing-${folderId}.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+      return folderId;
+    },
+    onSuccess: () => toast.success(tt("toast.downloadStarted")),
+    onError: (e) => toast.error(getErrorMessage(e, tt("toast.downloadFailed"))),
   });
 }

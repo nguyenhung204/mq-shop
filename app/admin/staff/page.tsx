@@ -2,23 +2,29 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Copy, Lock, Pencil, Plus, Trash2, Unlock, UserPlus, X } from "lucide-react";
+import { Check, Copy, Lock, Pencil, Plus, Trash2, Unlock, UserPlus, X } from "lucide-react";
 import type { AuthUser, StaffPoolRole, StaffRole } from "@/lib/api/types";
+import { hasPendingStaffChange } from "@/lib/api/staff";
 import {
   useAdminShops,
   useAdminStaffList,
   useCreateStaff,
   useStaffAccountAction,
+  useStaffDualControlAction,
   useUpdateStaffRoles,
 } from "@/lib/queries/admin";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateRoles, translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 
 const STAFF_ROLES: StaffRole[] = ["WAREHOUSE", "CS", "ACCOUNTANT"];
 const POOL_FILTERS: StaffPoolRole[] = ["BUYER", "WAREHOUSE", "CS", "ACCOUNTANT"];
+const STATUS_FILTERS = ["", "ACTIVE", "PENDING", "LOCKED", "DELETED"] as const;
 
 function isBuyerCandidate(u: AuthUser): boolean {
   const roles = u.roles ?? [];
@@ -32,9 +38,20 @@ function primaryStaffRole(u: AuthUser): StaffRole | "" {
   return hit ?? "";
 }
 
+function statusBadgeClass(status: string | undefined): string {
+  if (status === "PENDING") return "mq-badge mq-badge-cyan";
+  if (status === "LOCKED" || status === "DELETED") return "mq-badge mq-badge-pink";
+  if (status === "ACTIVE") return "mq-badge mq-badge-teal";
+  return "mq-badge mq-badge-muted";
+}
+
 function StaffInner() {
+  const { t } = useLanguage();
+  const { hasRole } = useAuth();
+  const isSuperAdmin = hasRole("SUPER_ADMIN");
   const [shopFilter, setShopFilter] = useState("");
   const [roleFilter, setRoleFilter] = useState<StaffPoolRole | "">("BUYER");
+  const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
   const [createOpen, setCreateOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState<AuthUser | null>(null);
@@ -42,6 +59,7 @@ function StaffInner() {
     email: string;
     temporaryPassword: string;
   } | null>(null);
+  const [pendingNotice, setPendingNotice] = useState(false);
 
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
@@ -61,12 +79,14 @@ function StaffInner() {
   const { data, isLoading, isError, error } = useAdminStaffList({
     shopId: shopFilter || undefined,
     role: roleFilter,
+    status: statusFilter || undefined,
     page,
     pageSize: 20,
   });
   const createStaff = useCreateStaff();
   const updateRoles = useUpdateStaffRoles();
   const accountAction = useStaffAccountAction();
+  const dualControl = useStaffDualControlAction();
 
   const items = data?.items ?? [];
   const meta = data?.meta;
@@ -107,10 +127,15 @@ function StaffInner() {
         shopId,
       });
       closeCreate();
-      setCreatedCred({
-        email: res.user.email,
-        temporaryPassword: res.temporaryPassword,
-      });
+      if (res.temporaryPassword) {
+        setCreatedCred({
+          email: res.user.email,
+          temporaryPassword: res.temporaryPassword,
+        });
+      } else if (hasPendingStaffChange(res.user) || !isSuperAdmin) {
+        setPendingNotice(true);
+        toast.message(t("admin.staffPage.pendingNotice"));
+      }
     } catch {
       /* toast in mutation */
     }
@@ -126,11 +151,11 @@ function StaffInner() {
     e.preventDefault();
     if (!assignOpen) return;
     if (!assignShopId) {
-      toast.error("Shop is required when assigning a staff role.");
+      toast.error(t("admin.staffPage.shopRequired"));
       return;
     }
     try {
-      await updateRoles.mutateAsync({
+      const user = await updateRoles.mutateAsync({
         userId: assignOpen.id,
         body: {
           roles: [assignRole],
@@ -139,6 +164,10 @@ function StaffInner() {
       });
       closeAssign();
       if (roleFilter === "BUYER") setRoleFilter(assignRole);
+      if (hasPendingStaffChange(user) || (!isSuperAdmin && user.status === "PENDING")) {
+        setPendingNotice(true);
+        toast.message(t("admin.staffPage.pendingNotice"));
+      }
     } catch {
       /* toast */
     }
@@ -148,7 +177,7 @@ function StaffInner() {
     if (!createdCred) return;
     try {
       await navigator.clipboard.writeText(createdCred.temporaryPassword);
-      toast.success("Password copied");
+      toast.success(t("admin.staffPage.passwordCopied"));
     } catch {
       toast.error("Could not copy");
     }
@@ -157,8 +186,8 @@ function StaffInner() {
   return (
     <>
       <AdminPageHeader
-        title="Shop staff"
-        description="Pool: BUYER candidates (no SELLER) and assigned WAREHOUSE / CS / ACCOUNTANT. Prefer Assign role on an existing BUYER; Create only for a brand-new email."
+        title={t("admin.staff.title")}
+        description={t("admin.staff.description")}
         actions={
           <button
             type="button"
@@ -166,7 +195,7 @@ function StaffInner() {
             onClick={() => setCreateOpen(true)}
           >
             <Plus size={16} strokeWidth={2.25} />
-            Create staff
+            {t("admin.common.create")}
           </button>
         }
       />
@@ -174,21 +203,33 @@ function StaffInner() {
       <div className="space-y-6">
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : "Failed"}
+            {error instanceof Error ? error.message : t("admin.common.failed")}
           </div>
         )}
+        {pendingNotice ? (
+          <div className="rounded-lg border border-mq-border bg-mq-surface-subtle p-3 text-sm text-mq-text-secondary">
+            {t("admin.staffPage.pendingNotice")}
+            <button
+              type="button"
+              className="ml-3 text-xs underline"
+              onClick={() => setPendingNotice(false)}
+            >
+              {t("admin.common.close")}
+            </button>
+          </div>
+        ) : null}
 
         <div className="flex flex-wrap gap-3 items-center">
           <select
             className="mq-input max-w-[16rem]"
             value={shopFilter}
-            aria-label="Filter by shop"
+            aria-label={t("admin.common.shop")}
             onChange={(e) => {
               setShopFilter(e.target.value);
               setPage(1);
             }}
           >
-            <option value="">All shops (+ unassigned BUYER)</option>
+            <option value="">{t("admin.staffPage.allShopsUnassigned")}</option>
             {shops.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
@@ -198,63 +239,123 @@ function StaffInner() {
           <select
             className="mq-input max-w-[11rem]"
             value={roleFilter}
-            aria-label="Filter by role"
+            aria-label={t("admin.staffPage.role")}
             onChange={(e) => {
               setRoleFilter(e.target.value as StaffPoolRole | "");
               setPage(1);
             }}
           >
-            <option value="">All pool</option>
+            <option value="">{t("admin.staffPage.allPool")}</option>
             {POOL_FILTERS.map((r) => (
               <option key={r} value={r}>
-                {r === "BUYER" ? "BUYER (candidates)" : r}
+                {r === "BUYER"
+                  ? t("admin.staffPage.buyerCandidates")
+                  : translateStatus(t, "role", r)}
+              </option>
+            ))}
+          </select>
+          <select
+            className="mq-input max-w-[11rem]"
+            value={statusFilter}
+            aria-label={t("admin.common.filterStatus")}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setPage(1);
+            }}
+          >
+            {STATUS_FILTERS.map((s) => (
+              <option key={s || "all"} value={s}>
+                {s === "" ? t("admin.common.allStatuses") : translateStatus(t, "user", s)}
               </option>
             ))}
           </select>
         </div>
 
         {isLoading ? (
-          <TableSkeleton rows={6} cols={5} />
+          <TableSkeleton rows={6} cols={6} />
         ) : items.length === 0 ? (
-          <p className="text-sm text-mq-text-muted">No users for this filter.</p>
+          <p className="text-sm text-mq-text-muted">{t("admin.staffPage.empty")}</p>
         ) : (
           <div className="mq-table-wrap">
             <table className="w-full text-sm">
               <thead className="bg-mq-surface-subtle text-left">
                 <tr>
-                  <th className="p-3">Email</th>
-                  <th className="p-3">Name</th>
-                  <th className="p-3">Shop</th>
-                  <th className="p-3">Roles</th>
-                  <th className="p-3">Status</th>
+                  <th className="p-3">{t("admin.common.email")}</th>
+                  <th className="p-3">{t("admin.common.name")}</th>
+                  <th className="p-3">{t("admin.common.shop")}</th>
+                  <th className="p-3">{t("admin.common.roles")}</th>
+                  <th className="p-3">{t("admin.staffPage.pendingRoles")}</th>
+                  <th className="p-3">{t("admin.common.status")}</th>
                   <th className="p-3" />
                 </tr>
               </thead>
               <tbody>
                 {items.map((u) => {
                   const candidate = isBuyerCandidate(u);
+                  const pending = hasPendingStaffChange(u);
                   return (
                     <tr key={u.id} className="border-t border-mq-border">
                       <td className="p-3">{u.email}</td>
                       <td className="p-3">{u.fullName || "—"}</td>
                       <td className="p-3 text-xs text-mq-text-secondary">
                         {u.shopId ? shopName(u.shopId) : (
-                          <span className="text-mq-text-muted">Unassigned</span>
+                          <span className="text-mq-text-muted">{t("admin.staffPage.unassigned")}</span>
                         )}
                       </td>
                       <td className="p-3">
-                        {(u.roles || []).join(", ")}
+                        {translateRoles(t, u.roles)}
                         {candidate ? (
                           <span className="ml-2 mq-badge mq-badge-cyan text-[10px]">
-                            Candidate
+                            {t("admin.staffPage.candidate")}
                           </span>
                         ) : null}
                       </td>
-                      <td className="p-3">{u.status || "—"}</td>
+                      <td className="p-3 text-xs text-mq-text-secondary">
+                        {u.pendingRoles?.length
+                          ? translateRoles(t, u.pendingRoles)
+                          : "—"}
+                      </td>
+                      <td className="p-3">
+                        <span className={statusBadgeClass(u.status)}>
+                          {u.status ? translateStatus(t, "user", u.status) : "—"}
+                        </span>
+                      </td>
                       <td className="p-3 whitespace-nowrap">
                         <AdminActions>
+                          {isSuperAdmin && pending ? (
+                            <>
+                              <AdminIconButton
+                                label={t("admin.common.approve")}
+                                icon={Check}
+                                tone="approve"
+                                disabled={dualControl.isPending}
+                                onClick={() =>
+                                  void dualControl.mutateAsync({
+                                    userId: u.id,
+                                    kind: "approve",
+                                  })
+                                }
+                              />
+                              <AdminIconButton
+                                label={t("admin.common.reject")}
+                                icon={X}
+                                tone="reject"
+                                disabled={dualControl.isPending}
+                                onClick={() =>
+                                  void dualControl.mutateAsync({
+                                    userId: u.id,
+                                    kind: "reject",
+                                  })
+                                }
+                              />
+                            </>
+                          ) : null}
                           <AdminIconButton
-                            label={candidate ? "Assign role" : "Edit roles"}
+                            label={
+                              candidate
+                                ? t("admin.common.assignRole")
+                                : t("admin.common.editRoles")
+                            }
                             icon={candidate ? UserPlus : Pencil}
                             tone={candidate ? "approve" : "secondary"}
                             disabled={updateRoles.isPending}
@@ -263,7 +364,7 @@ function StaffInner() {
                           {!candidate ? (
                             <>
                               <AdminIconButton
-                                label="Lock"
+                                label={t("admin.common.lock")}
                                 icon={Lock}
                                 tone="warn"
                                 disabled={accountAction.isPending}
@@ -275,7 +376,7 @@ function StaffInner() {
                                 }
                               />
                               <AdminIconButton
-                                label="Unlock"
+                                label={t("admin.common.unlock")}
                                 icon={Unlock}
                                 tone="approve"
                                 disabled={accountAction.isPending}
@@ -287,7 +388,7 @@ function StaffInner() {
                                 }
                               />
                               <AdminIconButton
-                                label="Delete"
+                                label={t("admin.common.delete")}
                                 icon={Trash2}
                                 tone="danger"
                                 disabled={accountAction.isPending}
@@ -324,7 +425,7 @@ function StaffInner() {
           <button
             type="button"
             className="mq-admin-modal-backdrop"
-            aria-label="Close dialog"
+            aria-label={t("admin.common.close")}
             onClick={closeCreate}
           />
           <div
@@ -335,12 +436,12 @@ function StaffInner() {
           >
             <div className="mq-admin-modal-head">
               <h2 id="create-staff-title" className="mq-admin-modal-title">
-                Create shop staff
+                {t("admin.common.create")}
               </h2>
               <button
                 type="button"
                 className="mq-admin-icon-btn"
-                aria-label="Close"
+                aria-label={t("admin.common.close")}
                 onClick={closeCreate}
               >
                 <X size={16} />
@@ -348,10 +449,12 @@ function StaffInner() {
             </div>
             <form className="mq-admin-modal-body space-y-3" onSubmit={(e) => void onCreate(e)}>
               <p className="text-xs text-mq-text-muted">
-                Only when the email does not exist yet. Prefer Assign on a BUYER candidate.
+                {t("admin.staffPage.createHint")}
               </p>
               <div>
-                <label className="block text-xs font-medium text-mq-text-muted mb-1.5">Email</label>
+                <label className="block text-xs font-medium text-mq-text-muted mb-1.5">
+                  {t("admin.common.email")}
+                </label>
                 <input
                   type="email"
                   className="mq-input"
@@ -364,7 +467,7 @@ function StaffInner() {
               </div>
               <div>
                 <label className="block text-xs font-medium text-mq-text-muted mb-1.5">
-                  Full name (optional)
+                  {t("admin.common.name")} ({t("admin.common.optional")})
                 </label>
                 <input
                   className="mq-input"
@@ -374,7 +477,9 @@ function StaffInner() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-mq-text-muted mb-1.5">Role</label>
+                <label className="block text-xs font-medium text-mq-text-muted mb-1.5">
+                  {t("admin.staffPage.role")}
+                </label>
                 <select
                   className="mq-input"
                   value={role}
@@ -383,14 +488,14 @@ function StaffInner() {
                 >
                   {STAFF_ROLES.map((r) => (
                     <option key={r} value={r}>
-                      {r}
+                      {translateStatus(t, "role", r)}
                     </option>
                   ))}
                 </select>
               </div>
               <div>
                 <label className="block text-xs font-medium text-mq-text-muted mb-1.5">
-                  Shop (APPROVED)
+                  {t("admin.common.shop")}
                 </label>
                 <select
                   className="mq-input"
@@ -398,7 +503,7 @@ function StaffInner() {
                   onChange={(e) => setShopId(e.target.value)}
                   required
                 >
-                  <option value="">Select shop</option>
+                  <option value="">{t("admin.staffPage.selectShop")}</option>
                   {shops.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.name}
@@ -412,14 +517,16 @@ function StaffInner() {
                   className="mq-admin-btn mq-admin-btn-secondary"
                   onClick={closeCreate}
                 >
-                  Cancel
+                  {t("admin.common.cancel")}
                 </button>
                 <button
                   type="submit"
                   className="mq-admin-btn mq-admin-btn-approve"
                   disabled={createStaff.isPending}
                 >
-                  {createStaff.isPending ? "Creating…" : "Create"}
+                  {createStaff.isPending
+                    ? t("admin.staffPage.creating")
+                    : t("admin.common.create")}
                 </button>
               </div>
             </form>
@@ -432,7 +539,7 @@ function StaffInner() {
           <button
             type="button"
             className="mq-admin-modal-backdrop"
-            aria-label="Close dialog"
+            aria-label={t("admin.common.close")}
             onClick={closeAssign}
           />
           <div
@@ -443,13 +550,15 @@ function StaffInner() {
           >
             <div className="mq-admin-modal-head">
               <h2 id="assign-roles-title" className="mq-admin-modal-title">
-                {isBuyerCandidate(assignOpen) ? "Assign staff role" : "Edit staff roles"} —{" "}
-                {assignOpen.email}
+                {isBuyerCandidate(assignOpen)
+                  ? t("admin.staffPage.assignTitle")
+                  : t("admin.staffPage.editTitle")}{" "}
+                — {assignOpen.email}
               </h2>
               <button
                 type="button"
                 className="mq-admin-icon-btn"
-                aria-label="Close"
+                aria-label={t("admin.common.close")}
                 onClick={closeAssign}
               >
                 <X size={16} />
@@ -457,7 +566,9 @@ function StaffInner() {
             </div>
             <form className="mq-admin-modal-body space-y-3" onSubmit={(e) => void onAssign(e)}>
               <div>
-                <label className="block text-xs font-medium text-mq-text-muted mb-1.5">Role</label>
+                <label className="block text-xs font-medium text-mq-text-muted mb-1.5">
+                  {t("admin.staffPage.role")}
+                </label>
                 <select
                   className="mq-input"
                   value={assignRole}
@@ -466,14 +577,15 @@ function StaffInner() {
                 >
                   {STAFF_ROLES.map((r) => (
                     <option key={r} value={r}>
-                      {r}
+                      {translateStatus(t, "role", r)}
                     </option>
                   ))}
                 </select>
               </div>
               <div>
                 <label className="block text-xs font-medium text-mq-text-muted mb-1.5">
-                  Shop {isBuyerCandidate(assignOpen) ? "(required)" : ""}
+                  {t("admin.common.shop")}
+                  {isBuyerCandidate(assignOpen) ? ` (${t("admin.common.required")})` : ""}
                 </label>
                 <select
                   className="mq-input"
@@ -481,7 +593,7 @@ function StaffInner() {
                   onChange={(e) => setAssignShopId(e.target.value)}
                   required
                 >
-                  <option value="">Select shop</option>
+                  <option value="">{t("admin.staffPage.selectShop")}</option>
                   {shops.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.name}
@@ -495,14 +607,14 @@ function StaffInner() {
                   className="mq-admin-btn mq-admin-btn-secondary"
                   onClick={closeAssign}
                 >
-                  Cancel
+                  {t("admin.common.cancel")}
                 </button>
                 <button
                   type="submit"
                   className="mq-admin-btn mq-admin-btn-approve"
                   disabled={updateRoles.isPending}
                 >
-                  {updateRoles.isPending ? "Saving…" : "Save"}
+                  {updateRoles.isPending ? t("admin.common.saving") : t("admin.common.save")}
                 </button>
               </div>
             </form>
@@ -515,7 +627,7 @@ function StaffInner() {
           <button
             type="button"
             className="mq-admin-modal-backdrop"
-            aria-label="Close dialog"
+            aria-label={t("admin.common.close")}
             onClick={() => setCreatedCred(null)}
           />
           <div
@@ -526,12 +638,12 @@ function StaffInner() {
           >
             <div className="mq-admin-modal-head">
               <h2 id="temp-pass-title" className="mq-admin-modal-title">
-                Temporary password
+                {t("admin.staffPage.tempPasswordTitle")}
               </h2>
               <button
                 type="button"
                 className="mq-admin-icon-btn"
-                aria-label="Close"
+                aria-label={t("admin.common.close")}
                 onClick={() => setCreatedCred(null)}
               >
                 <X size={16} />
@@ -539,8 +651,7 @@ function StaffInner() {
             </div>
             <div className="mq-admin-modal-body space-y-3">
               <p className="text-sm text-mq-text-secondary">
-                Copy now — it will not be shown again. Account:{" "}
-                <strong>{createdCred.email}</strong>
+                {t("admin.staffPage.tempPasswordHint", { email: createdCred.email })}
               </p>
               <div className="flex gap-2 items-center">
                 <code className="mq-input flex-1 font-mono text-sm select-all">
@@ -552,7 +663,7 @@ function StaffInner() {
                   onClick={() => void copyPassword()}
                 >
                   <Copy size={14} />
-                  Copy
+                  {t("admin.staffPage.copy")}
                 </button>
               </div>
               <div className="mq-admin-modal-actions">
@@ -561,7 +672,7 @@ function StaffInner() {
                   className="mq-admin-btn mq-admin-btn-approve"
                   onClick={() => setCreatedCred(null)}
                 >
-                  Done
+                  {t("admin.common.confirm")}
                 </button>
               </div>
             </div>

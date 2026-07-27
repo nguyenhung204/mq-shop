@@ -27,6 +27,7 @@ import {
   AdminIconButton,
 } from "@/components/admin/AdminIconButton";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 import { categoryLabel } from "@/lib/api/categoryLabel";
@@ -100,20 +101,6 @@ function optionsEqual(
   return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 }
 
-function statusLabel(status: ApiProduct["status"]): string {
-  switch (status) {
-    case "PENDING":
-      return "Pending review";
-    case "ACTIVE":
-      return "Active";
-    case "REJECTED":
-      return "Rejected";
-    case "HIDDEN":
-      return "Hidden";
-    default:
-      return status;
-  }
-}
 
 function statusBadgeClass(status: ApiProduct["status"]): string {
   switch (status) {
@@ -159,7 +146,7 @@ function draftFromVariants(variants: ProductVariant[]): VariantDraft[] {
 }
 
 function ProductsInner() {
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
   const { data, isLoading: productsLoading, isError, error } = useSellerProducts(
@@ -517,35 +504,37 @@ function ProductsInner() {
     <div className="space-y-6">
       {isError && (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : "Failed to load"}
+          {error instanceof Error ? error.message : t("admin.common.failed")}
         </div>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-3 items-center">
-          <label className="text-sm text-mq-text-muted">Status</label>
-          <select
-            className="mq-input max-w-xs"
-            value={status}
-            onChange={(e) => {
-              setStatus(e.target.value);
-              setPage(1);
-            }}
-          >
-            {statusOptions.map((s) => (
-              <option key={s || "all"} value={s}>
-                {s === "PENDING" ? "Pending review" : s || "All"}
-              </option>
-            ))}
-          </select>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="flex flex-wrap gap-3 items-end">
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-mq-text-muted text-xs">{t("seller.productsPage.status")}</span>
+            <select
+              className="mq-input max-w-xs"
+              value={status}
+              onChange={(e) => {
+                setStatus(e.target.value);
+                setPage(1);
+              }}
+            >
+              {statusOptions.map((s) => (
+                <option key={s || "all"} value={s}>
+                  {s === "" ? t("seller.common.all") : translateStatus(t, "product", s)}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
         {!showForm ? (
           <button type="button" className="mq-btn mq-btn-primary text-sm" onClick={openCreate}>
-            Add product
+            {t("seller.productsPage.create")}
           </button>
         ) : (
           <button type="button" className="mq-btn mq-btn-outline text-sm" onClick={resetForm}>
-            Back to list
+            {t("seller.common.cancel")}
           </button>
         )}
       </div>
@@ -553,13 +542,18 @@ function ProductsInner() {
       {showForm ? (
         <form className="mq-card p-6 grid sm:grid-cols-2 gap-3" onSubmit={(e) => void submit(e)}>
           <h2 className="sm:col-span-2 text-lg">
-            {editing ? `Edit product (${statusLabel(editing.status)})` : "Create product"}
+            {editing
+              ? `${t("seller.productsPage.edit")} (${translateStatus(t, "product", editing.status)})`
+              : t("seller.productsPage.create")}
           </h2>
           {editing?.status === "REJECTED" ? (
             <div className="sm:col-span-2 mq-alert mq-alert-error space-y-1">
-              <p className="font-medium">Rejected — edit to resubmit for review</p>
+              <p className="font-medium">{t("seller.productsPage.rejectedHint")}</p>
               {reasonText(editing.rejectionReason) ? (
-                <p className="text-sm">Reason: {reasonText(editing.rejectionReason)}</p>
+                <p className="text-sm">
+                  {t("admin.common.reasonPrefix")}
+                  {reasonText(editing.rejectionReason)}
+                </p>
               ) : null}
               <p className="text-xs opacity-90">
                 Changing title, description, category, gallery, sell price, or options sends the
@@ -586,7 +580,7 @@ function ProductsInner() {
           </select>
           <input
             className="mq-input"
-            placeholder="Title"
+            placeholder={t("seller.productsPage.title")}
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
             required
@@ -594,35 +588,35 @@ function ProductsInner() {
           />
           <textarea
             className="mq-textarea sm:col-span-2"
-            placeholder="Description"
+            placeholder={t("seller.productsPage.description")}
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
             required
           />
           <input
             className="mq-input sm:col-span-2"
-            placeholder="Attributes (optional) — material=cotton, brand=MQ"
+            placeholder={t("seller.productsPage.options")}
             value={form.attributesText}
             onChange={(e) => setForm({ ...form, attributesText: e.target.value })}
           />
 
           <div className="sm:col-span-2 space-y-3 border border-mq-border rounded-[var(--mq-radius)] p-4">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h3 className="text-sm font-semibold">Variants (SKU + sell price)</h3>
+              <h3 className="text-sm font-semibold">{t("seller.productsPage.variants")}</h3>
               <button
                 type="button"
                 className="mq-btn mq-btn-outline text-xs inline-flex items-center gap-1"
                 onClick={addVariantRow}
               >
                 <Plus className="w-3.5 h-3.5" />
-                Add SKU
+                {t("seller.productsPage.addVariant")}
               </button>
             </div>
             <p className="text-xs text-mq-text-muted">
               Sell price lives on each SKU. Optional options:{" "}
               <code>size=M, color=black</code>. Stock starts at 0 — adjust via{" "}
               <Link href="/seller/inventory" className="underline">
-                Inventory slips
+                {t("seller.ordersPage.inventorySlips")}
               </Link>
               .
             </p>
@@ -635,7 +629,7 @@ function ProductsInner() {
                   <div className="grid sm:grid-cols-[1fr_1fr_auto] gap-2 items-center">
                     <input
                       className="mq-input"
-                      placeholder="SKU"
+                      placeholder={t("seller.productsPage.sku")}
                       value={v.sku}
                       maxLength={64}
                       disabled={!!v.id}
@@ -647,7 +641,7 @@ function ProductsInner() {
                       type="number"
                       step="0.01"
                       min="0"
-                      placeholder="Sell price"
+                      placeholder={t("seller.productsPage.sellPrice")}
                       value={v.sellingPrice}
                       onChange={(e) =>
                         updateVariantDraft(v.key, { sellingPrice: e.target.value })
@@ -656,13 +650,13 @@ function ProductsInner() {
                     />
                     <div className="flex items-center gap-2 justify-end">
                       <span className="text-xs text-mq-text-muted whitespace-nowrap">
-                        Stock: {v.id ? (v.availableStock ?? 0) : 0}
+                        {t("seller.productsPage.stock")}: {v.id ? (v.availableStock ?? 0) : 0}
                       </span>
                       {!v.id && variants.length > 1 ? (
                         <button
                           type="button"
                           className="mq-icon-btn text-mq-text-muted"
-                          aria-label="Remove SKU row"
+                          aria-label={t("admin.common.delete")}
                           onClick={() => removeVariantRow(v.key)}
                         >
                           <Trash2 className="w-4 h-4" />
@@ -672,7 +666,7 @@ function ProductsInner() {
                   </div>
                   <input
                     className="mq-input w-full"
-                    placeholder="Options (optional) — size=M, color=black"
+                    placeholder={t("seller.productsPage.options")}
                     value={v.optionsText}
                     onChange={(e) =>
                       updateVariantDraft(v.key, { optionsText: e.target.value })
@@ -733,7 +727,7 @@ function ProductsInner() {
 
           <div className="sm:col-span-2 space-y-3 border border-mq-border rounded-[var(--mq-radius)] p-4">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h3 className="text-sm font-semibold">Gallery images</h3>
+              <h3 className="text-sm font-semibold">{t("seller.productsPage.gallery")}</h3>
               <p className="text-xs text-mq-text-muted">
                 {existingUrls.length + newFiles.length}/{MAX_IMAGES} · ≤5MB · JPEG/PNG/WebP/GIF
               </p>
@@ -762,7 +756,7 @@ function ProductsInner() {
                       className="absolute top-1 right-1 text-[10px] px-1.5 py-0.5 bg-black/70 text-white rounded"
                       onClick={() => removeExisting(url)}
                     >
-                      Remove
+                      {t("admin.common.delete")}
                     </button>
                   </li>
                 ))}
@@ -780,7 +774,7 @@ function ProductsInner() {
                       className="mt-2 underline"
                       onClick={() => removeNewFile(i)}
                     >
-                      Remove
+                      {t("admin.common.delete")}
                     </button>
                   </li>
                 ))}
@@ -795,17 +789,17 @@ function ProductsInner() {
           <div className="sm:col-span-2 flex flex-wrap gap-2">
             <button className="mq-btn mq-btn-primary" disabled={saving}>
               {uploadImages.isPending
-                ? "Uploading images…"
+                ? t("admin.marketing.uploading")
                 : editing
                   ? saving
-                    ? "Saving…"
-                    : "Save changes"
+                    ? t("seller.common.saving")
+                    : t("seller.common.save")
                   : createProduct.isPending
-                    ? "Creating…"
-                    : "Create product"}
+                    ? t("admin.common.working")
+                    : t("seller.productsPage.create")}
             </button>
             <button type="button" className="mq-btn mq-btn-outline" onClick={resetForm}>
-              Cancel
+              {t("seller.common.cancel")}
             </button>
           </div>
         </form>
@@ -817,9 +811,9 @@ function ProductsInner() {
             <TableSkeleton rows={6} cols={5} />
           ) : products.length === 0 ? (
             <div className="mq-card p-8 text-center space-y-3">
-              <p className="text-sm text-mq-text-secondary">No products yet.</p>
+              <p className="text-sm text-mq-text-secondary">{t("seller.productsPage.empty")}</p>
               <button type="button" className="mq-btn mq-btn-primary text-sm" onClick={openCreate}>
-                Add product
+                {t("seller.productsPage.create")}
               </button>
             </div>
           ) : (
@@ -827,11 +821,11 @@ function ProductsInner() {
               <table className="w-full text-sm">
                 <thead className="bg-mq-surface-subtle text-left">
                   <tr>
-                    <th className="p-3">Title</th>
-                    <th className="p-3">Price</th>
-                    <th className="p-3">Stock</th>
-                    <th className="p-3">SKUs</th>
-                    <th className="p-3">Status</th>
+                    <th className="p-3">{t("seller.productsPage.title")}</th>
+                    <th className="p-3">{t("seller.productsPage.price")}</th>
+                    <th className="p-3">{t("seller.productsPage.stock")}</th>
+                    <th className="p-3">{t("seller.productsPage.sku")}</th>
+                    <th className="p-3">{t("seller.productsPage.status")}</th>
                     <th className="p-3" />
                   </tr>
                 </thead>
@@ -870,7 +864,7 @@ function ProductsInner() {
                         </td>
                         <td className="p-3">
                           <span className={statusBadgeClass(p.status)}>
-                            {statusLabel(p.status)}
+                            {translateStatus(t, "product", p.status)}
                           </span>
                           {p.status === "REJECTED" ? (
                             <button
@@ -878,21 +872,21 @@ function ProductsInner() {
                               className="block mt-1 text-xs underline text-mq-accent-pink"
                               onClick={() => startEdit(p)}
                             >
-                              Fix & resubmit
+                              {t("seller.common.edit")}
                             </button>
                           ) : null}
                         </td>
                         <td className="p-3">
                           <AdminActions>
                             <AdminIconButton
-                              label="Edit"
+                              label={t("seller.common.edit")}
                               icon={Pencil}
                               tone="secondary"
                               onClick={() => startEdit(p)}
                             />
                             {p.status === "HIDDEN" ? (
                               <AdminIconButton
-                                label="Unhide"
+                                label={t("seller.common.unhide")}
                                 icon={Eye}
                                 tone="approve"
                                 disabled={unhideProduct.isPending}
@@ -900,7 +894,7 @@ function ProductsInner() {
                               />
                             ) : (
                               <AdminIconButton
-                                label="Hide"
+                                label={t("seller.common.hide")}
                                 icon={EyeOff}
                                 tone="warn"
                                 disabled={hideProduct.isPending}

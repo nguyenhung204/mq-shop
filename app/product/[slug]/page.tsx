@@ -26,7 +26,8 @@ export default function ProductPage() {
         if (cancelled) return;
         setProduct(mapPublicProductDetail(detail));
         const listing = await catalogApi.listing({
-          categoryId: detail.categoryId || undefined,
+          shopId: detail.shopId || undefined,
+          categoryId: detail.shopId ? undefined : detail.categoryId || undefined,
           pageSize: 12,
         });
         if (cancelled) return;

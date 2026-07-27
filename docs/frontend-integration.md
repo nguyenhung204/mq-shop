@@ -5,7 +5,11 @@ Tài liệu API cho FE implement UI trên các module đã có trên BE.
 - **Base URL:** `/api/v1`
 - **Swagger:** `/docs`
 - **Auth:** cookie `httpOnly` (ưu tiên) hoặc `Authorization: Bearer <access_token>`
-- **Branch stack:** `001-user-account` → `002-shop-onboarding` → `003-product-listing` → `004-warehouse-inventory`
+- **Branch stack:** `001` → `002` → `003` → `004` → `005-order-flow` → `006-marketing` (`feat/009`) → `007-payment-finance` (`feat/010`) → **`011-mlm-wallet`** → **`012-commission-calculation`**
+- **Module FE guides (chi tiết):**
+  - Wallet / MLM network: `specs/009-mlm-wallet/contracts/fe-guide-mlm-wallet.md`
+  - Commission: `specs/010-commission-calculation/contracts/fe-guide-commission.md`
+  - Finance: `specs/007-payment-finance/contracts/fe-guide-payment-finance.md`
 
 ---
 
@@ -64,11 +68,13 @@ FE nên map UI theo `data.code`, không parse `message` cứng.
 
 | Role | UI chính |
 |------|----------|
-| `BUYER` | Tài khoản, apply mở shop |
-| `SELLER` | Seller center: sản phẩm + kho (shop `APPROVED`, không suspended) |
-| `ADMIN` / `SUPER_ADMIN` | Admin: users, shops, products, categories, inventory slips |
+| `BUYER` | Tài khoản, apply mở shop, **ví / P2P / withdraw / MLM tree** |
+| `SELLER` | Seller center: sản phẩm + kho + KM + media download + settlements/TX (+ ví MLM như buyer) |
+| `ADMIN` / `SUPER_ADMIN` | Admin: users, shops, products, categories, inventory, **promotions / banners / media**, **seller payouts**, **wallet payouts approve** |
+| `SUPER_ADMIN` | Submit **finance config** (`CONFIG_FEE` ALL); **CONFIG_MLM** set rank |
+| `ACCOUNTANT` | Approve finance config + create/approve **seller payouts** + reports + **approve/process wallet withdraw** |
 | `WAREHOUSE` | Staff kho (permission inventory; không có shop owner) |
-| `ACCOUNTANT` | Xem list users (theo matrix) |
+| `CS` | CS + calc landing cost / xem media |
 
 `roles` là **mảng** trên profile (user có thể vừa `BUYER` vừa `SELLER`).
 
@@ -821,7 +827,6 @@ PENDING ──reject───► REJECTED  (stock không đổi)
 |----|--------|------|------------|
 | Inbox slips | `GET` | `/admin/inventory/slips?status&page&pageSize` | `VIEW_INVENTORY` |
 | Chi tiết | `GET` | `/admin/inventory/slips/:slipId` | `VIEW_INVENTORY` |
-| Stock ledger | `GET` | `/admin/inventory/ledger?shopId&sku&from&to&page&pageSize` | `VIEW_INVENTORY` (`shopId` bắt buộc) |
 | Approve | `POST` | `/admin/inventory/slips/:slipId/approve` | `EDIT_INVENTORY` |
 | Reject | `POST` | `/admin/inventory/slips/:slipId/reject` | `EDIT_INVENTORY` |
 
@@ -833,6 +838,17 @@ Admin **sàn** (không phải seller) tạo/gán NV kho / CSKH / kế toán gắ
 |----|--------|------|------------|
 | Tạo NV | `POST` | `/admin/staff` | `MANAGE_STAFF` body `{ email, fullName?, role, shopId }` → `{ user, temporaryPassword }` |
 | List NV | `GET` | `/admin/staff?shopId&role&page&pageSize` | `MANAGE_STAFF` |
+
+`GET /admin/staff` trả về pool gán quyền:
+- **BUYER** (không có `SELLER`) — ứng viên chưa/không phải chủ shop
+- **WAREHOUSE** / **CS** / **ACCOUNTANT** — staff đã gán
+- **Không** lấy user có role `SELLER` (chủ shop)
+
+`role` filter: `BUYER` | `WAREHOUSE` | `CS` | `ACCOUNTANT`.  
+`shopId` filter: staff thuộc shop đó **hoặc** BUYER chưa có `shopId` (ứng viên).
+
+Gán role cho BUYER có sẵn: `PATCH /admin/staff/:userId/roles` `{ roles: ["WAREHOUSE"], shopId }` (không cần `POST` tạo user mới).
+
 | Gán/đổi role | `PATCH` | `/admin/staff/:userId/roles` | `ASSIGN_ROLES` `{ roles, shopId? }` |
 | Lock | `POST` | `/admin/staff/:userId/lock` | `MANAGE_STAFF` |
 | Unlock | `POST` | `/admin/staff/:userId/unlock` | `MANAGE_STAFF` |
@@ -858,7 +874,237 @@ NV kho login → `/inventory/*` resolve shop qua `user.shopId` (không cần là
 
 ---
 
-## 6. Checklist màn hình FE theo module
+## 6. Module Marketing Promotions (`006` / branch `feat/009`)
+
+> Chi tiết đầy đủ: [`specs/006-marketing-promotions/contracts/fe-guide-marketing-promotions.md`](../specs/006-marketing-promotions/contracts/fe-guide-marketing-promotions.md)
+
+### 6.1 Quyết định MVP
+
+| Topic | Decision |
+|-------|----------|
+| Types | `PERCENT` \| `FIXED` \| `FREE_SHIP` \| `VOUCHER` |
+| Admin scope | `PLATFORM` hoặc `TARGETED` (≥1 SKU/category) |
+| Seller | Luôn `TARGETED`; create → `PENDING` |
+| Checkout apply KM | **Chưa** |
+| Media | Admin upload; Seller download ZIP (`VIEW_MKT_MAT`) |
+
+### 6.2 Seller promotions (`MANAGE_PROMO`)
+
+| Method | Path | Note |
+|--------|------|------|
+| `POST` | `/promotions` | → `PENDING`; SKU thuộc shop |
+| `GET` | `/promotions?status=&page=` | Shop mình |
+| `GET` | `/promotions/:id` | |
+| `PATCH` | `/promotions/:id` | Chỉ khi `PENDING` |
+
+`VOUCHER` cần `code` + `discountValue` (số tiền). `FREE_SHIP` không cần `discountValue`.
+
+### 6.3 Admin promotions
+
+| Method | Path | Permission |
+|--------|------|------------|
+| `POST` | `/admin/promotions` | `MANAGE_PROMO` ALL → `ACTIVE` |
+| `GET` | `/admin/promotions?status=PENDING` | `APPROVE_PROMO` |
+| `POST` | `/admin/promotions/:id/approve` | `APPROVE_PROMO` |
+| `POST` | `/admin/promotions/:id/reject` | body `{ "reason": "…" }` |
+
+### 6.4 Banners
+
+| Method | Path | Auth |
+|--------|------|------|
+| `GET` | `/banners?lang=VI\|EN\|TW` | Public (mặc định `VI`; response gồm banner locale + `ALL`) |
+| `POST/PATCH/DELETE` | `/admin/banners` | `MANAGE_CONTENT`; multipart field `image` |
+
+### 6.5 Media library
+
+| Method | Path | Permission |
+|--------|------|------------|
+| `GET` | `/marketing/folders`, `…/:id`, `…/:id/download` | `VIEW_MKT_MAT` (ZIP = blob) |
+| `POST` | `/admin/marketing/folders` | `MANAGE_CONTENT` |
+| `POST` | `/admin/marketing/folders/:id/assets` | multipart field `file` ≤ 20MB |
+
+### 6.6 Error codes marketing
+
+`PROMO_INVALID_SKU`, `PROMO_INVALID_SCOPE`, `PROMO_INVALID_WINDOW`, `PROMO_CODE_REQUIRED`, `PROMO_CODE_TAKEN`, `PROMO_DISCOUNT_REQUIRED`, `PROMO_NOT_FOUND`, `PROMO_NOT_PENDING`, `BANNER_NOT_FOUND`, `INVALID_BANNER_IMAGE`, `BANNER_IMAGE_TOO_LARGE`, `MEDIA_FOLDER_NOT_FOUND`, `MEDIA_FOLDER_EMPTY`, `MEDIA_ASSET_*`.
+
+### 6.7 Seed marketing (sau `pnpm seed:demo`)
+
+| Item | Demo |
+|------|------|
+| Voucher | `SEED10OFF` (ACTIVE, chưa apply checkout) |
+| Banners | `GET /banners?lang=VI\|EN\|TW` |
+| Media | Folder `[SEED] Brand Kit 2026` |
+| Promo queue | Seller PENDING audio 15% |
+
+---
+
+## 7. Module Payment & Finance (`007` / branch `feat/010`)
+
+> Chi tiết đầy đủ: [`specs/007-payment-finance/contracts/fe-guide-payment-finance.md`](../specs/007-payment-finance/contracts/fe-guide-payment-finance.md)
+
+### 7.1 Quyết định MVP
+
+| Topic | Decision |
+|-------|----------|
+| Gateway payout | **Stub** — approve → `COMPLETED` + `gatewayRef` |
+| Config dual-control | Super Admin submit → Accountant approve → `ACTIVE` |
+| Secrets | FE gửi plain `apiKey`/`secretKey`; response chỉ `hasApiKey`/`hasSecretKey` |
+| Landing cost | Stateless; FE tự truyền discount (không apply KM DB) |
+| Wallet withdraw | Module **009** — không dùng `seller_payouts` |
+| Commission credit | Module **010** — chỉ lưu `%` trên config |
+
+### 7.2 Roles nhanh
+
+| UI | Role | Permission |
+|----|------|------------|
+| Submit config | `SUPER_ADMIN` | `CONFIG_FEE` ALL |
+| Approve/reject config | `ACCOUNTANT` | `CONFIG_FEE` APPROVE |
+| Create/list payouts | Accountant (+ Admin) | `PAYOUT_SELLER` |
+| Approve/reject payout | Accountant / Admin | `PAYOUT_SELLER` APPROVE+ |
+| Landing cost | Seller / Acc / Admin / CS | `CALC_LAND_COST` |
+| Transactions / export | Seller shop · Acc/Admin all | `VIEW_TRANSACT` / `EXPORT_REPORT` |
+
+> **Admin không có `CONFIG_FEE`** — đừng gắn màn config vào role Admin.
+
+### 7.3 Finance config
+
+| Method | Path | Note |
+|--------|------|------|
+| `POST` | `/admin/finance/configs` | Body: `platformFeePercent`, `commissionPercent`, optional gateway keys → `PENDING_APPROVAL` |
+| `GET` | `/admin/finance/configs?status=` | Paginated |
+| `GET` | `/admin/finance/configs/active` | `data: null` nếu chưa ACTIVE |
+| `POST` | `/admin/finance/configs/:id/approve` | → `ACTIVE` (deactivate ACTIVE cũ) |
+| `POST` | `/admin/finance/configs/:id/reject` | `{ "reason": "…" }` |
+
+### 7.3b Shop picker (Accountant)
+
+`GET /admin/shops?status=APPROVED` — Accountant **được đọc** (payout picker qua `PAYOUT_SELLER` ALL). Approve/reject shop vẫn chỉ Admin (`APPROVE_SELLER`).
+
+### 7.4 Seller payouts
+
+| Method | Path | Note |
+|--------|------|------|
+| `POST` | `/admin/payouts` | `{ shopId, periodStart, periodEnd }` — gom `PENDING_RECONCILE` |
+| `GET` | `/admin/payouts?shopId=&status=` | |
+| `GET` | `/admin/payouts/:id` | Kèm `items[]` |
+| `POST` | `/admin/payouts/:id/approve` | Stub → `COMPLETED` · settlements `PAID_OUT` |
+| `POST` | `/admin/payouts/:id/reject` | `{ "reason" }` · settlements về `PENDING_RECONCILE` |
+
+Net: `gross − platformFee − shipping` (fee % từ config ACTIVE).
+
+### 7.5 Settlements (005, dùng khi tạo payout)
+
+| Method | Path | Ai |
+|--------|------|----|
+| `GET` | `/settlements?status=` | Seller |
+| `GET` | `/admin/settlements?status=&shopId=` | Acc / Admin |
+
+Status: `PENDING_RECONCILE` → `INCLUDED_IN_PAYOUT` → `PAID_OUT`.
+
+### 7.6 Landing cost
+
+`POST /finance/landing-cost`
+
+```json
+{
+  "items": [{ "unitPrice": "10.00", "quantity": 2, "discount": "1.00" }],
+  "shippingFee": "5.00",
+  "vatAmount": "1.50",
+  "packagingFee": "0.50",
+  "promoDiscount": "0"
+}
+```
+
+Response: `items[]` + `breakdown` + `finalAmount`.
+
+### 7.7 Transactions & export
+
+| Method | Path | Note |
+|--------|------|------|
+| `GET` | `/finance/transactions?type=ORDER\|PAYOUT\|ALL&startDate=&endDate=&shopId=` | Role isolation |
+| `POST` | `/finance/reports/export` | Body date range + `format: CSV\|XLSX` → `{ fileUrl, rowCount }` |
+
+Row: `{ type, id, shopId, shopName, shopOwnerName, buyerId, buyerName, amount, currency, status, occurredAt, ref }`.
+
+### 7.8 Error codes finance
+
+`FINANCE_CONFIG_NOT_FOUND`, `FINANCE_CONFIG_NOT_PENDING`, `PAYOUT_NOT_FOUND`, `PAYOUT_NOT_PENDING`, `PAYOUT_NO_SETTLEMENTS`, `SHOP_NOT_FOUND`, `FORBIDDEN`.
+
+### 7.9 Seed finance (sau `pnpm seed:demo`)
+
+| Item | Demo |
+|------|------|
+| Config | ACTIVE 5%/2% · PENDING_APPROVAL · REJECTED |
+| Payout PENDING | `ORD-SEED-PAYOUT-PEND` |
+| Payout COMPLETED | `ORD-SEED-PAYOUT-DONE` (`STUB-SEED-PAYOUT-001`) |
+| Tạo payout mới | Settlement `ORD-SEED-DELIVERED` còn `PENDING_RECONCILE` |
+| Accounts | `superadmin@` / `accountant@` / `Seed123456!` |
+
+---
+
+## 8. Module MLM Wallet + Commission (`009`/`010` · branches `feat/011` → `feat/012`)
+
+> Chi tiết:
+> - [`specs/009-mlm-wallet/contracts/fe-guide-mlm-wallet.md`](../specs/009-mlm-wallet/contracts/fe-guide-mlm-wallet.md)
+> - [`specs/010-commission-calculation/contracts/fe-guide-commission.md`](../specs/010-commission-calculation/contracts/fe-guide-commission.md)
+
+### 8.1 Quyết định MVP
+
+| Topic | Decision |
+|-------|----------|
+| P2P lookup | email / `userId` (không phone) |
+| Tree | Closure; chỉ downline (BR_02); Acc/Admin `?userId=` |
+| Withdraw | `payout_requests` ≠ seller `/admin/payouts` |
+| Referral | Chỉ enrollment SKU khi `DELIVERED` → F1 |
+| Team / Loyalty / Global | Cron tháng; loyalty ≥ 2000 USD × 12 → 28000 |
+| Rank | Admin set tay `CONFIG_MLM` |
+
+### 8.2 Profile fields mới
+
+`referrerId`, `referralCode`, `mlmRank` (1–10), `referralRateOverride`, `hasWalletPin`.
+
+### 8.3 Endpoints nhanh — Wallet / MLM
+
+| Method | Path | Permission |
+|--------|------|------------|
+| GET | `/mlm/referral-link` | `GET_REF_LINK` |
+| GET | `/mlm/network-tree` | `VIEW_MLM_TREE` |
+| POST | `/wallet/pin/request-otp` · `/wallet/pin/confirm` | `SET_WALLET_PIN` |
+| GET | `/wallet` · `/wallet/transactions` | `VIEW_WALLET` |
+| POST | `/wallet/transfer/preview` · `/wallet/transfer` | `TRANSFER_P2P` · transfer **bắt buộc** `Idempotency-Key` · `userId`=downline ACTIVE; `email`=mọi ACTIVE |
+| GET | `/wallet/transfer/recipients?q=&maxDepth=&limit=` | `TRANSFER_P2P` · picker downline ACTIVE (không search toàn sàn) |
+| POST | `/wallet/withdraw` | `CREATE_PAYOUT` · **bắt buộc** `Idempotency-Key` |
+| GET | `/wallet/withdrawals` · `/wallet/withdrawals/:id` | `VIEW_WALLET` · list/detail của chính user |
+| GET/POST | `/admin/wallet/payouts` (+ `/:id`, approve/reject/process) | `APPROVE_PAYOUT` / `PROCESS_PAYOUT` · **process bắt buộc** `Idempotency-Key` |
+| POST | `/admin/wallet/adjust` | `ADJUST_POINTS` · `{ userId, amount, note? }` |
+| PATCH | `/admin/mlm/users/:id/rank` | `CONFIG_MLM` |
+| PATCH | `/admin/mlm/users/:id/referrer` | `CONFIG_MLM` · `{ referrerId \| null }` |
+| PATCH | `/admin/mlm/users/:id/referral-rate` | `CONFIG_MLM` · `{ ratePercent: 0..10 \| null }` |
+
+Register: optional `referrerCode` trên `POST /auth/register`.
+
+**Idempotency (transfer / withdraw / process):** UUID mới khi Confirm với body mới (hoặc payout id mới); retry mạng giữ cùng key + cùng body; thiếu key → `IDEMPOTENCY_KEY_REQUIRED`.
+
+### 8.4 Endpoints nhanh — Commission
+
+| Method | Path | Permission |
+|--------|------|------------|
+| GET | `/mlm/commissions?type=` | `VIEW_MLM_COMSN` |
+| GET | `/admin/mlm/ranks` | `CONFIG_MLM` |
+| PATCH | `/admin/mlm/users/:userId/rank` | `CONFIG_MLM` body `{ rank }` |
+
+### 8.5 Seed MLM
+
+| Account | Password / PIN | Note |
+|---------|----------------|------|
+| `mlm-root@example.com` | `Seed123456!` / PIN `123456` | Rank 5 · code `MLMROOT1` · wallet 500 |
+| `mlm-f1a` / `f1b` / `f2` | cùng password/PIN | Cây demo |
+| `buyer@example.com` | + PIN `123456` | Dưới root · wallet 100 |
+| SKU enrollment | `PKG-GOLD` | Referral smoke |
+
+---
+
+## 9. Checklist màn hình FE theo module
 
 ### Buyer / Guest
 
@@ -867,6 +1113,7 @@ NV kho login → `/inventory/*` resolve shop qua `user.shopId` (không cần là
 - [ ] Apply shop + `GET /shops/me`
 - [ ] Listing `GET /products/listing` (minPrice/maxPrice + OOS watermark)
 - [ ] **PDP** `GET /products/listing/:id` — chọn variant → giá/tồn/ảnh
+- [ ] Homepage banners `GET /banners?lang=`
 - [ ] SSE notifications (optional)
 
 ### Seller (shop APPROVED)
@@ -884,8 +1131,19 @@ NV kho login → `/inventory/*` resolve shop qua `user.shopId` (không cần là
 - [ ] REJECTED + rejectionReason + resubmit (đổi sensitive / upload ảnh / đổi variant.sellingPrice)
 - [ ] Inventory: warehouses, slips create/approve, ledger
 - [ ] Không sửa stock qua product PATCH
+- [ ] **Marketing:** form KM 4 types + list status; media ZIP download
+- [ ] **Finance:** `GET /settlements`; `GET /finance/transactions`; landing-cost tool
+- [ ] **Wallet / MLM:** referral link, network tree, PIN, balance, P2P, withdraw
+- [ ] **Commissions:** `GET /mlm/commissions` (sau enrollment DELIVERED)
 
-### Admin
+### Accountant
+
+- [ ] Finance config inbox approve/reject
+- [ ] Create seller payout từ settlements + approve/reject
+- [ ] Transactions / export reports
+- [ ] **Wallet payouts** `/admin/wallet/payouts` approve/reject/process
+
+### Admin / Super Admin
 
 - [ ] Users lock/unlock/delete
 - [ ] **Staff shop:** `POST/GET /admin/staff`, `PATCH …/roles`, lock/unlock/delete (`MANAGE_STAFF` / `ASSIGN_ROLES`)
@@ -894,10 +1152,15 @@ NV kho login → `/inventory/*` resolve shop qua `user.shopId` (không cần là
 - [ ] Categories create/update
 - [ ] Inventory slips inbox approve/reject
 - [ ] Audit logs (`title` / `outcomeLabel`)
+- [ ] **Marketing:** promo queue approve/reject; banner CRUD; media folders upload
+- [ ] **Seller marketing:** tạo KM (4 types) + media download ZIP
+- [ ] **Finance:** Super Admin submit config; Admin approve payouts (không có màn CONFIG_FEE)
+- [ ] Admin settlements + payout list
+- [ ] **MLM:** SA set rank `PATCH /admin/mlm/users/:id/rank`; ranks table; network `?userId=`
 
 ---
 
-## 7. Gợi ý client setup
+## 10. Gợi ý client setup
 
 ```ts
 const api = axios.create({
@@ -929,23 +1192,31 @@ Multipart: `FormData`, **không** set `Content-Type` thủ công.
 | `POST /shops/me/banner` | `banner` | 5MB |
 | `POST /products/:id/images` | `images` (1–10) | 5MB / file |
 | `POST /products/:id/variants/:vid/images` | `images` (1–10) | 5MB / file |
+| `POST/PATCH /admin/banners` | `image` | 5MB |
+| `POST /admin/marketing/folders/:id/assets` | `file` | 20MB |
 
 ### Seed demo (`pnpm seed:demo`)
 
 | Account | Password | Dùng để |
 |---------|----------|---------|
-| `seller@example.com` | `Seed123456!` | Catalog + inventory |
+| `seller@example.com` | `Seed123456!` | Catalog + inventory + KM + settlements |
 | `warehouse@example.com` | `Seed123456!` | Inventory staff (`shopId` = Seed Electronics) |
-| `admin@example.com` | `Admin123!` | Review products + slips + **assign staff** |
+| `accountant@example.com` | `Seed123456!` | Finance config approve + payouts + reports |
+| `superadmin@example.com` | `Seed123456!` | Submit finance config |
+| `admin@example.com` | `Admin123!` | Review products + slips + promo + assign staff + approve payout |
+| `mlm-root@example.com` | `Seed123456!` | MLM tree · wallet PIN `123456` · code `MLMROOT1` |
+| `accountant@example.com` | `Seed123456!` | (+ wallet withdraw approve/process) |
 
-Shop **Seed Electronics Store**: mouse/keyboard/tee/lamp + `KHO-HN`/`KHO-HCM` + slips PENDING.
+Shop **Seed Electronics Store**: products/SKUs + `KHO-HN`/`KHO-HCM` + slips + orders/RMA + marketing + finance + MLM seed (xem §6.7 / §7.9 / §8.5).
 
 ---
 
-## 8. Ngoài scope hiện tại (chưa có BE)
+## 11. Ngoài scope hiện tại (chưa có BE)
 
 - Delete product / delete variant
 - Update / delete warehouse
-- Public shop storefront page
-- Cart / order (`005`)
+- **Apply promotion / voucher tại checkout** (marketing CRUD đã có)
 - Auto-delete / export CSV audit files
+- Payment gateway / bank transfer **thật** (seller payout + wallet withdraw đang stub)
+- Auto-rank MLM (MVP: admin set tay)
+- Đổi `referrerId` sau register → Admin `PATCH /admin/mlm/users/:id/referrer`

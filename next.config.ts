@@ -1,6 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      {
+        // BE referralLink often uses /register?ref=…; app register is under my-account.
+        source: "/register",
+        destination: "/my-account/register",
+        permanent: false,
+      },
+    ];
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     qualities: [60, 70, 75, 80, 82],

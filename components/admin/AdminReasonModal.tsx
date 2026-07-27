@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useId, useState } from "react";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 type AdminReasonModalProps = {
   open: boolean;
@@ -27,6 +28,7 @@ export function AdminReasonModal({
   onClose,
   onConfirm,
 }: AdminReasonModalProps) {
+  const { t } = useLanguage();
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
   const titleId = useId();
@@ -53,11 +55,11 @@ export function AdminReasonModal({
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (required && trimmed.length < 1) {
-      setError(`Reason is required (1–${maxLength} characters).`);
+      setError(t("admin.common.reasonRequired", { max: String(maxLength) }));
       return;
     }
     if (trimmed.length > maxLength) {
-      setError(`Reason must be at most ${maxLength} characters.`);
+      setError(t("admin.common.reasonMax", { max: String(maxLength) }));
       return;
     }
     setError("");
@@ -69,7 +71,7 @@ export function AdminReasonModal({
       <button
         type="button"
         className="mq-admin-modal-backdrop"
-        aria-label="Close"
+        aria-label={t("admin.common.close")}
         disabled={busy}
         onClick={onClose}
       />
@@ -90,7 +92,7 @@ export function AdminReasonModal({
         </header>
         <form className="mq-admin-modal-body" onSubmit={(e) => void submit(e)}>
           <label htmlFor={inputId} className="mq-admin-modal-label">
-            Reason {required ? "" : "(optional)"}
+            {required ? t("admin.common.reason") : t("admin.common.reasonOptional")}
           </label>
           <textarea
             id={inputId}
@@ -99,7 +101,7 @@ export function AdminReasonModal({
             maxLength={maxLength}
             value={reason}
             autoFocus
-            placeholder={`1–${maxLength} characters`}
+            placeholder={`1–${maxLength}`}
             onChange={(e) => setReason(e.target.value.slice(0, maxLength))}
           />
           <div className="mq-admin-modal-meta">
@@ -115,14 +117,14 @@ export function AdminReasonModal({
               disabled={busy}
               onClick={onClose}
             >
-              Cancel
+              {t("admin.common.cancel")}
             </button>
             <button
               type="submit"
               className="mq-btn mq-btn-primary"
               disabled={busy || !canSubmit}
             >
-              {busy ? "Working…" : confirmLabel}
+              {busy ? t("admin.common.working") : confirmLabel}
             </button>
           </div>
         </form>

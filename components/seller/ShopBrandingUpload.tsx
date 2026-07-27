@@ -3,17 +3,18 @@
 import { ChangeEvent, useRef } from "react";
 import { toast } from "sonner";
 import { useUploadShopBanner, useUploadShopLogo } from "@/lib/queries/seller";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 const ACCEPT = "image/jpeg,image/png,image/webp,image/gif";
 const MAX_BYTES = 5 * 1024 * 1024;
 
-function validateFile(file: File): boolean {
+function validateFile(file: File, t: (key: string) => string): boolean {
   if (!ACCEPT.split(",").includes(file.type)) {
-    toast.error("Invalid image type. Use JPEG, PNG, WebP, or GIF.");
+    toast.error(t("toast.invalidImageType"));
     return false;
   }
   if (file.size > MAX_BYTES) {
-    toast.error("Image must be ≤ 5MB.");
+    toast.error(t("toast.imageTooLarge"));
     return false;
   }
   return true;
@@ -26,6 +27,7 @@ type Props = {
 };
 
 export function ShopBrandingUpload({ logoUrl, bannerUrl, canEdit }: Props) {
+  const { t } = useLanguage();
   const logoInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
   const uploadLogo = useUploadShopLogo();
@@ -34,14 +36,14 @@ export function ShopBrandingUpload({ logoUrl, bannerUrl, canEdit }: Props) {
   const onLogoChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
-    if (!file || !validateFile(file)) return;
+    if (!file || !validateFile(file, t)) return;
     void uploadLogo.mutateAsync(file);
   };
 
   const onBannerChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
-    if (!file || !validateFile(file)) return;
+    if (!file || !validateFile(file, t)) return;
     void uploadBanner.mutateAsync(file);
   };
 
@@ -49,23 +51,23 @@ export function ShopBrandingUpload({ logoUrl, bannerUrl, canEdit }: Props) {
 
   return (
     <div className="space-y-5">
-      <p className="mq-shop-hint">
-        JPEG / PNG / WebP / GIF · ≤5MB. Logo ~512×512, banner ~1600×400 (stored as WebP).
-      </p>
+      <p className="mq-shop-hint">{t("seller.shop.mediaHint")}</p>
 
       <div className="flex flex-wrap gap-6">
         <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-mq-text-muted">Logo</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-mq-text-muted">
+            {t("seller.shop.logo")}
+          </p>
           {logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={logoUrl}
-              alt="Shop logo"
+              alt={t("seller.shop.logo")}
               className="w-28 h-28 rounded-2xl object-cover border border-mq-border bg-mq-surface-subtle"
             />
           ) : (
             <div className="w-28 h-28 rounded-2xl border border-dashed border-mq-border bg-mq-surface-subtle flex items-center justify-center text-[10px] text-mq-text-muted text-center px-1">
-              No logo
+              {t("seller.shop.noLogo")}
             </div>
           )}
           {canEdit && (
@@ -83,24 +85,30 @@ export function ShopBrandingUpload({ logoUrl, bannerUrl, canEdit }: Props) {
                 disabled={busy}
                 onClick={() => logoInputRef.current?.click()}
               >
-                {uploadLogo.isPending ? "Uploading…" : logoUrl ? "Replace logo" : "Upload logo"}
+                {uploadLogo.isPending
+                  ? t("admin.marketing.uploading")
+                  : logoUrl
+                    ? t("seller.shop.replaceLogo")
+                    : t("seller.shop.uploadLogo")}
               </button>
             </>
           )}
         </div>
 
         <div className="min-w-0 flex-1 space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-mq-text-muted">Banner</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-mq-text-muted">
+            {t("seller.shop.banner")}
+          </p>
           {bannerUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={bannerUrl}
-              alt="Shop banner"
+              alt={t("seller.shop.banner")}
               className="h-28 w-full max-w-lg rounded-2xl object-cover border border-mq-border bg-mq-surface-subtle"
             />
           ) : (
             <div className="h-28 w-full max-w-lg rounded-2xl border border-dashed border-mq-border bg-mq-surface-subtle flex items-center justify-center text-[10px] text-mq-text-muted">
-              No banner
+              {t("seller.shop.noBanner")}
             </div>
           )}
           {canEdit && (
@@ -119,10 +127,10 @@ export function ShopBrandingUpload({ logoUrl, bannerUrl, canEdit }: Props) {
                 onClick={() => bannerInputRef.current?.click()}
               >
                 {uploadBanner.isPending
-                  ? "Uploading…"
+                  ? t("admin.marketing.uploading")
                   : bannerUrl
-                    ? "Replace banner"
-                    : "Upload banner"}
+                    ? t("seller.shop.replaceBanner")
+                    : t("seller.shop.uploadBanner")}
               </button>
             </>
           )}
@@ -130,9 +138,7 @@ export function ShopBrandingUpload({ logoUrl, bannerUrl, canEdit }: Props) {
       </div>
 
       {!canEdit && (
-        <p className="mq-shop-hint">
-          Logo/banner can be updated when the shop is APPROVED and not suspended.
-        </p>
+        <p className="mq-shop-hint">{t("seller.shop.mediaGate")}</p>
       )}
     </div>
   );

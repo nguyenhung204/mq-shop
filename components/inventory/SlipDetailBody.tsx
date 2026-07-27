@@ -2,6 +2,8 @@
 
 import { formatMoney } from "@/lib/api/utils";
 import type { InventorySlip } from "@/lib/api/inventory";
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 
 function formatWhen(iso: string | null | undefined): string {
   if (!iso) return "—";
@@ -21,6 +23,7 @@ export function SlipDetailBody({
   loading?: boolean;
   error?: string | null;
 }) {
+  const { t } = useLanguage();
   if (loading) {
     return <p className="text-xs text-mq-text-muted py-2">Loading slip…</p>;
   }
@@ -33,8 +36,8 @@ export function SlipDetailBody({
     <div className="rounded-[var(--mq-radius-sm)] bg-mq-surface-subtle p-3 space-y-2 text-xs">
       <div className="flex flex-wrap gap-x-3 gap-y-1 text-mq-text-secondary">
         <span className="font-mono font-medium text-mq-text">{slip.code}</span>
-        <span>{slip.type}</span>
-        <span>{slip.status}</span>
+        <span>{translateStatus(t, "inventorySlipType", slip.type)}</span>
+        <span>{translateStatus(t, "inventorySlip", slip.status)}</span>
         {slip.warehouseCode ? <span>WH {slip.warehouseCode}</span> : null}
       </div>
       {slip.locationNote ? (

@@ -1,17 +1,17 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
-import { CreditCard, Headphones, RotateCcw, ShieldCheck, Star } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { CreditCard, Headphones, RotateCcw, ShieldCheck } from "lucide-react";
 import { catalogApi } from "@/lib/api";
-import { categoryLabel } from "@/lib/api/categoryLabel";
 import { mapListingCard } from "@/lib/api/mapProduct";
 import type { ApiCategory } from "@/lib/api/types";
 import type { Product } from "@/lib/data/products";
 import { categoryImages, miscImages } from "@/lib/images";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { HeroSlider } from "@/components/home/HeroSlider";
-import { CategoryCard } from "@/components/ui/ProductCard";
+import { CategoryMarquee } from "@/components/home/CategoryMarquee";
+import { FeaturedReviews } from "@/components/home/FeaturedReviews";
 import { ProductCarousel } from "@/components/ui/ProductCarousel";
 import { Container, SectionHeading } from "@/components/ui/shared";
 
@@ -56,33 +56,42 @@ export function HomePageContent() {
       })
       .catch((err: unknown) => {
         setListing([]);
-        setError(err instanceof Error ? err.message : "Failed to load products");
+        setError(err instanceof Error ? err.message : t("home.loadProductsFailed"));
       })
       .finally(() => setLoadingProducts(false));
-  }, []);
+  }, [t]);
 
   const inStock = useMemo(
     () => listing.filter((p) => p.inStock > 0 && p.displayMode !== "OUT_OF_STOCK_WATERMARK"),
     [listing],
   );
-  const newest = useMemo(() => listing.slice(0, 12), [listing]);
+  const newest = useMemo(
+    () =>
+      [...listing]
+        .sort((a, b) => {
+          const ta = a.createdAt ? Date.parse(a.createdAt) : 0;
+          const tb = b.createdAt ? Date.parse(b.createdAt) : 0;
+          return tb - ta;
+        })
+        .slice(0, 12),
+    [listing],
+  );
   const featured = useMemo(() => {
     const sorted = [...listing].sort((a, b) => b.price - a.price);
     return sorted.slice(0, 12);
   }, [listing]);
   const picks = useMemo(() => (inStock.length ? inStock : listing).slice(0, 12), [inStock, listing]);
 
+  const categoryImage = useCallback(
+    (slug: string) => FALLBACK_CATEGORY_IMAGES[slug] || categoryImages.accessories,
+    [],
+  );
+
   const trustIcons = [
     { title: t("home.trustPayment"), desc: t("home.trustPaymentDesc"), Icon: CreditCard },
     { title: t("home.trustSupport"), desc: t("home.trustSupportDesc"), Icon: Headphones },
     { title: t("home.trustReturns"), desc: t("home.trustReturnsDesc"), Icon: RotateCcw },
     { title: t("home.trustQuality"), desc: t("home.trustQualityDesc"), Icon: ShieldCheck },
-  ];
-
-  const testimonials = [
-    { quote: t("home.testimonial1"), name: "Sarah M.", date: "May 2026", rating: 5 },
-    { quote: t("home.testimonial2"), name: "James L.", date: "April 2026", rating: 5 },
-    { quote: t("home.testimonial3"), name: "Elena K.", date: "March 2026", rating: 5 },
   ];
 
   return (
@@ -101,21 +110,13 @@ export function HomePageContent() {
               ))}
             </div>
           ) : categories.length === 0 ? (
-            <p className="text-sm text-mq-text-muted text-center py-8">No categories yet.</p>
+            <p className="text-sm text-mq-text-muted text-center py-8">{t("home.noCategories")}</p>
           ) : (
-            <div className="mq-carousel-track" style={{ justifyContent: "space-between" }}>
-              {categories.map((cat, i) => (
-                <CategoryCard
-                  key={cat.id}
-                  name={locale ? categoryLabel(cat, locale) : cat.name || cat.slug}
-                  slug={cat.id}
-                  image={
-                    FALLBACK_CATEGORY_IMAGES[cat.slug] || categoryImages.accessories
-                  }
-                  priority={i < 4}
-                />
-              ))}
-            </div>
+            <CategoryMarquee
+              categories={categories}
+              locale={locale}
+              imageFor={categoryImage}
+            />
           )}
         </Container>
       </section>
@@ -177,32 +178,7 @@ export function HomePageContent() {
         </Container>
       </section>
 
-      <section className="py-14 md:py-20 bg-mq-surface-subtle">
-        <Container>
-          <SectionHeading label={t("home.reviews")} title={t("home.whatClientsSay")} />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testimonials.map((item) => (
-              <blockquote
-                key={item.name}
-                className="bg-mq-surface p-8 border border-mq-border rounded-[var(--mq-radius-lg)]"
-              >
-                <div className="flex gap-0.5 mb-4 text-mq-gold">
-                  {Array.from({ length: item.rating }).map((_, i) => (
-                    <Star key={i} size={14} fill="currentColor" strokeWidth={0} />
-                  ))}
-                </div>
-                <p className="text-mq-text-secondary text-sm leading-relaxed">
-                  &ldquo;{item.quote}&rdquo;
-                </p>
-                <footer className="mt-5">
-                  <p className="text-sm font-medium text-mq-text">{item.name}</p>
-                  <time className="text-xs text-mq-text-muted">{item.date}</time>
-                </footer>
-              </blockquote>
-            ))}
-          </div>
-        </Container>
-      </section>
+      <FeaturedReviews />
 
       <section className="py-14 md:py-20">
         <Container>

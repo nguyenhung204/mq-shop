@@ -155,11 +155,15 @@ export const inventoryApi = {
   getSlip: (slipId: string) =>
     api.get<InventorySlip>(`/inventory/slips/${slipId}`),
 
-  createSlip: (body: CreateSlipRequest) =>
-    api.post<InventorySlip>("/inventory/slips", body),
+  createSlip: (body: CreateSlipRequest, idempotencyKey: string) =>
+    api.post<InventorySlip>("/inventory/slips", body, {
+      headers: { "Idempotency-Key": idempotencyKey },
+    }),
 
-  approveSlip: (slipId: string) =>
-    api.post<InventorySlip>(`/inventory/slips/${slipId}/approve`, {}),
+  approveSlip: (slipId: string, idempotencyKey: string) =>
+    api.post<InventorySlip>(`/inventory/slips/${slipId}/approve`, {}, {
+      headers: { "Idempotency-Key": idempotencyKey },
+    }),
 
   rejectSlip: (slipId: string) =>
     api.post<InventorySlip>(`/inventory/slips/${slipId}/reject`, {}),
@@ -187,8 +191,10 @@ export const adminInventoryApi = {
       withMeta: true,
     }),
 
-  approveSlip: (slipId: string) =>
-    api.post<InventorySlip>(`/admin/inventory/slips/${slipId}/approve`, {}),
+  approveSlip: (slipId: string, idempotencyKey: string) =>
+    api.post<InventorySlip>(`/admin/inventory/slips/${slipId}/approve`, {}, {
+      headers: { "Idempotency-Key": idempotencyKey },
+    }),
 
   rejectSlip: (slipId: string) =>
     api.post<InventorySlip>(`/admin/inventory/slips/${slipId}/reject`, {}),

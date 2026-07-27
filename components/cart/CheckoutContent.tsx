@@ -1,106 +1,234 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { formatPrice } from "@/lib/data/products";
-import { orderApi } from "@/lib/api";
+import { splitStoredPhone, toE164 } from "@/lib/data/phone";
 import { ApiError } from "@/lib/api/client";
 import {
   checkoutSchema,
   type CheckoutFormValues,
 } from "@/lib/validations/checkout";
+import { useCartStore } from "@/lib/stores/cart-store";
+import { useCheckout, useShippingQuote } from "@/lib/queries/orders";
 import { useCart } from "@/components/providers/CartProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { CountrySelect } from "@/components/ui/CountrySelect";
+import { PhoneInput } from "@/components/ui/PhoneInput";
+import { AddressRegionFields } from "@/components/ui/AddressRegionFields";
+import { QuantityStepper } from "@/components/ui/QuantityStepper";
 import { Container, PageHero } from "@/components/ui/shared";
 
 export function CheckoutContent() {
   const { t } = useLanguage();
-  const { isAuthenticated } = useAuth();
-  const { items, itemCount, subtotal, clearCart } = useCart();
-  const [placedId, setPlacedId] = useState<string | null>(null);
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { items, itemCount, subtotal, clearCart, checkoutItems, updateQuantity } = useCart();
+  const [cartReady, setCartReady] = useState(() =>
+    typeof window === "undefined" ? false : useCartStore.persist.hasHydrated(),
+  );
+  const [placed, setPlaced] = useState<{ id: string; code: string; total: number } | null>(
+    null,
+  );
+  const [shippingFee, setShippingFee] = useState<number | null>(null);
+  const [profileSeeded, setProfileSeeded] = useState(false);
+  const [nationalPhone, setNationalPhone] = useState("");
+  const [dialCountry, setDialCountry] = useState("VN");
+  const [dialTouched, setDialTouched] = useState(false);
+  const quote = useShippingQuote();
+  const checkout = useCheckout();
 
   const {
     register,
     handleSubmit,
+    watch,
+    reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
-      shippingAddress: "",
-      shippingCountry: "VN",
-      paymentMethod: "COD",
+      shippingAddress: {
+        fullName: "",
+        phone: "",
+        line1: "",
+        line2: "",
+        city: "",
+        district: "",
+        postalCode: "",
+        country: "VN",
+      },
+      paymentMethod: "MOCK",
+      note: "",
     },
   });
+
+  useEffect(() => {
+    setCartReady(useCartStore.persist.hasHydrated());
+    return useCartStore.persist.onFinishHydration(() => setCartReady(true));
+  }, []);
+
+  // Prefill contact fields from the signed-in profile once.
+  useEffect(() => {
+    if (!user || profileSeeded) return;
+    const shipCountry = "VN";
+    const national = splitStoredPhone(user.phone, shipCountry);
+    setDialCountry(shipCountry);
+    setNationalPhone(national);
+    reset({
+      shippingAddress: {
+        fullName: user.fullName?.trim() || "",
+        phone: national ? toE164(shipCountry, national) : "",
+        line1: "",
+        line2: "",
+        city: "",
+        district: "",
+        postalCode: "",
+        country: shipCountry,
+      },
+      paymentMethod: "MOCK",
+      note: "",
+    });
+    setProfileSeeded(true);
+  }, [user, profileSeeded, reset]);
+
+  const address = watch("shippingAddress");
+  const lineItems = useMemo(() => checkoutItems(), [items]);
+
+  const syncPhone = (nextDialCountry: string, nextNational: string) => {
+    setNationalPhone(nextNational);
+    setValue(
+      "shippingAddress.phone",
+      nextNational ? toE164(nextDialCountry, nextNational) : "",
+      { shouldValidate: true, shouldDirty: true },
+    );
+  };
+
+  useEffect(() => {
+    if (!isAuthenticated || lineItems.length === 0) return;
+    if (!address?.fullName || !address.phone || !address.line1 || !address.city) {
+      setShippingFee(null);
+      return;
+    }
+    const handle = window.setTimeout(() => {
+      void quote
+        .mutateAsync({
+          items: lineItems,
+          shippingAddress: {
+            ...address,
+            country: address.country || "VN",
+          },
+        })
+        .then((q) => setShippingFee(q.shippingFee))
+        .catch(() => setShippingFee(null));
+    }, 400);
+    return () => window.clearTimeout(handle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- debounce on address/items only
+  }, [
+    isAuthenticated,
+    lineItems,
+    address?.fullName,
+    address?.phone,
+    address?.line1,
+    address?.city,
+    address?.district,
+    address?.country,
+  ]);
+
+  if (authLoading || !cartReady) {
+    return (
+      <>
+        <PageHero title={t("checkout.title")} breadcrumb={[{ label: t("checkout.title") }]} />
+        <Container className="py-16">
+          <div className="h-40 rounded-[var(--mq-radius-lg)] bg-mq-surface-subtle animate-pulse" />
+        </Container>
+      </>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
       <>
         <PageHero title={t("checkout.title")} breadcrumb={[{ label: t("checkout.title") }]} />
         <Container className="py-16 text-center">
-          <p className="text-mq-text-secondary mb-6">Please sign in to checkout.</p>
-          <Link href="/my-account" className="mq-btn mq-btn-primary">Sign in</Link>
+          <p className="text-mq-text-secondary mb-6">{t("checkout.signInRequired")}</p>
+          <Link href="/my-account" className="mq-btn mq-btn-primary">
+            {t("account.logIn")}
+          </Link>
         </Container>
       </>
     );
   }
 
-  if (itemCount === 0 && !placedId) {
+  if (itemCount === 0 && !placed) {
     return (
       <>
         <PageHero title={t("checkout.title")} breadcrumb={[{ label: t("checkout.title") }]} />
         <Container className="py-16 text-center">
           <p className="text-mq-text-secondary mb-6">{t("checkout.empty")}</p>
-          <Link href="/shop" className="mq-btn mq-btn-primary">{t("checkout.goToShop")}</Link>
+          <Link href="/shop" className="mq-btn mq-btn-primary">
+            {t("checkout.goToShop")}
+          </Link>
         </Container>
       </>
     );
   }
 
-  if (placedId) {
+  if (placed) {
     return (
       <>
         <PageHero title={t("checkout.orderPlaced")} breadcrumb={[{ label: t("checkout.title") }]} />
         <Container className="py-16 text-center max-w-lg mx-auto">
           <h2 className="text-2xl text-mq-text mb-3">{t("checkout.thankYou")}</h2>
           <p className="text-mq-text-secondary mb-2">
-            Payment is recorded in the system only — no automatic card/bank transfer.
+            {t("checkout.orderLabel")} <strong>{placed.code}</strong> · {formatPrice(placed.total)}{" "}
+            USD
           </p>
-          <p className="text-sm text-mq-text-muted mb-8">Order ID: {placedId}</p>
+          <p className="text-sm text-mq-text-muted mb-8">{t("checkout.paymentStubNote")}</p>
           <div className="flex flex-wrap gap-3 justify-center">
-            <Link href={`/orders/${placedId}`} className="mq-btn mq-btn-primary">View order</Link>
-            <Link href="/shop" className="mq-btn mq-btn-outline">{t("cart.continueShopping")}</Link>
+            <Link href={`/orders/${placed.id}`} className="mq-btn mq-btn-primary">
+              {t("checkout.viewOrder")}
+            </Link>
+            <Link href="/shop" className="mq-btn mq-btn-outline">
+              {t("cart.continueShopping")}
+            </Link>
           </div>
         </Container>
       </>
     );
   }
 
-  const shipping = subtotal >= 75 ? 0 : 5.99;
-  const total = subtotal + shipping;
+  const previewTotal = subtotal + (shippingFee ?? 0);
 
   const onSubmit = async (values: CheckoutFormValues) => {
     try {
-      const order = await orderApi.checkout({
+      const phone = toE164(
+        dialCountry,
+        nationalPhone || values.shippingAddress.phone,
+      );
+      const order = await checkout.mutateAsync({
+        items: checkoutItems(),
+        shippingAddress: {
+          ...values.shippingAddress,
+          phone,
+          country: values.shippingAddress.country || "VN",
+        },
         paymentMethod: values.paymentMethod,
-        shippingAddress: values.shippingAddress,
-        shippingCountry: values.shippingCountry || undefined,
+        note: values.note || undefined,
       });
       clearCart();
-      setPlacedId(order.id);
+      setPlaced({ id: order.id, code: order.code, total: order.total });
       toast.success(t("checkout.orderPlaced"), {
-        description: `Order #${order.id.slice(0, 8)}`,
+        description: order.code,
       });
     } catch (err) {
-      const message =
-        err instanceof ApiError
-          ? err.message
-          : "Checkout failed. Ensure API is running and cart is synced (1 shop only).";
-      toast.error("Checkout failed", { description: message });
+      if (!(err instanceof ApiError)) {
+        toast.error(t("checkout.failed"));
+      }
     }
   };
 
@@ -114,84 +242,235 @@ export function CheckoutContent() {
         ]}
       />
       <Container className="py-10 md:py-16">
-        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-10">
-          <div className="space-y-6">
-            <fieldset className="border border-mq-border p-6 rounded-[var(--mq-radius-lg)] shadow-[var(--mq-shadow-sm)]">
-              <legend className="text-sm font-semibold uppercase tracking-wider px-2">
-                Shipping
-              </legend>
-              <div className="space-y-4 mt-4">
-                <div>
-                  <label className="block text-sm mb-1.5" htmlFor="shippingAddress">
-                    {t("checkout.address")}
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-10"
+        >
+          <div className="space-y-6 min-w-0">
+            <section className="border border-mq-border bg-mq-surface p-6 rounded-[var(--mq-radius-lg)] shadow-[var(--mq-shadow-sm)]">
+              <h2 className="text-lg font-semibold text-mq-text mb-1">
+                {t("checkout.customerDetails")}
+              </h2>
+              <p className="text-sm text-mq-text-muted mb-5">{t("checkout.customerDetailsHint")}</p>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block text-sm mb-1.5" htmlFor="email">
+                    {t("checkout.email")}
                   </label>
-                  <textarea
-                    id="shippingAddress"
-                    className="mq-textarea"
-                    aria-invalid={Boolean(errors.shippingAddress)}
-                    {...register("shippingAddress")}
+                  <input
+                    id="email"
+                    className="mq-input"
+                    type="email"
+                    value={user?.email ?? ""}
+                    readOnly
+                    disabled
                   />
-                  {errors.shippingAddress && (
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-sm mb-1.5" htmlFor="fullName">
+                    {t("checkout.fullName")}
+                  </label>
+                  <input
+                    id="fullName"
+                    className="mq-input"
+                    autoComplete="name"
+                    placeholder={t("checkout.fullNamePlaceholder")}
+                    {...register("shippingAddress.fullName")}
+                  />
+                  {errors.shippingAddress?.fullName && (
                     <p className="text-xs text-mq-accent-orange mt-1.5">
-                      {errors.shippingAddress.message}
+                      {errors.shippingAddress.fullName.message}
                     </p>
                   )}
                 </div>
-                <div>
-                  <label className="block text-sm mb-1.5" htmlFor="shippingCountry">
-                    Country (ISO α-2)
+              </div>
+            </section>
+
+            <section className="border border-mq-border bg-mq-surface p-6 rounded-[var(--mq-radius-lg)] shadow-[var(--mq-shadow-sm)]">
+              <h2 className="text-lg font-semibold text-mq-text mb-1">
+                {t("checkout.shippingDetails")}
+              </h2>
+              <p className="text-sm text-mq-text-muted mb-5">{t("checkout.shippingDetailsHint")}</p>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block text-sm mb-1.5" htmlFor="country">
+                    {t("checkout.country")}
                   </label>
-                  <input
-                    id="shippingCountry"
-                    className="mq-input"
-                    maxLength={2}
-                    aria-invalid={Boolean(errors.shippingCountry)}
-                    {...register("shippingCountry", {
+                  <CountrySelect
+                    id="country"
+                    {...register("shippingAddress.country", {
                       onChange: (e) => {
-                        e.target.value = e.target.value.toUpperCase();
+                        const next = String(e.target.value || "VN").toUpperCase();
+                        // Soft-default dial to shipping country until user picks a dial manually.
+                        if (!dialTouched) {
+                          setDialCountry(next);
+                          syncPhone(next, nationalPhone);
+                        }
+                        setValue("shippingAddress.city", "");
+                        setValue("shippingAddress.district", "");
                       },
                     })}
                   />
-                  {errors.shippingCountry && (
+                  {errors.shippingAddress?.country && (
                     <p className="text-xs text-mq-accent-orange mt-1.5">
-                      {errors.shippingCountry.message}
+                      {errors.shippingAddress.country.message}
                     </p>
                   )}
                 </div>
+
                 <div>
+                  <label className="block text-sm mb-1.5" htmlFor="phone">
+                    {t("checkout.phone")}
+                  </label>
+                  <PhoneInput
+                    id="phone"
+                    dialCountry={dialCountry}
+                    onDialCountryChange={(code) => {
+                      setDialTouched(true);
+                      setDialCountry(code);
+                      syncPhone(code, nationalPhone);
+                    }}
+                    value={nationalPhone}
+                    onChange={(national) => syncPhone(dialCountry, national)}
+                    aria-invalid={Boolean(errors.shippingAddress?.phone)}
+                  />
+                  <p className="text-xs text-mq-text-muted mt-1.5">
+                    {t("checkout.phoneHint")}
+                  </p>
+                  {errors.shippingAddress?.phone && (
+                    <p className="text-xs text-mq-accent-orange mt-1.5">
+                      {errors.shippingAddress.phone.message}
+                    </p>
+                  )}
+                </div>
+
+                <AddressRegionFields
+                  countryCode={address?.country || "VN"}
+                  city={address?.city || ""}
+                  district={address?.district || ""}
+                  onCityChange={(next) =>
+                    setValue("shippingAddress.city", next, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    })
+                  }
+                  onDistrictChange={(next) =>
+                    setValue("shippingAddress.district", next, {
+                      shouldDirty: true,
+                    })
+                  }
+                  cityError={errors.shippingAddress?.city?.message}
+                />
+
+                <div>
+                  <label className="block text-sm mb-1.5" htmlFor="postalCode">
+                    {t("checkout.postalCode")}
+                  </label>
+                  <input
+                    id="postalCode"
+                    className="mq-input"
+                    autoComplete="postal-code"
+                    {...register("shippingAddress.postalCode")}
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-sm mb-1.5" htmlFor="line1">
+                    {t("checkout.address")}
+                  </label>
+                  <input
+                    id="line1"
+                    className="mq-input"
+                    autoComplete="street-address"
+                    placeholder={t("checkout.addressPlaceholder")}
+                    {...register("shippingAddress.line1")}
+                  />
+                  {errors.shippingAddress?.line1 && (
+                    <p className="text-xs text-mq-accent-orange mt-1.5">
+                      {errors.shippingAddress.line1.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            <section className="border border-mq-border bg-mq-surface p-6 rounded-[var(--mq-radius-lg)] shadow-[var(--mq-shadow-sm)]">
+              <h2 className="text-lg font-semibold text-mq-text mb-5">
+                {t("checkout.paymentMethod")}
+              </h2>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
                   <label className="block text-sm mb-1.5" htmlFor="paymentMethod">
-                    Payment method
+                    {t("checkout.paymentMethod")}
                   </label>
                   <select
                     id="paymentMethod"
                     className="mq-input"
                     {...register("paymentMethod")}
                   >
-                    <option value="COD">Cash on delivery (COD)</option>
-                    <option value="BANK_TRANSFER">Bank transfer</option>
-                    <option value="CARD">Card</option>
+                    <option value="MOCK">{t("checkout.paymentMock")}</option>
+                    <option value="COD">{t("checkout.paymentCod")}</option>
                   </select>
-                  <p className="text-xs text-mq-text-muted mt-2">
-                    No PSP redirect yet — selection is recorded only. COD awaits Admin confirm.
-                  </p>
+                  <p className="text-xs text-mq-text-muted mt-2">{t("checkout.paymentHint")}</p>
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-sm mb-1.5" htmlFor="note">
+                    {t("checkout.note")}
+                  </label>
+                  <textarea
+                    id="note"
+                    className="mq-textarea"
+                    rows={3}
+                    placeholder={t("checkout.notePlaceholder")}
+                    {...register("note")}
+                  />
                 </div>
               </div>
-            </fieldset>
+            </section>
           </div>
 
-          <aside className="border border-mq-border p-6 h-fit bg-mq-surface-subtle rounded-[var(--mq-radius-lg)] shadow-[var(--mq-shadow-sm)]">
+          <aside className="border border-mq-border p-6 h-fit bg-mq-surface-subtle rounded-[var(--mq-radius-lg)] shadow-[var(--mq-shadow-sm)] lg:sticky lg:top-24">
             <h2 className="text-lg mb-4">{t("checkout.yourOrder")}</h2>
-            <ul className="space-y-3 mb-4 max-h-48 overflow-y-auto">
+            <ul className="space-y-4 mb-4 max-h-72 overflow-y-auto">
               {items.map((item) => (
-                <li key={item.productId} className="flex gap-3 text-sm">
-                  <div className="relative w-12 h-12 shrink-0 mq-product-image-bg mq-product-media">
-                    <Image src={item.image} alt="" fill className="mq-product-media-img" sizes="48px" />
+                <li key={item.variantId} className="flex gap-3 text-sm">
+                  <Link
+                    href={`/product/${item.productId}`}
+                    className="relative w-12 h-12 shrink-0 mq-product-image-bg mq-product-media"
+                  >
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      fill
+                      className="mq-product-media-img"
+                      sizes="48px"
+                    />
+                  </Link>
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <div className="flex gap-2 justify-between">
+                      <div className="min-w-0">
+                        <Link
+                          href={`/product/${item.productId}`}
+                          className="line-clamp-1 font-medium hover:text-mq-gold transition-colors"
+                        >
+                          {item.name}
+                        </Link>
+                        <p className="text-mq-text-muted text-xs">{item.sku}</p>
+                      </div>
+                      <span className="shrink-0 tabular-nums">
+                        {formatPrice(item.unitPrice * item.quantity)}
+                      </span>
+                    </div>
+                    <QuantityStepper
+                      size="sm"
+                      value={item.quantity}
+                      min={1}
+                      onChange={(next) => updateQuantity(item.variantId, next)}
+                    />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="line-clamp-1">{item.name}</p>
-                    <p className="text-mq-text-muted">× {item.quantity}</p>
-                  </div>
-                  <span>{formatPrice(item.price * item.quantity)}</span>
                 </li>
               ))}
             </ul>
@@ -200,17 +479,35 @@ export function CheckoutContent() {
                 <span>{t("cart.subtotal")}</span>
                 <span>{formatPrice(subtotal)}</span>
               </div>
+              <div className="flex justify-between text-mq-text-muted text-xs">
+                <span>{t("cart.quantity")}</span>
+                <span className="tabular-nums">
+                  {itemCount} {itemCount === 1 ? t("cart.item") : t("cart.items")}
+                </span>
+              </div>
               <div className="flex justify-between">
                 <span>{t("cart.shipping")}</span>
-                <span>{shipping === 0 ? t("cart.free") : formatPrice(shipping)}</span>
+                <span>
+                  {shippingFee == null
+                    ? quote.isPending
+                      ? "…"
+                      : t("checkout.shippingPending")
+                    : formatPrice(shippingFee)}
+                </span>
               </div>
               <div className="flex justify-between font-medium text-base pt-2">
                 <span>{t("cart.total")}</span>
-                <span>{formatPrice(total)}</span>
+                <span>{formatPrice(previewTotal)}</span>
               </div>
             </div>
-            <button type="submit" className="mq-btn mq-btn-primary w-full mt-6" disabled={isSubmitting}>
-              {isSubmitting ? "Placing…" : t("checkout.placeOrder")}
+            <button
+              type="submit"
+              className="mq-btn mq-btn-primary w-full mt-6"
+              disabled={isSubmitting || checkout.isPending}
+            >
+              {isSubmitting || checkout.isPending
+                ? t("checkout.placing")
+                : t("checkout.placeOrder")}
             </button>
           </aside>
         </form>
