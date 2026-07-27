@@ -4,14 +4,20 @@ import type { PageMeta, Paginated } from "./types";
 export type PromotionType = "PERCENT" | "FIXED" | "FREE_SHIP" | "VOUCHER";
 export type PromotionScope = "PLATFORM" | "TARGETED";
 export type PromotionStatus = "PENDING" | "ACTIVE" | "REJECTED" | "EXPIRED";
-export type BannerLang = "VI" | "EN" | "TW";
+export type BannerLang = "VI" | "EN" | "TW" | "ALL";
 
-export const BANNER_LANGS: BannerLang[] = ["VI", "EN", "TW"];
+/** Admin create/list tabs (includes global ALL). */
+export const BANNER_LANGS: BannerLang[] = ["VI", "EN", "TW", "ALL"];
+
+/** Public GET /banners only accepts these (ALL is merged server-side). */
+export const PUBLIC_BANNER_LANGS = ["VI", "EN", "TW"] as const;
+export type PublicBannerLang = (typeof PUBLIC_BANNER_LANGS)[number];
 
 export const BANNER_LANG_LABELS: Record<BannerLang, string> = {
   VI: "Tiếng Việt",
   EN: "English",
   TW: "繁體中文／台灣",
+  ALL: "Global (all languages)",
 };
 
 export type Promotion = {
@@ -141,8 +147,8 @@ export const adminPromotionApi = {
 
 /** Public + admin CMS banners. */
 export const bannerApi = {
-  /** Public homepage list — no auth. Only active banners for `lang`. */
-  publicList: (lang: BannerLang = "VI") =>
+  /** Public homepage list — no auth. Locale banners + global ALL (sorted). */
+  publicList: (lang: PublicBannerLang = "VI") =>
     api.get<Banner[]>("/banners", { auth: false, query: { lang } }),
   adminList: (query?: ListBannersParams) =>
     api.get<BannerListRes>("/admin/banners", { query, withMeta: true }),

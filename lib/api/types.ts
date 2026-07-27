@@ -244,7 +244,7 @@ export type ApiBanner = {
   title: string;
   imageUrl: string;
   linkUrl: string | null;
-  lang: "VI" | "EN" | "TW";
+  lang: "VI" | "EN" | "TW" | "ALL";
   sortOrder: number;
   isActive: boolean;
   createdAt?: string;

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import type { ApiProduct } from "@/lib/api/types";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
@@ -10,7 +11,12 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
 import { Stars } from "@/components/ui/shared";
 import { PaginationBar } from "@/components/ui/PaginationBar";
+import {
+  SearchableSelect,
+  type SearchableSelectOption,
+} from "@/components/ui/SearchableSelect";
 import { TableSkeleton } from "@/components/ui/Skeleton";
+import { useAdminProducts, useAdminShops } from "@/lib/queries/admin";
 import {
   useAdminHideReview,
   useAdminReviews,
@@ -25,6 +31,10 @@ function statusBadgeClass(status: string | undefined): string {
   return "mq-badge mq-badge-muted";
 }
 
+function productTitle(p: ApiProduct): string {
+  return p.title || p.name || p.id.slice(0, 8);
+}
+
 function AdminReviewsInner() {
   const { t } = useLanguage();
   const [status, setStatus] = useState("");
@@ -32,6 +42,42 @@ function AdminReviewsInner() {
   const [shopId, setShopId] = useState("");
   const [page, setPage] = useState(1);
   const [hideId, setHideId] = useState<string | null>(null);
+
+  const { data: shopsPage } = useAdminShops("APPROVED", 1, 100);
+  const { data: productsPage } = useAdminProducts("ACTIVE", 1, 100);
+
+  const shopOptions = useMemo<SearchableSelectOption[]>(() => {
+    const shops = [...(shopsPage?.items ?? [])].sort((a, b) =>
+      a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
+    );
+    return [
+      { value: "", label: t("admin.common.allShops") },
+      ...shops.map((s) => ({
+        value: s.id,
+        label: s.name,
+        keywords: `${s.name} ${s.id} ${s.taxId ?? ""} ${s.taxCode ?? ""}`,
+      })),
+    ];
+  }, [shopsPage?.items, t]);
+
+  const productOptions = useMemo<SearchableSelectOption[]>(() => {
+    const products = [...(productsPage?.items ?? [])].sort((a, b) =>
+      productTitle(a).localeCompare(productTitle(b), undefined, {
+        sensitivity: "base",
+      }),
+    );
+    return [
+      { value: "", label: t("admin.reviews.allProducts") },
+      ...products.map((p) => {
+        const title = productTitle(p);
+        return {
+          value: p.id,
+          label: title,
+          keywords: `${title} ${p.id} ${p.shopId ?? ""}`,
+        };
+      }),
+    ];
+  }, [productsPage?.items, t]);
 
   const { data, isLoading, isError, error } = useAdminReviews({
     status: status || undefined,
@@ -61,7 +107,9 @@ function AdminReviewsInner() {
 
         <div className="mq-admin-panel p-4 flex flex-wrap gap-3 items-end">
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-xs text-mq-text-muted">{t("admin.common.filterStatus")}</span>
+            <span className="text-xs text-mq-text-muted">
+              {t("admin.common.filterStatus")}
+            </span>
             <select
               className="mq-input !w-[10rem]"
               value={status}
@@ -72,33 +120,43 @@ function AdminReviewsInner() {
             >
               {STATUS_FILTERS.map((s) => (
                 <option key={s || "all"} value={s}>
-                  {s === "" ? t("admin.common.allStatuses") : translateStatus(t, "review", s)}
+                  {s === ""
+                    ? t("admin.common.allStatuses")
+                    : translateStatus(t, "review", s)}
                 </option>
               ))}
             </select>
           </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-xs text-mq-text-muted">{t("admin.reviews.productId")}</span>
-            <input
-              className="mq-input max-w-xs"
+          <label className="flex flex-col gap-1 text-sm min-w-[14rem] flex-1 max-w-sm">
+            <span className="text-xs text-mq-text-muted">
+              {t("admin.reviews.product")}
+            </span>
+            <SearchableSelect
+              options={productOptions}
               value={productId}
-              onChange={(e) => {
-                setProductId(e.target.value.trim());
+              onChange={(v) => {
+                setProductId(v);
                 setPage(1);
               }}
-              placeholder="UUID"
+              placeholder={t("admin.reviews.allProducts")}
+              searchPlaceholder={t("admin.reviews.searchProduct")}
+              aria-label={t("admin.reviews.product")}
             />
           </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="text-xs text-mq-text-muted">{t("admin.reviews.shopId")}</span>
-            <input
-              className="mq-input max-w-xs"
+          <label className="flex flex-col gap-1 text-sm min-w-[14rem] flex-1 max-w-sm">
+            <span className="text-xs text-mq-text-muted">
+              {t("admin.common.shop")}
+            </span>
+            <SearchableSelect
+              options={shopOptions}
               value={shopId}
-              onChange={(e) => {
-                setShopId(e.target.value.trim());
+              onChange={(v) => {
+                setShopId(v);
                 setPage(1);
               }}
-              placeholder="UUID"
+              placeholder={t("admin.common.allShops")}
+              searchPlaceholder={t("admin.reviews.searchShop")}
+              aria-label={t("admin.common.shop")}
             />
           </label>
         </div>
@@ -143,7 +201,9 @@ function AdminReviewsInner() {
                       </span>
                     </td>
                     <td className="p-3 text-xs text-mq-text-secondary max-w-xs">
-                      <p className="line-clamp-3 whitespace-pre-wrap">{r.comment || "—"}</p>
+                      <p className="line-clamp-3 whitespace-pre-wrap">
+                        {r.comment || "—"}
+                      </p>
                       {r.reply?.body ? (
                         <p className="mt-1 text-[11px] text-mq-text-muted line-clamp-2">
                           {t("product.reviewsPage.sellerReply")}: {r.reply.body}

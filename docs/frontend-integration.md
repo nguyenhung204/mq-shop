@@ -912,7 +912,7 @@ NV kho login → `/inventory/*` resolve shop qua `user.shopId` (không cần là
 
 | Method | Path | Auth |
 |--------|------|------|
-| `GET` | `/banners?lang=VI\|EN\|TW` | Public (mặc định `VI`) |
+| `GET` | `/banners?lang=VI\|EN\|TW` | Public (mặc định `VI`; response gồm banner locale + `ALL`) |
 | `POST/PATCH/DELETE` | `/admin/banners` | `MANAGE_CONTENT`; multipart field `image` |
 
 ### 6.5 Media library

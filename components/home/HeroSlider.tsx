@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { usePublicBanners } from "@/lib/queries/promotions";
-import type { BannerLang } from "@/lib/api/promotions";
+import type { PublicBannerLang } from "@/lib/api/promotions";
 import type { Locale } from "@/lib/i18n/types";
 import { heroImages } from "@/lib/images";
 import { Container } from "@/components/ui/shared";
@@ -21,8 +21,8 @@ type Slide = {
   fromCms?: boolean;
 };
 
-/** Map app locale → public banner `lang` query. */
-export function localeToBannerLang(locale: Locale | string | null): BannerLang {
+/** Map app locale → public banner `lang` query (never ALL). */
+export function localeToBannerLang(locale: Locale | string | null): PublicBannerLang {
   if (locale === "vi") return "VI";
   if (locale === "zh-TW") return "TW";
   return "EN";

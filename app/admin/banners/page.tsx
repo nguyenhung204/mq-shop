@@ -124,7 +124,7 @@ function BannersInner() {
                   if (!editing) setForm(emptyForm());
                 }}
               >
-                {l}
+                {l === "ALL" ? "ALL" : l}
               </button>
             ))}
           </div>

@@ -96,13 +96,16 @@ Admin create ───────────────► ACTIVE (bỏ qua P
 
 ### BannerLang
 
-`VI` \| `EN` \| `TW`
+`VI` \| `EN` \| `TW` \| `ALL`
 
-| Code | Ngôn ngữ |
-|------|----------|
+| Code | Nghĩa |
+|------|--------|
 | `VI` | Tiếng Việt |
 | `EN` | English |
 | `TW` | Tiếng Đài Loan (繁體中文／台灣) |
+| `ALL` | Global — hiện kèm mọi locale công khai |
+
+Admin tạo/sửa được cả `ALL`. Public `GET /banners` **chỉ** nhận `VI` \| `EN` \| `TW` (không nhận `ALL`); response đã gồm banner đúng locale **+** `ALL`, sort `sortOrder` ASC.
 
 ---
 
@@ -278,7 +281,9 @@ Cả hai trả `200`.
 GET /banners?lang=VI
 ```
 
-**Không auth.** `lang` mặc định `VI`.
+**Không auth.** `lang` mặc định `VI`. Chỉ `VI` \| `EN` \| `TW` (reject `ALL`).
+
+Response gồm banner `lang` khớp query **và** banner `lang=ALL`, đã sort `sortOrder` ASC. Chỉ `isActive=true`.
 
 **Response `200`:**
 
@@ -296,12 +301,23 @@ GET /banners?lang=VI
       "isActive": true,
       "createdAt": "...",
       "updatedAt": "..."
+    },
+    {
+      "id": "uuid-global",
+      "title": "Global promo",
+      "imageUrl": "https://…/banners/….webp",
+      "linkUrl": null,
+      "lang": "ALL",
+      "sortOrder": 1,
+      "isActive": true,
+      "createdAt": "...",
+      "updatedAt": "..."
     }
   ]
 }
 ```
 
-FE sort theo `sortOrder` ASC (BE đã sort). Chỉ banner `isActive=true`.
+FE homepage: gọi `?lang=` theo app locale — **không** cần gọi thêm ALL.
 
 ### 5.2 Admin CRUD (`MANAGE_CONTENT`)
 
@@ -530,7 +546,8 @@ Map UI theo `data.code` trong error envelope.
 ### Admin
 - [ ] Queue `GET /admin/promotions?status=PENDING` → approve / reject (+ modal reason)
 - [ ] Form admin: radio `PLATFORM` vs `TARGETED` (TARGETED bắt buộc SKU/category)
-- [ ] Banner manager: multipart create/update, toggle `isActive`, `lang` tabs VI/EN/TW
+- [ ] Banner manager: multipart create/update, toggle `isActive`, `lang` tabs VI/EN/TW/ALL
+- [ ] Homepage: `GET /banners?lang=` theo locale app (response gồm global ALL)
 - [ ] Media: tạo folder, upload `file`, xóa asset
 
 ### Public / storefront

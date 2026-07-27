@@ -8,6 +8,7 @@ import {
   marketingApi,
   promotionApi,
   type BannerLang,
+  type PublicBannerLang,
   type CreateMarketingFolderBody,
   type CreatePromotionBody,
   type ListBannersParams,
@@ -34,7 +35,7 @@ export const promotionKeys = {
 
 export const bannerKeys = {
   all: ["banners"] as const,
-  public: (lang: BannerLang) => [...bannerKeys.all, "public", lang] as const,
+  public: (lang: PublicBannerLang) => [...bannerKeys.all, "public", lang] as const,
   admin: (params: ListBannersParams) =>
     [...bannerKeys.all, "admin", params.lang ?? "", params.page ?? 1, params.pageSize ?? 20] as const,
 };
@@ -234,7 +235,7 @@ export function useRejectPromotion() {
 
 /* ─── Banners ───────────────────────────────────────────────────────── */
 
-export function usePublicBanners(lang: BannerLang = "VI", enabled = true) {
+export function usePublicBanners(lang: PublicBannerLang = "VI", enabled = true) {
   return useQuery({
     queryKey: bannerKeys.public(lang),
     queryFn: async () => {
