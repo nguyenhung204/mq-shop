@@ -18,6 +18,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Container, PageHero } from "@/components/ui/shared";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { WalletSkeleton } from "@/components/ui/Skeleton";
+import { WalletRankProgress } from "@/components/wallet/WalletRankProgress";
 import { buildReferralRegisterUrl } from "@/lib/mlm/referralLink";
 
 const TX_REASONS: Array<WalletTxReason | ""> = [
@@ -296,6 +297,7 @@ function WalletInner({ embedded = false }: { embedded?: boolean }) {
             {user?.mlmRank != null ? (
               <span className="mq-badge mq-badge-cyan">
                 {t("wallet.rank")} {user.mlmRank}
+                {user.mlmRank === 0 ? ` (${t("wallet.rankSeller")})` : ""}
               </span>
             ) : null}
             {user?.referralRateOverride != null &&
@@ -308,6 +310,8 @@ function WalletInner({ embedded = false }: { embedded?: boolean }) {
               <span className="mq-badge mq-badge-muted">{t("wallet.pinSet")}</span>
             ) : null}
           </div>
+
+          <WalletRankProgress />
 
           {user?.hasWalletPin && !activePinFlow ? (
             <div className="flex flex-wrap gap-2">

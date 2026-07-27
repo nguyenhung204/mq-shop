@@ -122,11 +122,15 @@ function useAdminInvalidate() {
 }
 
 export function useApproveShop() {
+  const queryClient = useQueryClient();
   const invalidate = useAdminInvalidate();
   return useMutation({
     mutationFn: (id: string) => adminApi.approveShop(id),
     onSuccess: () => {
       invalidate();
+      // Shop APPROVED → seller_granted may auto-promote owner (realtime on BE).
+      void queryClient.invalidateQueries({ queryKey: ["mlm"] });
+      void queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
       toast.success(tt("toast.shopApproved"));
     },
     onError: (e) => toast.error(shopActionError(e)),

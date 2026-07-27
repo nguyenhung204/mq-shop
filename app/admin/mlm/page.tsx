@@ -1,12 +1,28 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, Fragment, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { adminApi } from "@/lib/api";
 import type { AuthUser } from "@/lib/api/types";
-import { formatPercent, parsePage } from "@/lib/api/utils";
-import type { NetworkNode } from "@/lib/api/mlm";
-import { useMlmRanks, useNetworkTree, useSetMlmRank, useSetMlmReferralRate, useSetMlmReferrer } from "@/lib/queries/wallet";
+import { formatMoney, formatPercent, parsePage } from "@/lib/api/utils";
+import type {
+  GlobalFundOverview,
+  GlobalFundTierStatus,
+  MonthlyCommissionOverviewRow,
+  MonthlyCommissionSuggestedAction,
+  NetworkNode,
+} from "@/lib/api/mlm";
+import {
+  useMlmRanks,
+  useMonthlyCommissionOverview,
+  useNetworkTree,
+  useReconcileMlmRanks,
+  useRunMonthlyCommissions,
+  useSetMlmRank,
+  useSetMlmReferralRate,
+  useSetMlmReferrer,
+} from "@/lib/queries/wallet";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -21,6 +37,154 @@ function userLabel(u: AuthUser): string {
   const name = u.fullName?.trim();
   if (name) return `${name} · ${u.email}`;
   return u.email;
+}
+
+function suggestedBadge(action: MonthlyCommissionSuggestedAction): string {
+  if (action === "RUN") return "mq-badge mq-badge-teal";
+  if (action === "RE_RUN_IDEMPOTENT") return "mq-badge mq-badge-muted";
+  return "mq-badge mq-badge-orange";
+}
+
+function tierStatusBadge(status: GlobalFundTierStatus): string {
+  if (status === "PAID") return "mq-badge mq-badge-teal";
+  if (status === "PENDING") return "mq-badge mq-badge-muted";
+  return "mq-badge mq-badge-orange";
+}
+
+function poolPerTier(row: MonthlyCommissionOverviewRow): string {
+  return row.globalFund?.poolPerTier ?? row.globalFundEstimate ?? "0";
+}
+
+function creditedSummary(row: MonthlyCommissionOverviewRow): string {
+  const parts: string[] = [];
+  if (row.credited.teamCount > 0) {
+    parts.push(`T ${formatMoney(row.credited.teamPayoutTotal)}×${row.credited.teamCount}`);
+  }
+  if (row.credited.globalCount > 0) {
+    parts.push(`G ${formatMoney(row.credited.globalPayoutTotal)}×${row.credited.globalCount}`);
+  }
+  if (row.credited.loyaltyCount > 0) {
+    parts.push(`L ${formatMoney(row.credited.loyaltyPayoutTotal)}×${row.credited.loyaltyCount}`);
+  }
+  return parts.length ? parts.join(" · ") : "—";
+}
+
+function beneficiaryLabel(b: {
+  email: string;
+  fullName?: string | null;
+  mlmRank: number;
+  payoutAmount: string;
+}): string {
+  const name = b.fullName?.trim() || b.email || "—";
+  return `${name} (R${b.mlmRank}) ${formatMoney(b.payoutAmount)}`;
+}
+
+function GlobalFundDetail({
+  fund,
+  t,
+}: {
+  fund: GlobalFundOverview;
+  t: (key: string, vars?: Record<string, string>) => string;
+}) {
+  return (
+    <div className="space-y-3 px-3 py-3 bg-mq-surface-subtle/50">
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-mq-text-muted">
+        <span>
+          {t("admin.mlm.poolPerTier")}:{" "}
+          <strong className="text-mq-text">{formatMoney(fund.poolPerTier)}</strong>
+          {fund.percent != null ? ` (${fund.percent}%)` : null}
+        </span>
+        <span>
+          {t("admin.mlm.totalPaidToUsers")}:{" "}
+          <strong className="text-mq-text">{formatMoney(fund.totalPaidToUsers)}</strong>
+        </span>
+        <span>
+          {t("admin.mlm.totalCompanyKept")}:{" "}
+          <strong className="text-mq-text">{formatMoney(fund.totalCompanyKept)}</strong>
+        </span>
+      </div>
+
+      <div className="mq-table-wrap overflow-x-auto border border-mq-border rounded-[var(--mq-radius-sm)] bg-mq-surface">
+        <table className="w-full text-[11px] tabular-nums">
+          <thead>
+            <tr className="border-b border-mq-border bg-mq-surface-subtle text-left text-mq-text-muted">
+              <th className="px-2 py-1.5 font-medium">{t("admin.mlm.tier")}</th>
+              <th className="px-2 py-1.5 font-medium">{t("admin.common.status")}</th>
+              <th className="px-2 py-1.5 font-medium text-right">
+                {t("admin.mlm.paidToUsers")}
+              </th>
+              <th className="px-2 py-1.5 font-medium text-right">
+                {t("admin.mlm.companyKept")}
+              </th>
+              <th className="px-2 py-1.5 font-medium">
+                {t("admin.mlm.beneficiaries")}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {fund.tiers.map((tier) => (
+              <tr
+                key={tier.tier}
+                className="border-b border-mq-border last:border-0 align-top"
+              >
+                <td className="px-2 py-1.5 font-semibold text-mq-text whitespace-nowrap">
+                  ≥{tier.tier}
+                  <span className="ml-1 font-normal text-mq-text-muted">
+                    ({tier.eligibleCount})
+                  </span>
+                </td>
+                <td className="px-2 py-1.5">
+                  <span className={tierStatusBadge(tier.status)}>
+                    {t(`admin.mlm.tierStatus.${tier.status}`)}
+                  </span>
+                </td>
+                <td className="px-2 py-1.5 text-right text-mq-text">
+                  {formatMoney(tier.paidTotal)}
+                </td>
+                <td className="px-2 py-1.5 text-right text-mq-text-muted">
+                  {formatMoney(tier.companyKept)}
+                </td>
+                <td className="px-2 py-1.5 text-mq-text-muted">
+                  {tier.beneficiaries.length === 0 ? (
+                    "—"
+                  ) : (
+                    <ul className="space-y-0.5">
+                      {tier.beneficiaries.map((b) => (
+                        <li key={`${tier.tier}-${b.userId}`} className="truncate max-w-[28rem]" title={b.email}>
+                          {beneficiaryLabel(b)}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {Number(fund.unscopedPaid?.paidTotal ?? 0) > 0 ||
+      (fund.unscopedPaid?.beneficiaries?.length ?? 0) > 0 ? (
+        <div className="text-[11px] space-y-1">
+          <p className="font-medium text-mq-text">
+            {t("admin.mlm.unscopedPaid")}:{" "}
+            {formatMoney(fund.unscopedPaid.paidTotal)}
+          </p>
+          <ul className="text-mq-text-muted space-y-0.5 pl-3 list-disc">
+            {fund.unscopedPaid.beneficiaries.map((b) => (
+              <li key={`unscoped-${b.userId}`} className="truncate max-w-[28rem]">
+                {beneficiaryLabel(b)}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {fund.note ? (
+        <p className="text-[11px] text-mq-text-muted">{fund.note}</p>
+      ) : null}
+    </div>
+  );
 }
 
 function MlmAdminInner() {
@@ -43,6 +207,15 @@ function MlmAdminInner() {
   const setRank = useSetMlmRank();
   const setReferrer = useSetMlmReferrer();
   const setReferralRate = useSetMlmReferralRate();
+  const runMonthly = useRunMonthlyCommissions();
+  const reconcileRanks = useReconcileMlmRanks();
+  const {
+    data: monthlyOverview,
+    isLoading: monthlyLoading,
+    isError: monthlyIsError,
+    error: monthlyErr,
+  } = useMonthlyCommissionOverview(12, { enabled: canSetRank });
+  const months = monthlyOverview?.months ?? [];
 
   const { data: usersPage } = useQuery({
     queryKey: ["admin", "users", "ACTIVE", "mlm-picker"],
@@ -83,8 +256,33 @@ function MlmAdminInner() {
   const [rateError, setRateError] = useState("");
   const [rateOk, setRateOk] = useState("");
 
+  const [reconcileUserId, setReconcileUserId] = useState("");
+  const [reconcileLimit, setReconcileLimit] = useState("100");
+  const [reconcileError, setReconcileError] = useState("");
+  const [reconcileOk, setReconcileOk] = useState("");
+
   const [treeUserId, setTreeUserId] = useState("");
   const [treeQuery, setTreeQuery] = useState("");
+  const [yearMonth, setYearMonth] = useState("");
+  const [expandedMonth, setExpandedMonth] = useState<string | null>(null);
+  const [monthlyOk, setMonthlyOk] = useState("");
+  const [monthlyError, setMonthlyError] = useState("");
+
+  useEffect(() => {
+    if (yearMonth || months.length === 0) return;
+    const preferred =
+      months.find((m) => m.suggestedAction === "RUN") ??
+      months.find((m) => Number(m.gmv) > 0) ??
+      months[0];
+    if (preferred?.yearMonth) setYearMonth(preferred.yearMonth);
+  }, [months, yearMonth]);
+
+  const selectedMonth = months.find((m) => m.yearMonth === yearMonth);
+  const canRunSelected =
+    Boolean(yearMonth) &&
+    selectedMonth?.suggestedAction !== "NO_VOLUME" &&
+    Number(selectedMonth?.gmv ?? 0) > 0;
+
   const {
     data: tree,
     isLoading: treeLoading,
@@ -124,7 +322,7 @@ function MlmAdminInner() {
       return;
     }
     const n = Number(rank);
-    if (!Number.isInteger(n) || n < 1 || n > 10) {
+    if (!Number.isInteger(n) || n < 0 || n > 10) {
       setFormError(t("admin.mlm.rankInvalid"));
       return;
     }
@@ -234,10 +432,86 @@ function MlmAdminInner() {
     }
   };
 
+  const onReconcileUser = async (e: FormEvent) => {
+    e.preventDefault();
+    setReconcileError("");
+    setReconcileOk("");
+    if (!reconcileUserId) {
+      setReconcileError(t("admin.mlm.userRequired"));
+      return;
+    }
+    try {
+      const res = await reconcileRanks.mutateAsync({ userId: reconcileUserId });
+      if (res && "promoted" in res) {
+        setReconcileOk(
+          res.promoted
+            ? t("admin.mlm.reconcilePromoted", {
+                from: String(res.fromRank),
+                to: String(res.toRank),
+              })
+            : t("admin.mlm.reconcileNoChange"),
+        );
+      }
+    } catch {
+      /* toast */
+    }
+  };
+
+  const onReconcileBatch = async () => {
+    setReconcileError("");
+    setReconcileOk("");
+    const limit = Number(reconcileLimit);
+    if (!Number.isInteger(limit) || limit < 1 || limit > 500) {
+      setReconcileError(t("admin.mlm.reconcileLimitInvalid"));
+      return;
+    }
+    try {
+      const res = await reconcileRanks.mutateAsync({ limit });
+      if (res && "checked" in res) {
+        setReconcileOk(
+          t("admin.mlm.reconcileBatchDone", {
+            checked: String(res.checked),
+            promoted: String(res.promotedUsers?.length ?? 0),
+          }),
+        );
+      }
+    } catch {
+      /* toast */
+    }
+  };
+
   const onLoadTree = (e: FormEvent) => {
     e.preventDefault();
     if (!treeUserId.trim()) return;
     setTreeQuery(treeUserId.trim());
+  };
+
+  const onRunMonthly = async (e: FormEvent) => {
+    e.preventDefault();
+    setMonthlyOk("");
+    setMonthlyError("");
+    if (!yearMonth) {
+      setMonthlyError(t("admin.mlm.yearMonthRequired"));
+      return;
+    }
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(yearMonth)) {
+      setMonthlyError(t("admin.mlm.yearMonthInvalid"));
+      return;
+    }
+    if (!canRunSelected) {
+      setMonthlyError(t("admin.mlm.yearMonthNoVolume"));
+      return;
+    }
+    try {
+      const res = await runMonthly.mutateAsync({ yearMonth });
+      setMonthlyOk(
+        t("admin.mlm.runMonthlyDone", {
+          yearMonth: res.yearMonth || yearMonth,
+        }),
+      );
+    } catch {
+      /* toast from hook */
+    }
   };
 
   return (
@@ -323,6 +597,248 @@ function MlmAdminInner() {
           </div>
         )}
 
+        {canSetRank ? (
+          <section className="mq-card p-5 space-y-4">
+            <div>
+              <h2 className="text-base font-medium">{t("admin.mlm.runMonthlyTitle")}</h2>
+              <p className="text-sm text-mq-text-muted mt-1">
+                {t("admin.mlm.runMonthlyHint")}
+              </p>
+            </div>
+
+            {monthlyIsError ? (
+              <div className="mq-alert mq-alert-error">
+                {monthlyErr instanceof Error
+                  ? monthlyErr.message
+                  : t("admin.common.failed")}
+              </div>
+            ) : null}
+            {monthlyError ? (
+              <div className="mq-alert mq-alert-error">{monthlyError}</div>
+            ) : null}
+            {monthlyOk ? (
+              <div className="mq-alert mq-alert-success">{monthlyOk}</div>
+            ) : null}
+
+            {monthlyLoading ? (
+              <AdminCardListSkeleton count={3} />
+            ) : months.length === 0 ? (
+              <p className="text-sm text-mq-text-muted">
+                {t("admin.mlm.overviewEmpty")}
+              </p>
+            ) : (
+              <div className="mq-table-wrap overflow-x-auto">
+                <table className="w-full text-xs tabular-nums">
+                  <thead>
+                    <tr className="border-b border-mq-border bg-mq-surface-subtle text-left text-mq-text-muted">
+                      <th className="px-3 py-2 font-medium w-10" />
+                      <th className="px-3 py-2 font-medium">
+                        {t("admin.mlm.yearMonth")}
+                      </th>
+                      <th className="px-3 py-2 font-medium text-right">
+                        {t("admin.mlm.gmv")}
+                      </th>
+                      <th className="px-3 py-2 font-medium text-right">
+                        {t("admin.mlm.orders")}
+                      </th>
+                      <th className="px-3 py-2 font-medium text-right">
+                        {t("admin.mlm.globalFund")}
+                      </th>
+                      <th className="px-3 py-2 font-medium">
+                        {t("admin.mlm.credited")}
+                      </th>
+                      <th className="px-3 py-2 font-medium">
+                        {t("admin.mlm.suggestedAction")}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {months.map((m) => {
+                      const disabled = m.suggestedAction === "NO_VOLUME";
+                      const expanded = expandedMonth === m.yearMonth;
+                      const fund = m.globalFund;
+                      return (
+                        <Fragment key={m.yearMonth}>
+                          <tr
+                            className={`border-b border-mq-border ${
+                              yearMonth === m.yearMonth
+                                ? "bg-mq-surface-subtle/80"
+                                : "hover:bg-mq-surface-subtle/60"
+                            } ${disabled ? "opacity-50" : "cursor-pointer"}`}
+                            onClick={() => {
+                              if (!disabled) setYearMonth(m.yearMonth);
+                            }}
+                          >
+                            <td className="px-3 py-2">
+                              <input
+                                type="radio"
+                                name="monthly-yearMonth"
+                                className="accent-mq-text"
+                                checked={yearMonth === m.yearMonth}
+                                disabled={disabled}
+                                onChange={() => setYearMonth(m.yearMonth)}
+                                aria-label={m.yearMonth}
+                              />
+                            </td>
+                            <td className="px-3 py-2 font-semibold text-mq-text">
+                              <span className="inline-flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  className="mq-icon-btn !p-0.5"
+                                  aria-expanded={expanded}
+                                  aria-label={t("admin.mlm.toggleGlobalFund")}
+                                  disabled={!fund}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setExpandedMonth((cur) =>
+                                      cur === m.yearMonth ? null : m.yearMonth,
+                                    );
+                                  }}
+                                >
+                                  {expanded ? (
+                                    <ChevronDown size={14} strokeWidth={1.5} />
+                                  ) : (
+                                    <ChevronRight size={14} strokeWidth={1.5} />
+                                  )}
+                                </button>
+                                {m.yearMonth}
+                              </span>
+                            </td>
+                            <td className="px-3 py-2 text-right text-mq-text">
+                              {formatMoney(m.gmv)}
+                            </td>
+                            <td className="px-3 py-2 text-right text-mq-text-muted">
+                              {m.deliveredOrderCount}
+                            </td>
+                            <td className="px-3 py-2 text-right text-mq-text-muted">
+                              <span className="block">{formatMoney(poolPerTier(m))}</span>
+                              {fund ? (
+                                <span className="block text-[10px] text-mq-text-muted">
+                                  {t("admin.mlm.paidKeptShort", {
+                                    paid: formatMoney(fund.totalPaidToUsers),
+                                    kept: formatMoney(fund.totalCompanyKept),
+                                  })}
+                                </span>
+                              ) : null}
+                            </td>
+                            <td className="px-3 py-2 text-mq-text-muted whitespace-nowrap">
+                              {creditedSummary(m)}
+                            </td>
+                            <td className="px-3 py-2">
+                              <span className={suggestedBadge(m.suggestedAction)}>
+                                {t(`admin.mlm.action.${m.suggestedAction}`)}
+                              </span>
+                            </td>
+                          </tr>
+                          {expanded && fund ? (
+                            <tr className="border-b border-mq-border">
+                              <td colSpan={7} className="p-0">
+                                <GlobalFundDetail fund={fund} t={t} />
+                              </td>
+                            </tr>
+                          ) : null}
+                        </Fragment>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <form
+              className="flex flex-wrap gap-3 items-center justify-between border-t border-mq-border pt-4"
+              onSubmit={(e) => void onRunMonthly(e)}
+            >
+              <p className="text-sm text-mq-text-muted">
+                {yearMonth
+                  ? t("admin.mlm.selectedMonth", { yearMonth })
+                  : t("admin.mlm.selectMonth")}
+                {selectedMonth?.suggestedAction === "RE_RUN_IDEMPOTENT"
+                  ? ` · ${t("admin.mlm.reRunSafe")}`
+                  : null}
+              </p>
+              <button
+                type="submit"
+                className="mq-btn mq-btn-primary text-sm"
+                disabled={runMonthly.isPending || !canRunSelected}
+              >
+                {runMonthly.isPending
+                  ? t("admin.common.saving")
+                  : t("admin.mlm.runMonthly")}
+              </button>
+            </form>
+          </section>
+        ) : null}
+
+        {canSetRank ? (
+          <section className="mq-card p-5 space-y-4">
+            <div>
+              <h2 className="text-base font-medium">{t("admin.mlm.reconcileTitle")}</h2>
+              <p className="text-sm text-mq-text-muted mt-1">
+                {t("admin.mlm.reconcileHint")}
+              </p>
+            </div>
+            {reconcileError ? (
+              <div className="mq-alert mq-alert-error">{reconcileError}</div>
+            ) : null}
+            {reconcileOk ? (
+              <div className="mq-alert mq-alert-success">{reconcileOk}</div>
+            ) : null}
+
+            <form
+              className="flex flex-wrap gap-3 items-end"
+              onSubmit={(e) => void onReconcileUser(e)}
+            >
+              <label className="flex flex-col gap-1 text-sm min-w-0 flex-1 max-w-md">
+                <span className="text-xs text-mq-text-muted">
+                  {t("admin.mlm.reconcileOneUser")}
+                </span>
+                <SearchableSelect
+                  options={userOptions}
+                  value={reconcileUserId}
+                  aria-label={t("admin.mlm.searchUser")}
+                  placeholder={t("admin.mlm.searchUserPh")}
+                  searchPlaceholder={t("admin.mlm.searchUserPh")}
+                  onChange={setReconcileUserId}
+                />
+              </label>
+              <button
+                type="submit"
+                className="mq-btn mq-btn-primary text-sm"
+                disabled={reconcileRanks.isPending || !reconcileUserId}
+              >
+                {reconcileRanks.isPending
+                  ? t("admin.common.saving")
+                  : t("admin.mlm.reconcileUser")}
+              </button>
+            </form>
+
+            <div className="flex flex-wrap gap-3 items-end border-t border-mq-border pt-4">
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="text-xs text-mq-text-muted">
+                  {t("admin.mlm.reconcileBatchLimit")}
+                </span>
+                <input
+                  className="mq-input !w-[6rem]"
+                  value={reconcileLimit}
+                  onChange={(e) => setReconcileLimit(e.target.value)}
+                  inputMode="numeric"
+                />
+              </label>
+              <button
+                type="button"
+                className="mq-btn mq-btn-outline text-sm"
+                disabled={reconcileRanks.isPending}
+                onClick={() => void onReconcileBatch()}
+              >
+                {reconcileRanks.isPending
+                  ? t("admin.common.saving")
+                  : t("admin.mlm.reconcileBatch")}
+              </button>
+            </div>
+          </section>
+        ) : null}
+
         <div
           className={`grid gap-4 items-start ${
             canSetRank && canViewTree ? "lg:grid-cols-2" : "grid-cols-1"
@@ -385,13 +901,13 @@ function MlmAdminInner() {
                   <label className="flex flex-col gap-1 text-sm">
                     <span className="text-xs text-mq-text-muted">{t("wallet.rank")}</span>
                     <select
-                      className="mq-input !w-[6rem] max-w-full"
+                      className="mq-input !w-[10rem] max-w-full"
                       value={rank}
                       onChange={(e) => setRankValue(e.target.value)}
                     >
-                      {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                      {Array.from({ length: 11 }, (_, i) => i).map((n) => (
                         <option key={n} value={n}>
-                          {n}
+                          {n === 0 ? `0 (${t("wallet.rankSeller")})` : n}
                         </option>
                       ))}
                     </select>

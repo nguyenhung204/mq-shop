@@ -87,6 +87,9 @@ export const mlmKeys = {
       params.pageSize ?? 20,
     ] as const,
   ranks: () => [...mlmKeys.all, "ranks"] as const,
+  rankProgress: () => [...mlmKeys.all, "rank-progress"] as const,
+  monthlyOverview: (monthsBack = 12) =>
+    [...mlmKeys.all, "monthly-overview", monthsBack] as const,
 };
 
 export const adminWalletKeys = {
@@ -204,6 +207,17 @@ export function useCommissions(params: ListCommissionsParams = {}) {
       parsePage<CommissionRow>(
         await mlmApi.commissions({ ...params, page, pageSize }),
       ),
+  });
+}
+
+export function useRankProgress(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: mlmKeys.rankProgress(),
+    queryFn: () => mlmApi.rankProgress(),
+    enabled: options?.enabled ?? true,
+    // Event-driven refresh (SSE / DELIVERED / admin). Do not poll hourly.
+    staleTime: 60_000,
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -413,6 +427,21 @@ export function useMlmRanks(options?: { enabled?: boolean }) {
   });
 }
 
+export function useMonthlyCommissionOverview(
+  monthsBack = 12,
+  options?: { enabled?: boolean },
+) {
+  return useQuery({
+    queryKey: mlmKeys.monthlyOverview(monthsBack),
+    queryFn: async () => {
+      const res = await adminMlmApi.monthlyOverview({ monthsBack });
+      const months = Array.isArray(res?.months) ? res.months : [];
+      return { months };
+    },
+    enabled: options?.enabled ?? true,
+  });
+}
+
 export function useSetMlmRank() {
   const qc = useQueryClient();
   return useMutation({
@@ -420,10 +449,61 @@ export function useSetMlmRank() {
       adminMlmApi.setUserRank(userId, body),
     onSuccess: () => {
       toast.success(tt("toast.mlmRankUpdated"));
-      void qc.invalidateQueries({ queryKey: mlmKeys.ranks() });
+      void qc.invalidateQueries({ queryKey: mlmKeys.all });
       void qc.invalidateQueries({ queryKey: ["admin", "users"] });
     },
     onError: (e) => toast.error(walletErrorMessage(e, tt("toast.mlmRankUpdateFailed"))),
+  });
+}
+
+export function useRunMonthlyCommissions() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body?: { yearMonth?: string }) => adminMlmApi.runMonthly(body),
+    onSuccess: (data) => {
+      toast.success(
+        tt("toast.mlmMonthlyRan", {
+          yearMonth: data?.yearMonth ?? "",
+        }),
+      );
+      void qc.invalidateQueries({ queryKey: mlmKeys.all });
+      void qc.invalidateQueries({ queryKey: walletKeys.all });
+    },
+    onError: (e) =>
+      toast.error(walletErrorMessage(e, tt("toast.mlmMonthlyRunFailed"))),
+  });
+}
+
+export function useReconcileMlmRanks() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body?: { userId?: string; limit?: number }) =>
+      adminMlmApi.reconcileRanks(body),
+    onSuccess: (data) => {
+      if (data && "checked" in data) {
+        toast.success(
+          tt("toast.mlmReconcileBatch", {
+            checked: String(data.checked),
+            promoted: String(data.promotedUsers?.length ?? 0),
+          }),
+        );
+      } else if (data && "promoted" in data) {
+        toast.success(
+          data.promoted
+            ? tt("toast.mlmReconcilePromoted", {
+                from: String(data.fromRank),
+                to: String(data.toRank),
+              })
+            : tt("toast.mlmReconcileNoChange"),
+        );
+      } else {
+        toast.success(tt("toast.mlmReconcileDone"));
+      }
+      void qc.invalidateQueries({ queryKey: mlmKeys.all });
+      void qc.invalidateQueries({ queryKey: ["admin", "users"] });
+    },
+    onError: (e) =>
+      toast.error(walletErrorMessage(e, tt("toast.mlmReconcileFailed"))),
   });
 }
 

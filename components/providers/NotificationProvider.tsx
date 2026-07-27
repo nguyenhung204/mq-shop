@@ -10,10 +10,12 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getApiHost } from "@/lib/api/client";
 import { notificationApi } from "@/lib/api/notifications";
 import type { ApiNotification, PageMeta } from "@/lib/api/types";
+import { mlmKeys, walletKeys } from "@/lib/queries/wallet";
 import { useAuth } from "./AuthProvider";
 
 /** Page size for the header dropdown. */
@@ -37,8 +39,34 @@ type NotificationContextValue = {
 
 const NotificationContext = createContext<NotificationContextValue | null>(null);
 
+/** Match BE titles from commission / MLM rank notifies (010). */
+function isCommissionNotify(n: ApiNotification): boolean {
+  const title = (n.title || "").toLowerCase();
+  const type = (n.type || "").toLowerCase();
+  if (type.includes("commission") || type.includes("mlm")) return true;
+  return (
+    title.includes("commission credited") ||
+    title.includes("bonus credited") ||
+    title.includes("referral bonus") ||
+    title.includes("loyalty bonus") ||
+    title.includes("global bonus") ||
+    title.includes("team commission") ||
+    title.includes("commission not credited")
+  );
+}
+
+function isRankNotify(n: ApiNotification): boolean {
+  const title = (n.title || "").toLowerCase();
+  return (
+    title.includes("mlm rank") ||
+    title.includes("rank updated") ||
+    title.includes("rank upgraded")
+  );
+}
+
 export function NotificationProvider({ children }: { children: ReactNode }) {
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, loading: authLoading, refreshUser } = useAuth();
+  const queryClient = useQueryClient();
   const [items, setItems] = useState<ApiNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -146,6 +174,18 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           );
         }
 
+        if (isCommissionNotify(incoming)) {
+          void queryClient.invalidateQueries({ queryKey: walletKeys.all });
+          void queryClient.invalidateQueries({ queryKey: mlmKeys.all });
+        }
+        // Rank updates are event-driven (no hourly FE poll).
+        // Toast "MLM rank upgraded/updated" → profile + rank-progress.
+        if (isRankNotify(incoming)) {
+          void refreshUser();
+          void queryClient.invalidateQueries({ queryKey: mlmKeys.rankProgress() });
+          void queryClient.invalidateQueries({ queryKey: mlmKeys.all });
+        }
+
         toast.info(incoming.title || "Notification", {
           description: incoming.body || undefined,
           duration: 5000,
@@ -163,7 +203,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       source.close();
       setStreamStatus("idle");
     };
-  }, [isAuthenticated, authLoading]);
+  }, [isAuthenticated, authLoading, queryClient, refreshUser]);
 
   const markRead = useCallback(async (id: string) => {
     const target = itemsRef.current.find((n) => n.id === id);

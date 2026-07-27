@@ -166,6 +166,12 @@ export function useUpdateOrderStatus() {
     onSuccess: (order) => {
       queryClient.setQueryData(orderKeys.detail(order.id), order);
       void queryClient.invalidateQueries({ queryKey: orderKeys.all });
+      // DELIVERED may credit referral + fire order.rank_qualify (sponsor promote).
+      // Refresh this session; sponsor who is not the actor refreshes via SSE toast.
+      if (order.status === "DELIVERED") {
+        void queryClient.invalidateQueries({ queryKey: ["wallet"] });
+        void queryClient.invalidateQueries({ queryKey: ["mlm"] });
+      }
       toast.success(tt("toast.orderStatus", { status: order.status }));
     },
     onError: (e) => toast.error(orderErrorMessage(e, tt("toast.statusUpdateFailed"))),

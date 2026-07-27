@@ -11,6 +11,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Container, PageHero } from "@/components/ui/shared";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
+import { WalletRankProgress } from "@/components/wallet/WalletRankProgress";
 
 const TYPES: Array<CommissionType | "ALL"> = [
   "ALL",
@@ -41,10 +42,22 @@ function CommissionsPanel({ embedded = false }: { embedded?: boolean }) {
 
   const body = (
     <div className="space-y-5">
-      <p className="text-sm text-mq-text-muted">{t("wallet.commissionsIntro")}</p>
+      <div className="space-y-2 text-sm text-mq-text-muted">
+        <p>{t("wallet.commissionsIntro")}</p>
+        <ul className="list-disc pl-5 space-y-1 text-xs leading-relaxed">
+          <li>{t("wallet.pillarReferral")}</li>
+          <li>{t("wallet.pillarTeam")}</li>
+          <li>{t("wallet.pillarLoyalty")}</li>
+          <li>{t("wallet.pillarGlobal")}</li>
+        </ul>
+      </div>
+
+      <WalletRankProgress />
+
       {user?.mlmRank != null ? (
         <p className="text-xs text-mq-text-muted">
           {t("wallet.rank")}: <strong>{user.mlmRank}</strong>
+          {user.mlmRank === 0 ? ` (${t("wallet.rankSeller")})` : ""}
         </p>
       ) : null}
 
