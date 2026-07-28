@@ -864,7 +864,11 @@
       "emptyLedger": "Không có dòng sổ cái."
     },
     "usersPage": {
-      "empty": "Không có người dùng trong bộ lọc này."
+      "empty": "Không có người dùng trong bộ lọc này.",
+      "confirmLockTitle": "Khoá tài khoản này?",
+      "confirmLockDesc": "{email} sẽ không thể đăng nhập cho đến khi được mở khoá.",
+      "confirmDeleteTitle": "Xoá tài khoản này?",
+      "confirmDeleteDesc": "{email} sẽ bị xoá mềm và dữ liệu cá nhân được làm sạch. Không thể hoàn tác từ storefront."
     },
     "staffPage": {
       "allShopsUnassigned": "Tất cả shop (+ buyer chưa gán)",
@@ -885,7 +889,11 @@
       "tempPasswordHint": "Copy ngay — sẽ không hiện lại. Tài khoản: {email}",
       "copy": "Copy",
       "candidate": "Ứng viên",
-      "buyerCandidates": "Người mua (ứng viên)"
+      "buyerCandidates": "Người mua (ứng viên)",
+      "confirmLockTitle": "Khoá tài khoản nhân sự?",
+      "confirmLockDesc": "{email} sẽ không thể đăng nhập cho đến khi được mở khoá.",
+      "confirmDeleteTitle": "Xoá tài khoản nhân sự?",
+      "confirmDeleteDesc": "{email} sẽ bị xoá mềm. Thao tác này cần xác nhận."
     },
     "ordersPage": {
       "createForBuyer": "Tạo hộ người mua",

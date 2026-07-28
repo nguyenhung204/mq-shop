@@ -5,13 +5,14 @@ import type {
   PublicProductDetail,
 } from "@/lib/api/types";
 import { toRatingNumber } from "@/lib/api/reviews";
+import { PRODUCT_FALLBACK_IMAGE } from "@/lib/images";
 
 export type { Product };
 
 function firstImage(images?: BeProduct["images"] | string[]): string {
-  if (!images || !images.length) return "/images/products/1.jpg";
+  if (!images || !images.length) return PRODUCT_FALLBACK_IMAGE;
   const first = images[0];
-  return typeof first === "string" ? first : first.url || "/images/products/1.jpg";
+  return typeof first === "string" ? first : first.url || PRODUCT_FALLBACK_IMAGE;
 }
 
 function galleryImages(images?: BeProduct["images"] | string[]): string[] {
@@ -50,7 +51,7 @@ export function mapListingCard(p: BeListing, categorySlug = "all"): Product {
     price: minPrice,
     minPrice,
     maxPrice,
-    image: p.thumbnailUrl || "/images/products/1.jpg",
+    image: p.thumbnailUrl || PRODUCT_FALLBACK_IMAGE,
     category: "Shop",
     categorySlug,
     rating: stats.rating,
@@ -92,7 +93,7 @@ export function mapPublicProductDetail(p: PublicProductDetail): Product {
     price: firstInStock?.price ?? (Number(p.minPrice ?? p.price) || 0),
     minPrice: Number(p.minPrice ?? p.price) || 0,
     maxPrice: Number(p.maxPrice ?? p.price) || 0,
-    image: selectedImages[0] || "/images/products/1.jpg",
+    image: selectedImages[0] || PRODUCT_FALLBACK_IMAGE,
     images: gallery.length ? gallery : selectedImages,
     category: "Shop",
     categorySlug: p.categoryId || "all",

@@ -437,7 +437,6 @@ export const adminApi = {
       query,
       withMeta: true,
     }),
-  dailyRefundReport: () => api.get("/admin/finance/daily-refund-report"),
   commissionOverride: (shopId: string, body: { commissionRate: number }) =>
     api.put(`/admin/shops/${shopId}/commission-override`, body),
   createGateway: (body: unknown) => api.post("/admin/payment-gateway-configs", body),

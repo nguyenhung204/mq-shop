@@ -24,7 +24,9 @@ import { ReviewForm } from "@/components/reviews/ReviewForm";
 import { Container, PageHero } from "@/components/ui/shared";
 import { OrderDetailSkeleton } from "@/components/ui/Skeleton";
 
-const FALLBACK_IMAGE = "/images/products/1.jpg";
+import { PRODUCT_FALLBACK_IMAGE } from "@/lib/images";
+
+const FALLBACK_IMAGE = PRODUCT_FALLBACK_IMAGE;
 
 function formatAddress(addr: {
   fullName: string;

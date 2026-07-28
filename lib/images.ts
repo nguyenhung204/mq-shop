@@ -1,6 +1,9 @@
 /** Local images — served from /public, no external 404s */
 const p = (path: string) => path;
 
+/** Default placeholder when API/product has no image URL. */
+export const PRODUCT_FALLBACK_IMAGE = p("/images/products/01.jpg");
+
 export const productImages: Record<string, string> = {
   "1": p("/images/products/01.jpg"),
   "2": p("/images/products/02.jpg"),

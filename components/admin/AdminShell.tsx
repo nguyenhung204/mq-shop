@@ -30,7 +30,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
     return false;
   });
 
-  /** Prefer a more specific sibling href so `/admin/finance` is not active on `/admin/finance/configs`. */
+  /** Prefer the most specific matching nav href for nested admin routes. */
   const isActive = (href: string) => {
     if (pathname === href) return true;
     if (href === "/admin") return false;
