@@ -534,6 +534,33 @@
     "overview": {
       "title": "Admin",
       "description": "Operations, commerce, and system tools for your role.",
+      "queuesTitle": "Action required",
+      "snapshotTitle": "Platform snapshot",
+      "modulesTitle": "Modules",
+      "loading": "Loading dashboard…",
+      "updatedAt": "Updated {time}",
+      "queueTiles": {
+        "shopsPending": "Shops pending approval",
+        "productsPending": "Products pending approval",
+        "ordersPending": "Orders needing action",
+        "rmaPending": "Return requests (RMA)",
+        "settlementsPendingReconcile": "Settlements to reconcile",
+        "sellerPayoutsPending": "Seller payouts pending",
+        "walletPayoutsPending": "Wallet withdrawals pending",
+        "promotionsPending": "Promotions pending",
+        "dsarSubmitted": "Data erasure requests submitted",
+        "dsarApprovedAwaitingExecute": "Data erasure — ready to execute",
+        "staffPending": "Staff pending approval",
+        "financeConfigsPending": "Fee config pending approval"
+      },
+      "snapshot": {
+        "ordersToday": "Orders today",
+        "ordersThisWeek": "Orders this week",
+        "gmvDeliveredThisMonthUsd": "Delivered GMV (this month)",
+        "activeShops": "Active shops",
+        "activeProducts": "Active products",
+        "suspendedShops": "Suspended shops"
+      },
       "cards": {
         "shops": "Approve, reject, and lock/unlock seller shops",
         "products": "Review listings — approve, reject, or hide",

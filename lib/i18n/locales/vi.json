@@ -534,6 +534,33 @@
     "overview": {
       "title": "Quản trị",
       "description": "Công cụ vận hành, thương mại và hệ thống theo quyền của bạn.",
+      "queuesTitle": "Cần xử lý",
+      "snapshotTitle": "Tổng quan nền tảng",
+      "modulesTitle": "Chức năng",
+      "loading": "Đang tải tổng quan…",
+      "updatedAt": "Cập nhật lúc {time}",
+      "queueTiles": {
+        "shopsPending": "Shop chờ duyệt",
+        "productsPending": "Sản phẩm chờ duyệt",
+        "ordersPending": "Đơn cần xử lý",
+        "rmaPending": "Yêu cầu đổi trả (RMA)",
+        "settlementsPendingReconcile": "Đối soát chờ xử lý",
+        "sellerPayoutsPending": "Chi trả seller chờ duyệt",
+        "walletPayoutsPending": "Rút ví chờ duyệt",
+        "promotionsPending": "Khuyến mãi chờ duyệt",
+        "dsarSubmitted": "Yêu cầu xóa dữ liệu đã gửi",
+        "dsarApprovedAwaitingExecute": "Xóa dữ liệu đã duyệt — chờ thực thi",
+        "staffPending": "Nhân sự chờ duyệt",
+        "financeConfigsPending": "Cấu hình phí chờ duyệt"
+      },
+      "snapshot": {
+        "ordersToday": "Đơn hôm nay",
+        "ordersThisWeek": "Đơn tuần này",
+        "gmvDeliveredThisMonthUsd": "Doanh thu đã giao (tháng này)",
+        "activeShops": "Shop đang hoạt động",
+        "activeProducts": "Sản phẩm đang bán",
+        "suspendedShops": "Shop bị đình chỉ"
+      },
       "cards": {
         "shops": "Duyệt, từ chối, khóa/mở khóa cửa hàng seller",
         "products": "Duyệt listing — duyệt, từ chối hoặc ẩn",

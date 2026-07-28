@@ -534,6 +534,33 @@
     "overview": {
       "title": "管理後台",
       "description": "依角色提供營運、商務與系統工具。",
+      "queuesTitle": "待處理",
+      "snapshotTitle": "平台概況",
+      "modulesTitle": "模組",
+      "loading": "載入概況中…",
+      "updatedAt": "更新於 {time}",
+      "queueTiles": {
+        "shopsPending": "待審商店",
+        "productsPending": "待審商品",
+        "ordersPending": "待處理訂單",
+        "rmaPending": "退換貨申請（RMA）",
+        "settlementsPendingReconcile": "待對帳結算",
+        "sellerPayoutsPending": "待審賣家撥款",
+        "walletPayoutsPending": "待審錢包提領",
+        "promotionsPending": "待審促銷",
+        "dsarSubmitted": "資料刪除請求已提交",
+        "dsarApprovedAwaitingExecute": "資料刪除已核准 — 待執行",
+        "staffPending": "待審員工",
+        "financeConfigsPending": "待審費用設定"
+      },
+      "snapshot": {
+        "ordersToday": "今日訂單",
+        "ordersThisWeek": "本週訂單",
+        "gmvDeliveredThisMonthUsd": "本月已交付 GMV",
+        "activeShops": "活躍商店",
+        "activeProducts": "上架商品",
+        "suspendedShops": "停權商店"
+      },
       "cards": {
         "shops": "核准、拒絕、鎖定／解除鎖定賣家商店",
         "products": "審核上架 — 核准、拒絕或隱藏",

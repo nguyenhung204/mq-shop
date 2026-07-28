@@ -49,6 +49,19 @@ export type {
   UpdateOrderStatusRequest,
 } from "./orders";
 export { settlementApi, adminSettlementApi } from "./settlements";
+export { adminDashboardApi } from "./admin-dashboard";
+export type {
+  DashboardCountTile,
+  AdminDashboardQueues,
+  AdminDashboardSnapshot,
+  AdminDashboardPayload,
+  AdminDashboardSection,
+} from "./admin-dashboard";
+export {
+  ADMIN_DASHBOARD_QUEUE_ORDER,
+  ADMIN_DASHBOARD_SNAPSHOT_ORDER,
+  normalizeDashboardHref,
+} from "./admin-dashboard";
 export {
   financeConfigApi,
   adminPayoutApi,
