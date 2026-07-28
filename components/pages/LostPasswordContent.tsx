@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { AuthPanel } from "@/components/auth/AuthPanel";
 import { OtpCountdown } from "@/components/auth/OtpCountdown";
@@ -26,6 +27,7 @@ type MsgKey =
  */
 export function LostPasswordContent() {
   const { t } = useLanguage();
+  const router = useRouter();
   const [step, setStep] = useState<"request" | "reset">("request");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -88,9 +90,8 @@ export function LostPasswordContent() {
         code,
         newPassword,
       });
-      setOkKey("account.forgot.passwordUpdated");
-      setCode("");
-      setNewPassword("");
+      router.replace("/my-account?passwordReset=1");
+      return;
     } catch (err) {
       const codeName = err instanceof ApiError ? err.code : null;
       // Missing / inactive user and wrong OTP share INVALID_OTP — same copy.

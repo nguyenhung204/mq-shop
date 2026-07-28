@@ -290,6 +290,10 @@ export function ShopDashboard({ initialSection }: Props) {
             <p>{t("seller.titles.shopDesc")}</p>
           </header>
           <form className="mq-shop-form" onSubmit={(e) => void apply(e)}>
+            <div className="mq-shop-apply-warn" role="alert">
+              <p className="mq-shop-apply-warn-title">{t("seller.shop.applyWarningTitle")}</p>
+              <p className="mq-shop-apply-warn-desc">{t("seller.shop.applyTaxIdWarning")}</p>
+            </div>
             <div className="mq-shop-field">
               <label htmlFor="shop-name">{t("seller.shop.shopName")}</label>
               <input
@@ -318,6 +322,7 @@ export function ShopDashboard({ initialSection }: Props) {
                 }
                 required
               />
+              <p className="mq-shop-hint">{t("seller.shop.applyTaxIdHint")}</p>
             </div>
             <div className="mq-shop-field">
               <label htmlFor="shop-country">{t("seller.shop.country")}</label>

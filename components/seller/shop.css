@@ -108,6 +108,30 @@
   color: var(--mq-text-muted);
 }
 
+.mq-shop-apply-warn {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgba(255, 210, 29, 0.45);
+  border-radius: var(--mq-radius);
+  background: rgba(255, 210, 29, 0.12);
+}
+
+.mq-shop-apply-warn-title {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--mq-text);
+}
+
+.mq-shop-apply-warn-desc {
+  margin: 0.35rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--mq-text-secondary);
+}
+
 .mq-shop-dl {
   display: grid;
   grid-template-columns: 1fr;
