@@ -385,6 +385,8 @@ export const adminApi = {
     api.post(`/admin/shops/${id}/reject`, body),
   suspendShop: (id: string, body?: { reason?: string | LocalizedText }) =>
     api.post(`/admin/shops/${id}/violation-lock`, body ?? {}),
+  /** Only shops with isSuspended (violation-lock). Restores APPROVED. */
+  unlockShop: (id: string) => api.post(`/admin/shops/${id}/violation-unlock`, {}),
   products: (status?: string, page?: number, pageSize?: number) =>
     api.get<ApiProduct[] | { data: ApiProduct[]; meta?: PageMeta } | Paginated<ApiProduct>>(
       "/admin/products",

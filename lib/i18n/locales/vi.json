@@ -527,7 +527,7 @@
       "title": "Quản trị",
       "description": "Công cụ vận hành, thương mại và hệ thống theo quyền của bạn.",
       "cards": {
-        "shops": "Duyệt, từ chối và khoá vi phạm đơn mở shop",
+        "shops": "Duyệt, từ chối, khóa/mở khóa cửa hàng seller",
         "products": "Duyệt listing — duyệt, từ chối hoặc ẩn",
         "inventory": "Duyệt hoặc từ chối phiếu kho liên shop",
         "categories": "Quản lý cây danh mục storefront",
@@ -619,7 +619,7 @@
     },
     "shops": {
       "title": "Cửa hàng",
-      "description": "Duyệt, từ chối và quản lý shop seller.",
+      "description": "Duyệt, từ chối, khóa hoặc mở khóa cửa hàng seller.",
       "rejectTitle": "Từ chối shop",
       "lockTitle": "Khoá shop",
       "violationLock": "Khoá vi phạm",
@@ -627,7 +627,21 @@
       "taxId": "Mã số thuế",
       "pickupAddress": "Địa chỉ lấy hàng",
       "legalDocument": "Giấy tờ pháp lý",
-      "empty": "Không có shop trong bộ lọc này."
+      "empty": "Không có shop trong bộ lọc này.",
+      "violationUnlock": "Mở khóa shop",
+      "suspended": "Đang khóa",
+      "unlockHint": "Shop bị khóa do vi phạm. Mở khóa sẽ khôi phục APPROVED để seller bán lại.",
+      "rejectOnlyHint": "Chỉ từ chối hồ sơ — seller nộp lại apply. Mở khóa chỉ dùng khi bị khóa vi phạm.",
+      "backToQueue": "Quay lại danh sách",
+      "country": "Quốc gia",
+      "owner": "Chủ sở hữu",
+      "flags": "Cờ",
+      "flagNone": "Không",
+      "flagViolation": "Vi phạm / liên hệ admin",
+      "flagSuspended": "Đang khóa (violation lock)",
+      "openDocument": "Mở tài liệu",
+      "rejectDesc": "Cho seller biết vì sao “{name}” bị từ chối.",
+      "lockDesc": "Ghi chú tùy chọn khi khóa “{name}”."
     },
     "products": {
       "title": "Sản phẩm",
@@ -1769,7 +1783,9 @@
     "mlmReconcilePromoted": "Reconcile: {from} → {to}",
     "mlmReconcileNoChange": "Reconcile xong — không đổi rank",
     "mlmReconcileBatch": "Batch: kiểm {checked}, thăng {promoted}",
-    "mlmReconcileFailed": "Reconcile rank thất bại"
+    "mlmReconcileFailed": "Reconcile rank thất bại",
+    "shopUnlocked": "Đã mở khóa shop và khôi phục duyệt",
+    "shopNotSuspended": "Shop không bị khóa vi phạm — không thể mở khóa."
   },
   "superAdmin": {
     "title": "Quản trị hệ thống",
@@ -2005,6 +2021,11 @@
       "shop.apply": "Đã nộp đơn mở shop",
       "user.password.change": "Đã đổi mật khẩu",
       "auth.logout": "Đã đăng xuất"
+    }
+  },
+  "audit": {
+    "actions": {
+      "admin.shop.violation_unlock": "Đã mở khóa shop (vi phạm)"
     }
   }
 }

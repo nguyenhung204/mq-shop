@@ -7,6 +7,7 @@ import {
   useApproveShop,
   useRejectShop,
   useSuspendShop,
+  useUnlockShop,
 } from "@/lib/queries/admin";
 import type { LocalizedText } from "@/lib/api/types";
 import { AuthGuard } from "@/components/guards/AuthGuard";
@@ -15,7 +16,7 @@ import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButto
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
-import { Check, ShieldAlert, X } from "lucide-react";
+import { Check, ShieldAlert, ShieldCheck, X } from "lucide-react";
 
 function reasonText(reason: string | LocalizedText | null | undefined): string {
   if (!reason) return "";
@@ -30,9 +31,14 @@ function ShopDetailInner({ id }: { id: string }) {
   const approveShop = useApproveShop();
   const rejectShop = useRejectShop();
   const suspendShop = useSuspendShop();
+  const unlockShop = useUnlockShop();
 
   const docUrl = shop?.documentUrl || shop?.legalDocumentUrl;
-  const busy = approveShop.isPending || rejectShop.isPending || suspendShop.isPending;
+  const busy =
+    approveShop.isPending ||
+    rejectShop.isPending ||
+    suspendShop.isPending ||
+    unlockShop.isPending;
   const modalBusy =
     reasonKind === "reject" ? rejectShop.isPending : suspendShop.isPending;
 
@@ -44,7 +50,7 @@ function ShopDetailInner({ id }: { id: string }) {
       />
       <div className="space-y-6 max-w-3xl">
         <Link href="/admin/shops" className="text-sm text-mq-text-muted hover:text-mq-text">
-          ← Back to queue
+          ← {t("admin.shops.backToQueue")}
         </Link>
 
         {isError && (
@@ -61,7 +67,14 @@ function ShopDetailInner({ id }: { id: string }) {
                 <h2 className="text-lg font-medium text-mq-text">{shop.name}</h2>
                 <p className="text-xs text-mq-text-muted mt-1 font-mono">{shop.id}</p>
               </div>
-              <span className="mq-badge mq-badge-cyan h-fit">{translateStatus(t, "shop", shop.status)}</span>
+              <div className="flex flex-wrap gap-1.5 h-fit">
+                <span className="mq-badge mq-badge-cyan">
+                  {translateStatus(t, "shop", shop.status)}
+                </span>
+                {shop.isSuspended ? (
+                  <span className="mq-badge mq-badge-pink">{t("admin.shops.suspended")}</span>
+                ) : null}
+              </div>
             </div>
 
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -70,21 +83,21 @@ function ShopDetailInner({ id }: { id: string }) {
                 <dd>{shop.taxId || shop.taxCode || "—"}</dd>
               </div>
               <div>
-                <dt className="text-xs text-mq-text-muted">Country</dt>
+                <dt className="text-xs text-mq-text-muted">{t("admin.shops.country")}</dt>
                 <dd>{shop.countryCode || "—"}</dd>
               </div>
               <div>
-                <dt className="text-xs text-mq-text-muted">Owner</dt>
+                <dt className="text-xs text-mq-text-muted">{t("admin.shops.owner")}</dt>
                 <dd className="font-mono text-xs">{shop.ownerId || "—"}</dd>
               </div>
               <div>
-                <dt className="text-xs text-mq-text-muted">Flags</dt>
+                <dt className="text-xs text-mq-text-muted">{t("admin.shops.flags")}</dt>
                 <dd>
-                  {shop.violationFlag || shop.contactAdminRequired
-                    ? "violation / contact admin"
-                    : shop.isSuspended
-                      ? "suspended"
-                      : "none"}
+                  {shop.isSuspended
+                    ? t("admin.shops.flagSuspended")
+                    : shop.violationFlag || shop.contactAdminRequired
+                      ? t("admin.shops.flagViolation")
+                      : t("admin.shops.flagNone")}
                 </dd>
               </div>
               {shop.pickupAddress && (
@@ -118,7 +131,7 @@ function ShopDetailInner({ id }: { id: string }) {
                     rel="noopener noreferrer"
                     className="text-sm underline"
                   >
-                    Open document
+                    {t("admin.shops.openDocument")}
                   </a>
                 )}
               </div>
@@ -165,10 +178,29 @@ function ShopDetailInner({ id }: { id: string }) {
                   label={t("admin.shops.violationLock")}
                   icon={ShieldAlert}
                   tone="warn"
-                  disabled={busy || shop.status !== "APPROVED"}
+                  disabled={
+                    busy || shop.status !== "APPROVED" || Boolean(shop.isSuspended)
+                  }
                   onClick={() => setReasonKind("violation")}
                 />
+                <AdminIconButton
+                  label={t("admin.shops.violationUnlock")}
+                  icon={ShieldCheck}
+                  tone="approve"
+                  disabled={busy || !shop.isSuspended}
+                  onClick={() => void unlockShop.mutateAsync(shop.id)}
+                />
               </AdminActions>
+              {shop.status === "REJECTED" && !shop.isSuspended ? (
+                <p className="text-xs text-mq-text-muted mt-3 leading-relaxed">
+                  {t("admin.shops.rejectOnlyHint")}
+                </p>
+              ) : null}
+              {shop.isSuspended ? (
+                <p className="text-xs text-mq-text-muted mt-3 leading-relaxed">
+                  {t("admin.shops.unlockHint")}
+                </p>
+              ) : null}
             </div>
           </div>
         )}
@@ -184,8 +216,8 @@ function ShopDetailInner({ id }: { id: string }) {
         description={
           shop
             ? reasonKind === "reject"
-              ? `Tell the seller why “${shop.name}” was rejected.`
-              : `Optional note for locking “${shop.name}”.`
+              ? t("admin.shops.rejectDesc", { name: shop.name })
+              : t("admin.shops.lockDesc", { name: shop.name })
             : undefined
         }
         confirmLabel={

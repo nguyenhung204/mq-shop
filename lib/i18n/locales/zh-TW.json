@@ -527,7 +527,7 @@
       "title": "管理後台",
       "description": "依角色提供營運、商務與系統工具。",
       "cards": {
-        "shops": "核准、拒絕與違規鎖定賣家申請",
+        "shops": "核准、拒絕、鎖定／解除鎖定賣家商店",
         "products": "審核上架 — 核准、拒絕或隱藏",
         "inventory": "核准或拒絕跨店庫存單",
         "categories": "維護前台分類樹",
@@ -619,7 +619,7 @@
     },
     "shops": {
       "title": "商店",
-      "description": "核准、拒絕並管理賣家商店。",
+      "description": "核准、拒絕、鎖定或解除鎖定賣家商店。",
       "rejectTitle": "拒絕商店",
       "lockTitle": "鎖定商店",
       "violationLock": "違規鎖定",
@@ -627,7 +627,21 @@
       "taxId": "稅籍編號",
       "pickupAddress": "取貨地址",
       "legalDocument": "法律文件",
-      "empty": "此篩選條件無商店。"
+      "empty": "此篩選條件無商店。",
+      "violationUnlock": "解除商店鎖定",
+      "suspended": "已停權",
+      "unlockHint": "此商店因違規被鎖定。解除後會恢復為已核准，賣家可再次販售。",
+      "rejectOnlyHint": "僅為申請駁回 — 賣家可重新申請。解除鎖定僅適用違規停權。",
+      "backToQueue": "返回列表",
+      "country": "國家",
+      "owner": "店主",
+      "flags": "標記",
+      "flagNone": "無",
+      "flagViolation": "違規／需聯絡管理員",
+      "flagSuspended": "已停權（違規鎖定）",
+      "openDocument": "開啟文件",
+      "rejectDesc": "告知賣家為何「{name}」被拒絕。",
+      "lockDesc": "鎖定「{name}」的選填備註。"
     },
     "products": {
       "title": "商品",
@@ -1769,7 +1783,9 @@
     "mlmReconcilePromoted": "校正完成：{from} → {to}",
     "mlmReconcileNoChange": "校正完成 — 等級未變",
     "mlmReconcileBatch": "批次：檢查 {checked}，升級 {promoted}",
-    "mlmReconcileFailed": "等級校正失敗"
+    "mlmReconcileFailed": "等級校正失敗",
+    "shopUnlocked": "已解除鎖定並恢復為已核准",
+    "shopNotSuspended": "商店未因違規鎖定 — 無法解除。"
   },
   "superAdmin": {
     "title": "系統管理",
@@ -2005,6 +2021,11 @@
       "shop.apply": "已提交商店申請",
       "user.password.change": "已變更密碼",
       "auth.logout": "已登出"
+    }
+  },
+  "audit": {
+    "actions": {
+      "admin.shop.violation_unlock": "已解除商店鎖定（違規）"
     }
   }
 }

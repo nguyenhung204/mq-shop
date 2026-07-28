@@ -527,7 +527,7 @@
       "title": "Admin",
       "description": "Operations, commerce, and system tools for your role.",
       "cards": {
-        "shops": "Approve, reject, and violation-lock seller applications",
+        "shops": "Approve, reject, and lock/unlock seller shops",
         "products": "Review listings — approve, reject, or hide",
         "inventory": "Approve or reject cross-shop stock slips",
         "categories": "Maintain the storefront catalog tree",
@@ -619,7 +619,7 @@
     },
     "shops": {
       "title": "Shops",
-      "description": "Approve, reject, and manage seller shops.",
+      "description": "Approve, reject, lock, or unlock seller shops.",
       "rejectTitle": "Reject shop",
       "lockTitle": "Lock shop",
       "violationLock": "Violation lock",
@@ -627,7 +627,21 @@
       "taxId": "Tax ID",
       "pickupAddress": "Pickup address",
       "legalDocument": "Legal document",
-      "empty": "No shops for this filter."
+      "empty": "No shops for this filter.",
+      "violationUnlock": "Unlock shop",
+      "suspended": "Suspended",
+      "unlockHint": "This shop was locked for a policy violation. Unlock restores APPROVED so the seller can trade again.",
+      "rejectOnlyHint": "Rejected application only — seller can re-apply. Unlock is only for violation suspensions.",
+      "backToQueue": "Back to queue",
+      "country": "Country",
+      "owner": "Owner",
+      "flags": "Flags",
+      "flagNone": "None",
+      "flagViolation": "Violation / contact admin",
+      "flagSuspended": "Suspended (violation lock)",
+      "openDocument": "Open document",
+      "rejectDesc": "Tell the seller why “{name}” was rejected.",
+      "lockDesc": "Optional note for locking “{name}”."
     },
     "products": {
       "title": "Products",
@@ -1769,7 +1783,9 @@
     "mlmReconcilePromoted": "Rank reconciled: {from} → {to}",
     "mlmReconcileNoChange": "Reconcile done — no rank change",
     "mlmReconcileBatch": "Reconcile batch: checked {checked}, promoted {promoted}",
-    "mlmReconcileFailed": "Rank reconcile failed"
+    "mlmReconcileFailed": "Rank reconcile failed",
+    "shopUnlocked": "Shop unlocked and restored to approved",
+    "shopNotSuspended": "Shop is not violation-locked — cannot unlock."
   },
   "superAdmin": {
     "title": "System administration",
@@ -2005,6 +2021,11 @@
       "shop.apply": "Shop application submitted",
       "user.password.change": "Password changed",
       "auth.logout": "Signed out"
+    }
+  },
+  "audit": {
+    "actions": {
+      "admin.shop.violation_unlock": "Shop unlocked (violation)"
     }
   }
 }

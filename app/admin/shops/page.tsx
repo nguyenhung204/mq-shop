@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Eye, ShieldAlert, X } from "lucide-react";
+import { Check, Eye, ShieldAlert, ShieldCheck, X } from "lucide-react";
 import {
   useAdminShops,
   useApproveShop,
   useRejectShop,
   useSuspendShop,
+  useUnlockShop,
 } from "@/lib/queries/admin";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
@@ -29,7 +30,7 @@ type ReasonAction = {
 
 function ShopsInner() {
   const { t } = useLanguage();
-  const [status, setStatus] = useState("PENDING");
+  const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
   const [reasonAction, setReasonAction] = useState<ReasonAction | null>(null);
   const { data, isLoading, isError, error } = useAdminShops(status, page);
@@ -38,6 +39,7 @@ function ShopsInner() {
   const approveShop = useApproveShop();
   const rejectShop = useRejectShop();
   const suspendShop = useSuspendShop();
+  const unlockShop = useUnlockShop();
 
   const modalBusy =
     reasonAction?.kind === "reject" ? rejectShop.isPending : suspendShop.isPending;
@@ -57,9 +59,10 @@ function ShopsInner() {
               setPage(1);
             }}
           >
-            <option value="PENDING">{t("admin.common.pending")}</option>
-            <option value="APPROVED">{t("admin.common.approved")}</option>
-            <option value="REJECTED">{t("admin.common.rejected")}</option>
+            <option value="">{t("admin.common.allStatuses")}</option>
+            <option value="PENDING">{translateStatus(t, "shop", "PENDING")}</option>
+            <option value="APPROVED">{translateStatus(t, "shop", "APPROVED")}</option>
+            <option value="REJECTED">{translateStatus(t, "shop", "REJECTED")}</option>
           </select>
         }
       />
@@ -82,6 +85,7 @@ function ShopsInner() {
               <p className="font-medium">{s.name}</p>
               <p className="text-mq-text-muted text-xs">
                 {s.taxId || s.taxCode} · {s.countryCode} · {translateStatus(t, "shop", s.status)}
+                {s.isSuspended ? ` · ${t("admin.shops.suspended")}` : ""}
               </p>
             </div>
             <AdminActions>
@@ -110,10 +114,21 @@ function ShopsInner() {
                 label={t("admin.shops.violationLock")}
                 icon={ShieldAlert}
                 tone="warn"
-                disabled={suspendShop.isPending || s.status !== "APPROVED"}
+                disabled={
+                  suspendShop.isPending ||
+                  s.status !== "APPROVED" ||
+                  Boolean(s.isSuspended)
+                }
                 onClick={() =>
                   setReasonAction({ kind: "violation", shopId: s.id, shopName: s.name })
                 }
+              />
+              <AdminIconButton
+                label={t("admin.shops.violationUnlock")}
+                icon={ShieldCheck}
+                tone="approve"
+                disabled={unlockShop.isPending || !s.isSuspended}
+                onClick={() => void unlockShop.mutateAsync(s.id)}
               />
             </AdminActions>
           </div>

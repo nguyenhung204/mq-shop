@@ -49,6 +49,7 @@ function shopActionError(e: unknown): string {
   if (e instanceof ApiError) {
     if (e.code === "SHOP_NOT_PENDING") return tt("toast.shopNotPending");
     if (e.code === "SHOP_NOT_APPROVED") return tt("toast.shopNotApprovedLock");
+    if (e.code === "SHOP_NOT_SUSPENDED") return tt("toast.shopNotSuspended");
   }
   return getErrorMessage(e);
 }
@@ -158,6 +159,18 @@ export function useSuspendShop() {
     onSuccess: () => {
       invalidate();
       toast.success(tt("toast.shopLocked"));
+    },
+    onError: (e) => toast.error(shopActionError(e)),
+  });
+}
+
+export function useUnlockShop() {
+  const invalidate = useAdminInvalidate();
+  return useMutation({
+    mutationFn: (id: string) => adminApi.unlockShop(id),
+    onSuccess: () => {
+      invalidate();
+      toast.success(tt("toast.shopUnlocked"));
     },
     onError: (e) => toast.error(shopActionError(e)),
   });

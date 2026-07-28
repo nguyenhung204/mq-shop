@@ -422,11 +422,15 @@ stateDiagram-v2
 | Duyệt | `POST` | `/admin/shops/:shopId/approve` | `APPROVE_SELLER` |
 | Từ chối | `POST` | `/admin/shops/:shopId/reject` | `APPROVE_SELLER` body `{ reason }` (1–150) |
 | Violation lock | `POST` | `/admin/shops/:shopId/violation-lock` | `SUSPEND_SHOP` body `{ reason? }` (≤150) |
+| Violation unlock | `POST` | `/admin/shops/:shopId/violation-unlock` | `SUSPEND_SHOP` — chỉ khi `isSuspended`; clear flags + restore `APPROVED` |
 
 | Code | UI |
 |------|-----|
 | `SHOP_NOT_PENDING` | Approve/reject khi không còn PENDING |
 | `SHOP_NOT_APPROVED` | Violation-lock khi chưa APPROVED |
+| `SHOP_NOT_SUSPENDED` | Unlock khi shop chưa bị violation-lock (`isSuspended=false`; reject hồ sơ thuần không unlock được) |
+
+**Unlock vs reject:** shop chỉ `REJECTED` (không `isSuspended`) → seller nộp lại apply. Unlock chỉ mở shop đã `violation-lock`.
 
 ---
 
@@ -1155,7 +1159,7 @@ Register: optional `referrerCode` trên `POST /auth/register`.
 
 - [ ] Users lock/unlock/delete
 - [ ] **Staff shop:** `POST/GET /admin/staff`, `PATCH …/roles`, lock/unlock/delete (`MANAGE_STAFF` / `ASSIGN_ROLES`)
-- [ ] Shops approve/reject/violation-lock
+- [ ] Shops approve/reject/violation-lock/violation-unlock
 - [ ] Products queue approve/reject/hide (xem nested variants)
 - [ ] Categories create/update
 - [ ] Inventory slips inbox approve/reject
