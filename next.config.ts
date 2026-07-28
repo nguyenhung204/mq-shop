@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
         destination: "/my-account/register",
         permanent: false,
       },
+      {
+        source: "/admin/finance",
+        destination: "/admin/payouts",
+        permanent: false,
+      },
     ];
   },
   images: {

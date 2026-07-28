@@ -1,6 +1,5 @@
 import type { LucideIcon } from "lucide-react";
 import {
-  BadgeDollarSign,
   BadgePercent,
   Boxes,
   Calculator,
@@ -189,13 +188,6 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.landingCost",
     icon: Calculator,
     permissions: ["CALC_LAND_COST"],
-    group: "commerce",
-  },
-  {
-    href: "/admin/finance",
-    labelKey: "admin.nav.finance",
-    icon: BadgeDollarSign,
-    permissions: ["MANAGE_PAYOUT", "MANAGE_WALLET_WITHDRAW", "REVIEW_PAYMENT_GATEWAY", "VIEW_REFUND_REPORT"],
     group: "commerce",
   },
   {

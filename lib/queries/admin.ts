@@ -2,13 +2,13 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { adminApi, adminPlatformStaffApi, adminStaffApi, financeApi } from "@/lib/api";
+import { adminApi, adminPlatformStaffApi, adminStaffApi } from "@/lib/api";
 import { adminDashboardApi } from "@/lib/api/admin-dashboard";
 import { ApiError } from "@/lib/api/client";
 import type { Banner } from "@/lib/api/promotions";
 import type { ApiProduct, ApiShop, AuthUser, StaffPoolRole, StaffRole } from "@/lib/api/types";
 import type { CreatePlatformStaffRequest } from "@/lib/api/staff";
-import { asArray, parsePage } from "@/lib/api/utils";
+import { parsePage } from "@/lib/api/utils";
 import { tt } from "@/lib/i18n/tt";
 import { getErrorMessage } from "@/lib/queries/utils";
 import {
@@ -35,7 +35,6 @@ export const adminKeys = {
   shop: (id: string) => [...adminKeys.all, "shop", id] as const,
   products: (status: string, page: number, pageSize = 20) =>
     [...adminKeys.all, "products", status, page, pageSize] as const,
-  finance: () => [...adminKeys.all, "finance"] as const,
   banners: () => [...adminKeys.all, "banners"] as const,
   bannersLang: (lang: string, page: number) =>
     [...adminKeys.all, "banners", lang, page] as const,
@@ -54,9 +53,12 @@ export function useAdminDashboard(sections = ADMIN_DASHBOARD_SECTIONS) {
   });
 }
 
-export type FinanceBatch = { id: string; status?: string; netAmountUsd?: string | number };
-export type FinanceWithdraw = { id: string; status?: string; amountPoints?: string | number };
-export type FinanceGateway = { id: string; gatewayName?: string; status?: string; createdBy?: string };
+export function useAdminProducts(status: string, page = 1, pageSize = 20) {
+  return useQuery({
+    queryKey: adminKeys.products(status, page, pageSize),
+    queryFn: async () => parsePage<ApiProduct>(await adminApi.products(status, page, pageSize)),
+  });
+}
 
 function shopActionError(e: unknown): string {
   if (e instanceof ApiError) {
@@ -88,31 +90,6 @@ export function useAdminShop(id: string) {
       return res as ApiShop;
     },
     enabled: Boolean(id),
-  });
-}
-
-export function useAdminProducts(status: string, page = 1, pageSize = 20) {
-  return useQuery({
-    queryKey: adminKeys.products(status, page, pageSize),
-    queryFn: async () => parsePage<ApiProduct>(await adminApi.products(status, page, pageSize)),
-  });
-}
-
-export function useAdminFinance() {
-  return useQuery({
-    queryKey: adminKeys.finance(),
-    queryFn: async () => {
-      const [batches, withdraws, gateways] = await Promise.all([
-        financeApi.payoutBatches(),
-        financeApi.withdrawRequests(),
-        financeApi.gateways(),
-      ]);
-      return {
-        batches: asArray<FinanceBatch>(batches),
-        withdraws: asArray<FinanceWithdraw>(withdraws),
-        gateways: asArray<FinanceGateway>(gateways),
-      };
-    },
   });
 }
 
@@ -253,118 +230,6 @@ export function useUnhideAdminProduct() {
       }
       toast.error(getErrorMessage(e));
     },
-  });
-}
-
-export function useCreatePayoutBatch() {
-  const invalidate = useAdminInvalidate();
-  return useMutation({
-    mutationFn: () => financeApi.createPayoutBatch({}),
-    onSuccess: () => {
-      invalidate();
-      toast.success(tt("toast.payoutBatchCreated"));
-    },
-    onError: (e) => toast.error(getErrorMessage(e)),
-  });
-}
-
-export function useApprovePayout() {
-  const invalidate = useAdminInvalidate();
-  return useMutation({
-    mutationFn: (id: string) => financeApi.approvePayout(id),
-    onSuccess: () => {
-      invalidate();
-      toast.success(tt("toast.payoutApproved"));
-    },
-    onError: (e) => toast.error(getErrorMessage(e)),
-  });
-}
-
-export function useRejectPayout() {
-  const invalidate = useAdminInvalidate();
-  return useMutation({
-    mutationFn: (id: string) => financeApi.rejectPayout(id, { reason: "Invalid" }),
-    onSuccess: () => {
-      invalidate();
-      toast.success(tt("toast.payoutRejected"));
-    },
-    onError: (e) => toast.error(getErrorMessage(e)),
-  });
-}
-
-export function useCompletePayout() {
-  const invalidate = useAdminInvalidate();
-  return useMutation({
-    mutationFn: (id: string) => financeApi.completePayout(id),
-    onSuccess: () => {
-      invalidate();
-      toast.success(tt("toast.payoutCompleted"));
-    },
-    onError: (e) => toast.error(getErrorMessage(e)),
-  });
-}
-
-export function useWithdrawDecision() {
-  const invalidate = useAdminInvalidate();
-  return useMutation({
-    mutationFn: ({
-      id,
-      decision,
-      reason,
-    }: {
-      id: string;
-      decision: "APPROVED" | "REJECTED";
-      reason?: string;
-    }) => financeApi.withdrawDecision(id, { decision, reason }),
-    onSuccess: (_, { decision }) => {
-      invalidate();
-      toast.success(
-        decision === "APPROVED" ? tt("toast.withdrawApproved") : tt("toast.withdrawRejected"),
-      );
-    },
-    onError: (e) => toast.error(getErrorMessage(e)),
-  });
-}
-
-export function useCompleteWithdraw() {
-  const invalidate = useAdminInvalidate();
-  return useMutation({
-    mutationFn: (id: string) => financeApi.completeWithdraw(id),
-    onSuccess: () => {
-      invalidate();
-      toast.success(tt("toast.withdrawPaid"));
-    },
-    onError: (e) => toast.error(getErrorMessage(e)),
-  });
-}
-
-export function useReviewGateway() {
-  const invalidate = useAdminInvalidate();
-  return useMutation({
-    mutationFn: ({
-      id,
-      decision,
-      reason,
-    }: {
-      id: string;
-      decision: "APPROVED" | "REJECTED";
-      reason?: string;
-    }) => financeApi.reviewGateway(id, { decision, reason }),
-    onSuccess: (_, { decision }) => {
-      invalidate();
-      toast.success(
-        decision === "APPROVED" ? tt("toast.gatewayApproved") : tt("toast.gatewayRejected"),
-      );
-    },
-    onError: (e) => toast.error(getErrorMessage(e)),
-  });
-}
-
-export function useDailyRefundReport() {
-  return useMutation({
-    mutationFn: () => adminApi.dailyRefundReport(),
-    onSuccess: () => toast.success(tt("toast.refundReportLoaded")),
-    onError: (e) => toast.error(getErrorMessage(e)),
   });
 }
 

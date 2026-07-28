@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import {
-  BadgeDollarSign,
   BadgePercent,
   Boxes,
   Calculator,
@@ -129,12 +128,6 @@ const cards: {
     permissions: ["CONFIG_FEE"],
     roles: ["SUPER_ADMIN", "ACCOUNTANT"],
     icon: Percent,
-  },
-  {
-    href: "/admin/finance",
-    navKey: "finance",
-    permissions: ["MANAGE_PAYOUT", "MANAGE_WALLET_WITHDRAW", "VIEW_REFUND_REPORT"],
-    icon: BadgeDollarSign,
   },
   {
     href: "/admin/promotions",
