@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Bell } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useNotifications } from "@/components/providers/NotificationProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
+import { resolveNotificationRoute } from "@/lib/notifications/routes";
+import type { ApiNotification } from "@/lib/api/types";
 
 const STREAM_KEY_MAP: Record<string, string> = {
   live: "connected",
@@ -14,7 +17,8 @@ const STREAM_KEY_MAP: Record<string, string> = {
 };
 
 export function NotificationBell() {
-  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+  const { isAuthenticated, user } = useAuth();
   const { t } = useLanguage();
   const {
     items,
@@ -34,7 +38,7 @@ export function NotificationBell() {
 
   useEffect(() => {
     if (!open) return;
-    void refresh(1);
+    void refresh(1, { quiet: true });
     const onPointer = (e: MouseEvent) => {
       if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
     };
@@ -49,6 +53,19 @@ export function NotificationBell() {
     };
   }, [open, refresh]);
 
+  const onOpenNotification = async (n: ApiNotification) => {
+    setOpen(false);
+    if (!n.readAt) {
+      try {
+        await markRead(n.id);
+      } catch {
+        /* still allow navigation */
+      }
+    }
+    const href = resolveNotificationRoute(n, { roles: user?.roles ?? [] });
+    if (href) router.push(href);
+  };
+
   if (!isAuthenticated) return null;
 
   return (
@@ -56,7 +73,7 @@ export function NotificationBell() {
       <button
         type="button"
         className="mq-icon-btn relative text-mq-text hover:text-mq-gold transition-colors"
-        aria-label="Notifications"
+        aria-label={t("nav.notifications")}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
@@ -67,11 +84,11 @@ export function NotificationBell() {
         <div className="absolute right-0 top-full mt-2 w-[320px] max-w-[90vw] mq-card z-[80] overflow-hidden shadow-lg">
           <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-mq-border">
             <div>
-              <span className="text-sm font-medium">Notifications</span>
+              <span className="text-sm font-medium">{t("nav.notifications")}</span>
               {streamStatus !== "idle" && (
                 <p className="text-[10px] text-mq-text-muted mt-0.5">
                   {translateStatus(t, "stream", STREAM_KEY_MAP[streamStatus] ?? streamStatus)}
-                  {streamStatus === "live" ? " · live updates" : ""}
+                  {streamStatus === "live" ? ` · ${t("nav.notificationsLive")}` : ""}
                 </p>
               )}
             </div>
@@ -81,49 +98,63 @@ export function NotificationBell() {
               disabled={unreadCount === 0}
               onClick={() => void markAllRead()}
             >
-              Mark all read
+              {t("nav.markAllRead")}
             </button>
           </div>
           <ul className="max-h-72 overflow-y-auto">
             {loading && items.length === 0 && (
-              <li className="px-4 py-6 text-sm text-mq-text-muted text-center">Loading…</li>
+              <li className="px-4 py-6 text-sm text-mq-text-muted text-center">
+                {t("nav.notificationsLoading")}
+              </li>
             )}
             {!loading && items.length === 0 && (
               <li className="px-4 py-6 text-sm text-mq-text-muted text-center">
-                No notifications yet.
+                {t("nav.notificationsEmpty")}
               </li>
             )}
-            {items.map((n) => (
-              <li key={n.id}>
-                <button
-                  type="button"
-                  className={`w-full text-left px-4 py-3 border-b border-mq-border hover:bg-mq-surface-subtle transition-colors ${
-                    n.readAt ? "opacity-70" : ""
-                  }`}
-                  onClick={() => {
-                    if (!n.readAt) void markRead(n.id);
-                    setOpen(false);
-                  }}
-                >
-                  <div className="flex items-start gap-2">
-                    {!n.readAt && (
-                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-mq-gold shrink-0" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-mq-text">{n.title}</p>
-                      {n.body ? (
-                        <p className="text-xs text-mq-text-muted mt-0.5 line-clamp-2">{n.body}</p>
-                      ) : null}
-                      {n.createdAt ? (
-                        <p className="text-[10px] text-mq-text-muted mt-1">
-                          {new Date(n.createdAt).toLocaleString()}
-                        </p>
-                      ) : null}
+            {items.map((n) => {
+              const href = resolveNotificationRoute(n, { roles: user?.roles ?? [] });
+              const canOpenDetail = Boolean(href);
+              return (
+                <li key={n.id}>
+                  <button
+                    type="button"
+                    className={`w-full text-left px-4 py-3 border-b border-mq-border transition-colors ${
+                      canOpenDetail
+                        ? "cursor-pointer hover:bg-mq-surface-subtle"
+                        : "cursor-default"
+                    } ${n.readAt ? "opacity-70" : ""}`}
+                    onClick={() => void onOpenNotification(n)}
+                  >
+                    <div className="flex items-start gap-2">
+                      {!n.readAt && (
+                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-mq-gold shrink-0" />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-mq-text">{n.title}</p>
+                        {n.body ? (
+                          <p className="text-xs text-mq-text-muted mt-0.5 line-clamp-2">
+                            {n.body}
+                          </p>
+                        ) : null}
+                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                          {n.createdAt ? (
+                            <p className="text-[10px] text-mq-text-muted">
+                              {new Date(n.createdAt).toLocaleString()}
+                            </p>
+                          ) : null}
+                          {canOpenDetail ? (
+                            <p className="text-[10px] text-mq-gold cursor-pointer">
+                              {t("nav.notificationsOpen")}
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </button>
-              </li>
-            ))}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
           {totalPages > 1 ? (
             <div className="flex items-center justify-between gap-2 px-3 py-2 border-t border-mq-border bg-mq-surface-subtle">
@@ -133,7 +164,7 @@ export function NotificationBell() {
                 disabled={page <= 1 || loading}
                 onClick={() => setPage(page - 1)}
               >
-                Prev
+                {t("nav.prev")}
               </button>
               <span className="text-[11px] text-mq-text-muted tabular-nums">
                 {page}/{totalPages}
@@ -145,7 +176,7 @@ export function NotificationBell() {
                 disabled={page >= totalPages || loading}
                 onClick={() => setPage(page + 1)}
               >
-                Next
+                {t("nav.next")}
               </button>
             </div>
           ) : null}

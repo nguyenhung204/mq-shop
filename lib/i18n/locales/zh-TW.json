@@ -42,7 +42,15 @@
     "iconBox": "圖示區塊",
     "portfolio": "作品集",
     "gallery": "圖庫",
-    "tabs": "分頁"
+    "tabs": "分頁",
+    "notifications": "通知",
+    "notificationsLive": "即時更新",
+    "markAllRead": "全部已讀",
+    "notificationsLoading": "載入中…",
+    "notificationsEmpty": "尚無通知。",
+    "notificationsOpen": "查看詳情",
+    "prev": "上一頁",
+    "next": "下一頁"
   },
   "footer": {
     "getToKnowUs": "認識我們",

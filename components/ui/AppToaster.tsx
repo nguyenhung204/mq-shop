@@ -11,10 +11,10 @@ export function AppToaster() {
       position="bottom-right"
       theme={dark ? "dark" : "light"}
       closeButton
-      expand={false}
-      visibleToasts={3}
+      expand
+      visibleToasts={4}
       gap={10}
-      duration={3200}
+      duration={6000}
       offset={{ bottom: 24, right: 24 }}
       mobileOffset={{ bottom: 18, right: 14 }}
       toastOptions={{

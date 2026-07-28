@@ -42,7 +42,15 @@
     "iconBox": "Icon Box",
     "portfolio": "Portfolio",
     "gallery": "Thư viện",
-    "tabs": "Tabs"
+    "tabs": "Tabs",
+    "notifications": "Thông báo",
+    "notificationsLive": "cập nhật trực tiếp",
+    "markAllRead": "Đọc tất cả",
+    "notificationsLoading": "Đang tải…",
+    "notificationsEmpty": "Chưa có thông báo.",
+    "notificationsOpen": "Xem chi tiết",
+    "prev": "Trước",
+    "next": "Sau"
   },
   "footer": {
     "getToKnowUs": "Về MQ",

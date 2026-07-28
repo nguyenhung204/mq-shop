@@ -42,7 +42,15 @@
     "iconBox": "Icon Box",
     "portfolio": "Portfolio",
     "gallery": "Gallery",
-    "tabs": "Tabs"
+    "tabs": "Tabs",
+    "notifications": "Notifications",
+    "notificationsLive": "live updates",
+    "markAllRead": "Mark all read",
+    "notificationsLoading": "Loading…",
+    "notificationsEmpty": "No notifications yet.",
+    "notificationsOpen": "View details",
+    "prev": "Prev",
+    "next": "Next"
   },
   "footer": {
     "getToKnowUs": "Get To Know Us",

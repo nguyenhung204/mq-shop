@@ -326,6 +326,8 @@ SSE event payload (khi có noti **mới** trong lúc đang connect):
 
 **FE realtime:** không dùng `EventSource` thuần (không gắn được `Authorization: Bearer`). FE dùng `fetch` + stream với Bearer (+ cookie nếu có). Login → `GET /notifications` → mở SSE `/notifications/stream` → toast + cập nhật badge/list; reconnect thì gọi lại GET vì SSE **không** replay lịch sử.
 
+**Deep link:** mỗi item/SSE có `type` + `meta` (string map). FE map route tại `lib/notifications/routes.ts` — click chuông: `markRead` rồi `router.push`. Type lạ / thiếu meta → không navigate (chỉ toast/detail). Chi tiết: [`docs/fe-guide-notifications.md`](./fe-guide-notifications.md).
+
 Shop apply gửi noti tới user `ACTIVE` có role `ADMIN` hoặc `SUPER_ADMIN`.
 
 ---

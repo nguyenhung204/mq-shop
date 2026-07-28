@@ -367,13 +367,78 @@ export type ApiShop = {
 export type ApiNotification = {
   id: string;
   userId?: string;
-  type?: string;
+  /** Deep-link discriminator from BE. Unknown → treat as GENERIC. */
+  type?: NotificationType | string;
   title: string;
   body: string;
+  /** String map of ids / status / amounts for routing. */
+  meta?: Record<string, string> | null;
+  /** @deprecated Prefer `meta` — kept for older payloads. */
   payload?: Record<string, unknown>;
   readAt?: string | null;
   createdAt: string;
 };
+
+/** Mirrors BE `NotificationType` — FE owns the route table. */
+export type NotificationType =
+  | "GENERIC"
+  | "ACCOUNT_LOCKED"
+  | "ACCOUNT_UNLOCKED"
+  | "ACCOUNT_DELETED"
+  | "STAFF_ROLE_ASSIGNED"
+  | "PLATFORM_ADMIN_ACCOUNT"
+  | "DSAR_REQUEST_NEW"
+  | "REFERRAL_DOWNLINE_JOINED"
+  | "SHOP_APPLICATION_NEW"
+  | "SHOP_APPROVED"
+  | "SHOP_REJECTED"
+  | "SHOP_SUSPENDED"
+  | "SHOP_REINSTATED"
+  | "PRODUCT_APPROVED"
+  | "PRODUCT_REJECTED"
+  | "PRODUCT_HIDDEN"
+  | "ORDER_STATUS_UPDATED"
+  | "ORDER_NEW"
+  | "ORDER_CANCELLED"
+  | "ORDER_CREATED_BY_ADMIN"
+  | "ORDER_CREATED_PAYMENT_NEEDED"
+  | "RMA_NEW"
+  | "RMA_APPROVED"
+  | "RMA_REJECTED"
+  | "RMA_REFUND_COMPLETED"
+  | "RMA_APPROVED_EXTERNAL_REFUND"
+  | "REVIEW_NEW"
+  | "REVIEW_SELLER_REPLIED"
+  | "REVIEW_HIDDEN"
+  | "REVIEW_UNHIDDEN"
+  | "PROMOTION_APPROVED"
+  | "PROMOTION_REJECTED"
+  | "WALLET_PIN_UPDATED"
+  | "WALLET_TRANSFER_SENT"
+  | "WALLET_TRANSFER_RECEIVED"
+  | "WALLET_ADJUSTED"
+  | "WALLET_WITHDRAW_REQUESTED"
+  | "WALLET_WITHDRAW_NEW"
+  | "WALLET_WITHDRAW_APPROVED"
+  | "WALLET_WITHDRAW_REJECTED"
+  | "WALLET_WITHDRAW_COMPLETED"
+  | "WALLET_WITHDRAW_PAY_FAILED"
+  | "WALLET_WITHDRAW_STAFF_APPROVED"
+  | "WALLET_WITHDRAW_STAFF_REJECTED"
+  | "WALLET_WITHDRAW_STAFF_PROCESSED"
+  | "WALLET_WITHDRAW_STAFF_PAY_FAILED"
+  | "COMMISSION_REFERRAL_CREDITED"
+  | "COMMISSION_TEAM_CREDITED"
+  | "COMMISSION_GLOBAL_CREDITED"
+  | "COMMISSION_LOYALTY_CREDITED"
+  | "COMMISSION_REFERRAL_TRIGGERED"
+  | "COMMISSION_REFERRAL_SKIPPED_NOT_SELLER"
+  | "COMMISSION_JOB_FAILED"
+  | "MLM_RANK_UPDATED"
+  | "MLM_RANK_UPGRADED"
+  | "MLM_REFERRER_UPDATED"
+  | "MLM_DOWNLINE_ASSIGNED"
+  | "MLM_REFERRAL_RATE_UPDATED";
 
 export type ApiAuditLog = {
   id: string;
