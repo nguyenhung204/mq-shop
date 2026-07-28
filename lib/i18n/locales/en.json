@@ -864,7 +864,11 @@
       "emptyLedger": "No ledger rows."
     },
     "usersPage": {
-      "empty": "No users for this filter."
+      "empty": "No users for this filter.",
+      "confirmLockTitle": "Lock this account?",
+      "confirmLockDesc": "{email} will not be able to sign in until unlocked.",
+      "confirmDeleteTitle": "Delete this account?",
+      "confirmDeleteDesc": "{email} will be soft-deleted and personal data scrubbed. This cannot be undone from the storefront."
     },
     "staffPage": {
       "allShopsUnassigned": "All shops (+ unassigned buyers)",
@@ -885,7 +889,11 @@
       "tempPasswordHint": "Copy now — it will not be shown again. Account: {email}",
       "copy": "Copy",
       "candidate": "Candidate",
-      "buyerCandidates": "Buyer (candidates)"
+      "buyerCandidates": "Buyer (candidates)",
+      "confirmLockTitle": "Lock this staff account?",
+      "confirmLockDesc": "{email} will not be able to sign in until unlocked.",
+      "confirmDeleteTitle": "Delete this staff account?",
+      "confirmDeleteDesc": "{email} will be soft-deleted. Please confirm."
     },
     "ordersPage": {
       "createForBuyer": "Create for buyer",

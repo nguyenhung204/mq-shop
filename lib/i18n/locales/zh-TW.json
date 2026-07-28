@@ -864,7 +864,11 @@
       "emptyLedger": "無流水資料。"
     },
     "usersPage": {
-      "empty": "此篩選條件無使用者。"
+      "empty": "此篩選條件無使用者。",
+      "confirmLockTitle": "鎖定此帳號？",
+      "confirmLockDesc": "{email} 將無法登入，直到帳號被解鎖。",
+      "confirmDeleteTitle": "刪除此帳號？",
+      "confirmDeleteDesc": "{email} 將被軟刪除並清除個人資料，無法從前台還原。"
     },
     "staffPage": {
       "allShopsUnassigned": "全部商店（+ 未指派買家）",
@@ -885,7 +889,11 @@
       "tempPasswordHint": "請立即複製 — 不會再顯示。帳號：{email}",
       "copy": "複製",
       "candidate": "候選人",
-      "buyerCandidates": "買家（候選人）"
+      "buyerCandidates": "買家（候選人）",
+      "confirmLockTitle": "鎖定此員工帳號？",
+      "confirmLockDesc": "{email} 將無法登入，直到帳號被解鎖。",
+      "confirmDeleteTitle": "刪除此員工帳號？",
+      "confirmDeleteDesc": "{email} 將被軟刪除，請確認此操作。"
     },
     "ordersPage": {
       "createForBuyer": "代客下單",

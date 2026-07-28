@@ -14,6 +14,7 @@ import {
   useUpdateStaffRoles,
 } from "@/lib/queries/admin";
 import { AuthGuard } from "@/components/guards/AuthGuard";
+import { AdminConfirmModal } from "@/components/admin/AdminConfirmModal";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -25,6 +26,12 @@ import { TableSkeleton } from "@/components/ui/Skeleton";
 const STAFF_ROLES: StaffRole[] = ["WAREHOUSE", "CS", "ACCOUNTANT"];
 const POOL_FILTERS: StaffPoolRole[] = ["BUYER", "WAREHOUSE", "CS", "ACCOUNTANT"];
 const STATUS_FILTERS = ["", "ACTIVE", "PENDING", "LOCKED", "DELETED"] as const;
+
+type PendingStaffAction = {
+  userId: string;
+  email: string;
+  kind: "lock" | "delete";
+};
 
 function isBuyerCandidate(u: AuthUser): boolean {
   const roles = u.roles ?? [];
@@ -60,6 +67,7 @@ function StaffInner() {
     temporaryPassword: string;
   } | null>(null);
   const [pendingNotice, setPendingNotice] = useState(false);
+  const [pending, setPending] = useState<PendingStaffAction | null>(null);
 
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
@@ -90,6 +98,24 @@ function StaffInner() {
 
   const items = data?.items ?? [];
   const meta = data?.meta;
+
+  const confirmCopy = useMemo(() => {
+    if (!pending) return null;
+    if (pending.kind === "lock") {
+      return {
+        title: t("admin.staffPage.confirmLockTitle"),
+        description: t("admin.staffPage.confirmLockDesc", { email: pending.email }),
+        confirmLabel: t("admin.common.lock"),
+        tone: "warn" as const,
+      };
+    }
+    return {
+      title: t("admin.staffPage.confirmDeleteTitle"),
+      description: t("admin.staffPage.confirmDeleteDesc", { email: pending.email }),
+      confirmLabel: t("admin.common.delete"),
+      tone: "danger" as const,
+    };
+  }, [pending, t]);
 
   const closeCreate = () => {
     setCreateOpen(false);
@@ -369,10 +395,7 @@ function StaffInner() {
                                 tone="warn"
                                 disabled={accountAction.isPending}
                                 onClick={() =>
-                                  void accountAction.mutateAsync({
-                                    userId: u.id,
-                                    kind: "lock",
-                                  })
+                                  setPending({ userId: u.id, email: u.email, kind: "lock" })
                                 }
                               />
                               <AdminIconButton
@@ -392,18 +415,9 @@ function StaffInner() {
                                 icon={Trash2}
                                 tone="danger"
                                 disabled={accountAction.isPending}
-                                onClick={() => {
-                                  if (
-                                    typeof window !== "undefined" &&
-                                    !window.confirm(`Delete staff ${u.email}?`)
-                                  ) {
-                                    return;
-                                  }
-                                  void accountAction.mutateAsync({
-                                    userId: u.id,
-                                    kind: "delete",
-                                  });
-                                }}
+                                onClick={() =>
+                                  setPending({ userId: u.id, email: u.email, kind: "delete" })
+                                }
                               />
                             </>
                           ) : null}
@@ -678,6 +692,24 @@ function StaffInner() {
             </div>
           </div>
         </div>
+      ) : null}
+
+      {pending && confirmCopy ? (
+        <AdminConfirmModal
+          open
+          title={confirmCopy.title}
+          description={confirmCopy.description}
+          confirmLabel={confirmCopy.confirmLabel}
+          tone={confirmCopy.tone}
+          busy={accountAction.isPending}
+          onClose={() => setPending(null)}
+          onConfirm={() =>
+            accountAction.mutate(
+              { userId: pending.userId, kind: pending.kind },
+              { onSuccess: () => setPending(null) },
+            )
+          }
+        />
       ) : null}
     </>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import type { AuthUser } from "@/lib/api/types";
 import { parsePage } from "@/lib/api/utils";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { AuthGuard } from "@/components/guards/AuthGuard";
+import { AdminConfirmModal } from "@/components/admin/AdminConfirmModal";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -17,10 +18,17 @@ import { translateRoles, translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 
+type PendingUserAction = {
+  userId: string;
+  email: string;
+  kind: "lock" | "delete";
+};
+
 function UsersInner() {
   const { t } = useLanguage();
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
+  const [pending, setPending] = useState<PendingUserAction | null>(null);
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError, error } = useQuery({
@@ -50,9 +58,28 @@ function UsersInner() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
       toast.success(t("admin.common.updated"));
+      setPending(null);
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
+
+  const confirmCopy = useMemo(() => {
+    if (!pending) return null;
+    if (pending.kind === "lock") {
+      return {
+        title: t("admin.usersPage.confirmLockTitle"),
+        description: t("admin.usersPage.confirmLockDesc", { email: pending.email }),
+        confirmLabel: t("admin.common.lock"),
+        tone: "warn" as const,
+      };
+    }
+    return {
+      title: t("admin.usersPage.confirmDeleteTitle"),
+      description: t("admin.usersPage.confirmDeleteDesc", { email: pending.email }),
+      confirmLabel: t("admin.common.delete"),
+      tone: "danger" as const,
+    };
+  }, [pending, t]);
 
   const items = data?.items ?? [];
   const meta = data?.meta;
@@ -122,7 +149,9 @@ function UsersInner() {
                           icon={Lock}
                           tone="warn"
                           disabled={action.isPending}
-                          onClick={() => void action.mutateAsync({ userId: u.id, kind: "lock" })}
+                          onClick={() =>
+                            setPending({ userId: u.id, email: u.email, kind: "lock" })
+                          }
                         />
                         <AdminIconButton
                           label={t("admin.common.unlock")}
@@ -136,7 +165,9 @@ function UsersInner() {
                           icon={Trash2}
                           tone="danger"
                           disabled={action.isPending}
-                          onClick={() => void action.mutateAsync({ userId: u.id, kind: "delete" })}
+                          onClick={() =>
+                            setPending({ userId: u.id, email: u.email, kind: "delete" })
+                          }
                         />
                       </AdminActions>
                     </td>
@@ -149,6 +180,19 @@ function UsersInner() {
 
         <PaginationBar page={page} meta={meta} onPageChange={setPage} />
       </div>
+
+      {pending && confirmCopy ? (
+        <AdminConfirmModal
+          open
+          title={confirmCopy.title}
+          description={confirmCopy.description}
+          confirmLabel={confirmCopy.confirmLabel}
+          tone={confirmCopy.tone}
+          busy={action.isPending}
+          onClose={() => setPending(null)}
+          onConfirm={() => action.mutateAsync({ userId: pending.userId, kind: pending.kind })}
+        />
+      ) : null}
     </>
   );
 }
