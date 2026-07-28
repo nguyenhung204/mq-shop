@@ -8,30 +8,63 @@ import { authApi } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
+type MsgKey =
+  | "account.forgot.otpSent"
+  | "account.forgot.passwordUpdated"
+  | "account.forgot.invalidOtp"
+  | "account.forgot.otpExpired"
+  | "account.forgot.tooManyRequests"
+  | "account.forgot.requestFailed"
+  | "account.forgot.resetFailed"
+  | "account.messages.passwordTooShort";
+
+/**
+ * Forgot-password UI — anti-enumeration:
+ * BE always returns success for request-otp (even if email missing / not ACTIVE).
+ * Always show the same “if email exists…” message; never branch on user existence.
+ * Reset maps missing user → INVALID_OTP (same as wrong OTP).
+ */
 export function LostPasswordContent() {
   const { t } = useLanguage();
   const [step, setStep] = useState<"request" | "reset">("request");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [error, setError] = useState("");
-  const [ok, setOk] = useState("");
+  const [errorKey, setErrorKey] = useState<MsgKey | "">("");
+  const [errorRaw, setErrorRaw] = useState("");
+  const [okKey, setOkKey] = useState<MsgKey | "">("");
   const [busy, setBusy] = useState(false);
   const [timerKey, setTimerKey] = useState(0);
   const [expired, setExpired] = useState(false);
 
+  const clearAlerts = () => {
+    setErrorKey("");
+    setErrorRaw("");
+    setOkKey("");
+  };
+
   const onRequest = async (e: FormEvent) => {
     e.preventDefault();
-    setError("");
+    clearAlerts();
     setBusy(true);
     try {
-      await authApi.forgotPassword({ email });
-      setOk("If the email exists, an OTP was sent. It is valid for 10 minutes.");
+      // Success for every email (exists or not) — never inspect response for “user found”.
+      await authApi.forgotPassword({ email: email.trim() });
+      setOkKey("account.forgot.otpSent");
       setStep("reset");
+      setCode("");
+      setNewPassword("");
       setExpired(false);
       setTimerKey((key) => key + 1);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Request failed");
+      // Only real failures (e.g. rate limit / validation) — not “user not found”.
+      if (err instanceof ApiError && err.code === "TOO_MANY_REQUESTS") {
+        setErrorKey("account.forgot.tooManyRequests");
+      } else if (err instanceof ApiError) {
+        setErrorRaw(err.message);
+      } else {
+        setErrorKey("account.forgot.requestFailed");
+      }
     } finally {
       setBusy(false);
     }
@@ -39,42 +72,59 @@ export function LostPasswordContent() {
 
   const onReset = async (e: FormEvent) => {
     e.preventDefault();
-    setError("");
+    clearAlerts();
     if (expired) {
-      setError("OTP expired. Please request a new code.");
+      setErrorKey("account.forgot.otpExpired");
       return;
     }
     if (newPassword.length < 8) {
-      setError("Password must be at least 8 characters.");
+      setErrorKey("account.messages.passwordTooShort");
       return;
     }
     setBusy(true);
     try {
-      await authApi.resetPassword({ email, code, newPassword });
-      setOk("Password updated. You can sign in.");
+      await authApi.resetPassword({
+        email: email.trim(),
+        code,
+        newPassword,
+      });
+      setOkKey("account.forgot.passwordUpdated");
+      setCode("");
+      setNewPassword("");
     } catch (err) {
       const codeName = err instanceof ApiError ? err.code : null;
-      if (codeName === "INVALID_OTP") setError("Invalid or expired OTP.");
-      else setError(err instanceof ApiError ? err.message : "Reset failed");
+      // Missing / inactive user and wrong OTP share INVALID_OTP — same copy.
+      if (codeName === "INVALID_OTP") {
+        setErrorKey("account.forgot.invalidOtp");
+      } else if (codeName === "TOO_MANY_REQUESTS") {
+        setErrorKey("account.forgot.tooManyRequests");
+      } else if (err instanceof ApiError) {
+        setErrorRaw(err.message);
+      } else {
+        setErrorKey("account.forgot.resetFailed");
+      }
     } finally {
       setBusy(false);
     }
   };
 
+  const errorText = errorKey ? t(errorKey) : errorRaw;
+  const okText = okKey ? t(okKey) : "";
+
   return (
     <AuthPanel
       title={t("account.lostPasswordTitle")}
       description={t("account.lostPasswordDesc")}
-      asideTitle="Reset access"
-      asideText="We’ll email a code so you can set a new password securely."
+      asideTitle={t("account.forgot.asideTitle")}
+      asideText={t("account.forgot.asideText")}
       footer={<Link href="/my-account">{t("account.backToLogin")}</Link>}
     >
-      {error && <div className="mq-alert mq-alert-error">{error}</div>}
-      {ok && <div className="mq-alert mq-alert-success">{ok}</div>}
+      {errorText ? <div className="mq-alert mq-alert-error">{errorText}</div> : null}
+      {okText ? <div className="mq-alert mq-alert-success">{okText}</div> : null}
       {step === "request" ? (
         <form className="mq-auth-actions flex w-full flex-col gap-2.5" onSubmit={onRequest}>
           <div className="mq-auth-field">
-            <label htmlFor="lost-email">Email</label>
+            <label htmlFor="lost-email">{t("account.emailAddress")}</label>
             <input
               id="lost-email"
               type="email"
@@ -86,7 +136,7 @@ export function LostPasswordContent() {
             />
           </div>
           <button type="submit" className="mq-btn mq-btn-primary w-full" disabled={busy}>
-            {t("account.resetPassword")}
+            {busy ? t("account.forgot.sending") : t("account.forgot.sendOtp")}
           </button>
         </form>
       ) : (
@@ -94,7 +144,7 @@ export function LostPasswordContent() {
           <OtpCountdown resetKey={timerKey} onExpireChange={setExpired} />
           <form className="mq-auth-actions flex w-full flex-col gap-2.5" onSubmit={onReset}>
             <div className="mq-auth-field">
-              <label htmlFor="reset-email">Email</label>
+              <label htmlFor="reset-email">{t("account.emailAddress")}</label>
               <input
                 id="reset-email"
                 type="email"
@@ -102,10 +152,11 @@ export function LostPasswordContent() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoComplete="email"
               />
             </div>
             <div className="mq-auth-field">
-              <label htmlFor="reset-otp">OTP code</label>
+              <label htmlFor="reset-otp">{t("account.fields.otp")}</label>
               <input
                 id="reset-otp"
                 className="mq-input"
@@ -114,11 +165,12 @@ export function LostPasswordContent() {
                 required
                 maxLength={6}
                 inputMode="numeric"
+                autoComplete="one-time-code"
                 disabled={expired}
               />
             </div>
             <div className="mq-auth-field">
-              <label htmlFor="reset-password">New password</label>
+              <label htmlFor="reset-password">{t("account.forgot.newPassword")}</label>
               <input
                 id="reset-password"
                 type="password"
@@ -126,6 +178,7 @@ export function LostPasswordContent() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
+                minLength={8}
                 autoComplete="new-password"
               />
             </div>
@@ -134,14 +187,19 @@ export function LostPasswordContent() {
               className="mq-btn mq-btn-primary w-full"
               disabled={busy || expired}
             >
-              Set new password
+              {busy ? t("account.forgot.saving") : t("account.forgot.setPassword")}
             </button>
             <button
               type="button"
               className="mq-btn mq-btn-outline w-full"
-              onClick={() => setStep("request")}
+              onClick={() => {
+                setStep("request");
+                clearAlerts();
+                setCode("");
+                setNewPassword("");
+              }}
             >
-              Back
+              {t("account.forgot.back")}
             </button>
           </form>
         </>

@@ -8,12 +8,14 @@ import {
   useMemo,
   useRef,
   useState,
+  type Dispatch,
   type ReactNode,
+  type SetStateAction,
 } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { getApiHost } from "@/lib/api/client";
 import { notificationApi } from "@/lib/api/notifications";
+import { openAuthenticatedSse } from "@/lib/api/sse";
 import type { ApiNotification, PageMeta } from "@/lib/api/types";
 import { mlmKeys, walletKeys } from "@/lib/queries/wallet";
 import { useAuth } from "./AuthProvider";
@@ -64,6 +66,35 @@ function isRankNotify(n: ApiNotification): boolean {
   );
 }
 
+function applyIncoming(
+  incoming: ApiNotification,
+  page: number,
+  setItems: Dispatch<SetStateAction<ApiNotification[]>>,
+  setUnreadCount: Dispatch<SetStateAction<number>>,
+  setMeta: Dispatch<SetStateAction<PageMeta | null>>,
+) {
+  if (!incoming.readAt) setUnreadCount((c) => c + 1);
+
+  // Only prepend onto page 1 so pagination stays consistent.
+  if (page === 1) {
+    setItems((prev) =>
+      [incoming, ...prev.filter((x) => x.id !== incoming.id)].slice(0, NOTIF_PAGE_SIZE),
+    );
+    setMeta((prev) =>
+      prev
+        ? {
+            ...prev,
+            total: prev.total + 1,
+            totalPages: Math.max(
+              1,
+              Math.ceil((prev.total + 1) / (prev.pageSize || NOTIF_PAGE_SIZE)),
+            ),
+          }
+        : prev,
+    );
+  }
+}
+
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated, loading: authLoading, refreshUser } = useAuth();
   const queryClient = useQueryClient();
@@ -93,7 +124,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         setUnreadCount(result.unreadCount);
         setMeta(result.meta ?? null);
         setPageState(result.meta?.page ?? target);
-        seenIds.current = new Set(result.items.map((n) => n.id));
+        // Keep ids already toasted via SSE so reconnect refresh does not re-toast.
+        for (const n of result.items) seenIds.current.add(n.id);
       } catch {
         /* keep current inbox on transient failure */
       } finally {
@@ -111,6 +143,33 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     [refresh],
   );
 
+  const handleRealtime = useCallback(
+    (n: ApiNotification) => {
+      if (!n?.id) return;
+      if (seenIds.current.has(n.id)) return;
+      seenIds.current.add(n.id);
+
+      const incoming: ApiNotification = { ...n, readAt: n.readAt ?? null };
+      applyIncoming(incoming, pageRef.current, setItems, setUnreadCount, setMeta);
+
+      if (isCommissionNotify(incoming)) {
+        void queryClient.invalidateQueries({ queryKey: walletKeys.all });
+        void queryClient.invalidateQueries({ queryKey: mlmKeys.all });
+      }
+      if (isRankNotify(incoming)) {
+        void refreshUser();
+        void queryClient.invalidateQueries({ queryKey: mlmKeys.rankProgress() });
+        void queryClient.invalidateQueries({ queryKey: mlmKeys.all });
+      }
+
+      toast.info(incoming.title || "Notification", {
+        description: incoming.body || undefined,
+        duration: 5000,
+      });
+    },
+    [queryClient, refreshUser],
+  );
+
   // REST history on login
   useEffect(() => {
     if (authLoading) return;
@@ -126,84 +185,59 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     void refresh(1);
   }, [authLoading, isAuthenticated, refresh]);
 
-  // SSE — live events only while the tab is open
+  // Authenticated SSE — live push without full page reload
   useEffect(() => {
     if (authLoading || !isAuthenticated) return;
 
-    const url = `${getApiHost()}/api/v1/notifications/stream`;
-    let source: EventSource;
-    try {
-      source = new EventSource(url, { withCredentials: true } as EventSourceInit);
-    } catch {
-      setStreamStatus("offline");
-      return;
-    }
-
+    const ac = new AbortController();
     setStreamStatus("reconnecting");
-    source.onopen = () => setStreamStatus("live");
+    let wasLive = false;
 
-    source.onmessage = (ev) => {
-      try {
-        const n = JSON.parse(ev.data) as ApiNotification;
-        if (!n?.id) return;
-        if (seenIds.current.has(n.id)) return;
-        seenIds.current.add(n.id);
-
-        const incoming: ApiNotification = { ...n, readAt: n.readAt ?? null };
-        if (!incoming.readAt) setUnreadCount((c) => c + 1);
-
-        // Only prepend onto page 1 so pagination stays consistent.
-        if (pageRef.current === 1) {
-          setItems((prev) =>
-            [incoming, ...prev.filter((x) => x.id !== incoming.id)].slice(
-              0,
-              NOTIF_PAGE_SIZE,
-            ),
-          );
-          setMeta((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  total: prev.total + 1,
-                  totalPages: Math.max(
-                    1,
-                    Math.ceil((prev.total + 1) / (prev.pageSize || NOTIF_PAGE_SIZE)),
-                  ),
-                }
-              : prev,
-          );
-        }
-
-        if (isCommissionNotify(incoming)) {
-          void queryClient.invalidateQueries({ queryKey: walletKeys.all });
-          void queryClient.invalidateQueries({ queryKey: mlmKeys.all });
-        }
-        // Rank updates are event-driven (no hourly FE poll).
-        // Toast "MLM rank upgraded/updated" → profile + rank-progress.
-        if (isRankNotify(incoming)) {
-          void refreshUser();
-          void queryClient.invalidateQueries({ queryKey: mlmKeys.rankProgress() });
-          void queryClient.invalidateQueries({ queryKey: mlmKeys.all });
-        }
-
-        toast.info(incoming.title || "Notification", {
-          description: incoming.body || undefined,
-          duration: 5000,
-        });
-      } catch {
-        /* ignore malformed payload */
-      }
-    };
-
-    source.onerror = () => {
-      setStreamStatus(source.readyState === EventSource.CLOSED ? "offline" : "reconnecting");
-    };
+    void openAuthenticatedSse(
+      "/notifications/stream",
+      {
+        onOpen: () => {
+          setStreamStatus("live");
+          // SSE does not replay history — resync after reconnect.
+          if (wasLive) void refresh();
+          wasLive = true;
+        },
+        onMessage: (raw) => {
+          try {
+            const parsed = JSON.parse(raw) as ApiNotification | { data?: ApiNotification };
+            const n =
+              parsed && typeof parsed === "object" && "id" in parsed
+                ? (parsed as ApiNotification)
+                : (parsed as { data?: ApiNotification }).data;
+            if (n) handleRealtime(n);
+          } catch {
+            /* ignore malformed payload */
+          }
+        },
+        onError: () => {
+          if (!ac.signal.aborted) setStreamStatus("reconnecting");
+        },
+      },
+      ac.signal,
+    ).catch(() => {
+      if (!ac.signal.aborted) setStreamStatus("offline");
+    });
 
     return () => {
-      source.close();
+      ac.abort();
       setStreamStatus("idle");
     };
-  }, [isAuthenticated, authLoading, queryClient, refreshUser]);
+  }, [isAuthenticated, authLoading, handleRealtime, refresh]);
+
+  // Catch-up when tab becomes visible again (SSE may have dropped while hidden).
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void refresh();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [isAuthenticated, refresh]);
 
   const markRead = useCallback(async (id: string) => {
     const target = itemsRef.current.find((n) => n.id === id);

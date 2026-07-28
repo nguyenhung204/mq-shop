@@ -46,9 +46,11 @@ export const authApi = {
     }
   },
 
+  /** Always succeeds for valid body (anti-enumeration). Mail only if ACTIVE user exists. */
   forgotPassword: (body: { email: string }) =>
     api.post("/auth/forgot-password/request-otp", body, { auth: false }),
 
+  /** Missing / inactive user → same INVALID_OTP as wrong code. */
   resetPassword: (body: { email: string; code: string; newPassword: string }) =>
     api.post(
       "/auth/forgot-password/reset",

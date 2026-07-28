@@ -126,6 +126,11 @@ async function refreshAccessToken(): Promise<boolean> {
   }
 }
 
+/** Used by authenticated SSE (EventSource cannot send Bearer). */
+export function refreshAccessTokenForSse(): Promise<boolean> {
+  return refreshAccessToken();
+}
+
 function buildUrl(path: string, query?: RequestOptions["query"]): string {
   const url = new URL(
     path.startsWith("http") ? path : `${getApiBase()}${path.startsWith("/") ? path : `/${path}`}`,

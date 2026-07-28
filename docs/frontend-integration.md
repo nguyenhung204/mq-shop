@@ -92,8 +92,8 @@ FE nên map UI theo `data.code`, không parse `message` cứng.
 | Login | `POST` | `/auth/login` | Public → set cookies |
 | Logout | `POST` | `/auth/logout` | JWT |
 | Refresh session | `POST` | `/auth/refresh` | Cookie `refresh_token` |
-| Quên MK — gửi OTP | `POST` | `/auth/forgot-password/request-otp` | Public |
-| Quên MK — đặt lại | `POST` | `/auth/forgot-password/reset` | Public → clear cookies |
+| Quên MK — gửi OTP | `POST` | `/auth/forgot-password/request-otp` | Public — **anti-enumeration**: luôn `200` + message kiểu “If the email exists…”; chỉ gửi mail nếu user ACTIVE |
+| Quên MK — đặt lại | `POST` | `/auth/forgot-password/reset` | Public → clear cookies; email không có / inactive → `INVALID_OTP` (giống OTP sai) |
 
 #### Bodies
 
@@ -107,9 +107,17 @@ FE nên map UI theo `data.code`, không parse `message` cứng.
 // login
 { email: string; password: string }
 
+// forgot-password/request-otp
+{ email: string }
+
 // forgot-password/reset
 { email: string; code: string /* 6 digits */; newPassword: string /* min 8 */ }
 ```
+
+**Forgot password (FE rules)**
+
+- Sau `request-otp`: luôn hiện cùng một success copy (“Nếu email tồn tại, OTP đã được gửi”) — **không** nhánh “user not found”.
+- `reset`: map `INVALID_OTP` → “OTP không hợp lệ / hết hạn” (gồm cả email không tồn tại).
 
 #### Response `data` (login / verify-otp / refresh)
 
@@ -316,7 +324,7 @@ SSE event payload (khi có noti **mới** trong lúc đang connect):
 { id, userId, title, body, readAt, createdAt }
 ```
 
-**FE gợi ý:** login → `GET /notifications` (badge + list) → mở `EventSource` `/notifications/stream` (with credentials) để toast realtime.
+**FE realtime:** không dùng `EventSource` thuần (không gắn được `Authorization: Bearer`). FE dùng `fetch` + stream với Bearer (+ cookie nếu có). Login → `GET /notifications` → mở SSE `/notifications/stream` → toast + cập nhật badge/list; reconnect thì gọi lại GET vì SSE **không** replay lịch sử.
 
 Shop apply gửi noti tới user `ACTIVE` có role `ADMIN` hoặc `SUPER_ADMIN`.
 
@@ -1114,7 +1122,7 @@ Register: optional `referrerCode` trên `POST /auth/register`.
 - [ ] Listing `GET /products/listing` (minPrice/maxPrice + OOS watermark)
 - [ ] **PDP** `GET /products/listing/:id` — chọn variant → giá/tồn/ảnh
 - [ ] Homepage banners `GET /banners?lang=`
-- [ ] SSE notifications (optional)
+- [ ] SSE notifications (fetch + Bearer; badge/list cập nhật realtime, không cần reload)
 
 ### Seller (shop APPROVED)
 

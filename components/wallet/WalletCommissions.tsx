@@ -12,6 +12,9 @@ import { Container, PageHero } from "@/components/ui/shared";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { WalletRankProgress } from "@/components/wallet/WalletRankProgress";
+import { WalletBonusGuide } from "@/components/wallet/WalletBonusGuide";
+import { mlmRankLabel } from "@/lib/i18n/mlm-rank";
+
 
 const TYPES: Array<CommissionType | "ALL"> = [
   "ALL",
@@ -29,7 +32,7 @@ function statusBadge(status: string): string {
 
 function CommissionsPanel({ embedded = false }: { embedded?: boolean }) {
   const { t } = useLanguage();
-  const { user } = useAuth();
+  const { user, hasRole } = useAuth();
   const [type, setType] = useState<CommissionType | "ALL">("ALL");
   const [page, setPage] = useState(1);
   const { data, isLoading, isError, error, isFetching } = useCommissions({
@@ -39,25 +42,20 @@ function CommissionsPanel({ embedded = false }: { embedded?: boolean }) {
   });
   const items = data?.items ?? [];
   const meta = data?.meta;
+  const showRank = hasRole("SELLER") && user?.mlmRank != null;
 
   const body = (
     <div className="space-y-5">
-      <div className="space-y-2 text-sm text-mq-text-muted">
-        <p>{t("wallet.commissionsIntro")}</p>
-        <ul className="list-disc pl-5 space-y-1 text-xs leading-relaxed">
-          <li>{t("wallet.pillarReferral")}</li>
-          <li>{t("wallet.pillarTeam")}</li>
-          <li>{t("wallet.pillarLoyalty")}</li>
-          <li>{t("wallet.pillarGlobal")}</li>
-        </ul>
-      </div>
+      <WalletBonusGuide />
 
       <WalletRankProgress />
 
-      {user?.mlmRank != null ? (
-        <p className="text-xs text-mq-text-muted">
-          {t("wallet.rank")}: <strong>{user.mlmRank}</strong>
-          {user.mlmRank === 0 ? ` (${t("wallet.rankSeller")})` : ""}
+      {showRank ? (
+        <p className="text-sm text-mq-text-muted">
+          {t("wallet.rankLabel", {
+            rank: String(user.mlmRank),
+            name: mlmRankLabel(t, user.mlmRank),
+          })}
         </p>
       ) : null}
 

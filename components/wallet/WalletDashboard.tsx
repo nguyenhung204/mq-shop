@@ -21,6 +21,7 @@ import { PaginationBar } from "@/components/ui/PaginationBar";
 import { WalletSkeleton } from "@/components/ui/Skeleton";
 import { WalletRankProgress } from "@/components/wallet/WalletRankProgress";
 import { buildReferralRegisterUrl } from "@/lib/mlm/referralLink";
+import { mlmRankLabel } from "@/lib/i18n/mlm-rank";
 
 const TX_REASONS: Array<WalletTxReason | ""> = [
   "",
@@ -235,7 +236,7 @@ function TxRow({ row }: { row: WalletTransaction }) {
 
 function WalletInner({ embedded = false }: { embedded?: boolean }) {
   const { t } = useLanguage();
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, hasRole } = useAuth();
   const { data: balance, isLoading, isError, error } = useWallet();
   const { data: referral } = useReferralLink();
   const [txPage, setTxPage] = useState(1);
@@ -297,10 +298,14 @@ function WalletInner({ embedded = false }: { embedded?: boolean }) {
                 {t("wallet.code")}: {referral?.referralCode || user?.referralCode}
               </span>
             )}
-            {user?.mlmRank != null ? (
+            {hasRole("SELLER") && user?.mlmRank != null ? (
               <span className="mq-badge mq-badge-cyan">
-                {t("wallet.rank")} {user.mlmRank}
-                {user.mlmRank === 0 ? ` (${t("wallet.rankSeller")})` : ""}
+                {user.mlmRank >= 1
+                  ? t("wallet.rankLabel", {
+                      rank: String(user.mlmRank),
+                      name: mlmRankLabel(t, user.mlmRank),
+                    })
+                  : t("wallet.rankSeller")}
               </span>
             ) : null}
             {user?.referralRateOverride != null &&
