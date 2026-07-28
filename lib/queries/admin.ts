@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { adminApi, adminPlatformStaffApi, adminStaffApi, financeApi } from "@/lib/api";
+import { adminDashboardApi } from "@/lib/api/admin-dashboard";
 import { ApiError } from "@/lib/api/client";
 import type { Banner } from "@/lib/api/promotions";
 import type { ApiProduct, ApiShop, AuthUser, StaffPoolRole, StaffRole } from "@/lib/api/types";
@@ -29,6 +30,7 @@ export {
 
 export const adminKeys = {
   all: ["admin"] as const,
+  dashboard: (sections: string) => [...adminKeys.all, "dashboard", sections] as const,
   shops: (status: string, page: number) => [...adminKeys.all, "shops", status, page] as const,
   shop: (id: string) => [...adminKeys.all, "shop", id] as const,
   products: (status: string, page: number, pageSize = 20) =>
@@ -41,6 +43,17 @@ export const adminKeys = {
   platformStaff: () => [...adminKeys.all, "platform-staff"] as const,
 };
 
+const ADMIN_DASHBOARD_SECTIONS = "queues,snapshot";
+
+export function useAdminDashboard(sections = ADMIN_DASHBOARD_SECTIONS) {
+  return useQuery({
+    queryKey: adminKeys.dashboard(sections),
+    queryFn: () => adminDashboardApi.get(sections),
+    refetchInterval: 90_000,
+    refetchOnWindowFocus: true,
+  });
+}
+
 export type FinanceBatch = { id: string; status?: string; netAmountUsd?: string | number };
 export type FinanceWithdraw = { id: string; status?: string; amountPoints?: string | number };
 export type FinanceGateway = { id: string; gatewayName?: string; status?: string; createdBy?: string };
@@ -49,6 +62,7 @@ function shopActionError(e: unknown): string {
   if (e instanceof ApiError) {
     if (e.code === "SHOP_NOT_PENDING") return tt("toast.shopNotPending");
     if (e.code === "SHOP_NOT_APPROVED") return tt("toast.shopNotApprovedLock");
+    if (e.code === "SHOP_NOT_SUSPENDED") return tt("toast.shopNotSuspended");
   }
   return getErrorMessage(e);
 }
@@ -158,6 +172,18 @@ export function useSuspendShop() {
     onSuccess: () => {
       invalidate();
       toast.success(tt("toast.shopLocked"));
+    },
+    onError: (e) => toast.error(shopActionError(e)),
+  });
+}
+
+export function useUnlockShop() {
+  const invalidate = useAdminInvalidate();
+  return useMutation({
+    mutationFn: (id: string) => adminApi.unlockShop(id),
+    onSuccess: () => {
+      invalidate();
+      toast.success(tt("toast.shopUnlocked"));
     },
     onError: (e) => toast.error(shopActionError(e)),
   });

@@ -25,6 +25,7 @@ import {
 import type { Role } from "@/lib/api/types";
 import { ACCOUNTANT_COMMERCE_PERMS } from "@/components/admin/nav";
 import { AuthGuard } from "@/components/guards/AuthGuard";
+import { AdminDashboardOverview } from "@/components/admin/AdminDashboardOverview";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -178,12 +179,18 @@ function AdminHome() {
         description={t("admin.overview.description")}
       />
 
+      <AdminDashboardOverview />
+
       {visible.length === 0 ? (
         <div className="mq-alert mq-alert-error">
           {t("admin.overview.noModules")}
         </div>
       ) : (
-        <div className="mq-admin-stat-grid">
+        <>
+          <h2 className="text-sm font-semibold text-mq-text mb-3">
+            {t("admin.overview.modulesTitle")}
+          </h2>
+          <div className="mq-admin-stat-grid">
           {visible.map((c) => {
             const Icon = c.icon;
             return (
@@ -198,7 +205,8 @@ function AdminHome() {
               </Link>
             );
           })}
-        </div>
+          </div>
+        </>
       )}
     </>
   );

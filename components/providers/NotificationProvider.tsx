@@ -8,18 +8,28 @@ import {
   useMemo,
   useRef,
   useState,
+  type Dispatch,
   type ReactNode,
+  type SetStateAction,
 } from "react";
+import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { getApiHost } from "@/lib/api/client";
 import { notificationApi } from "@/lib/api/notifications";
-import type { ApiNotification, PageMeta } from "@/lib/api/types";
+import { openAuthenticatedSse } from "@/lib/api/sse";
+import type { ApiNotification, PageMeta, Role } from "@/lib/api/types";
+import { normalizeNotification } from "@/lib/notifications/normalize";
+import { resolveNotificationRoute } from "@/lib/notifications/routes";
 import { mlmKeys, walletKeys } from "@/lib/queries/wallet";
 import { useAuth } from "./AuthProvider";
+import { useLanguage } from "./LanguageProvider";
 
 /** Page size for the header dropdown. */
 export const NOTIF_PAGE_SIZE = 8;
+
+/** How often to sync inbox while SSE is healthy / unhealthy. */
+const POLL_LIVE_MS = 20_000;
+const POLL_DEGRADED_MS = 8_000;
 
 type StreamStatus = "idle" | "live" | "reconnecting" | "offline";
 
@@ -30,7 +40,7 @@ type NotificationContextValue = {
   page: number;
   meta: PageMeta | null;
   streamStatus: StreamStatus;
-  refresh: (page?: number) => Promise<void>;
+  refresh: (page?: number, opts?: { quiet?: boolean }) => Promise<void>;
   setPage: (page: number) => void;
   markRead: (id: string) => Promise<void>;
   markAllRead: () => Promise<void>;
@@ -39,11 +49,10 @@ type NotificationContextValue = {
 
 const NotificationContext = createContext<NotificationContextValue | null>(null);
 
-/** Match BE titles from commission / MLM rank notifies (010). */
 function isCommissionNotify(n: ApiNotification): boolean {
+  const type = (n.type || "").toUpperCase();
+  if (type.startsWith("COMMISSION_")) return true;
   const title = (n.title || "").toLowerCase();
-  const type = (n.type || "").toLowerCase();
-  if (type.includes("commission") || type.includes("mlm")) return true;
   return (
     title.includes("commission credited") ||
     title.includes("bonus credited") ||
@@ -56,6 +65,8 @@ function isCommissionNotify(n: ApiNotification): boolean {
 }
 
 function isRankNotify(n: ApiNotification): boolean {
+  const type = (n.type || "").toUpperCase();
+  if (type === "MLM_RANK_UPGRADED" || type === "MLM_RANK_UPDATED") return true;
   const title = (n.title || "").toLowerCase();
   return (
     title.includes("mlm rank") ||
@@ -64,8 +75,39 @@ function isRankNotify(n: ApiNotification): boolean {
   );
 }
 
+function applyIncoming(
+  incoming: ApiNotification,
+  page: number,
+  setItems: Dispatch<SetStateAction<ApiNotification[]>>,
+  setUnreadCount: Dispatch<SetStateAction<number>>,
+  setMeta: Dispatch<SetStateAction<PageMeta | null>>,
+) {
+  if (!incoming.readAt) setUnreadCount((c) => c + 1);
+
+  // Always keep newest on page 1 inbox so the bell list stays fresh even if closed.
+  if (page === 1) {
+    setItems((prev) =>
+      [incoming, ...prev.filter((x) => x.id !== incoming.id)].slice(0, NOTIF_PAGE_SIZE),
+    );
+    setMeta((prev) =>
+      prev
+        ? {
+            ...prev,
+            total: prev.total + 1,
+            totalPages: Math.max(
+              1,
+              Math.ceil((prev.total + 1) / (prev.pageSize || NOTIF_PAGE_SIZE)),
+            ),
+          }
+        : prev,
+    );
+  }
+}
+
 export function NotificationProvider({ children }: { children: ReactNode }) {
-  const { isAuthenticated, loading: authLoading, refreshUser } = useAuth();
+  const router = useRouter();
+  const { t } = useLanguage();
+  const { isAuthenticated, loading: authLoading, refreshUser, user } = useAuth();
   const queryClient = useQueryClient();
   const [items, setItems] = useState<ApiNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -76,32 +118,104 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const seenIds = useRef<Set<string>>(new Set());
   const itemsRef = useRef(items);
   const pageRef = useRef(page);
+  const rolesRef = useRef<Role[]>(user?.roles ?? []);
+  const handleRealtimeRef = useRef<(raw: unknown, opts?: { toast?: boolean }) => void>(
+    () => undefined,
+  );
+  const refreshRef = useRef<(page?: number, opts?: { quiet?: boolean }) => Promise<void>>(
+    async () => undefined,
+  );
+
   itemsRef.current = items;
   pageRef.current = page;
+  rolesRef.current = user?.roles ?? [];
+
+  const announce = useCallback(
+    (incoming: ApiNotification) => {
+      if (isCommissionNotify(incoming)) {
+        void queryClient.invalidateQueries({ queryKey: walletKeys.all });
+        void queryClient.invalidateQueries({ queryKey: mlmKeys.all });
+      }
+      if (isRankNotify(incoming)) {
+        void refreshUser();
+        void queryClient.invalidateQueries({ queryKey: mlmKeys.rankProgress() });
+        void queryClient.invalidateQueries({ queryKey: mlmKeys.all });
+      }
+
+      const href = resolveNotificationRoute(incoming, {
+        roles: rolesRef.current,
+      });
+      toast.info(incoming.title || t("nav.notifications"), {
+        description: incoming.body || undefined,
+        duration: 6000,
+        action: href
+          ? {
+              label: t("nav.notificationsOpen"),
+              onClick: () => {
+                router.push(href);
+              },
+            }
+          : undefined,
+      });
+    },
+    [queryClient, refreshUser, router, t],
+  );
+
+  const handleRealtime = useCallback(
+    (raw: unknown, opts?: { toast?: boolean }) => {
+      const n = normalizeNotification(raw);
+      if (!n?.id) return;
+      if (seenIds.current.has(n.id)) return;
+      seenIds.current.add(n.id);
+
+      const incoming: ApiNotification = { ...n, readAt: n.readAt ?? null };
+      applyIncoming(incoming, pageRef.current, setItems, setUnreadCount, setMeta);
+
+      if (opts?.toast !== false) announce(incoming);
+    },
+    [announce],
+  );
+  handleRealtimeRef.current = handleRealtime;
 
   const refresh = useCallback(
-    async (nextPage?: number) => {
+    async (nextPage?: number, opts?: { quiet?: boolean }) => {
       if (!isAuthenticated) return;
       const target = nextPage ?? pageRef.current;
-      setLoading(true);
+      if (!opts?.quiet) setLoading(true);
       try {
         const result = await notificationApi.list({
           page: target,
           pageSize: NOTIF_PAGE_SIZE,
         });
-        setItems(result.items);
+        const normalized = result.items
+          .map((row) => normalizeNotification(row))
+          .filter((row): row is ApiNotification => Boolean(row));
+
+        // Toast only truly new rows (arrived since last sync), not the initial hydrate.
+        const isHydrate = seenIds.current.size === 0;
+        for (const n of normalized) {
+          if (seenIds.current.has(n.id)) continue;
+          seenIds.current.add(n.id);
+          if (!isHydrate && !n.readAt && opts?.quiet) {
+            announce(n);
+          }
+        }
+
         setUnreadCount(result.unreadCount);
         setMeta(result.meta ?? null);
         setPageState(result.meta?.page ?? target);
-        seenIds.current = new Set(result.items.map((n) => n.id));
+        if (target === 1 || pageRef.current === target) {
+          setItems(normalized);
+        }
       } catch {
         /* keep current inbox on transient failure */
       } finally {
-        setLoading(false);
+        if (!opts?.quiet) setLoading(false);
       }
     },
-    [isAuthenticated],
+    [announce, isAuthenticated],
   );
+  refreshRef.current = refresh;
 
   const setPage = useCallback(
     (next: number) => {
@@ -126,84 +240,86 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     void refresh(1);
   }, [authLoading, isAuthenticated, refresh]);
 
-  // SSE — live events only while the tab is open
+  // Authenticated SSE — stable effect (handlers via refs) so the socket does not flap.
   useEffect(() => {
     if (authLoading || !isAuthenticated) return;
 
-    const url = `${getApiHost()}/api/v1/notifications/stream`;
-    let source: EventSource;
-    try {
-      source = new EventSource(url, { withCredentials: true } as EventSourceInit);
-    } catch {
-      setStreamStatus("offline");
-      return;
-    }
-
+    const ac = new AbortController();
     setStreamStatus("reconnecting");
-    source.onopen = () => setStreamStatus("live");
+    let wasLive = false;
 
-    source.onmessage = (ev) => {
-      try {
-        const n = JSON.parse(ev.data) as ApiNotification;
-        if (!n?.id) return;
-        if (seenIds.current.has(n.id)) return;
-        seenIds.current.add(n.id);
-
-        const incoming: ApiNotification = { ...n, readAt: n.readAt ?? null };
-        if (!incoming.readAt) setUnreadCount((c) => c + 1);
-
-        // Only prepend onto page 1 so pagination stays consistent.
-        if (pageRef.current === 1) {
-          setItems((prev) =>
-            [incoming, ...prev.filter((x) => x.id !== incoming.id)].slice(
-              0,
-              NOTIF_PAGE_SIZE,
-            ),
-          );
-          setMeta((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  total: prev.total + 1,
-                  totalPages: Math.max(
-                    1,
-                    Math.ceil((prev.total + 1) / (prev.pageSize || NOTIF_PAGE_SIZE)),
-                  ),
-                }
-              : prev,
-          );
-        }
-
-        if (isCommissionNotify(incoming)) {
-          void queryClient.invalidateQueries({ queryKey: walletKeys.all });
-          void queryClient.invalidateQueries({ queryKey: mlmKeys.all });
-        }
-        // Rank updates are event-driven (no hourly FE poll).
-        // Toast "MLM rank upgraded/updated" → profile + rank-progress.
-        if (isRankNotify(incoming)) {
-          void refreshUser();
-          void queryClient.invalidateQueries({ queryKey: mlmKeys.rankProgress() });
-          void queryClient.invalidateQueries({ queryKey: mlmKeys.all });
-        }
-
-        toast.info(incoming.title || "Notification", {
-          description: incoming.body || undefined,
-          duration: 5000,
-        });
-      } catch {
-        /* ignore malformed payload */
-      }
-    };
-
-    source.onerror = () => {
-      setStreamStatus(source.readyState === EventSource.CLOSED ? "offline" : "reconnecting");
-    };
+    void openAuthenticatedSse(
+      "/notifications/stream",
+      {
+        onOpen: () => {
+          setStreamStatus("live");
+          if (wasLive) void refreshRef.current(1, { quiet: true });
+          wasLive = true;
+        },
+        onMessage: (raw) => {
+          try {
+            const parsed = JSON.parse(raw) as unknown;
+            const payload =
+              parsed &&
+              typeof parsed === "object" &&
+              "data" in (parsed as object) &&
+              !("id" in (parsed as object))
+                ? (parsed as { data: unknown }).data
+                : parsed;
+            handleRealtimeRef.current(payload, { toast: true });
+          } catch {
+            /* ignore malformed payload */
+          }
+        },
+        onError: () => {
+          if (!ac.signal.aborted) setStreamStatus("reconnecting");
+        },
+      },
+      ac.signal,
+    ).catch(() => {
+      if (!ac.signal.aborted) setStreamStatus("offline");
+    });
 
     return () => {
-      source.close();
+      ac.abort();
       setStreamStatus("idle");
     };
-  }, [isAuthenticated, authLoading, queryClient, refreshUser]);
+  }, [isAuthenticated, authLoading]);
+
+  // Polling fallback — badge + toast even when SSE is down / buffered.
+  useEffect(() => {
+    if (!isAuthenticated || authLoading) return;
+
+    const tick = () => {
+      void refreshRef.current(1, { quiet: true });
+    };
+
+    const ms = streamStatus === "live" ? POLL_LIVE_MS : POLL_DEGRADED_MS;
+    const timer = setInterval(tick, ms);
+    // Immediate quiet sync shortly after mount / stream health change.
+    const kickoff = setTimeout(tick, 1_500);
+
+    return () => {
+      clearInterval(timer);
+      clearTimeout(kickoff);
+    };
+  }, [isAuthenticated, authLoading, streamStatus]);
+
+  // Catch-up when tab becomes visible again.
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        void refreshRef.current(1, { quiet: true });
+      }
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
+    };
+  }, [isAuthenticated]);
 
   const markRead = useCallback(async (id: string) => {
     const target = itemsRef.current.find((n) => n.id === id);

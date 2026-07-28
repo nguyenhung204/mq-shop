@@ -1,0 +1,203 @@
+import type { ApiNotification, NotificationType, Role } from "@/lib/api/types";
+
+export type NotificationRouteContext = {
+  roles: Role[];
+};
+
+function metaStr(
+  meta: Record<string, string> | null | undefined,
+  key: string,
+): string | null {
+  const v = meta?.[key];
+  return typeof v === "string" && v.trim() ? v.trim() : null;
+}
+
+function requireMeta(
+  meta: Record<string, string> | null | undefined,
+  keys: string[],
+): Record<string, string> | null {
+  if (!meta) return null;
+  const out: Record<string, string> = {};
+  for (const key of keys) {
+    const v = metaStr(meta, key);
+    if (!v) return null;
+    out[key] = v;
+  }
+  return out;
+}
+
+function isAdminish(roles: Role[]): boolean {
+  return (
+    roles.includes("ADMIN") ||
+    roles.includes("SUPER_ADMIN") ||
+    roles.includes("ACCOUNTANT")
+  );
+}
+
+function isSeller(roles: Role[]): boolean {
+  return roles.includes("SELLER");
+}
+
+/**
+ * Resolve in-app notification → app route.
+ * Unknown type / missing required meta → `null` (toast/detail only, no navigate).
+ */
+export function resolveNotificationRoute(
+  n: Pick<ApiNotification, "type" | "meta">,
+  ctx: NotificationRouteContext,
+): string | null {
+  const type = (n.type || "GENERIC") as NotificationType;
+  const meta = n.meta ?? null;
+  const admin = isAdminish(ctx.roles);
+  const seller = isSeller(ctx.roles);
+
+  switch (type) {
+    case "GENERIC":
+      return null;
+
+    case "ACCOUNT_LOCKED":
+    case "ACCOUNT_UNLOCKED":
+    case "ACCOUNT_DELETED":
+      return "/account";
+
+    case "STAFF_ROLE_ASSIGNED": {
+      const m = requireMeta(meta, ["shopId"]);
+      if (m) return `/seller/shop`;
+      return seller ? "/seller" : "/account";
+    }
+
+    case "PLATFORM_ADMIN_ACCOUNT":
+      return "/admin";
+
+    case "DSAR_REQUEST_NEW":
+      return "/admin/dsar";
+
+    case "REFERRAL_DOWNLINE_JOINED":
+      return "/mlm/network";
+
+    case "SHOP_APPLICATION_NEW": {
+      const m = requireMeta(meta, ["shopId"]);
+      return m ? `/admin/shops/${m.shopId}` : "/admin/shops";
+    }
+
+    case "SHOP_APPROVED":
+    case "SHOP_REJECTED":
+    case "SHOP_SUSPENDED":
+    case "SHOP_REINSTATED":
+      return seller ? "/seller/shop" : "/account";
+
+    case "PRODUCT_APPROVED":
+    case "PRODUCT_REJECTED":
+    case "PRODUCT_HIDDEN":
+      return "/seller/products";
+
+    case "ORDER_NEW": {
+      const m = requireMeta(meta, ["orderId"]);
+      if (!m) return seller ? "/seller/orders" : "/orders";
+      return `/orders/${m.orderId}`;
+    }
+
+    case "ORDER_STATUS_UPDATED":
+    case "ORDER_CANCELLED":
+    case "ORDER_CREATED_BY_ADMIN":
+    case "ORDER_CREATED_PAYMENT_NEEDED": {
+      const m = requireMeta(meta, ["orderId"]);
+      return m ? `/orders/${m.orderId}` : "/orders";
+    }
+
+    case "RMA_NEW": {
+      const m = requireMeta(meta, ["rmaId"]);
+      if (admin && m) return `/admin/rma/${m.rmaId}`;
+      const orderId = metaStr(meta, "orderId");
+      if (orderId) return `/orders/${orderId}/rma`;
+      return admin ? "/admin/rma" : "/rma";
+    }
+
+    case "RMA_APPROVED":
+    case "RMA_REJECTED":
+    case "RMA_REFUND_COMPLETED":
+    case "RMA_APPROVED_EXTERNAL_REFUND": {
+      const orderId = metaStr(meta, "orderId");
+      const rmaId = metaStr(meta, "rmaId");
+      if (admin && rmaId) return `/admin/rma/${rmaId}`;
+      if (orderId) return `/orders/${orderId}/rma`;
+      return admin ? "/admin/rma" : "/rma";
+    }
+
+    case "REVIEW_NEW":
+      return "/seller/reviews";
+
+    case "REVIEW_SELLER_REPLIED":
+    case "REVIEW_HIDDEN":
+    case "REVIEW_UNHIDDEN": {
+      const m = requireMeta(meta, ["productId"]);
+      if (!m) return null;
+      const reviewId = metaStr(meta, "reviewId");
+      return reviewId
+        ? `/product/${m.productId}#review-${reviewId}`
+        : `/product/${m.productId}`;
+    }
+
+    case "PROMOTION_APPROVED":
+    case "PROMOTION_REJECTED":
+      return "/seller/promotions";
+
+    case "WALLET_PIN_UPDATED":
+      return "/wallet";
+
+    case "WALLET_TRANSFER_SENT":
+    case "WALLET_TRANSFER_RECEIVED":
+      return "/wallet";
+
+    case "WALLET_ADJUSTED":
+      return "/wallet";
+
+    case "WALLET_WITHDRAW_NEW":
+    case "WALLET_WITHDRAW_STAFF_APPROVED":
+    case "WALLET_WITHDRAW_STAFF_REJECTED":
+    case "WALLET_WITHDRAW_STAFF_PROCESSED":
+    case "WALLET_WITHDRAW_STAFF_PAY_FAILED": {
+      const m = requireMeta(meta, ["payoutId"]);
+      if (admin) {
+        return m ? `/admin/wallet/payouts/${m.payoutId}` : "/admin/wallet/payouts";
+      }
+      return m ? `/wallet/withdrawals/${m.payoutId}` : "/wallet/withdraw";
+    }
+
+    case "WALLET_WITHDRAW_REQUESTED":
+    case "WALLET_WITHDRAW_APPROVED":
+    case "WALLET_WITHDRAW_REJECTED":
+    case "WALLET_WITHDRAW_COMPLETED":
+    case "WALLET_WITHDRAW_PAY_FAILED": {
+      const m = requireMeta(meta, ["payoutId"]);
+      return m ? `/wallet/withdrawals/${m.payoutId}` : "/wallet/withdraw";
+    }
+
+    case "COMMISSION_REFERRAL_CREDITED":
+    case "COMMISSION_TEAM_CREDITED":
+    case "COMMISSION_GLOBAL_CREDITED":
+    case "COMMISSION_LOYALTY_CREDITED":
+    case "COMMISSION_REFERRAL_TRIGGERED":
+      return "/wallet/commissions";
+
+    case "COMMISSION_REFERRAL_SKIPPED_NOT_SELLER":
+      return "/seller/shop";
+
+    case "COMMISSION_JOB_FAILED":
+      return "/admin/mlm";
+
+    case "MLM_RANK_UPGRADED":
+    case "MLM_RANK_UPDATED":
+      return "/wallet";
+
+    case "MLM_REFERRER_UPDATED":
+    case "MLM_DOWNLINE_ASSIGNED":
+      return "/mlm/network";
+
+    case "MLM_REFERRAL_RATE_UPDATED":
+      return "/admin/mlm";
+
+    default:
+      return null;
+  }
+}

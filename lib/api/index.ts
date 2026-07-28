@@ -49,6 +49,19 @@ export type {
   UpdateOrderStatusRequest,
 } from "./orders";
 export { settlementApi, adminSettlementApi } from "./settlements";
+export { adminDashboardApi } from "./admin-dashboard";
+export type {
+  DashboardCountTile,
+  AdminDashboardQueues,
+  AdminDashboardSnapshot,
+  AdminDashboardPayload,
+  AdminDashboardSection,
+} from "./admin-dashboard";
+export {
+  ADMIN_DASHBOARD_QUEUE_ORDER,
+  ADMIN_DASHBOARD_SNAPSHOT_ORDER,
+  normalizeDashboardHref,
+} from "./admin-dashboard";
 export {
   financeConfigApi,
   adminPayoutApi,
@@ -385,6 +398,8 @@ export const adminApi = {
     api.post(`/admin/shops/${id}/reject`, body),
   suspendShop: (id: string, body?: { reason?: string | LocalizedText }) =>
     api.post(`/admin/shops/${id}/violation-lock`, body ?? {}),
+  /** Only shops with isSuspended (violation-lock). Restores APPROVED. */
+  unlockShop: (id: string) => api.post(`/admin/shops/${id}/violation-unlock`, {}),
   products: (status?: string, page?: number, pageSize?: number) =>
     api.get<ApiProduct[] | { data: ApiProduct[]; meta?: PageMeta } | Paginated<ApiProduct>>(
       "/admin/products",

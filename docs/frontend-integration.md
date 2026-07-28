@@ -92,8 +92,8 @@ FE nên map UI theo `data.code`, không parse `message` cứng.
 | Login | `POST` | `/auth/login` | Public → set cookies |
 | Logout | `POST` | `/auth/logout` | JWT |
 | Refresh session | `POST` | `/auth/refresh` | Cookie `refresh_token` |
-| Quên MK — gửi OTP | `POST` | `/auth/forgot-password/request-otp` | Public |
-| Quên MK — đặt lại | `POST` | `/auth/forgot-password/reset` | Public → clear cookies |
+| Quên MK — gửi OTP | `POST` | `/auth/forgot-password/request-otp` | Public — **anti-enumeration**: luôn `200` + message kiểu “If the email exists…”; chỉ gửi mail nếu user ACTIVE |
+| Quên MK — đặt lại | `POST` | `/auth/forgot-password/reset` | Public → clear cookies; email không có / inactive → `INVALID_OTP` (giống OTP sai) |
 
 #### Bodies
 
@@ -107,9 +107,17 @@ FE nên map UI theo `data.code`, không parse `message` cứng.
 // login
 { email: string; password: string }
 
+// forgot-password/request-otp
+{ email: string }
+
 // forgot-password/reset
 { email: string; code: string /* 6 digits */; newPassword: string /* min 8 */ }
 ```
+
+**Forgot password (FE rules)**
+
+- Sau `request-otp`: luôn hiện cùng một success copy (“Nếu email tồn tại, OTP đã được gửi”) — **không** nhánh “user not found”.
+- `reset`: map `INVALID_OTP` → “OTP không hợp lệ / hết hạn” (gồm cả email không tồn tại).
 
 #### Response `data` (login / verify-otp / refresh)
 
@@ -316,7 +324,9 @@ SSE event payload (khi có noti **mới** trong lúc đang connect):
 { id, userId, title, body, readAt, createdAt }
 ```
 
-**FE gợi ý:** login → `GET /notifications` (badge + list) → mở `EventSource` `/notifications/stream` (with credentials) để toast realtime.
+**FE realtime:** không dùng `EventSource` thuần (không gắn được `Authorization: Bearer`). FE dùng `fetch` + stream với Bearer (+ cookie nếu có). Login → `GET /notifications` → mở SSE `/notifications/stream` → toast + cập nhật badge/list; reconnect thì gọi lại GET vì SSE **không** replay lịch sử.
+
+**Deep link:** mỗi item/SSE có `type` + `meta` (string map). FE map route tại `lib/notifications/routes.ts` — click chuông: `markRead` rồi `router.push`. Type lạ / thiếu meta → không navigate (chỉ toast/detail). Chi tiết: [`docs/fe-guide-notifications.md`](./fe-guide-notifications.md).
 
 Shop apply gửi noti tới user `ACTIVE` có role `ADMIN` hoặc `SUPER_ADMIN`.
 
@@ -414,11 +424,15 @@ stateDiagram-v2
 | Duyệt | `POST` | `/admin/shops/:shopId/approve` | `APPROVE_SELLER` |
 | Từ chối | `POST` | `/admin/shops/:shopId/reject` | `APPROVE_SELLER` body `{ reason }` (1–150) |
 | Violation lock | `POST` | `/admin/shops/:shopId/violation-lock` | `SUSPEND_SHOP` body `{ reason? }` (≤150) |
+| Violation unlock | `POST` | `/admin/shops/:shopId/violation-unlock` | `SUSPEND_SHOP` — chỉ khi `isSuspended`; clear flags + restore `APPROVED` |
 
 | Code | UI |
 |------|-----|
 | `SHOP_NOT_PENDING` | Approve/reject khi không còn PENDING |
 | `SHOP_NOT_APPROVED` | Violation-lock khi chưa APPROVED |
+| `SHOP_NOT_SUSPENDED` | Unlock khi shop chưa bị violation-lock (`isSuspended=false`; reject hồ sơ thuần không unlock được) |
+
+**Unlock vs reject:** shop chỉ `REJECTED` (không `isSuspended`) → seller nộp lại apply. Unlock chỉ mở shop đã `violation-lock`.
 
 ---
 
@@ -1114,7 +1128,7 @@ Register: optional `referrerCode` trên `POST /auth/register`.
 - [ ] Listing `GET /products/listing` (minPrice/maxPrice + OOS watermark)
 - [ ] **PDP** `GET /products/listing/:id` — chọn variant → giá/tồn/ảnh
 - [ ] Homepage banners `GET /banners?lang=`
-- [ ] SSE notifications (optional)
+- [ ] SSE notifications (fetch + Bearer; badge/list cập nhật realtime, không cần reload)
 
 ### Seller (shop APPROVED)
 
@@ -1147,7 +1161,7 @@ Register: optional `referrerCode` trên `POST /auth/register`.
 
 - [ ] Users lock/unlock/delete
 - [ ] **Staff shop:** `POST/GET /admin/staff`, `PATCH …/roles`, lock/unlock/delete (`MANAGE_STAFF` / `ASSIGN_ROLES`)
-- [ ] Shops approve/reject/violation-lock
+- [ ] Shops approve/reject/violation-lock/violation-unlock
 - [ ] Products queue approve/reject/hide (xem nested variants)
 - [ ] Categories create/update
 - [ ] Inventory slips inbox approve/reject
