@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { ApiError } from "@/lib/api/client";
 import { statusMessage } from "@/lib/api/utils";
 import { postAuthPath } from "@/lib/auth/routes";
@@ -17,6 +17,7 @@ export function MyAccountContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const refCode = searchParams.get("ref") || "";
+  const passwordReset = searchParams.get("passwordReset") === "1";
   const registerHref = refCode
     ? `/my-account/register?ref=${encodeURIComponent(refCode)}`
     : "/my-account/register";
@@ -28,6 +29,11 @@ export function MyAccountContent() {
   const [busy, setBusy] = useState(false);
   /** Avoid flashing the My Account hub before post-login navigation. */
   const [redirecting, setRedirecting] = useState(false);
+
+  useEffect(() => {
+    if (!passwordReset || isAuthenticated) return;
+    setInfo(t("account.forgot.passwordUpdated"));
+  }, [passwordReset, isAuthenticated, t]);
 
   const onLogin = async (e: FormEvent) => {
     e.preventDefault();

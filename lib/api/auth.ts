@@ -50,13 +50,16 @@ export const authApi = {
   forgotPassword: (body: { email: string }) =>
     api.post("/auth/forgot-password/request-otp", body, { auth: false }),
 
-  /** Missing / inactive user → same INVALID_OTP as wrong code. */
-  resetPassword: (body: { email: string; code: string; newPassword: string }) =>
-    api.post(
+  /** Missing / inactive user → same INVALID_OTP as wrong code. Clears session cookies on BE. */
+  resetPassword: async (body: { email: string; code: string; newPassword: string }) => {
+    const res = await api.post(
       "/auth/forgot-password/reset",
       { email: body.email, code: body.code, newPassword: body.newPassword },
       { auth: false },
-    ),
+    );
+    clearTokens();
+    return res;
+  },
 
   me: () => api.get<AuthUser>("/users/me"),
 
@@ -69,8 +72,11 @@ export const authApi = {
     return api.postForm<AuthUser>("/users/me/avatar", fd);
   },
 
-  changePassword: (body: { currentPassword: string; newPassword: string }) =>
-    api.patch("/users/me/password", body),
+  changePassword: async (body: { currentPassword: string; newPassword: string }) => {
+    const res = await api.patch("/users/me/password", body);
+    clearTokens();
+    return res;
+  },
 
   requestEmailOtp: (body: { newEmail: string }) =>
     api.post("/users/me/email/request-otp", body),

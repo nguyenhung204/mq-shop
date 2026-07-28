@@ -250,8 +250,10 @@ function AccountInner() {
                   }
                   void run(async () => {
                     await authApi.changePassword({ currentPassword, newPassword });
+                    setCurrentPassword("");
+                    setNewPassword("");
                     await logout();
-                    router.push("/my-account");
+                    router.replace("/my-account?passwordReset=1");
                   });
                 }}
               >
