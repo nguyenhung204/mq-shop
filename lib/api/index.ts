@@ -57,6 +57,21 @@ export type {
   AdminDashboardPayload,
   AdminDashboardSection,
 } from "./admin-dashboard";
+export { sellerDashboardApi } from "./seller-dashboard";
+export type {
+  DashboardSummary,
+  LowStockItem,
+  DashboardLowStock,
+  SellerDashboardPayload,
+  SellerDashboardSection,
+  RmaRateResult,
+  RevenueChartRange,
+  RevenueTimePoint,
+  RevenueChartPayload,
+  TopProductsRange,
+  TopProductItem,
+  TopProductsPayload,
+} from "./seller-dashboard";
 export {
   ADMIN_DASHBOARD_QUEUE_ORDER,
   ADMIN_DASHBOARD_SNAPSHOT_ORDER,

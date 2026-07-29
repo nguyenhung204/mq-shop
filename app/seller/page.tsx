@@ -5,6 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { SellerDashboard } from "@/components/seller/SellerDashboard";
+import { SellerRevenueChart } from "@/components/seller/SellerRevenueChart";
+import { SellerTopProducts } from "@/components/seller/SellerTopProducts";
 
 export default function SellerPage() {
   const { hasRole } = useAuth();
@@ -38,30 +41,39 @@ export default function SellerPage() {
   }
 
   return (
-    <div className="grid sm:grid-cols-2 gap-3">
-      {(
-        [
-          ["/seller/wallet", "seller.overview.walletCard"],
-          ["/seller/shop", "seller.overview.myShop"],
-          ["/seller/products", "seller.overview.manageProducts"],
-          ["/seller/inventory", "seller.overview.inventoryCard"],
-          ["/seller/orders", "seller.overview.ordersCard"],
-          ["/seller/settlements", "seller.overview.settlementsCard"],
-          ["/seller/transactions", "seller.overview.transactionsCard"],
-          ["/seller/landing-cost", "seller.overview.landingCostCard"],
-          ["/seller/promotions", "seller.overview.promotionsCard"],
-          ["/seller/rma", "seller.overview.rmaCard"],
-          ["/seller/materials", "seller.overview.materialsCard"],
-        ] as const
-      ).map(([href, labelKey]) => (
-        <Link
-          key={href}
-          href={href}
-          className="mq-seller-panel !min-h-0 hover:border-[#e7ba0a] transition-colors"
-        >
-          <span className="text-sm font-medium">{t(labelKey)}</span>
-        </Link>
-      ))}
+    <div className="space-y-6">
+      <SellerDashboard />
+      <SellerRevenueChart />
+
+      <div className="grid lg:grid-cols-2 gap-4">
+        <SellerTopProducts />
+
+        <div className="grid sm:grid-cols-2 gap-3 content-start">
+          {(
+            [
+              ["/seller/wallet", "seller.overview.walletCard"],
+              ["/seller/shop", "seller.overview.myShop"],
+              ["/seller/products", "seller.overview.manageProducts"],
+              ["/seller/inventory", "seller.overview.inventoryCard"],
+              ["/seller/orders", "seller.overview.ordersCard"],
+              ["/seller/settlements", "seller.overview.settlementsCard"],
+              ["/seller/transactions", "seller.overview.transactionsCard"],
+              ["/seller/landing-cost", "seller.overview.landingCostCard"],
+              ["/seller/promotions", "seller.overview.promotionsCard"],
+              ["/seller/rma", "seller.overview.rmaCard"],
+              ["/seller/materials", "seller.overview.materialsCard"],
+            ] as const
+          ).map(([href, labelKey]) => (
+            <Link
+              key={href}
+              href={href}
+              className="mq-seller-panel !min-h-0 hover:border-[#e7ba0a] transition-colors"
+            >
+              <span className="text-sm font-medium">{t(labelKey)}</span>
+            </Link>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
