@@ -202,7 +202,7 @@ export function Header() {
           <button
             type="button"
             className="fixed inset-0 z-40 cursor-default bg-black/20"
-            aria-label="Close menu"
+            aria-label={t("nav.closeMenu")}
             onClick={closeMega}
           />
         )}
@@ -340,7 +340,7 @@ export function Header() {
               <Link
                 href="/wishlist"
                 className="hidden sm:inline-flex mq-icon-btn relative text-mq-text hover:text-mq-gold transition-colors"
-                aria-label="Wishlist"
+                aria-label={t("nav.wishlist")}
                 onClick={closeMega}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
@@ -355,7 +355,7 @@ export function Header() {
                 type="button"
                 onClick={toggle}
                 className="hidden lg:inline-flex mq-theme-toggle mq-icon-btn"
-                aria-label="Toggle theme"
+                aria-label={t("nav.toggleTheme")}
               >
                 {dark ? (
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
@@ -376,7 +376,7 @@ export function Header() {
                     closeMega();
                     setMobileOpen((open) => !open);
                   }}
-                  aria-label="Menu"
+                  aria-label={t("nav.menu")}
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                     {mobileOpen ? (
@@ -400,7 +400,7 @@ export function Header() {
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-6 gap-y-4">
                     {roots.length === 0 ? (
                       <p className="text-sm text-mq-text-muted col-span-full">
-                        No categories yet.
+                        {t("nav.noCategoriesYet")}
                       </p>
                     ) : (
                       roots.map((cat) => {
@@ -471,7 +471,7 @@ export function Header() {
                     <ProductCarousel products={productsForMega} />
                   ) : (
                     <p className="text-sm text-mq-text-muted py-6 text-center">
-                      No products in this category yet.
+                      {t("nav.noProductsInCategory")}
                     </p>
                   )}
                 </div>
@@ -503,7 +503,7 @@ export function Header() {
                     </ul>
                   </div>
                   <div className="relative h-48 overflow-hidden">
-                    <Image src={heroImages.promo1} alt="MQ Collection" fill className="object-cover" sizes="300px" quality={70} />
+                    <Image src={heroImages.promo1} alt={t("nav.mqCollectionAlt")} fill className="object-cover" sizes="300px" quality={70} />
                     <div className="absolute inset-0 bg-black/45 flex flex-col justify-end p-5">
                       <p className="text-white text-base font-display">{t("nav.newSeason")}</p>
                       <Link href="/shop" className="mq-btn mq-btn-primary mt-2 w-fit text-xs" onClick={closeMega}>{t("nav.shopNow")}</Link>
@@ -517,7 +517,7 @@ export function Header() {
                   <ProductCarousel products={newest} />
                 ) : (
                   <p className="text-sm text-mq-text-muted py-6 text-center">
-                    No products yet.
+                    {t("nav.noProductsYet")}
                   </p>
                 )
               )}
@@ -545,7 +545,7 @@ export function Header() {
           <button
             type="button"
             className="absolute inset-0 bg-black/40"
-            aria-label="Close menu"
+            aria-label={t("nav.closeMenu")}
             onClick={() => setMobileOpen(false)}
           />
           <div className="relative flex flex-col flex-1 min-h-0 bg-mq-surface shadow-[0_-4px_24px_rgba(0,0,0,0.08)]">
@@ -589,7 +589,7 @@ export function Header() {
                 <NotificationBell />
                 <UserMenu />
                 <LanguageSwitcher menuAlign="start" menuPlacement="above" />
-                <button type="button" onClick={toggle} className="mq-theme-toggle mq-icon-btn" aria-label="Toggle theme">
+                <button type="button" onClick={toggle} className="mq-theme-toggle mq-icon-btn" aria-label={t("nav.toggleTheme")}>
                   {dark ? (
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />

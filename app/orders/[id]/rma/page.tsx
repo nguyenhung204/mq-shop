@@ -30,7 +30,7 @@ function CreateRmaInner() {
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (reason.length < 5 || reason.length > 1000) {
-      setError("Reason must be 5–1000 characters.");
+      setError(t("orders.rma.reasonError"));
       return;
     }
     setError("");
@@ -51,67 +51,66 @@ function CreateRmaInner() {
   return (
     <>
       <PageHero
-        title="Request return"
+        title={t("orders.rma.title")}
         breadcrumb={[
-          { label: "Orders", href: "/orders" },
+          { label: t("orders.rma.breadcrumbOrders"), href: "/orders" },
           { label: id.slice(0, 8), href: `/orders/${id}` },
-          { label: "RMA" },
+          { label: t("orders.rma.breadcrumbRma") },
         ]}
       />
       <Container className="py-10 max-w-lg mx-auto">
         {!order ? (
-          <p className="text-sm text-mq-text-muted">Loading order…</p>
+          <p className="text-sm text-mq-text-muted">{t("orders.detail.loading")}</p>
         ) : !allowed ? (
           <div className="mq-alert mq-alert-error space-y-2">
             <p>
               {blockedByExisting
                 ? order.rma
-                  ? `${translateStatus(t, "rmaMessage", order.rma.status)}. You cannot submit another return for this order.`
-                  : "A return / refund is already in progress for this order."
-                : "RMA is only available within 7 days after delivery."}
+                  ? t("orders.rma.blockedExistingWithStatus", {
+                      status: translateStatus(t, "rmaMessage", order.rma.status),
+                    })
+                  : t("orders.rma.blockedExisting")
+                : t("orders.rma.notEligible")}
             </p>
             <Link href={`/orders/${id}`} className="underline">
-              Back to order
+              {t("orders.rma.backToOrder")}
             </Link>
           </div>
         ) : (
           <form onSubmit={(e) => void onSubmit(e)} className="mq-card p-6 space-y-4">
-            <p className="text-sm text-mq-text-secondary">
-              Submit reason + bank details for refund. Evidence images are optional (max 5). After
-              admin approval, order becomes REFUND_APPROVED — payout is handled outside the system.
-            </p>
+            <p className="text-sm text-mq-text-secondary">{t("orders.rma.formHint")}</p>
             {error ? <div className="mq-alert mq-alert-error">{error}</div> : null}
             <textarea
               className="mq-textarea"
-              placeholder="Reason"
+              placeholder={t("orders.rma.reasonPlaceholder")}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               required
             />
             <input
               className="mq-input"
-              placeholder="Bank name"
+              placeholder={t("orders.rma.bankName")}
               value={bankName}
               onChange={(e) => setBankName(e.target.value)}
               required
             />
             <input
               className="mq-input"
-              placeholder="Account number"
+              placeholder={t("orders.rma.accountNumber")}
               value={accountNumber}
               onChange={(e) => setAccountNumber(e.target.value)}
               required
             />
             <input
               className="mq-input"
-              placeholder="Account name"
+              placeholder={t("orders.rma.accountName")}
               value={accountName}
               onChange={(e) => setAccountName(e.target.value)}
               required
             />
             <div>
               <label className="block text-sm mb-1.5" htmlFor="evidence">
-                Evidence images (optional, max 5)
+                {t("orders.rma.evidenceLabel")}
               </label>
               <input
                 id="evidence"
@@ -123,7 +122,7 @@ function CreateRmaInner() {
               />
             </div>
             <button className="mq-btn mq-btn-primary w-full" disabled={createRma.isPending}>
-              {createRma.isPending ? "Submitting…" : "Submit RMA"}
+              {createRma.isPending ? t("orders.rma.submitting") : t("orders.rma.submitBtn")}
             </button>
           </form>
         )}

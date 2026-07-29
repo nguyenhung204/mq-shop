@@ -128,7 +128,7 @@ function PlatformStaffInner() {
       await navigator.clipboard.writeText(createdCred.temporaryPassword);
       toast.success(t("admin.staffPage.passwordCopied"));
     } catch {
-      toast.error("Could not copy");
+      toast.error(t("admin.staffPage.copyFailed"));
     }
   };
 
