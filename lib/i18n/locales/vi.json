@@ -1442,7 +1442,16 @@
       "updatedAt": "Cập nhật: {time}",
       "error": "Không thể tải dữ liệu dashboard.",
       "rmaRate": "Tỷ lệ RMA",
-      "rmaWarning": "Cao"
+      "rmaWarning": "Cao",
+      "revenueChart": "Biểu đồ doanh thu",
+      "revenue": "Doanh thu",
+      "orders": "Đơn hàng",
+      "range7d": "7 ngày",
+      "range30d": "30 ngày",
+      "range12m": "12 tháng",
+      "comparePrevious": "So sánh kỳ trước",
+      "currentPeriod": "Kỳ này",
+      "previousPeriod": "Kỳ trước"
     },
     "shop": {
       "sectionsAria": "Mục shop",

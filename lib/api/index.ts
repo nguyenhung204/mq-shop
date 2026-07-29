@@ -65,6 +65,9 @@ export type {
   SellerDashboardPayload,
   SellerDashboardSection,
   RmaRateResult,
+  RevenueChartRange,
+  RevenueTimePoint,
+  RevenueChartPayload,
 } from "./seller-dashboard";
 export {
   ADMIN_DASHBOARD_QUEUE_ORDER,

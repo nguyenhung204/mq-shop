@@ -46,6 +46,26 @@ export interface SellerDashboardPayload {
 export type SellerDashboardSection = "summary" | "lowStock";
 
 // ---------------------------------------------------------------------------
+// Revenue Chart types
+// ---------------------------------------------------------------------------
+
+export type RevenueChartRange = "7d" | "30d" | "12m";
+
+export interface RevenueTimePoint {
+  date: string;
+  revenue: string;
+  orderCount: number;
+}
+
+export interface RevenueChartPayload {
+  range: string;
+  groupBy: "day" | "week" | "month";
+  current: RevenueTimePoint[];
+  previous?: RevenueTimePoint[];
+  generatedAt: string;
+}
+
+// ---------------------------------------------------------------------------
 // API
 // ---------------------------------------------------------------------------
 
@@ -62,5 +82,15 @@ export const sellerDashboardApi = {
       query.lowStockThreshold = params.lowStockThreshold;
     }
     return api.get<SellerDashboardPayload>("/seller/dashboard", { query });
+  },
+
+  revenueChart: async (params?: {
+    range?: RevenueChartRange;
+    comparePrevious?: boolean;
+  }): Promise<RevenueChartPayload> => {
+    const query: Record<string, string> = {};
+    if (params?.range) query.range = params.range;
+    if (params?.comparePrevious) query.comparePrevious = "true";
+    return api.get<RevenueChartPayload>("/seller/dashboard/revenue-chart", { query });
   },
 };

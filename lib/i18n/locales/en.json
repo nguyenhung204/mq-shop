@@ -1442,7 +1442,16 @@
       "updatedAt": "Updated: {time}",
       "error": "Failed to load dashboard data.",
       "rmaRate": "RMA Rate",
-      "rmaWarning": "High"
+      "rmaWarning": "High",
+      "revenueChart": "Revenue Chart",
+      "revenue": "Revenue",
+      "orders": "Orders",
+      "range7d": "7 days",
+      "range30d": "30 days",
+      "range12m": "12 months",
+      "comparePrevious": "Compare previous",
+      "currentPeriod": "Current",
+      "previousPeriod": "Previous"
     },
     "shop": {
       "sectionsAria": "Shop sections",
