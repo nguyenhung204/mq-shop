@@ -19,6 +19,7 @@ import { notificationApi } from "@/lib/api/notifications";
 import { openAuthenticatedSse } from "@/lib/api/sse";
 import type { ApiNotification, PageMeta, Role } from "@/lib/api/types";
 import { normalizeNotification } from "@/lib/notifications/normalize";
+import { localizeNotification } from "@/lib/notifications/localize";
 import { resolveNotificationRoute } from "@/lib/notifications/routes";
 import { mlmKeys, walletKeys } from "@/lib/queries/wallet";
 import { useAuth } from "./AuthProvider";
@@ -106,7 +107,7 @@ function applyIncoming(
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { isAuthenticated, loading: authLoading, refreshUser, user } = useAuth();
   const queryClient = useQueryClient();
   const [items, setItems] = useState<ApiNotification[]>([]);
@@ -145,8 +146,9 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       const href = resolveNotificationRoute(incoming, {
         roles: rolesRef.current,
       });
-      toast.info(incoming.title || t("nav.notifications"), {
-        description: incoming.body || undefined,
+      const { title, body } = localizeNotification(incoming, locale);
+      toast.info(title || t("nav.notifications"), {
+        description: body || undefined,
         duration: 6000,
         action: href
           ? {
@@ -158,7 +160,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           : undefined,
       });
     },
-    [queryClient, refreshUser, router, t],
+    [queryClient, refreshUser, router, t, locale],
   );
 
   const handleRealtime = useCallback(

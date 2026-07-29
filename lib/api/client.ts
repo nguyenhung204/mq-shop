@@ -41,8 +41,20 @@ export class ApiError extends Error {
     this.name = "ApiError";
     this.status = status;
     this.body = body;
-    this.code = body?.data?.code || null;
+    this.code = extractApiErrorCode(body, message);
   }
+}
+
+function looksLikeApiErrorCode(text: string): boolean {
+  return /^[A-Z][A-Z0-9_]{2,}$/.test(text.trim());
+}
+
+function extractApiErrorCode(body: ApiErrorBody | null, message: string): string | null {
+  if (body?.data?.code) return body.data.code;
+  if (typeof body?.error === "string" && looksLikeApiErrorCode(body.error)) return body.error;
+  const trimmed = message.trim();
+  if (looksLikeApiErrorCode(trimmed)) return trimmed;
+  return null;
 }
 
 function messageFromBody(body: ApiErrorBody | null, fallback: string): string {

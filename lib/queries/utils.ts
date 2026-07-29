@@ -1,7 +1,8 @@
 import { ApiError } from "@/lib/api/client";
 import { getTranslation } from "@/lib/i18n/get-translation";
 import type { Locale } from "@/lib/i18n/types";
-import { tt } from "@/lib/i18n/tt";
+import { statusLabel } from "@/lib/i18n/status";
+import { tt, currentLocale } from "@/lib/i18n/tt";
 
 /** Machine error codes from BE — never show these verbatim in UI. */
 export const API_ERROR_I18N: Record<string, string> = {
@@ -22,11 +23,24 @@ export const API_ERROR_I18N: Record<string, string> = {
   SHOP_NOT_FOUND: "toast.shopNotFound",
   SHOP_NOT_ELIGIBLE: "toast.shopNotEligible",
   SHOP_NOT_APPROVED: "toast.shopNotApproved",
+  SHOP_NOT_PENDING: "toast.shopNotPending",
+  SHOP_NOT_SUSPENDED: "toast.shopNotSuspended",
+  SHOP_ALREADY_EXISTS: "toast.shopAlreadyExists",
   TAX_ID_TAKEN: "toast.taxIdTaken",
   SHOP_NAME_TAKEN: "toast.shopNameTaken",
   PRODUCT_NOT_FOUND: "toast.productNotFound",
   PRODUCT_NOT_HIDDEN: "toast.productNotHidden",
   ORDER_NOT_FOUND: "toast.orderNotFound",
+  ORDER_MULTI_SHOP: "toast.orderMultiShop",
+  ORDER_OWN_SHOP_FORBIDDEN: "toast.orderOwnShopForbidden",
+  ORDER_NOT_CANCELLABLE: "toast.orderNotCancellable",
+  ORDER_INVALID_TRANSITION: "toast.orderInvalidTransition",
+  RMA_WINDOW_EXPIRED: "toast.rmaWindowExpired",
+  RMA_NOT_ALLOWED: "toast.rmaNotAllowed",
+  RMA_ALREADY_EXISTS: "toast.rmaAlreadyExists",
+  USER_NOT_FOUND: "toast.buyerNotFound",
+  VARIANT_NOT_FOUND: "toast.variantNotFound",
+  INSUFFICIENT_STOCK: "toast.insufficientStock",
   WALLET_NOT_FOUND: "toast.walletNotFound",
   WALLET_PIN_REQUIRED: "toast.walletPinRequired",
   WALLET_PIN_INVALID: "toast.walletPinInvalid",
@@ -35,6 +49,36 @@ export const API_ERROR_I18N: Record<string, string> = {
   IDEMPOTENCY_KEY_REUSE_MISMATCH: "toast.idempotencyKeyReuseMismatch",
   IDEMPOTENCY_REQUEST_IN_PROGRESS: "toast.idempotencyRequestInProgress",
 };
+
+const STATUS_TOKENS_BY_DOMAIN: Record<string, string[]> = {
+  shop: ["PENDING", "APPROVED", "REJECTED", "SUSPENDED"],
+  order: [
+    "PENDING",
+    "PAID",
+    "SHIPPED",
+    "DELIVERED",
+    "CANCELLED",
+    "REFUNDED",
+    "REFUND_APPROVED",
+  ],
+  product: ["PENDING", "ACTIVE", "REJECTED", "HIDDEN"],
+  promo: ["PENDING", "APPROVED", "REJECTED"],
+  rma: ["PENDING", "APPROVED", "REJECTED", "REFUND_APPROVED", "REFUNDED", "CLOSED"],
+};
+
+function replaceStatusTokensInText(text: string, locale?: Locale | null): string {
+  if (!locale || !text) return text;
+  let out = text;
+  for (const [domain, tokens] of Object.entries(STATUS_TOKENS_BY_DOMAIN)) {
+    for (const token of tokens) {
+      const label = statusLabel(locale, domain, token);
+      if (label && label !== token) {
+        out = out.replaceAll(token, label);
+      }
+    }
+  }
+  return out;
+}
 
 const API_CODE_PATTERN = /^[A-Z][A-Z0-9_]{2,}$/;
 const CODE_SUFFIX_PATTERN = /\s*\([A-Z][A-Z0-9_]+\)\s*$/;
@@ -58,20 +102,25 @@ function messageForCode(code: string | null | undefined, locale?: Locale | null)
   return key ? translateKey(key, locale) : null;
 }
 
+function resolveLocale(locale?: Locale | null): Locale {
+  return locale ?? currentLocale();
+}
+
 function sanitizeText(
   message: string,
   code: string | null,
   fallback: string,
   locale?: Locale | null,
 ): string {
-  const mapped = messageForCode(code, locale);
+  const lang = resolveLocale(locale);
+  const mapped = messageForCode(code, lang);
   if (mapped) return mapped;
 
   const cleaned = stripCodeSuffix(message).trim();
   if (!cleaned || looksLikeApiCode(cleaned)) {
-    return messageForCode(cleaned, locale) ?? fallback;
+    return messageForCode(cleaned, lang) ?? fallback;
   }
-  return cleaned;
+  return replaceStatusTokensInText(cleaned, lang);
 }
 
 export function getErrorMessage(
@@ -79,11 +128,12 @@ export function getErrorMessage(
   fallback = tt("toast.somethingWentWrong"),
   locale?: Locale | null,
 ): string {
+  const lang = resolveLocale(locale);
   if (e instanceof ApiError) {
-    return sanitizeText(e.message, e.code, fallback, locale);
+    return sanitizeText(e.message, e.code, fallback, lang);
   }
   if (e instanceof Error) {
-    return sanitizeText(e.message, null, fallback, locale);
+    return sanitizeText(e.message, null, fallback, lang);
   }
   return fallback;
 }

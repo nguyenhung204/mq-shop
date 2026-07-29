@@ -19,7 +19,10 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { getErrorMessage } from "@/lib/queries/utils";
+
+type ProductVisibilityAction = { kind: "hide" | "unhide"; id: string };
 
 function productThumb(p: ApiProduct): string {
   const imgs = p.images;
@@ -58,6 +61,9 @@ function ProductsInner() {
   const [status, setStatus] = useState("PENDING");
   const [page, setPage] = useState(1);
   const [rejectTarget, setRejectTarget] = useState<RejectTarget | null>(null);
+  const [visibilityAction, setVisibilityAction] = useState<ProductVisibilityAction | null>(
+    null,
+  );
   const { data, isLoading, isError, error } = useAdminProducts(status, page);
   const items = data?.items ?? [];
   const meta = data?.meta;
@@ -169,7 +175,7 @@ function ProductsInner() {
                     icon={Eye}
                     tone="approve"
                     disabled={unhideProduct.isPending}
-                    onClick={() => void unhideProduct.mutateAsync(p.id)}
+                    onClick={() => setVisibilityAction({ kind: "unhide", id: p.id })}
                   />
                 ) : (
                   <AdminIconButton
@@ -177,7 +183,7 @@ function ProductsInner() {
                     icon={EyeOff}
                     tone="warn"
                     disabled={hideProduct.isPending}
-                    onClick={() => void hideProduct.mutateAsync(p.id)}
+                    onClick={() => setVisibilityAction({ kind: "hide", id: p.id })}
                   />
                 )}
               </AdminActions>
@@ -206,6 +212,36 @@ function ProductsInner() {
           if (!rejectTarget) return;
           await rejectProduct.mutateAsync({ id: rejectTarget.id, reason });
           setRejectTarget(null);
+        }}
+      />
+      <ConfirmDialog
+        open={Boolean(visibilityAction)}
+        title={
+          visibilityAction?.kind === "unhide"
+            ? t("confirm.unhideProductTitle")
+            : t("confirm.hideProductTitle")
+        }
+        description={
+          visibilityAction?.kind === "unhide"
+            ? t("confirm.unhideProductDesc")
+            : t("confirm.hideProductDesc")
+        }
+        confirmLabel={
+          visibilityAction?.kind === "unhide"
+            ? t("confirm.unhideProductBtn")
+            : t("confirm.hideProductBtn")
+        }
+        tone={visibilityAction?.kind === "unhide" ? "primary" : "warn"}
+        busy={hideProduct.isPending || unhideProduct.isPending}
+        onClose={() => setVisibilityAction(null)}
+        onConfirm={async () => {
+          if (!visibilityAction) return;
+          if (visibilityAction.kind === "hide") {
+            await hideProduct.mutateAsync(visibilityAction.id);
+          } else {
+            await unhideProduct.mutateAsync(visibilityAction.id);
+          }
+          setVisibilityAction(null);
         }}
       />
     </>

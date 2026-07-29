@@ -25,7 +25,7 @@ export function AddToCartButton({
 }) {
   const { addItem } = useCart();
   const { flyToCart } = useFlyToCart();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const buttonLabel = label ?? t("common.addToCart");
@@ -51,9 +51,7 @@ export function AddToCartButton({
         router.push("/checkout");
       }
     } catch (err) {
-      toast.error(
-        getErrorMessage(err, "Could not add this product to cart."),
-      );
+      toast.error(getErrorMessage(err, t("cart.addFailed"), locale));
     } finally {
       setBusy(false);
     }

@@ -104,9 +104,9 @@ function inventoryErrorMessage(e: unknown, fallback: string): string {
       case "INVENTORY_SLIP_DUPLICATE_SKU":
         return "Duplicate SKU in slip items — each SKU can appear only once.";
       case "INSUFFICIENT_STOCK":
-        return "Not enough stock for this adjustment.";
+        return tt("toast.insufficientStockAdjustment");
       case "SHOP_NOT_ELIGIBLE":
-        return "Shop must be approved and not suspended.";
+        return tt("toast.shopNotEligible");
       case "FORBIDDEN":
         return "You do not have permission for this action.";
       case "IDEMPOTENCY_KEY_REQUIRED":

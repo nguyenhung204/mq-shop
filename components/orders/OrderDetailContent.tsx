@@ -22,6 +22,7 @@ import { useProductReviews } from "@/lib/queries/reviews";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { ReviewForm } from "@/components/reviews/ReviewForm";
 import { Container, PageHero } from "@/components/ui/shared";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { OrderDetailSkeleton } from "@/components/ui/Skeleton";
 
 import { PRODUCT_FALLBACK_IMAGE } from "@/lib/images";
@@ -134,6 +135,7 @@ function OrderDetailInner() {
   const cancelOrder = useCancelOrder(id);
   const updateStatus = useUpdateOrderStatus();
   const [reason, setReason] = useState("");
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
 
   const roles = user?.roles ?? [];
   const myShopId = user?.shopId || shop?.id || null;
@@ -153,10 +155,16 @@ function OrderDetailInner() {
   const rmaInfo = order ? resolveRmaInfo(order) : null;
   const canReview = Boolean(order && isBuyer && order.status === "DELIVERED" && user?.id);
 
-  const onCancel = async (e: FormEvent) => {
+  const onCancel = (e: FormEvent) => {
     e.preventDefault();
-    await cancelOrder.mutateAsync(reason);
+    if (!reason.trim()) return;
+    setCancelConfirmOpen(true);
+  };
+
+  const confirmCancel = async () => {
+    await cancelOrder.mutateAsync(reason.trim());
     setReason("");
+    setCancelConfirmOpen(false);
   };
 
   return (
@@ -301,6 +309,16 @@ function OrderDetailInner() {
           </div>
         )}
       </Container>
+      <ConfirmDialog
+        open={cancelConfirmOpen}
+        title={t("confirm.orderCancelTitle")}
+        description={t("confirm.orderCancelDesc")}
+        confirmLabel={t("confirm.orderCancelBtn")}
+        tone="danger"
+        busy={cancelOrder.isPending}
+        onClose={() => setCancelConfirmOpen(false)}
+        onConfirm={confirmCancel}
+      />
     </>
   );
 }

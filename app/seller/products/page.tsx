@@ -30,8 +30,11 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { categoryLabel } from "@/lib/api/categoryLabel";
 import { getErrorMessage } from "@/lib/queries/utils";
+
+type ProductVisibilityAction = { kind: "hide" | "unhide"; id: string };
 
 const MAX_IMAGES = 10;
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -183,6 +186,9 @@ function ProductsInner() {
   const [variants, setVariants] = useState<VariantDraft[]>([
     { key: crypto.randomUUID(), sku: "", sellingPrice: "19.99", optionsText: "" },
   ]);
+  const [visibilityAction, setVisibilityAction] = useState<ProductVisibilityAction | null>(
+    null,
+  );
 
   const resetForm = () => {
     setShowForm(false);
@@ -891,7 +897,7 @@ function ProductsInner() {
                                 icon={Eye}
                                 tone="approve"
                                 disabled={unhideProduct.isPending}
-                                onClick={() => void unhideProduct.mutateAsync(p.id)}
+                                onClick={() => setVisibilityAction({ kind: "unhide", id: p.id })}
                               />
                             ) : (
                               <AdminIconButton
@@ -899,7 +905,7 @@ function ProductsInner() {
                                 icon={EyeOff}
                                 tone="warn"
                                 disabled={hideProduct.isPending}
-                                onClick={() => void hideProduct.mutateAsync(p.id)}
+                                onClick={() => setVisibilityAction({ kind: "hide", id: p.id })}
                               />
                             )}
                           </AdminActions>
@@ -914,6 +920,36 @@ function ProductsInner() {
           <PaginationBar page={page} meta={meta} onPageChange={setPage} />
         </>
       ) : null}
+      <ConfirmDialog
+        open={Boolean(visibilityAction)}
+        title={
+          visibilityAction?.kind === "unhide"
+            ? t("confirm.unhideProductTitle")
+            : t("confirm.hideProductTitle")
+        }
+        description={
+          visibilityAction?.kind === "unhide"
+            ? t("confirm.unhideProductDesc")
+            : t("confirm.hideProductDesc")
+        }
+        confirmLabel={
+          visibilityAction?.kind === "unhide"
+            ? t("confirm.unhideProductBtn")
+            : t("confirm.hideProductBtn")
+        }
+        tone={visibilityAction?.kind === "unhide" ? "primary" : "warn"}
+        busy={hideProduct.isPending || unhideProduct.isPending}
+        onClose={() => setVisibilityAction(null)}
+        onConfirm={async () => {
+          if (!visibilityAction) return;
+          if (visibilityAction.kind === "hide") {
+            await hideProduct.mutateAsync(visibilityAction.id);
+          } else {
+            await unhideProduct.mutateAsync(visibilityAction.id);
+          }
+          setVisibilityAction(null);
+        }}
+      />
     </div>
   );
 }

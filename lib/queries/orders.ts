@@ -19,7 +19,8 @@ import {
   type UpdateOrderStatusRequest,
 } from "@/lib/api/orders";
 import { parsePage } from "@/lib/api/utils";
-import { tt } from "@/lib/i18n/tt";
+import { currentLocale, tt } from "@/lib/i18n/tt";
+import { statusLabel } from "@/lib/i18n/status";
 import { getErrorMessage } from "@/lib/queries/utils";
 
 export const orderKeys = {
@@ -51,33 +52,33 @@ function orderErrorMessage(e: unknown, fallback: string): string {
   if (e instanceof ApiError) {
     switch (e.code) {
       case "ORDER_MULTI_SHOP":
-        return "Cart items must belong to a single shop.";
+        return tt("toast.orderMultiShop");
       case "ORDER_OWN_SHOP_FORBIDDEN":
-        return "You cannot buy from your own shop.";
+        return tt("toast.orderOwnShopForbidden");
       case "INSUFFICIENT_STOCK":
-        return "Not enough stock for one or more items.";
+        return tt("toast.insufficientStock");
       case "ORDER_NOT_CANCELLABLE":
-        return "This order can no longer be cancelled.";
+        return tt("toast.orderNotCancellable");
       case "ORDER_INVALID_TRANSITION":
-        return "Invalid status transition.";
+        return tt("toast.orderInvalidTransition");
       case "RMA_WINDOW_EXPIRED":
-        return "RMA window expired (7 days after delivery).";
+        return tt("toast.rmaWindowExpired");
       case "RMA_NOT_ALLOWED":
-        return "RMA is only allowed after delivery.";
+        return tt("toast.rmaNotAllowed");
       case "RMA_ALREADY_EXISTS":
-        return "An active RMA already exists for this order.";
+        return tt("toast.rmaAlreadyExists");
       case "ORDER_NOT_FOUND":
-        return "Order not found.";
+        return tt("toast.orderNotFound");
       case "USER_NOT_FOUND":
-        return "Buyer not found.";
+        return tt("toast.buyerNotFound");
       case "VARIANT_NOT_FOUND":
-        return "One or more SKUs were not found.";
+        return tt("toast.variantNotFound");
       case "IDEMPOTENCY_KEY_REQUIRED":
-        return "Missing checkout idempotency key. Please try again.";
+        return tt("toast.checkoutIdempotencyKeyRequired");
       case "IDEMPOTENCY_KEY_REUSE_MISMATCH":
-        return "Checkout data changed with a reused key. Please place the order again.";
+        return tt("toast.checkoutIdempotencyMismatch");
       case "IDEMPOTENCY_REQUEST_IN_PROGRESS":
-        return "This order is already being placed. Please wait a moment.";
+        return tt("toast.checkoutInProgress");
       default:
         break;
     }
@@ -171,7 +172,11 @@ export function useUpdateOrderStatus() {
         void queryClient.invalidateQueries({ queryKey: ["wallet"] });
         void queryClient.invalidateQueries({ queryKey: ["mlm"] });
       }
-      toast.success(tt("toast.orderStatus", { status: order.status }));
+      toast.success(
+        tt("toast.orderStatus", {
+          status: statusLabel(currentLocale(), "order", order.status),
+        }),
+      );
     },
     onError: (e) => toast.error(orderErrorMessage(e, tt("toast.statusUpdateFailed"))),
   });

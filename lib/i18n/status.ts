@@ -1,5 +1,19 @@
 import type { Locale } from "./types";
+import { getTranslation } from "./get-translation";
 import { translations } from "./translations";
+
+/** Translate a domain status enum outside React (toasts, notifications). */
+export function statusLabel(
+  locale: Locale | null,
+  domain: string,
+  value: string | null | undefined,
+): string {
+  if (value == null || value === "") return "";
+  if (!locale) return value;
+  const key = `status.${domain}.${value}`;
+  const label = getTranslation(locale, key);
+  return label === key ? value : label;
+}
 
 /** Translate a domain status enum. Falls back to the raw value if the key is missing. */
 export function translateStatus(

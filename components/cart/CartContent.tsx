@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ShoppingBag, Trash2 } from "lucide-react";
@@ -8,11 +9,13 @@ import { formatPrice } from "@/lib/data/products";
 import { useCart } from "@/components/providers/CartProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Container, PageHero } from "@/components/ui/shared";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { QuantityStepper } from "@/components/ui/QuantityStepper";
 
 export function CartContent() {
   const { t } = useLanguage();
   const { items, itemCount, subtotal, updateQuantity, removeItem, clearCart } = useCart();
+  const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
 
   if (itemCount === 0) {
     return (
@@ -42,14 +45,11 @@ export function CartContent() {
           <div>
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-mq-border">
               <p className="text-sm text-mq-text-muted">
-                {itemCount} {itemLabel} · one shop only
+                {itemCount} {itemLabel} · {t("cart.oneShopOnly")}
               </p>
               <button
                 type="button"
-                onClick={() => {
-                  clearCart();
-                  toast.success(t("cart.clearCart"));
-                }}
+                onClick={() => setClearConfirmOpen(true)}
                 className="text-xs uppercase tracking-wider text-mq-text-muted hover:text-mq-text"
               >
                 {t("cart.clearCart")}
@@ -92,7 +92,7 @@ export function CartContent() {
                         type="button"
                         onClick={() => removeItem(item.variantId)}
                         className="text-mq-text-muted hover:text-mq-text"
-                        aria-label="Remove item"
+                        aria-label={t("cart.removeItem")}
                       >
                         <Trash2 size={16} strokeWidth={1.5} />
                       </button>
@@ -114,7 +114,7 @@ export function CartContent() {
                 <span>{formatPrice(subtotal)}</span>
               </div>
               <p className="text-xs text-mq-text-muted">
-                Shipping fee is calculated at checkout via API quote.
+                {t("cart.shippingQuoteHint")}
               </p>
               <div className="flex justify-between pt-3 border-t border-mq-border text-base font-medium">
                 <span>{t("cart.subtotal")}</span>
@@ -133,6 +133,19 @@ export function CartContent() {
           </aside>
         </div>
       </Container>
+      <ConfirmDialog
+        open={clearConfirmOpen}
+        title={t("confirm.clearCartTitle")}
+        description={t("confirm.clearCartDesc")}
+        confirmLabel={t("confirm.clearCartBtn")}
+        tone="warn"
+        onClose={() => setClearConfirmOpen(false)}
+        onConfirm={() => {
+          clearCart();
+          toast.success(t("cart.clearCart"));
+          setClearConfirmOpen(false);
+        }}
+      />
     </>
   );
 }
