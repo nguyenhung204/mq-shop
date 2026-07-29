@@ -5,7 +5,7 @@ Tài liệu API cho FE implement UI trên các module đã có trên BE.
 - **Base URL:** `/api/v1`
 - **Swagger:** `/docs`
 - **Auth:** cookie `httpOnly` (ưu tiên) hoặc `Authorization: Bearer <access_token>`
-- **Branch stack:** `001` → `002` → `003` → `004` → `005-order-flow` → `006-marketing` (`feat/009`) → `007-payment-finance` (`feat/010`) → **`011-mlm-wallet`** → **`012-commission-calculation`**
+- **Branch stack:** `001` → `002` → `003` → `004` → `005-order-flow` → `006-marketing` (`feat/009`) → `007-payment-finance` (`feat/010`) → **`011-mlm-wallet`** → **`012-commission-calculation`** → `022-seller-dashboard`
 - **Module FE guides (chi tiết):**
   - Wallet / MLM network: `specs/009-mlm-wallet/contracts/fe-guide-mlm-wallet.md`
   - Commission: `specs/010-commission-calculation/contracts/fe-guide-commission.md`
@@ -92,8 +92,8 @@ FE nên map UI theo `data.code`, không parse `message` cứng.
 | Login | `POST` | `/auth/login` | Public → set cookies |
 | Logout | `POST` | `/auth/logout` | JWT |
 | Refresh session | `POST` | `/auth/refresh` | Cookie `refresh_token` |
-| Quên MK — gửi OTP | `POST` | `/auth/forgot-password/request-otp` | Public — **anti-enumeration**: luôn `200` + message kiểu “If the email exists…”; chỉ gửi mail nếu user ACTIVE |
-| Quên MK — đặt lại | `POST` | `/auth/forgot-password/reset` | Public → clear cookies; email không có / inactive → `INVALID_OTP` (giống OTP sai) |
+| Quên MK — gửi OTP | `POST` | `/auth/forgot-password/request-otp` | Public |
+| Quên MK — đặt lại | `POST` | `/auth/forgot-password/reset` | Public → clear cookies |
 
 #### Bodies
 
@@ -107,17 +107,9 @@ FE nên map UI theo `data.code`, không parse `message` cứng.
 // login
 { email: string; password: string }
 
-// forgot-password/request-otp
-{ email: string }
-
 // forgot-password/reset
 { email: string; code: string /* 6 digits */; newPassword: string /* min 8 */ }
 ```
-
-**Forgot password (FE rules)**
-
-- Sau `request-otp`: luôn hiện cùng một success copy (“Nếu email tồn tại, OTP đã được gửi”) — **không** nhánh “user not found”.
-- `reset`: map `INVALID_OTP` → “OTP không hợp lệ / hết hạn” (gồm cả email không tồn tại).
 
 #### Response `data` (login / verify-otp / refresh)
 
@@ -324,9 +316,7 @@ SSE event payload (khi có noti **mới** trong lúc đang connect):
 { id, userId, title, body, readAt, createdAt }
 ```
 
-**FE realtime:** không dùng `EventSource` thuần (không gắn được `Authorization: Bearer`). FE dùng `fetch` + stream với Bearer (+ cookie nếu có). Login → `GET /notifications` → mở SSE `/notifications/stream` → toast + cập nhật badge/list; reconnect thì gọi lại GET vì SSE **không** replay lịch sử.
-
-**Deep link:** mỗi item/SSE có `type` + `meta` (string map). FE map route tại `lib/notifications/routes.ts` — click chuông: `markRead` rồi `router.push`. Type lạ / thiếu meta → không navigate (chỉ toast/detail). Chi tiết: [`docs/fe-guide-notifications.md`](./fe-guide-notifications.md).
+**FE gợi ý:** login → `GET /notifications` (badge + list) → mở `EventSource` `/notifications/stream` (with credentials) để toast realtime.
 
 Shop apply gửi noti tới user `ACTIVE` có role `ADMIN` hoặc `SUPER_ADMIN`.
 
@@ -424,15 +414,11 @@ stateDiagram-v2
 | Duyệt | `POST` | `/admin/shops/:shopId/approve` | `APPROVE_SELLER` |
 | Từ chối | `POST` | `/admin/shops/:shopId/reject` | `APPROVE_SELLER` body `{ reason }` (1–150) |
 | Violation lock | `POST` | `/admin/shops/:shopId/violation-lock` | `SUSPEND_SHOP` body `{ reason? }` (≤150) |
-| Violation unlock | `POST` | `/admin/shops/:shopId/violation-unlock` | `SUSPEND_SHOP` — chỉ khi `isSuspended`; clear flags + restore `APPROVED` |
 
 | Code | UI |
 |------|-----|
 | `SHOP_NOT_PENDING` | Approve/reject khi không còn PENDING |
 | `SHOP_NOT_APPROVED` | Violation-lock khi chưa APPROVED |
-| `SHOP_NOT_SUSPENDED` | Unlock khi shop chưa bị violation-lock (`isSuspended=false`; reject hồ sơ thuần không unlock được) |
-
-**Unlock vs reject:** shop chỉ `REJECTED` (không `isSuspended`) → seller nộp lại apply. Unlock chỉ mở shop đã `violation-lock`.
 
 ---
 
@@ -926,7 +912,7 @@ NV kho login → `/inventory/*` resolve shop qua `user.shopId` (không cần là
 
 | Method | Path | Auth |
 |--------|------|------|
-| `GET` | `/banners?lang=VI\|EN\|TW` | Public (mặc định `VI`; response gồm banner locale + `ALL`) |
+| `GET` | `/banners?lang=VI\|EN\|TW` | Public (mặc định `VI`) |
 | `POST/PATCH/DELETE` | `/admin/banners` | `MANAGE_CONTENT`; multipart field `image` |
 
 ### 6.5 Media library
@@ -1069,13 +1055,14 @@ Row: `{ type, id, shopId, shopName, shopOwnerName, buyerId, buyerName, amount, c
 | P2P lookup | email / `userId` (không phone) |
 | Tree | Closure; chỉ downline (BR_02); Acc/Admin `?userId=` |
 | Withdraw | `payout_requests` ≠ seller `/admin/payouts` |
-| Referral | Chỉ enrollment SKU khi `DELIVERED` → F1 |
+| Referral | `DELIVERED` + `subtotal >= 2000` → F1 (không cần enrollment SKU) |
 | Team / Loyalty / Global | Cron tháng; loyalty ≥ 2000 USD × 12 → 28000 |
 | Rank | Admin set tay `CONFIG_MLM` |
+| Idempotency | **P2P / withdraw / admin process** bắt buộc header `Idempotency-Key` (giống checkout). Commission: ledger key phía BE. |
 
 ### 8.2 Profile fields mới
 
-`referrerId`, `referralCode`, `mlmRank` (1–10), `referralRateOverride`, `hasWalletPin`.
+`referrerId`, `referralCode`, `mlmRank` (1–10), `hasWalletPin`.
 
 ### 8.3 Endpoints nhanh — Wallet / MLM
 
@@ -1085,19 +1072,14 @@ Row: `{ type, id, shopId, shopName, shopOwnerName, buyerId, buyerName, amount, c
 | GET | `/mlm/network-tree` | `VIEW_MLM_TREE` |
 | POST | `/wallet/pin/request-otp` · `/wallet/pin/confirm` | `SET_WALLET_PIN` |
 | GET | `/wallet` · `/wallet/transactions` | `VIEW_WALLET` |
-| POST | `/wallet/transfer/preview` · `/wallet/transfer` | `TRANSFER_P2P` · transfer **bắt buộc** `Idempotency-Key` · `userId`=downline ACTIVE; `email`=mọi ACTIVE |
-| GET | `/wallet/transfer/recipients?q=&maxDepth=&limit=` | `TRANSFER_P2P` · picker downline ACTIVE (không search toàn sàn) |
-| POST | `/wallet/withdraw` | `CREATE_PAYOUT` · **bắt buộc** `Idempotency-Key` |
-| GET | `/wallet/withdrawals` · `/wallet/withdrawals/:id` | `VIEW_WALLET` · list/detail của chính user |
-| GET/POST | `/admin/wallet/payouts` (+ `/:id`, approve/reject/process) | `APPROVE_PAYOUT` / `PROCESS_PAYOUT` · **process bắt buộc** `Idempotency-Key` |
-| POST | `/admin/wallet/adjust` | `ADJUST_POINTS` · `{ userId, amount, note? }` |
-| PATCH | `/admin/mlm/users/:id/rank` | `CONFIG_MLM` |
-| PATCH | `/admin/mlm/users/:id/referrer` | `CONFIG_MLM` · `{ referrerId \| null }` |
-| PATCH | `/admin/mlm/users/:id/referral-rate` | `CONFIG_MLM` · `{ ratePercent: 0..10 \| null }` |
+| POST | `/wallet/transfer/preview` · `/wallet/transfer` | `TRANSFER_P2P` — **transfer cần `Idempotency-Key`** |
+| POST | `/wallet/withdraw` | `CREATE_PAYOUT` — **`Idempotency-Key` required** |
+| GET | `/wallet/withdrawals` · `/wallet/withdrawals/:id` | `VIEW_WALLET` — list/detail own requests |
+| POST | `/admin/wallet/adjust` | `ADJUST_POINTS` |
+| PATCH | `/admin/mlm/users/:id/referrer` · `/referral-rate` | `CONFIG_MLM` |
+| GET/POST | `/admin/wallet/payouts` (+ approve/reject/process) | `APPROVE_PAYOUT` / `PROCESS_PAYOUT` — **process cần `Idempotency-Key`** |
 
 Register: optional `referrerCode` trên `POST /auth/register`.
-
-**Idempotency (transfer / withdraw / process):** UUID mới khi Confirm với body mới (hoặc payout id mới); retry mạng giữ cùng key + cùng body; thiếu key → `IDEMPOTENCY_KEY_REQUIRED`.
 
 ### 8.4 Endpoints nhanh — Commission
 
@@ -1107,18 +1089,328 @@ Register: optional `referrerCode` trên `POST /auth/register`.
 | GET | `/admin/mlm/ranks` | `CONFIG_MLM` |
 | PATCH | `/admin/mlm/users/:userId/rank` | `CONFIG_MLM` body `{ rank }` |
 
-### 8.5 Seed MLM
+### 8.5 Notifications & audit (wallet / commission)
+
+BE đã soft-fail gắn in-app notifications (API § notifications / SSE). Chi tiết title/event: `fe-guide-mlm-wallet.md` §11b · `fe-guide-commission.md` §8b.
+
+Audit file persist cho mutating: `wallet.*`, `admin.wallet.*`, `admin.mlm.*`, `commission.*`.
+
+### 8.6 Seed MLM
+
 
 | Account | Password / PIN | Note |
 |---------|----------------|------|
 | `mlm-root@example.com` | `Seed123456!` / PIN `123456` | Rank 5 · code `MLMROOT1` · wallet 500 |
 | `mlm-f1a` / `f1b` / `f2` | cùng password/PIN | Cây demo |
 | `buyer@example.com` | + PIN `123456` | Dưới root · wallet 100 |
-| SKU enrollment | `PKG-GOLD` | Referral smoke |
+| Referral smoke | Đơn DELIVERED subtotal ≥ 2000 + buyer có referrer | |
 
 ---
 
-## 9. Checklist màn hình FE theo module
+## 9. Module Seller Dashboard (`022` / branch `feat/022-seller-dashboard`)
+
+### 9.1 Quyết định MVP
+
+| Topic | Decision |
+|-------|----------|
+| Permission | `VIEW_ORDER` (SHOP scope — Seller + shop staff) |
+| Shop resolve | `resolveShopForInventoryActor` (seller owner hoặc staff.shopId) |
+| Revenue | Chỉ đơn `DELIVERED` (subtotal) — không tính shipping |
+| Low stock | `available_stock < threshold`; default threshold = 10 |
+| Expiry date | Không có — chỉ quản lý stock level |
+
+### 9.2 Endpoints
+
+| UI | Method | Path | Permission |
+|----|--------|------|------------|
+| Dashboard tổng hợp | `GET` | `/seller/dashboard` | `VIEW_ORDER` (SHOP) |
+| Biểu đồ doanh thu | `GET` | `/seller/dashboard/revenue-chart` | `VIEW_ORDER` (SHOP) |
+| Top sản phẩm bán chạy | `GET` | `/seller/dashboard/top-products` | `VIEW_ORDER` (SHOP) |
+
+Auth: JWT cookie — role `SELLER` hoặc shop staff (`WAREHOUSE`/`CS`/`ACCOUNTANT`).
+
+### 9.3 Query parameters
+
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `sections` | string | `summary,lowStock` | Comma-separated: `summary`, `lowStock` |
+| `lowStockThreshold` | number | `10` | Variants có `available_stock < threshold` |
+
+### 9.4 Response
+
+```json
+{
+  "message": "Seller dashboard retrieved successfully",
+  "data": {
+    "summary": {
+      "revenueThisMonth": "12500000.00",
+      "revenueLastMonth": "10200000.00",
+      "revenueGrowthPercent": 22.55,
+      "totalOrders": 85,
+      "deliveredOrders": 62,
+      "cancelledOrders": 5,
+      "pendingOrders": 8,
+      "processingOrders": 10,
+      "rmaRate": {
+        "totalRma": 3,
+        "totalDelivered": 62,
+        "rmaRatePercent": 4.84
+      }
+    },
+    "lowStock": {
+      "threshold": 10,
+      "items": [
+        {
+          "variantId": "uuid-1",
+          "sku": "SKU-001",
+          "productTitle": "Áo thun basic",
+          "availableStock": 3,
+          "reservedStock": 2,
+          "sellingPrice": "250000.00"
+        }
+      ],
+      "total": 7
+    },
+    "generatedAt": "2026-07-29T10:00:00.000Z"
+  }
+}
+```
+
+### 9.5 TypeScript types
+
+```ts
+// --- Request ---
+interface SellerDashboardParams {
+  sections?: string;            // 'summary' | 'lowStock' | 'summary,lowStock'
+  lowStockThreshold?: number;   // min 1, default 10
+}
+
+// --- Response ---
+interface SellerDashboardResponse {
+  message: string;
+  data: {
+    summary?: DashboardSummary;
+    lowStock?: DashboardLowStock;
+    generatedAt: string;        // ISO 8601
+  };
+}
+
+interface DashboardSummary {
+  revenueThisMonth: string;         // decimal "12500000.00"
+  revenueLastMonth: string;
+  revenueGrowthPercent: number | null; // null nếu tháng trước = 0
+  totalOrders: number;
+  deliveredOrders: number;
+  cancelledOrders: number;          // CANCELLED + REFUND_APPROVED + REFUNDED
+  pendingOrders: number;            // PENDING
+  processingOrders: number;         // PAID + CONFIRMED + PACKED + SHIPPED
+  rmaRate: RmaRateResult;
+}
+
+interface RmaRateResult {
+  totalRma: number;
+  totalDelivered: number;
+  rmaRatePercent: number | null;    // null nếu không có đơn delivered
+}
+
+interface DashboardLowStock {
+  threshold: number;
+  items: LowStockItem[];
+  total: number;                    // tổng variant dưới threshold (items max 20)
+}
+
+interface LowStockItem {
+  variantId: string;
+  sku: string;
+  productTitle: string;
+  availableStock: number;
+  reservedStock: number;
+  sellingPrice: string;             // decimal string
+}
+```
+
+### 9.6 Usage examples
+
+```ts
+// Lấy tất cả sections (default)
+const res = await api.get('/seller/dashboard');
+
+// Chỉ summary
+const res = await api.get('/seller/dashboard', {
+  params: { sections: 'summary' }
+});
+
+// Low stock với threshold tuỳ chỉnh
+const res = await api.get('/seller/dashboard', {
+  params: { sections: 'lowStock', lowStockThreshold: 5 }
+});
+```
+
+### 9.7 Error codes
+
+| Status | Code | Condition |
+|--------|------|-----------|
+| `401` | `UNAUTHORIZED` | Missing/invalid JWT |
+| `403` | `FORBIDDEN` | Không có permission `VIEW_ORDER` |
+| `403` | `SHOP_NOT_ELIGIBLE` | Shop chưa APPROVED hoặc đang suspended |
+
+### 9.8 UI gợi ý
+
+| Component | Data source | Ghi chú |
+|-----------|-------------|---------|
+| Revenue card | `summary.revenueThisMonth` | Format VND/USD tuỳ locale |
+| Growth badge | `summary.revenueGrowthPercent` | `null` → hiện "—"; `> 0` xanh; `< 0` đỏ |
+| Order stats | `summary.*Orders` | 4 badges: pending / processing / delivered / cancelled |
+| RMA badge | `summary.rmaRate.rmaRatePercent` | `null` → "—"; `> 5%` cảnh báo đỏ |
+| Low stock table | `lowStock.items` | Sort sẵn ASC theo `availableStock` |
+| "X more" | `lowStock.total - items.length` | Nếu `total > 20` → link tới inventory filter |
+| Last updated | `generatedAt` | Format relative "5 phút trước" |
+
+### 9.9 Revenue Chart — `GET /seller/dashboard/revenue-chart`
+
+#### Query
+
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `range` | string | `30d` | `7d` (daily 7 ngày), `30d` (daily 30 ngày), `12m` (monthly 12 tháng) |
+| `comparePrevious` | string | `false` | `true` → trả thêm `previous` series để so sánh kỳ trước |
+
+#### Response
+
+```json
+{
+  "message": "Revenue chart retrieved successfully",
+  "data": {
+    "range": "30d",
+    "groupBy": "day",
+    "current": [
+      { "date": "2026-07-01T00:00:00.000Z", "revenue": "1500000.00", "orderCount": 5 },
+      { "date": "2026-07-02T00:00:00.000Z", "revenue": "2300000.00", "orderCount": 8 }
+    ],
+    "previous": [
+      { "date": "2026-06-01T00:00:00.000Z", "revenue": "1200000.00", "orderCount": 4 }
+    ],
+    "generatedAt": "2026-07-29T10:00:00.000Z"
+  }
+}
+```
+
+#### TypeScript types
+
+```ts
+interface RevenueChartParams {
+  range?: '7d' | '30d' | '12m';
+  comparePrevious?: 'true' | 'false';
+}
+
+interface RevenueChartResponse {
+  message: string;
+  data: {
+    range: string;
+    groupBy: 'day' | 'week' | 'month';
+    current: RevenueTimePoint[];
+    previous?: RevenueTimePoint[];   // chỉ khi comparePrevious=true
+    generatedAt: string;
+  };
+}
+
+interface RevenueTimePoint {
+  date: string;         // ISO start-of-period
+  revenue: string;      // decimal
+  orderCount: number;
+}
+```
+
+#### Usage
+
+```ts
+// Chart 30 ngày (default)
+const res = await api.get('/seller/dashboard/revenue-chart');
+
+// Chart 12 tháng + so sánh kỳ trước
+const res = await api.get('/seller/dashboard/revenue-chart', {
+  params: { range: '12m', comparePrevious: 'true' }
+});
+```
+
+### 9.10 Top Products — `GET /seller/dashboard/top-products`
+
+#### Query
+
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `range` | string | `30d` | `7d`, `30d`, `90d` |
+| `limit` | number | `10` | 1–50 sản phẩm |
+
+#### Response
+
+```json
+{
+  "message": "Top products retrieved successfully",
+  "data": {
+    "range": "30d",
+    "items": [
+      {
+        "productId": "uuid-1",
+        "title": "Áo thun basic",
+        "totalQuantity": 120,
+        "totalRevenue": "30000000.00",
+        "thumbnailUrl": "https://..."
+      }
+    ],
+    "generatedAt": "2026-07-29T10:00:00.000Z"
+  }
+}
+```
+
+#### TypeScript types
+
+```ts
+interface TopProductsParams {
+  range?: '7d' | '30d' | '90d';
+  limit?: number;   // 1–50
+}
+
+interface TopProductsResponse {
+  message: string;
+  data: {
+    range: string;
+    items: TopProductItem[];
+    generatedAt: string;
+  };
+}
+
+interface TopProductItem {
+  productId: string;
+  title: string;
+  totalQuantity: number;
+  totalRevenue: string;         // decimal
+  thumbnailUrl: string | null;  // first product image, null if none
+}
+```
+
+#### Usage
+
+```ts
+// Top 10 sản phẩm 30 ngày (default)
+const res = await api.get('/seller/dashboard/top-products');
+
+// Top 5 sản phẩm 90 ngày
+const res = await api.get('/seller/dashboard/top-products', {
+  params: { range: '90d', limit: 5 }
+});
+```
+
+### 9.11 Roadmap (chưa implement)
+
+| Phase | Feature | Endpoint dự kiến |
+|-------|---------|-----------------|
+| V3 | Export CSV báo cáo | `GET /seller/dashboard/export?format=csv&range=30d` |
+| V3 | Alert tự động hết hàng (cron + notification) | — |
+
+---
+
+## 10. Checklist màn hình FE theo module
 
 ### Buyer / Guest
 
@@ -1128,11 +1420,14 @@ Register: optional `referrerCode` trên `POST /auth/register`.
 - [ ] Listing `GET /products/listing` (minPrice/maxPrice + OOS watermark)
 - [ ] **PDP** `GET /products/listing/:id` — chọn variant → giá/tồn/ảnh
 - [ ] Homepage banners `GET /banners?lang=`
-- [ ] SSE notifications (fetch + Bearer; badge/list cập nhật realtime, không cần reload)
+- [ ] SSE notifications (optional)
 
 ### Seller (shop APPROVED)
 
 - [ ] Gate theo shop status / suspended
+- [ ] **Dashboard:** `GET /seller/dashboard` — revenue card + order stats + RMA rate + low stock table
+- [ ] **Dashboard chart:** `GET /seller/dashboard/revenue-chart` — biểu đồ doanh thu theo ngày/tháng
+- [ ] **Dashboard top products:** `GET /seller/dashboard/top-products` — top sản phẩm bán chạy
 - [ ] Product list theo status
 - [ ] Rename FE types: `sellingPrice` / `costPrice` (bỏ `variant.price` / `unitPrice`)
 - [ ] Create: `variants[]` bắt buộc với `sellingPrice`; **không** root price/stock/images URL
@@ -1148,7 +1443,7 @@ Register: optional `referrerCode` trên `POST /auth/register`.
 - [ ] **Marketing:** form KM 4 types + list status; media ZIP download
 - [ ] **Finance:** `GET /settlements`; `GET /finance/transactions`; landing-cost tool
 - [ ] **Wallet / MLM:** referral link, network tree, PIN, balance, P2P, withdraw
-- [ ] **Commissions:** `GET /mlm/commissions` (sau enrollment DELIVERED)
+- [ ] **Commissions:** `GET /mlm/commissions` (sau DELIVERED đơn ≥ 2000)
 
 ### Accountant
 
@@ -1161,7 +1456,7 @@ Register: optional `referrerCode` trên `POST /auth/register`.
 
 - [ ] Users lock/unlock/delete
 - [ ] **Staff shop:** `POST/GET /admin/staff`, `PATCH …/roles`, lock/unlock/delete (`MANAGE_STAFF` / `ASSIGN_ROLES`)
-- [ ] Shops approve/reject/violation-lock/violation-unlock
+- [ ] Shops approve/reject/violation-lock
 - [ ] Products queue approve/reject/hide (xem nested variants)
 - [ ] Categories create/update
 - [ ] Inventory slips inbox approve/reject
@@ -1174,7 +1469,7 @@ Register: optional `referrerCode` trên `POST /auth/register`.
 
 ---
 
-## 10. Gợi ý client setup
+## 11. Gợi ý client setup
 
 ```ts
 const api = axios.create({
@@ -1225,7 +1520,7 @@ Shop **Seed Electronics Store**: products/SKUs + `KHO-HN`/`KHO-HCM` + slips + or
 
 ---
 
-## 11. Ngoài scope hiện tại (chưa có BE)
+## 12. Ngoài scope hiện tại (chưa có BE)
 
 - Delete product / delete variant
 - Update / delete warehouse
@@ -1233,4 +1528,4 @@ Shop **Seed Electronics Store**: products/SKUs + `KHO-HN`/`KHO-HCM` + slips + or
 - Auto-delete / export CSV audit files
 - Payment gateway / bank transfer **thật** (seller payout + wallet withdraw đang stub)
 - Auto-rank MLM (MVP: admin set tay)
-- Đổi `referrerId` sau register → Admin `PATCH /admin/mlm/users/:id/referrer`
+- Đổi `referrerId` sau register
