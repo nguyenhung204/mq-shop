@@ -68,6 +68,8 @@ export type {
   TopShopsPayload,
   NewUsersTimePoint,
   NewUsersChartPayload,
+  CronJobInfo,
+  CronJobsPayload,
 } from "./admin-dashboard";
 export { sellerDashboardApi } from "./seller-dashboard";
 export type {

@@ -732,7 +732,12 @@
       "range30d": "30 days",
       "range12m": "12 months",
       "range90d": "90 days",
-      "noChartData": "No data available."
+      "noChartData": "No data available.",
+      "cronJobs": "Cron Jobs",
+      "cronJobsDesc": "Scheduled automated tasks",
+      "nextRun": "Next run",
+      "schedule": "Schedule",
+      "noCronJobs": "No cron jobs found."
     },
     "banners": {
       "title": "Banners",

@@ -174,6 +174,25 @@ export interface NewUsersChartPayload {
   generatedAt: string;
 }
 
+// ---------------------------------------------------------------------------
+// Cron Jobs types (Section 9.9)
+// ---------------------------------------------------------------------------
+
+export interface CronJobInfo {
+  id: string;
+  name: string;
+  description: string;
+  cronExpression: string;
+  schedule: string;
+  nextRunAt: string;
+  nextRunInMs: number;
+}
+
+export interface CronJobsPayload {
+  jobs: CronJobInfo[];
+  serverTime: string;
+}
+
 export const adminDashboardApi = {
   get: async (sections: AdminDashboardSection[] | string = ["queues", "snapshot"]) => {
     const sectionsParam = Array.isArray(sections) ? sections.join(",") : sections;
@@ -215,5 +234,9 @@ export const adminDashboardApi = {
     const query: Record<string, string> = {};
     if (range) query.range = range;
     return api.get<NewUsersChartPayload>("/admin/dashboard/new-users-chart", { query });
+  },
+
+  cronJobs: async (): Promise<CronJobsPayload> => {
+    return api.get<CronJobsPayload>("/admin/dashboard/cron-jobs");
   },
 };

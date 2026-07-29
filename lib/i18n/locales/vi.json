@@ -732,7 +732,12 @@
       "range30d": "30 ngày",
       "range12m": "12 tháng",
       "range90d": "90 ngày",
-      "noChartData": "Chưa có dữ liệu."
+      "noChartData": "Chưa có dữ liệu.",
+      "cronJobs": "Cron Jobs",
+      "cronJobsDesc": "Tác vụ tự động theo lịch",
+      "nextRun": "Lần chạy tiếp",
+      "schedule": "Lịch",
+      "noCronJobs": "Không có cron job nào."
     },
     "banners": {
       "title": "Banner",

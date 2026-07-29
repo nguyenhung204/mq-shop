@@ -39,6 +39,7 @@ import { AdminOrdersChart } from "./AdminOrdersChart";
 import { AdminOrderStatusChart } from "./AdminOrderStatusChart";
 import { AdminTopShops } from "./AdminTopShops";
 import { AdminNewUsersChart } from "./AdminNewUsersChart";
+import { AdminCronJobs } from "./AdminCronJobs";
 
 const QUEUE_ICONS: Record<keyof AdminDashboardQueues, LucideIcon> = {
   shopsPending: Store,
@@ -215,6 +216,7 @@ export function AdminDashboardOverview() {
           <AdminOrderStatusChart />
           <AdminTopShops />
           <AdminNewUsersChart />
+          <AdminCronJobs />
         </div>
       </div>
     </section>

@@ -1107,9 +1107,342 @@ Audit file persist cho mutating: `wallet.*`, `admin.wallet.*`, `admin.mlm.*`, `c
 
 ---
 
-## 9. Module Seller Dashboard (`022` / branch `feat/022-seller-dashboard`)
+## 9. Module Admin Dashboard Charts (`021` / branch `feat/022-seller-dashboard`)
 
-### 9.1 Quyết định MVP
+### 9.1 Endpoints
+
+| UI | Method | Path | Permission |
+|----|--------|------|------------|
+| GMV chart | `GET` | `/admin/dashboard/gmv-chart` | `VIEW_ORDER` ALL |
+| Orders chart | `GET` | `/admin/dashboard/orders-chart` | `VIEW_ORDER` ALL |
+| Order status distribution | `GET` | `/admin/dashboard/order-status` | `VIEW_ORDER` ALL |
+| Top shops by revenue | `GET` | `/admin/dashboard/top-shops` | `VIEW_ORDER` ALL |
+| New users chart | `GET` | `/admin/dashboard/new-users-chart` | `VIEW_USERS` |
+
+Auth: JWT cookie — role `ADMIN` / `SUPER_ADMIN` (scope ALL for VIEW_ORDER).
+
+### 9.2 Query — GMV / Orders / Order Status / New Users
+
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `range` | string | `30d` | `7d` (daily 7 ngày), `30d` (daily 30 ngày), `12m` (monthly 12 tháng) |
+
+### 9.3 Query — Top Shops
+
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `range` | string | `30d` | `7d`, `30d`, `90d` |
+| `limit` | number | `10` | 1–50 shops |
+
+### 10.4 Responses
+
+#### GMV Chart
+
+```json
+{
+  "message": "GMV chart retrieved successfully",
+  "data": {
+    "range": "30d",
+    "groupBy": "day",
+    "current": [
+      { "date": "2026-07-01T00:00:00.000Z", "gmv": "5000000.00", "orderCount": 15 },
+      { "date": "2026-07-02T00:00:00.000Z", "gmv": "7200000.00", "orderCount": 22 }
+    ],
+    "generatedAt": "2026-07-29T10:00:00.000Z"
+  }
+}
+```
+
+#### Orders Chart
+
+```json
+{
+  "message": "Orders chart retrieved successfully",
+  "data": {
+    "range": "30d",
+    "groupBy": "day",
+    "current": [
+      { "date": "2026-07-01T00:00:00.000Z", "count": 25 },
+      { "date": "2026-07-02T00:00:00.000Z", "count": 32 }
+    ],
+    "generatedAt": "2026-07-29T10:00:00.000Z"
+  }
+}
+```
+
+#### Order Status Distribution
+
+```json
+{
+  "message": "Order status distribution retrieved successfully",
+  "data": {
+    "range": "30d",
+    "distribution": [
+      { "status": "DELIVERED", "count": 150 },
+      { "status": "SHIPPED", "count": 45 },
+      { "status": "CONFIRMED", "count": 30 },
+      { "status": "CANCELLED", "count": 12 },
+      { "status": "PENDING", "count": 8 }
+    ],
+    "generatedAt": "2026-07-29T10:00:00.000Z"
+  }
+}
+```
+
+#### Top Shops
+
+```json
+{
+  "message": "Top shops retrieved successfully",
+  "data": {
+    "range": "30d",
+    "items": [
+      {
+        "shopId": "uuid-1",
+        "shopName": "Seed Electronics Store",
+        "revenue": "25000000.00",
+        "orderCount": 85
+      }
+    ],
+    "generatedAt": "2026-07-29T10:00:00.000Z"
+  }
+}
+```
+
+#### New Users Chart
+
+```json
+{
+  "message": "New users chart retrieved successfully",
+  "data": {
+    "range": "30d",
+    "groupBy": "day",
+    "current": [
+      { "date": "2026-07-01T00:00:00.000Z", "count": 5 },
+      { "date": "2026-07-02T00:00:00.000Z", "count": 8 }
+    ],
+    "generatedAt": "2026-07-29T10:00:00.000Z"
+  }
+}
+```
+
+### 10.5 TypeScript types
+
+```ts
+interface AdminChartParams {
+  range?: '7d' | '30d' | '12m';
+}
+
+interface TopShopsParams {
+  range?: '7d' | '30d' | '90d';
+  limit?: number; // 1–50
+}
+
+// GMV chart
+interface GmvChartResponse {
+  message: string;
+  data: {
+    range: string;
+    groupBy: 'day' | 'month';
+    current: { date: string; gmv: string; orderCount: number }[];
+    generatedAt: string;
+  };
+}
+
+// Orders chart
+interface OrdersChartResponse {
+  message: string;
+  data: {
+    range: string;
+    groupBy: 'day' | 'month';
+    current: { date: string; count: number }[];
+    generatedAt: string;
+  };
+}
+
+// Order status distribution (pie chart)
+interface OrderStatusResponse {
+  message: string;
+  data: {
+    range: string;
+    distribution: { status: string; count: number }[];
+    generatedAt: string;
+  };
+}
+
+// Top shops
+interface TopShopsResponse {
+  message: string;
+  data: {
+    range: string;
+    items: { shopId: string; shopName: string; revenue: string; orderCount: number }[];
+    generatedAt: string;
+  };
+}
+
+// New users chart
+interface NewUsersChartResponse {
+  message: string;
+  data: {
+    range: string;
+    groupBy: 'day' | 'month';
+    current: { date: string; count: number }[];
+    generatedAt: string;
+  };
+}
+```
+
+### 10.6 Usage examples
+
+```ts
+// GMV 30 ngày
+const gmv = await api.get('/admin/dashboard/gmv-chart');
+
+// GMV 12 tháng
+const gmv12m = await api.get('/admin/dashboard/gmv-chart', { params: { range: '12m' } });
+
+// Orders chart 7 ngày
+const orders = await api.get('/admin/dashboard/orders-chart', { params: { range: '7d' } });
+
+// Order status pie chart
+const status = await api.get('/admin/dashboard/order-status');
+
+// Top 5 shops 90 ngày
+const shops = await api.get('/admin/dashboard/top-shops', { params: { range: '90d', limit: 5 } });
+
+// New users trend
+const users = await api.get('/admin/dashboard/new-users-chart', { params: { range: '30d' } });
+```
+
+### 9.7 UI gợi ý
+
+| Component | Endpoint | Chart type |
+|-----------|----------|-----------|
+| GMV trend | `gmv-chart` | Line chart (date × gmv) |
+| Orders trend | `orders-chart` | Bar chart hoặc line (date × count) |
+| Order status | `order-status` | Pie / Donut chart |
+| Top shops | `top-shops` | Horizontal bar chart (shopName × revenue) |
+| User growth | `new-users-chart` | Area chart (date × count) |
+
+### 9.8 Error codes
+
+| Status | Code | Condition |
+|--------|------|-----------|
+| `401` | `UNAUTHORIZED` | Missing/invalid JWT |
+| `403` | `FORBIDDEN` | Role không có permission ALL scope |
+
+### 9.9 Cron Jobs — `GET /admin/dashboard/cron-jobs`
+
+Hiển thị danh sách cron jobs đang chạy trong hệ thống + thời gian đếm ngược.
+
+Auth: JWT cookie — role `ADMIN` / `SUPER_ADMIN`.
+
+#### Response
+
+```json
+{
+  "message": "Cron jobs retrieved successfully",
+  "data": {
+    "jobs": [
+      {
+        "id": "order-expiry",
+        "name": "Order Expiry",
+        "description": "Auto-cancel PENDING orders unpaid for 30+ days. Processes up to 100 orders per run.",
+        "cronExpression": "0 3 * * *",
+        "schedule": "Daily at 03:00 UTC",
+        "nextRunAt": "2026-07-30T03:00:00.000Z",
+        "nextRunInMs": 18200000
+      },
+      {
+        "id": "promotion-expiry",
+        "name": "Promotion Expiry",
+        "description": "Mark ACTIVE promotions past their endDate as EXPIRED.",
+        "cronExpression": "0 * * * *",
+        "schedule": "Every hour",
+        "nextRunAt": "2026-07-29T11:00:00.000Z",
+        "nextRunInMs": 1800000
+      },
+      {
+        "id": "monthly-commission",
+        "name": "Monthly Commission",
+        "description": "Compute TEAM, LOYALTY, and GLOBAL fund commissions for the previous calendar month.",
+        "cronExpression": "0 2 1 * *",
+        "schedule": "1st of every month at 02:00 UTC",
+        "nextRunAt": "2026-08-01T02:00:00.000Z",
+        "nextRunInMs": 230000000
+      },
+      {
+        "id": "rank-reconcile",
+        "name": "Rank Reconcile",
+        "description": "Scan all active users and promote eligible MLM ranks missed by realtime events.",
+        "cronExpression": "0 4 * * *",
+        "schedule": "Daily at 04:00 UTC",
+        "nextRunAt": "2026-07-30T04:00:00.000Z",
+        "nextRunInMs": 21800000
+      }
+    ],
+    "serverTime": "2026-07-29T10:30:00.000Z"
+  }
+}
+```
+
+#### TypeScript types
+
+```ts
+interface CronJobInfo {
+  id: string;
+  name: string;
+  description: string;
+  cronExpression: string;
+  schedule: string;           // human-readable schedule
+  nextRunAt: string;          // ISO 8601 — next execution time
+  nextRunInMs: number;        // milliseconds until next run (from server time)
+}
+
+interface CronJobsResponse {
+  message: string;
+  data: {
+    jobs: CronJobInfo[];
+    serverTime: string;       // server current time — use to sync countdown
+  };
+}
+```
+
+#### FE countdown implement
+
+```ts
+// 1. Fetch once on page load
+const { data } = await api.get('/admin/dashboard/cron-jobs');
+const serverNow = new Date(data.data.serverTime).getTime();
+const clientNow = Date.now();
+const drift = clientNow - serverNow; // clock drift compensation
+
+// 2. For each job, compute client-side countdown
+data.data.jobs.forEach(job => {
+  const nextRunClient = new Date(job.nextRunAt).getTime() + drift;
+  const remaining = nextRunClient - Date.now();
+  // remaining (ms) → format as HH:MM:SS or "in 2h 15m"
+});
+
+// 3. Update every second with setInterval
+// 4. Re-fetch every 5 minutes to stay accurate
+```
+
+#### UI gợi ý
+
+| Component | Ghi chú |
+|-----------|---------|
+| Job card / row | `name` + `description` + countdown badge |
+| Countdown | Format: `02:15:30` hoặc "in 2h 15m 30s" |
+| Schedule label | Hiện `schedule` (human-readable) |
+| Status indicator | Green khi `nextRunInMs > 30min`; orange < 30min; red+blink < 5min |
+| Re-fetch | Poll mỗi 5 phút để cập nhật `nextRunAt` |
+
+---
+
+## 10. Module Seller Dashboard (`022` / branch `feat/022-seller-dashboard`)
+
+### 10.1 Quyết định MVP
 
 | Topic | Decision |
 |-------|----------|
@@ -1119,7 +1452,7 @@ Audit file persist cho mutating: `wallet.*`, `admin.wallet.*`, `admin.mlm.*`, `c
 | Low stock | `available_stock < threshold`; default threshold = 10 |
 | Expiry date | Không có — chỉ quản lý stock level |
 
-### 9.2 Endpoints
+### 10.2 Endpoints
 
 | UI | Method | Path | Permission |
 |----|--------|------|------------|
@@ -1129,14 +1462,14 @@ Audit file persist cho mutating: `wallet.*`, `admin.wallet.*`, `admin.mlm.*`, `c
 
 Auth: JWT cookie — role `SELLER` hoặc shop staff (`WAREHOUSE`/`CS`/`ACCOUNTANT`).
 
-### 9.3 Query parameters
+### 10.3 Query parameters
 
 | Param | Type | Default | Description |
 |-------|------|---------|-------------|
 | `sections` | string | `summary,lowStock` | Comma-separated: `summary`, `lowStock` |
 | `lowStockThreshold` | number | `10` | Variants có `available_stock < threshold` |
 
-### 9.4 Response
+### 10.4 Response
 
 ```json
 {
@@ -1176,7 +1509,7 @@ Auth: JWT cookie — role `SELLER` hoặc shop staff (`WAREHOUSE`/`CS`/`ACCOUNTA
 }
 ```
 
-### 9.5 TypeScript types
+### 10.5 TypeScript types
 
 ```ts
 // --- Request ---
@@ -1229,7 +1562,7 @@ interface LowStockItem {
 }
 ```
 
-### 9.6 Usage examples
+### 10.6 Usage examples
 
 ```ts
 // Lấy tất cả sections (default)
@@ -1246,7 +1579,7 @@ const res = await api.get('/seller/dashboard', {
 });
 ```
 
-### 9.7 Error codes
+### 10.7 Error codes
 
 | Status | Code | Condition |
 |--------|------|-----------|
@@ -1254,7 +1587,7 @@ const res = await api.get('/seller/dashboard', {
 | `403` | `FORBIDDEN` | Không có permission `VIEW_ORDER` |
 | `403` | `SHOP_NOT_ELIGIBLE` | Shop chưa APPROVED hoặc đang suspended |
 
-### 9.8 UI gợi ý
+### 10.8 UI gợi ý
 
 | Component | Data source | Ghi chú |
 |-----------|-------------|---------|
@@ -1266,7 +1599,7 @@ const res = await api.get('/seller/dashboard', {
 | "X more" | `lowStock.total - items.length` | Nếu `total > 20` → link tới inventory filter |
 | Last updated | `generatedAt` | Format relative "5 phút trước" |
 
-### 9.9 Revenue Chart — `GET /seller/dashboard/revenue-chart`
+### 10.9 Revenue Chart — `GET /seller/dashboard/revenue-chart`
 
 #### Query
 
@@ -1333,7 +1666,7 @@ const res = await api.get('/seller/dashboard/revenue-chart', {
 });
 ```
 
-### 9.10 Top Products — `GET /seller/dashboard/top-products`
+### 10.10 Top Products — `GET /seller/dashboard/top-products`
 
 #### Query
 
@@ -1401,7 +1734,7 @@ const res = await api.get('/seller/dashboard/top-products', {
 });
 ```
 
-### 9.11 Roadmap (chưa implement)
+### 10.11 Roadmap (chưa implement)
 
 | Phase | Feature | Endpoint dự kiến |
 |-------|---------|-----------------|
@@ -1410,7 +1743,7 @@ const res = await api.get('/seller/dashboard/top-products', {
 
 ---
 
-## 10. Checklist màn hình FE theo module
+## 11. Checklist màn hình FE theo module
 
 ### Buyer / Guest
 
@@ -1455,6 +1788,8 @@ const res = await api.get('/seller/dashboard/top-products', {
 ### Admin / Super Admin
 
 - [ ] Users lock/unlock/delete
+- [ ] **Dashboard charts:** GMV chart, orders chart, order status pie, top shops, new users trend
+- [ ] **Cron Jobs:** `GET /admin/dashboard/cron-jobs` — countdown panel with auto-refresh
 - [ ] **Staff shop:** `POST/GET /admin/staff`, `PATCH …/roles`, lock/unlock/delete (`MANAGE_STAFF` / `ASSIGN_ROLES`)
 - [ ] Shops approve/reject/violation-lock
 - [ ] Products queue approve/reject/hide (xem nested variants)
@@ -1469,7 +1804,7 @@ const res = await api.get('/seller/dashboard/top-products', {
 
 ---
 
-## 11. Gợi ý client setup
+## 12. Gợi ý client setup
 
 ```ts
 const api = axios.create({
@@ -1520,7 +1855,7 @@ Shop **Seed Electronics Store**: products/SKUs + `KHO-HN`/`KHO-HCM` + slips + or
 
 ---
 
-## 12. Ngoài scope hiện tại (chưa có BE)
+## 13. Ngoài scope hiện tại (chưa có BE)
 
 - Delete product / delete variant
 - Update / delete warehouse

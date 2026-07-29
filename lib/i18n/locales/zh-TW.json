@@ -732,7 +732,12 @@
       "range30d": "30 天",
       "range12m": "12 個月",
       "range90d": "90 天",
-      "noChartData": "尚無資料。"
+      "noChartData": "尚無資料。",
+      "cronJobs": "定時任務",
+      "cronJobsDesc": "排程自動執行任務",
+      "nextRun": "下次執行",
+      "schedule": "排程",
+      "noCronJobs": "目前沒有定時任務。"
     },
     "banners": {
       "title": "橫幅",
