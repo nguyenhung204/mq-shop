@@ -48,14 +48,15 @@ function parseListPayload(raw: unknown): NotificationListResult {
 
   const items = asArray<ApiNotification>(candidate?.items ?? []);
   const meta = candidate?.meta ?? root?.meta;
+  const metaUnreadCount = (meta as (PageMeta & { unreadCount?: number }) | undefined)
+    ?.unreadCount;
   const unreadCount =
     typeof candidate?.unreadCount === "number"
       ? candidate.unreadCount
       : typeof root?.unreadCount === "number"
         ? root.unreadCount
-        : typeof (meta as { unreadCount?: number } | undefined)?.unreadCount ===
-            "number"
-          ? (meta as { unreadCount: number }).unreadCount
+        : typeof metaUnreadCount === "number"
+          ? metaUnreadCount
           : items.filter((n) => !n.readAt).length;
 
   return { items, unreadCount, meta };
