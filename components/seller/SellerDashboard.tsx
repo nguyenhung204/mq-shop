@@ -91,7 +91,7 @@ function SummarySection({
 }: {
   summary: DashboardSummary;
   locale: Locale | null;
-  t: (key: string, vars?: Record<string, string | number>) => string;
+  t: (key: string, vars?: Record<string, string>) => string;
 }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -136,7 +136,7 @@ function LowStockSection({
   total: number;
   threshold: number;
   locale: Locale | null;
-  t: (key: string, vars?: Record<string, string | number>) => string;
+  t: (key: string, vars?: Record<string, string>) => string;
 }) {
   const remaining = total - items.length;
 
@@ -216,7 +216,7 @@ function LowStockSection({
 
       {remaining > 0 && (
         <p className="text-xs text-mq-text-muted px-4 pb-3 pt-1">
-          {t("seller.dashboard.andMore", { count: remaining })}
+          {t("seller.dashboard.andMore", { count: String(remaining) })}
         </p>
       )}
     </div>
