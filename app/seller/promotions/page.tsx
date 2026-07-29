@@ -132,7 +132,7 @@ function buildBody(form: FormState): CreatePromotionBody | null {
 function PromotionsInner() {
   const { t, locale } = useLanguage();
   const catLocale = locale ?? "en";
-  const [status, setStatus] = useState<PromotionStatus | "">("PENDING");
+  const [status, setStatus] = useState<PromotionStatus | "">("");
   const [page, setPage] = useState(1);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);

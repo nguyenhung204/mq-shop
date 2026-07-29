@@ -2,40 +2,22 @@
 
 import { useState } from "react";
 import { Container, PageHero } from "@/components/ui/shared";
-
-const tabs = [
-  {
-    id: "description",
-    label: "Description",
-    content:
-      "MQ curates premium lifestyle goods designed for modern living. Each product is selected for its quality, craftsmanship, and timeless appeal.",
-  },
-  {
-    id: "details",
-    label: "Details",
-    content:
-      "Materials: Premium grade. Origin: Ethically sourced. Warranty: 1 year manufacturer warranty on all tech products. Care: See individual product pages.",
-  },
-  {
-    id: "shipping",
-    label: "Shipping",
-    content:
-      "Standard: 3–5 business days ($5.99). Express: 1–2 business days ($12.99). Free shipping on orders over $75. International rates vary.",
-  },
-  {
-    id: "reviews",
-    label: "Reviews",
-    content:
-      "Our customers love MQ. Average rating: 4.8/5 stars across 2,000+ reviews. \"Best online shopping experience I've had.\" — Verified Buyer",
-  },
-];
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export default function TabsPage() {
+  const { t } = useLanguage();
   const [active, setActive] = useState("description");
+
+  const tabs = [
+    { id: "description", labelKey: "tabsPage.descriptionLabel", contentKey: "tabsPage.descriptionContent" },
+    { id: "details", labelKey: "tabsPage.detailsLabel", contentKey: "tabsPage.detailsContent" },
+    { id: "shipping", labelKey: "tabsPage.shippingLabel", contentKey: "tabsPage.shippingContent" },
+    { id: "reviews", labelKey: "tabsPage.reviewsLabel", contentKey: "tabsPage.reviewsContent" },
+  ];
 
   return (
     <>
-      <PageHero title="Tabs" breadcrumb={[{ label: "Tabs" }]} />
+      <PageHero title={t("tabsPage.title")} breadcrumb={[{ label: t("tabsPage.title") }]} />
       <Container className="py-12 md:py-20 max-w-3xl mx-auto">
         <div className="flex gap-6 border-b border-mq-border mb-8 overflow-x-auto">
           {tabs.map((tab) => (
@@ -49,12 +31,12 @@ export default function TabsPage() {
                   : "border-transparent text-mq-text-muted hover:text-mq-text"
               }`}
             >
-              {tab.label}
+              {t(tab.labelKey)}
             </button>
           ))}
         </div>
         <div className="text-mq-text-secondary text-sm leading-relaxed">
-          {tabs.find((t) => t.id === active)?.content}
+          {t(tabs.find((tab) => tab.id === active)?.contentKey ?? "")}
         </div>
       </Container>
     </>

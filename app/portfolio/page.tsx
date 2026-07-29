@@ -1,32 +1,36 @@
+"use client";
+
 import Image from "next/image";
 import { Check } from "lucide-react";
 import { portfolioImages } from "@/lib/images";
 import { Container, PageHero } from "@/components/ui/shared";
-
-const highlights = [
-  "Award-winning retail design",
-  "Sustainable brand initiatives",
-  "Global artisan partnerships",
-];
-
-const projects = [
-  { title: "MQ Flagship Store", category: "Retail" },
-  { title: "Spring Collection 2026", category: "Campaign" },
-  { title: "Sustainable Packaging", category: "Design" },
-  { title: "MQ x Artisan Series", category: "Collaboration" },
-  { title: "Digital Experience", category: "Technology" },
-  { title: "Holiday Gift Guide", category: "Editorial" },
-];
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export default function PortfolioPage() {
+  const { t } = useLanguage();
+
+  const highlights = [
+    t("portfolioPage.highlight1"),
+    t("portfolioPage.highlight2"),
+    t("portfolioPage.highlight3"),
+  ];
+
+  const projects = [
+    { title: t("portfolioPage.project1"), category: t("portfolioPage.category1") },
+    { title: t("portfolioPage.project2"), category: t("portfolioPage.category2") },
+    { title: t("portfolioPage.project3"), category: t("portfolioPage.category3") },
+    { title: t("portfolioPage.project4"), category: t("portfolioPage.category4") },
+    { title: t("portfolioPage.project5"), category: t("portfolioPage.category5") },
+    { title: t("portfolioPage.project6"), category: t("portfolioPage.category6") },
+  ];
+
   return (
     <>
-      <PageHero title="Portfolio" breadcrumb={[{ label: "Portfolio" }]} />
+      <PageHero title={t("portfolioPage.title")} breadcrumb={[{ label: t("portfolioPage.title") }]} />
       <Container className="py-12 md:py-20">
         <div className="max-w-2xl mb-12">
           <p className="text-mq-text-secondary leading-relaxed mb-4">
-            A showcase of MQ projects — from retail experiences to brand
-            campaigns and product collaborations.
+            {t("portfolioPage.intro")}
           </p>
           <ul className="space-y-2 text-sm text-mq-text-secondary">
             {highlights.map((item) => (
@@ -37,7 +41,7 @@ export default function PortfolioPage() {
             ))}
           </ul>
         </div>
-        <h2 className="text-2xl text-mq-text mb-8">Best of Our Work</h2>
+        <h2 className="text-2xl text-mq-text mb-8">{t("portfolioPage.bestOfWork")}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project, i) => (
             <article key={project.title} className="group">

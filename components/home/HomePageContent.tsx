@@ -241,9 +241,10 @@ export function HomePageContent() {
 }
 
 function EmptyProducts() {
+  const { t } = useLanguage();
   return (
     <p className="text-sm text-mq-text-muted text-center py-10">
-      No products in the catalog yet.
+      {t("nav.noProductsYet")}
     </p>
   );
 }

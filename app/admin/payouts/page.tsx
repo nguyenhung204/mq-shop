@@ -79,7 +79,7 @@ function PayoutsInner() {
   const [periodStartDate, setPeriodStartDate] = useState(bounds.start);
   const [periodEndDate, setPeriodEndDate] = useState(bounds.end);
   const [showCreate, setShowCreate] = useState(false);
-  const [status, setStatus] = useState<PayoutStatus | "">("PENDING");
+  const [status, setStatus] = useState<PayoutStatus | "">("");
   const [listShopId, setListShopId] = useState("");
   const [page, setPage] = useState(1);
   const [rejectTarget, setRejectTarget] = useState<SellerPayout | null>(null);

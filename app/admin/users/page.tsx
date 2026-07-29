@@ -91,7 +91,7 @@ function UsersInner() {
         description={t("admin.users.description")}
         actions={
           <Link href="/admin/staff" className="mq-admin-btn mq-admin-btn-secondary">
-            Manage staff
+            {t("admin.staff.title")}
           </Link>
         }
       />

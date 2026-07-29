@@ -1,13 +1,18 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ZoomIn } from "lucide-react";
 import { galleryImages } from "@/lib/images";
 import { Container, PageHero } from "@/components/ui/shared";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export default function GalleryPage() {
+  const { t } = useLanguage();
+
   return (
     <>
-      <PageHero title="Gallery" breadcrumb={[{ label: "Gallery" }]} />
+      <PageHero title={t("galleryPage.title")} breadcrumb={[{ label: t("galleryPage.title") }]} />
       <Container className="py-12 md:py-20">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {galleryImages.map((src, i) => (
@@ -17,7 +22,7 @@ export default function GalleryPage() {
             >
               <Image
                 src={src}
-                alt={`Gallery image ${i + 1}`}
+                alt={t("galleryPage.imageAlt", { n: String(i + 1) })}
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-110"
                 sizes="(max-width:768px) 50vw, 25vw"
@@ -34,7 +39,7 @@ export default function GalleryPage() {
         </div>
         <div className="text-center mt-12">
           <Link href="/shop" className="mq-btn mq-btn-primary">
-            View More
+            {t("galleryPage.viewMore")}
           </Link>
         </div>
       </Container>

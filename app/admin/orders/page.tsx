@@ -56,7 +56,7 @@ function variantOptionLabel(v: ProductVariant): string {
 
 function OrdersInner() {
   const { t } = useLanguage();
-  const [status, setStatus] = useState<OrderStatus | "">("PENDING");
+  const [status, setStatus] = useState<OrderStatus | "">("");
   const [shopId, setShopId] = useState("");
   const [page, setPage] = useState(1);
   const [createOpen, setCreateOpen] = useState(false);
