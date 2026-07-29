@@ -718,7 +718,21 @@
         "walletAdjust": "Cộng/trừ số dư ví cá nhân (ADJUST_POINTS)",
         "mlm": "Quản lý rank, referrer và tỷ lệ referral; tra cứu mạng lưới phân phối"
       },
-      "noModules": "Không có module admin cho tài khoản này. Kiểm tra role/permission."
+      "noModules": "Không có module admin cho tài khoản này. Kiểm tra role/permission.",
+      "chartsTitle": "Biểu đồ",
+      "gmvChart": "Doanh thu (GMV)",
+      "ordersChart": "Số đơn hàng",
+      "orderStatus": "Phân bố trạng thái đơn",
+      "topShops": "Shop bán chạy",
+      "topShopsDesc": "Xếp hạng theo doanh thu",
+      "newUsersChart": "Người dùng mới",
+      "shopName": "Tên shop",
+      "orderCount": "Số đơn",
+      "range7d": "7 ngày",
+      "range30d": "30 ngày",
+      "range12m": "12 tháng",
+      "range90d": "90 ngày",
+      "noChartData": "Chưa có dữ liệu."
     },
     "banners": {
       "title": "Banner",

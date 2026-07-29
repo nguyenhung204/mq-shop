@@ -718,7 +718,21 @@
         "walletAdjust": "加減個人錢包餘額（ADJUST_POINTS）",
         "mlm": "管理等級、推薦人與推薦比率；查詢分銷網絡"
       },
-      "noModules": "此帳號沒有可用的管理模組。請檢查角色與權限。"
+      "noModules": "此帳號沒有可用的管理模組。請檢查角色與權限。",
+      "chartsTitle": "圖表",
+      "gmvChart": "營收 (GMV)",
+      "ordersChart": "訂單數",
+      "orderStatus": "訂單狀態分佈",
+      "topShops": "熱門商店",
+      "topShopsDesc": "依營收排名",
+      "newUsersChart": "新用戶",
+      "shopName": "商店",
+      "orderCount": "訂單",
+      "range7d": "7 天",
+      "range30d": "30 天",
+      "range12m": "12 個月",
+      "range90d": "90 天",
+      "noChartData": "尚無資料。"
     },
     "banners": {
       "title": "橫幅",
