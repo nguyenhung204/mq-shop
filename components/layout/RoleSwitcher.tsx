@@ -3,17 +3,19 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 const portals = [
-  { href: "/", label: "Shop", match: (p: string) => p === "/" || p.startsWith("/shop") || p.startsWith("/product") || p.startsWith("/cart") || p.startsWith("/checkout") || p.startsWith("/orders") || p.startsWith("/transactions") },
-  { href: "/seller", label: "Seller", role: "SELLER" as const, match: (p: string) => p.startsWith("/seller") },
-  { href: "/admin", label: "Admin", roles: ["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"] as const, match: (p: string) => p.startsWith("/admin") },
-  { href: "/wallet", label: "Wallet", match: (p: string) => p.startsWith("/wallet") || p.startsWith("/mlm") },
+  { href: "/", labelKey: "roleSwitcher.shop", match: (p: string) => p === "/" || p.startsWith("/shop") || p.startsWith("/product") || p.startsWith("/cart") || p.startsWith("/checkout") || p.startsWith("/orders") || p.startsWith("/transactions") },
+  { href: "/seller", labelKey: "roleSwitcher.seller", role: "SELLER" as const, match: (p: string) => p.startsWith("/seller") },
+  { href: "/admin", labelKey: "roleSwitcher.admin", roles: ["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"] as const, match: (p: string) => p.startsWith("/admin") },
+  { href: "/wallet", labelKey: "roleSwitcher.wallet", match: (p: string) => p.startsWith("/wallet") || p.startsWith("/mlm") },
 ];
 
 export function RoleSwitcher() {
   const { user, hasRole, isAuthenticated } = useAuth();
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   if (!isAuthenticated || !user) return null;
 
@@ -39,7 +41,7 @@ export function RoleSwitcher() {
                 : "text-mq-text-muted hover:text-mq-text"
             }`}
           >
-            {p.label}
+            {t(p.labelKey)}
           </Link>
         );
       })}

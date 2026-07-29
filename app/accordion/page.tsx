@@ -2,44 +2,34 @@
 
 import { useState } from "react";
 import { Container, PageHero } from "@/components/ui/shared";
-
-const items = [
-  {
-    title: "What makes MQ different?",
-    content:
-      "Every product is hand-selected by our curation team. We prioritize quality materials, ethical sourcing, and timeless design over trends.",
-  },
-  {
-    title: "How do I care for my products?",
-    content:
-      "Each product page includes specific care instructions. Generally, we recommend following the manufacturer's guidelines and storing items properly.",
-  },
-  {
-    title: "Can I visit your showroom?",
-    content:
-      "Yes! Our flagship showroom is open Mon–Sat in New York. Book an appointment through our contact page for a personalized shopping experience.",
-  },
-];
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export default function AccordionPage() {
+  const { t } = useLanguage();
   const [open, setOpen] = useState<number | null>(0);
+
+  const items = [
+    { q: t("accordionPage.q1"), a: t("accordionPage.a1") },
+    { q: t("accordionPage.q2"), a: t("accordionPage.a2") },
+    { q: t("accordionPage.q3"), a: t("accordionPage.a3") },
+  ];
 
   return (
     <>
-      <PageHero title="Accordion" breadcrumb={[{ label: "Accordion" }]} />
+      <PageHero title={t("accordionPage.title")} breadcrumb={[{ label: t("accordionPage.title") }]} />
       <Container className="py-12 md:py-20 max-w-2xl mx-auto">
         {items.map((item, i) => (
-          <div key={item.title} className="border-b border-mq-border">
+          <div key={i} className="border-b border-mq-border">
             <button
               type="button"
               onClick={() => setOpen(open === i ? null : i)}
               className="w-full flex justify-between items-center py-5 text-left"
             >
-              <span className="font-medium text-mq-text">{item.title}</span>
+              <span className="font-medium text-mq-text">{item.q}</span>
               <span className="text-mq-text-muted">{open === i ? "−" : "+"}</span>
             </button>
             {open === i && (
-              <p className="pb-5 text-sm text-mq-text-secondary">{item.content}</p>
+              <p className="pb-5 text-sm text-mq-text-secondary">{item.a}</p>
             )}
           </div>
         ))}

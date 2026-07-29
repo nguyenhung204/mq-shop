@@ -151,17 +151,17 @@ function SlipsTab() {
                   </ul>
                 ) : null}
                 {s.warehouseCode ? (
-                  <p className="text-xs text-mq-text-muted">Warehouse {s.warehouseCode}</p>
+                  <p className="text-xs text-mq-text-muted">{t("admin.inventoryPage.warehouse")} {s.warehouseCode}</p>
                 ) : null}
                 {s.locationNote ? (
                   <p className="text-xs text-mq-text-muted">{s.locationNote}</p>
                 ) : null}
                 <p className="text-xs text-mq-text-muted font-mono">
-                  Shop {s.shopId.slice(0, 8)}… · Slip {s.id.slice(0, 8)}…
+                  {t("admin.common.shop")} {s.shopId.slice(0, 8)}… · {t("admin.inventoryPage.slip")} {s.id.slice(0, 8)}…
                 </p>
                 <p className="text-xs text-mq-text-muted">
-                  Created {formatWhen(s.createdAt)}
-                  {s.processedAt ? ` · Processed ${formatWhen(s.processedAt)}` : ""}
+                  {t("admin.inventoryPage.created")} {formatWhen(s.createdAt)}
+                  {s.processedAt ? ` · ${t("admin.inventoryPage.processed")} ${formatWhen(s.processedAt)}` : ""}
                 </p>
               </div>
               {s.status === "PENDING" ? (
@@ -241,8 +241,7 @@ function LedgerTab() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-mq-text-muted">
-        Immutable stock history for a shop. Each approved slip writes one ledger row per item.
-        Use <code>quantityAfter</code> as the historical stock figure.
+        {t("admin.inventoryPage.ledgerDesc")}
       </p>
 
       <div className="flex flex-wrap gap-3">
@@ -314,10 +313,10 @@ function LedgerTab() {
                 <tr className="text-left text-mq-text-muted border-b border-mq-border">
                   <th className="py-2 pr-3 font-medium">{t("admin.common.when")}</th>
                   <th className="py-2 pr-3 font-medium">SKU</th>
-                  <th className="py-2 pr-3 font-medium">Type</th>
-                  <th className="py-2 pr-3 font-medium">Qty</th>
+                  <th className="py-2 pr-3 font-medium">{t("admin.inventoryPage.type")}</th>
+                  <th className="py-2 pr-3 font-medium">{t("admin.inventoryPage.qty")}</th>
                   <th className="py-2 pr-3 font-medium">{t("admin.inventoryPage.beforeAfter")}</th>
-                  <th className="py-2 font-medium">Slip</th>
+                  <th className="py-2 font-medium">{t("admin.inventoryPage.slip")}</th>
                 </tr>
               </thead>
               <tbody>
