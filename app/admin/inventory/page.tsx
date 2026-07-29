@@ -25,6 +25,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton, TableSkeleton } from "@/components/ui/Skeleton";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { getErrorMessage } from "@/lib/queries/utils";
 
 type TabId = "slips" | "ledger";
@@ -87,6 +88,7 @@ function SlipsTab() {
   const meta = data?.meta;
   const approveSlip = useAdminApproveSlip();
   const rejectSlip = useAdminRejectSlip();
+  const [rejectSlipId, setRejectSlipId] = useState<string | null>(null);
   const busy = approveSlip.isPending || rejectSlip.isPending;
 
   return (
@@ -176,7 +178,7 @@ function SlipsTab() {
                     icon={X}
                     tone="reject"
                     disabled={busy}
-                    onClick={() => void rejectSlip.mutateAsync(s.id)}
+                    onClick={() => setRejectSlipId(s.id)}
                   />
                 </AdminActions>
               ) : null}
@@ -196,6 +198,20 @@ function SlipsTab() {
         ))
       )}
       <PaginationBar page={page} meta={meta} onPageChange={setPage} />
+      <ConfirmDialog
+        open={Boolean(rejectSlipId)}
+        title={t("confirm.rejectSlipTitle")}
+        description={t("confirm.rejectSlipDesc")}
+        confirmLabel={t("confirm.rejectSlipBtn")}
+        tone="danger"
+        busy={rejectSlip.isPending}
+        onClose={() => setRejectSlipId(null)}
+        onConfirm={async () => {
+          if (!rejectSlipId) return;
+          await rejectSlip.mutateAsync(rejectSlipId);
+          setRejectSlipId(null);
+        }}
+      />
     </div>
   );
 }

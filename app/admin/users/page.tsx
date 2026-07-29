@@ -193,7 +193,9 @@ function UsersInner() {
           tone={confirmCopy.tone}
           busy={action.isPending}
           onClose={() => setPending(null)}
-          onConfirm={() => action.mutateAsync({ userId: pending.userId, kind: pending.kind })}
+          onConfirm={async () => {
+            await action.mutateAsync({ userId: pending.userId, kind: pending.kind });
+          }}
         />
       ) : null}
     </>

@@ -16,7 +16,7 @@ import { getErrorMessage } from "@/lib/queries/utils";
 export function ProductActions({ product }: { product: Product }) {
   const { addItem } = useCart();
   const { flyToCart } = useFlyToCart();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [qty, setQty] = useState(1);
@@ -45,9 +45,7 @@ export function ProductActions({ product }: { product: Product }) {
         router.push("/checkout");
       }
     } catch (err) {
-      toast.error(
-        getErrorMessage(err, "Could not add this product to cart."),
-      );
+      toast.error(getErrorMessage(err, t("cart.addFailed"), locale));
     } finally {
       setBusy(false);
     }

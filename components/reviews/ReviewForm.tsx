@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { X } from "lucide-react";
 import { ReviewStarsInput } from "@/components/reviews/ReviewStarsInput";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { getErrorMessage } from "@/lib/queries/utils";
 import {
@@ -36,6 +37,7 @@ export function ReviewForm({
   const [comment, setComment] = useState(existing?.comment ?? "");
   const [files, setFiles] = useState<File[]>([]);
   const [localError, setLocalError] = useState("");
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const busy =
     createReview.isPending || updateReview.isPending || deleteReview.isPending;
@@ -92,14 +94,9 @@ export function ReviewForm({
 
   const onDelete = async () => {
     if (!existing) return;
-    if (
-      typeof window !== "undefined" &&
-      !window.confirm(t("product.reviewsPage.deleteConfirm"))
-    ) {
-      return;
-    }
     try {
       await deleteReview.mutateAsync(existing.id);
+      setDeleteOpen(false);
       onDone?.();
     } catch {
       /* toast */
@@ -175,7 +172,7 @@ export function ReviewForm({
             type="button"
             className="mq-btn mq-btn-outline text-sm"
             disabled={busy}
-            onClick={() => void onDelete()}
+            onClick={() => setDeleteOpen(true)}
           >
             {t("product.reviewsPage.delete")}
           </button>
@@ -191,6 +188,16 @@ export function ReviewForm({
           </button>
         ) : null}
       </div>
+      <ConfirmDialog
+        open={deleteOpen}
+        title={t("confirm.deleteReviewTitle")}
+        description={t("confirm.deleteReviewDesc")}
+        confirmLabel={t("confirm.deleteReviewBtn")}
+        tone="danger"
+        busy={deleteReview.isPending}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={onDelete}
+      />
     </form>
   );
 }

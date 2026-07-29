@@ -7,6 +7,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useNotifications } from "@/components/providers/NotificationProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
+import { localizeNotification } from "@/lib/notifications/localize";
 import { resolveNotificationRoute } from "@/lib/notifications/routes";
 import type { ApiNotification } from "@/lib/api/types";
 
@@ -19,7 +20,7 @@ const STREAM_KEY_MAP: Record<string, string> = {
 export function NotificationBell() {
   const router = useRouter();
   const { isAuthenticated, user } = useAuth();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const {
     items,
     unreadCount,
@@ -115,6 +116,7 @@ export function NotificationBell() {
             {items.map((n) => {
               const href = resolveNotificationRoute(n, { roles: user?.roles ?? [] });
               const canOpenDetail = Boolean(href);
+              const { title, body } = localizeNotification(n, locale);
               return (
                 <li key={n.id}>
                   <button
@@ -131,10 +133,10 @@ export function NotificationBell() {
                         <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-mq-gold shrink-0" />
                       )}
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-mq-text">{n.title}</p>
-                        {n.body ? (
+                        <p className="text-sm font-medium text-mq-text">{title}</p>
+                        {body ? (
                           <p className="text-xs text-mq-text-muted mt-0.5 line-clamp-2">
-                            {n.body}
+                            {body}
                           </p>
                         ) : null}
                         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">

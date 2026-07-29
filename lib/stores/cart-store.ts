@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { toast } from "sonner";
+import { tt } from "@/lib/i18n/tt";
 import { Product, formatPrice } from "@/lib/data/products";
 
 export type CartLine = {
@@ -78,14 +79,14 @@ export const useCartStore = create<CartState>()(
           const reason = explainAddItemFailure(product);
           toast.error(
             reason === "no_shop"
-              ? "Could not resolve shop for this product."
-              : "This product has no available SKU to add.",
+              ? tt("cart.noShop")
+              : tt("cart.noSku"),
           );
           return false;
         }
         const { items } = get();
         if (items.length > 0 && items[0].shopId !== line.shopId) {
-          toast.error("Cart is limited to one shop. Clear the cart or finish checkout first.");
+          toast.error(tt("cart.multiShop"));
           return false;
         }
         const existing = items.find((i) => i.variantId === line.variantId);

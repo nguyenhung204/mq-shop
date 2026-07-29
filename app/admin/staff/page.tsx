@@ -76,6 +76,7 @@ function StaffInner() {
   const [role, setRole] = useState<StaffRole>("WAREHOUSE");
   const [shopId, setShopId] = useState("");
   const [assignRole, setAssignRole] = useState<StaffRole>("WAREHOUSE");
+  const [assignShopId, setAssignShopId] = useState("");
   const createAlerts = useFormAlerts({ locale, t });
   const assignAlerts = useFormAlerts({ locale, t });
 

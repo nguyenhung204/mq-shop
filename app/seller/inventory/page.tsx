@@ -35,6 +35,7 @@ import {
 import { SlipDetailBody } from "@/components/inventory/SlipDetailBody";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { getErrorMessage } from "@/lib/queries/utils";
 
 type TabId = "warehouses" | "variants" | "slips" | "ledger";
@@ -426,6 +427,7 @@ function SlipsTab() {
   const createSlip = useCreateSlip();
   const approveSlip = useApproveSlip();
   const rejectSlip = useRejectSlip();
+  const [rejectSlipId, setRejectSlipId] = useState<string | null>(null);
   const items = data?.items ?? [];
   const meta = data?.meta;
   const busy = createSlip.isPending || approveSlip.isPending || rejectSlip.isPending;
@@ -720,7 +722,7 @@ function SlipsTab() {
                             icon={X}
                             tone="reject"
                             disabled={busy}
-                            onClick={() => void rejectSlip.mutateAsync(s.id)}
+                            onClick={() => setRejectSlipId(s.id)}
                           />
                         </AdminActions>
                       ) : (
@@ -751,6 +753,20 @@ function SlipsTab() {
           <PaginationBar page={page} meta={meta} onPageChange={setPage} />
         </>
       )}
+      <ConfirmDialog
+        open={Boolean(rejectSlipId)}
+        title={t("confirm.rejectSlipTitle")}
+        description={t("confirm.rejectSlipDesc")}
+        confirmLabel={t("confirm.rejectSlipBtn")}
+        tone="danger"
+        busy={rejectSlip.isPending}
+        onClose={() => setRejectSlipId(null)}
+        onConfirm={async () => {
+          if (!rejectSlipId) return;
+          await rejectSlip.mutateAsync(rejectSlipId);
+          setRejectSlipId(null);
+        }}
+      />
     </div>
   );
 }

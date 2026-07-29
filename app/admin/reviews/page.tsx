@@ -16,6 +16,7 @@ import {
   type SearchableSelectOption,
 } from "@/components/ui/SearchableSelect";
 import { TableSkeleton } from "@/components/ui/Skeleton";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useAdminProducts, useAdminShops } from "@/lib/queries/admin";
 import { getErrorMessage } from "@/lib/queries/utils";
 import {
@@ -43,6 +44,7 @@ function AdminReviewsInner() {
   const [shopId, setShopId] = useState("");
   const [page, setPage] = useState(1);
   const [hideId, setHideId] = useState<string | null>(null);
+  const [unhideId, setUnhideId] = useState<string | null>(null);
 
   const { data: shopsPage } = useAdminShops("APPROVED", 1, 100);
   const { data: productsPage } = useAdminProducts("ACTIVE", 1, 100);
@@ -219,7 +221,7 @@ function AdminReviewsInner() {
                             icon={Eye}
                             tone="approve"
                             disabled={unhideReview.isPending}
-                            onClick={() => void unhideReview.mutateAsync(r.id)}
+                            onClick={() => setUnhideId(r.id)}
                           />
                         ) : (
                           <AdminIconButton
@@ -258,6 +260,19 @@ function AdminReviewsInner() {
             reason: reason || undefined,
           });
           setHideId(null);
+        }}
+      />
+      <ConfirmDialog
+        open={Boolean(unhideId)}
+        title={t("confirm.unhideReviewTitle")}
+        description={t("confirm.unhideReviewDesc")}
+        confirmLabel={t("confirm.unhideReviewBtn")}
+        busy={unhideReview.isPending}
+        onClose={() => setUnhideId(null)}
+        onConfirm={async () => {
+          if (!unhideId) return;
+          await unhideReview.mutateAsync(unhideId);
+          setUnhideId(null);
         }}
       />
     </>

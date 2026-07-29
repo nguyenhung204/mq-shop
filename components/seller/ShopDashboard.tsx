@@ -151,7 +151,7 @@ export function ShopDashboard({ initialSection }: Props) {
             </div>
             {(shop.violationFlag || shop.contactAdminRequired || shop.isSuspended) && (
               <div className="mq-alert mq-alert-error text-sm">
-                Contact admin required — shop may be suspended or flagged.
+                {t("seller.shop.lockedBanner")}
               </div>
             )}
             <p className="text-mq-text-secondary">
@@ -218,17 +218,17 @@ export function ShopDashboard({ initialSection }: Props) {
               <dd>{shop.countryCode || "—"}</dd>
             </div>
             <div>
-              <dt>Owner</dt>
+              <dt>{t("admin.shops.owner")}</dt>
               <dd className="font-mono text-xs">{shop.ownerId || "—"}</dd>
             </div>
             <div>
               <dt>{t("seller.inventoryPage.flags")}</dt>
               <dd>
                 {shop.violationFlag || shop.contactAdminRequired
-                  ? "violation / contact admin"
+                  ? t("admin.shops.flagViolation")
                   : shop.isSuspended
                     ? t("seller.shop.suspended")
-                    : "none"}
+                    : t("admin.shops.flagNone")}
               </dd>
             </div>
             {shop.pickupAddress ? (

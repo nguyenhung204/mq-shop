@@ -29,6 +29,7 @@ import {
   type SearchableSelectOption,
 } from "@/components/ui/SearchableSelect";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { isValidNationalPhone, toE164 } from "@/lib/data/phone";
 import { getErrorMessage } from "@/lib/queries/utils";
 
@@ -121,6 +122,7 @@ function OrdersInner() {
     pageSize: 20,
   });
   const cancelOrder = useAdminCancelOrder();
+  const [cancelTarget, setCancelTarget] = useState<{ id: string; code: string } | null>(null);
   const items = data?.items ?? [];
   const meta = data?.meta;
 
@@ -399,12 +401,7 @@ function OrdersInner() {
                   icon={Ban}
                   tone="danger"
                   disabled={cancelOrder.isPending}
-                  onClick={() =>
-                    void cancelOrder.mutateAsync({
-                      orderId: o.id,
-                      reason: "Admin force cancel",
-                    })
-                  }
+                  onClick={() => setCancelTarget({ id: o.id, code: o.code })}
                 />
               </AdminActions>
             ) : null}
@@ -412,6 +409,27 @@ function OrdersInner() {
         ))}
         <PaginationBar page={page} meta={meta} onPageChange={setPage} />
       </div>
+      <ConfirmDialog
+        open={Boolean(cancelTarget)}
+        title={t("confirm.orderAdminCancelTitle")}
+        description={
+          cancelTarget
+            ? t("confirm.orderAdminCancelDesc", { code: cancelTarget.code })
+            : undefined
+        }
+        confirmLabel={t("confirm.orderAdminCancelBtn")}
+        tone="danger"
+        busy={cancelOrder.isPending}
+        onClose={() => setCancelTarget(null)}
+        onConfirm={async () => {
+          if (!cancelTarget) return;
+          await cancelOrder.mutateAsync({
+            orderId: cancelTarget.id,
+            reason: "Admin force cancel",
+          });
+          setCancelTarget(null);
+        }}
+      />
     </>
   );
 }
