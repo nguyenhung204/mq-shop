@@ -718,7 +718,21 @@
         "walletAdjust": "Credit or debit personal wallet balance (ADJUST_POINTS)",
         "mlm": "Manage ranks, referrers, and referral rates; look up distribution networks"
       },
-      "noModules": "No admin modules available for this account. Check roles and permissions."
+      "noModules": "No admin modules available for this account. Check roles and permissions.",
+      "chartsTitle": "Charts",
+      "gmvChart": "GMV (Revenue)",
+      "ordersChart": "Orders",
+      "orderStatus": "Order Status Distribution",
+      "topShops": "Top Shops",
+      "topShopsDesc": "Ranked by revenue",
+      "newUsersChart": "New Users",
+      "shopName": "Shop",
+      "orderCount": "Orders",
+      "range7d": "7 days",
+      "range30d": "30 days",
+      "range12m": "12 months",
+      "range90d": "90 days",
+      "noChartData": "No data available."
     },
     "banners": {
       "title": "Banners",

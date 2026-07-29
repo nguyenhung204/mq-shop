@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { adminApi, adminPlatformStaffApi, adminStaffApi } from "@/lib/api";
 import { adminDashboardApi } from "@/lib/api/admin-dashboard";
+import type { AdminChartRange, TopShopsRange } from "@/lib/api/admin-dashboard";
 import { ApiError } from "@/lib/api/client";
 import type { Banner } from "@/lib/api/promotions";
 import type { ApiProduct, ApiShop, AuthUser, StaffPoolRole, StaffRole } from "@/lib/api/types";
@@ -40,6 +41,11 @@ export const adminKeys = {
     [...adminKeys.all, "banners", lang, page] as const,
   staff: () => [...adminKeys.all, "staff"] as const,
   platformStaff: () => [...adminKeys.all, "platform-staff"] as const,
+  gmvChart: (range?: string) => [...adminKeys.all, "gmvChart", range] as const,
+  ordersChart: (range?: string) => [...adminKeys.all, "ordersChart", range] as const,
+  orderStatus: (range?: string) => [...adminKeys.all, "orderStatus", range] as const,
+  topShops: (range?: string, limit?: number) => [...adminKeys.all, "topShops", range, limit] as const,
+  newUsersChart: (range?: string) => [...adminKeys.all, "newUsersChart", range] as const,
 };
 
 const ADMIN_DASHBOARD_SECTIONS = "queues,snapshot";
@@ -50,6 +56,46 @@ export function useAdminDashboard(sections = ADMIN_DASHBOARD_SECTIONS) {
     queryFn: () => adminDashboardApi.get(sections),
     refetchInterval: 90_000,
     refetchOnWindowFocus: true,
+  });
+}
+
+export function useAdminGmvChart(range?: AdminChartRange) {
+  return useQuery({
+    queryKey: adminKeys.gmvChart(range),
+    queryFn: () => adminDashboardApi.gmvChart(range),
+    staleTime: 5 * 60_000,
+  });
+}
+
+export function useAdminOrdersChart(range?: AdminChartRange) {
+  return useQuery({
+    queryKey: adminKeys.ordersChart(range),
+    queryFn: () => adminDashboardApi.ordersChart(range),
+    staleTime: 5 * 60_000,
+  });
+}
+
+export function useAdminOrderStatus(range?: AdminChartRange) {
+  return useQuery({
+    queryKey: adminKeys.orderStatus(range),
+    queryFn: () => adminDashboardApi.orderStatus(range),
+    staleTime: 5 * 60_000,
+  });
+}
+
+export function useAdminTopShops(range?: TopShopsRange, limit = 10) {
+  return useQuery({
+    queryKey: adminKeys.topShops(range, limit),
+    queryFn: () => adminDashboardApi.topShops({ range, limit }),
+    staleTime: 5 * 60_000,
+  });
+}
+
+export function useAdminNewUsersChart(range?: AdminChartRange) {
+  return useQuery({
+    queryKey: adminKeys.newUsersChart(range),
+    queryFn: () => adminDashboardApi.newUsersChart(range),
+    staleTime: 5 * 60_000,
   });
 }
 

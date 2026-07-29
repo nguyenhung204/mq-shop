@@ -34,6 +34,11 @@ import { useAdminDashboard } from "@/lib/queries/admin";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { AdminGmvChart } from "./AdminGmvChart";
+import { AdminOrdersChart } from "./AdminOrdersChart";
+import { AdminOrderStatusChart } from "./AdminOrderStatusChart";
+import { AdminTopShops } from "./AdminTopShops";
+import { AdminNewUsersChart } from "./AdminNewUsersChart";
 
 const QUEUE_ICONS: Record<keyof AdminDashboardQueues, LucideIcon> = {
   shopsPending: Store,
@@ -199,6 +204,19 @@ export function AdminDashboardOverview() {
           </div>
         </div>
       ) : null}
+
+      <div>
+        <h2 className="text-sm font-semibold text-mq-text mb-3">
+          {t("admin.overview.chartsTitle")}
+        </h2>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <AdminGmvChart />
+          <AdminOrdersChart />
+          <AdminOrderStatusChart />
+          <AdminTopShops />
+          <AdminNewUsersChart />
+        </div>
+      </div>
     </section>
   );
 }
