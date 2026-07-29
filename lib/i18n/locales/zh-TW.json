@@ -1065,7 +1065,17 @@
       "shop": "商店",
       "bank": "銀行",
       "noEvidence": "沒有佐證圖片。",
-      "detailTitle": "RMA 詳情"
+      "detailTitle": "RMA 詳情",
+      "detailDesc": "查看退貨原因、銀行資訊與佐證。會計在外部撥款後標記為已退款。",
+      "backToInbox": "← 返回 RMA 列表",
+      "refundReadyHint": "外部退款就緒 — 將款項匯至下方銀行帳戶，然後標記已退款（訂單 → 已退款，RMA → 已關閉）。",
+      "created": "建立時間",
+      "decided": "處理時間",
+      "reviewNote": "審核備註",
+      "bankInfoTitle": "銀行資訊（退款）",
+      "account": "帳號",
+      "evidenceTitle": "佐證（{count}）",
+      "evidenceAlt": "RMA 佐證圖片"
     },
     "financePage": {
       "payoutBatches": "撥款批次",

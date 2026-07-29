@@ -1065,7 +1065,17 @@
       "shop": "Shop",
       "bank": "Bank",
       "noEvidence": "No evidence images.",
-      "detailTitle": "RMA detail"
+      "detailTitle": "RMA detail",
+      "detailDesc": "Review return reason, bank info, and evidence. Accountant marks refunded after external payout.",
+      "backToInbox": "← Back to RMA inbox",
+      "refundReadyHint": "External refund ready — pay to the bank account below, then mark refunded (order → REFUNDED, RMA → CLOSED).",
+      "created": "Created",
+      "decided": "Decided",
+      "reviewNote": "Review note",
+      "bankInfoTitle": "Bank info (refund)",
+      "account": "Account",
+      "evidenceTitle": "Evidence ({count})",
+      "evidenceAlt": "RMA evidence"
     },
     "financePage": {
       "payoutBatches": "Payout batches",

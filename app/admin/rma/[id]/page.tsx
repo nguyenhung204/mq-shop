@@ -33,11 +33,11 @@ function RmaDetailInner({ id }: { id: string }) {
     <>
       <AdminPageHeader
         title={rma?.orderCode ? `RMA · ${rma.orderCode}` : t("admin.rmaPage.detailTitle")}
-        description="Review return reason, bank info, and evidence. Accountant marks refunded after external payout."
+        description={t("admin.rmaPage.detailDesc")}
       />
       <div className="space-y-6 max-w-3xl">
         <Link href="/admin/rma" className="text-sm text-mq-text-muted hover:text-mq-text">
-          ← Back to RMA inbox
+          {t("admin.rmaPage.backToInbox")}
         </Link>
 
         {isError && (
@@ -96,8 +96,7 @@ function RmaDetailInner({ id }: { id: string }) {
 
             {canMarkRefunded ? (
               <div className="rounded-[var(--mq-radius-sm)] border border-mq-border bg-mq-surface-subtle p-3 text-sm text-mq-text-secondary">
-                External refund ready — pay to the bank account below, then mark refunded
-                (order → REFUNDED, RMA → CLOSED).
+                {t("admin.rmaPage.refundReadyHint")}
               </div>
             ) : null}
 
@@ -118,7 +117,7 @@ function RmaDetailInner({ id }: { id: string }) {
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-mq-text-muted">Created</dt>
+                <dt className="text-xs text-mq-text-muted">{t("admin.rmaPage.created")}</dt>
                 <dd>{new Date(rma.createdAt).toLocaleString()}</dd>
               </div>
               {rma.buyerId ? (
@@ -135,7 +134,7 @@ function RmaDetailInner({ id }: { id: string }) {
               ) : null}
               {rma.decidedAt ? (
                 <div>
-                  <dt className="text-xs text-mq-text-muted">Decided</dt>
+                  <dt className="text-xs text-mq-text-muted">{t("admin.rmaPage.decided")}</dt>
                   <dd>{new Date(rma.decidedAt).toLocaleString()}</dd>
                 </div>
               ) : null}
@@ -151,7 +150,7 @@ function RmaDetailInner({ id }: { id: string }) {
             {rma.reviewNote ? (
               <div>
                 <h3 className="text-xs uppercase tracking-wide text-mq-text-muted mb-1">
-                  Review note
+                  {t("admin.rmaPage.reviewNote")}
                 </h3>
                 <p className="text-mq-text-secondary whitespace-pre-wrap">{rma.reviewNote}</p>
               </div>
@@ -160,7 +159,7 @@ function RmaDetailInner({ id }: { id: string }) {
             {rma.bankInfo ? (
               <div>
                 <h3 className="text-xs uppercase tracking-wide text-mq-text-muted mb-2">
-                  Bank info (refund)
+                  {t("admin.rmaPage.bankInfoTitle")}
                 </h3>
                 <dl className="grid grid-cols-1 sm:grid-cols-3 gap-3 rounded-[var(--mq-radius-sm)] border border-mq-border bg-mq-surface-subtle p-3">
                   <div>
@@ -168,7 +167,7 @@ function RmaDetailInner({ id }: { id: string }) {
                     <dd>{rma.bankInfo.bankName}</dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-mq-text-muted">Account</dt>
+                    <dt className="text-xs text-mq-text-muted">{t("admin.rmaPage.account")}</dt>
                     <dd className="font-mono text-xs">{rma.bankInfo.accountNumber}</dd>
                   </div>
                   <div>
@@ -181,7 +180,7 @@ function RmaDetailInner({ id }: { id: string }) {
 
             <div>
               <h3 className="text-xs uppercase tracking-wide text-mq-text-muted mb-2">
-                Evidence ({rma.evidenceUrls?.length ?? 0})
+                {t("admin.rmaPage.evidenceTitle", { count: String(rma.evidenceUrls?.length ?? 0) })}
               </h3>
               {(rma.evidenceUrls?.length ?? 0) === 0 ? (
                 <p className="text-mq-text-muted text-xs">{t("admin.rmaPage.noEvidence")}</p>
@@ -197,7 +196,7 @@ function RmaDetailInner({ id }: { id: string }) {
                       >
                         <Image
                           src={url}
-                          alt="RMA evidence"
+                          alt={t("admin.rmaPage.evidenceAlt")}
                           fill
                           className="object-cover"
                           sizes="160px"

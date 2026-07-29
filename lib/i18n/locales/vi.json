@@ -1065,7 +1065,17 @@
       "shop": "Cửa hàng",
       "bank": "Ngân hàng",
       "noEvidence": "Không có ảnh bằng chứng.",
-      "detailTitle": "Chi tiết RMA"
+      "detailTitle": "Chi tiết RMA",
+      "detailDesc": "Xem lý do đổi trả, thông tin ngân hàng và bằng chứng. Kế toán đánh dấu đã hoàn tiền sau khi chi ngoài hệ thống.",
+      "backToInbox": "← Quay lại danh sách RMA",
+      "refundReadyHint": "Sẵn sàng hoàn tiền — chuyển khoản đến tài khoản bên dưới, sau đó đánh dấu đã hoàn (đơn → ĐÃ HOÀN, RMA → ĐÓNG).",
+      "created": "Ngày tạo",
+      "decided": "Ngày xử lý",
+      "reviewNote": "Ghi chú duyệt",
+      "bankInfoTitle": "Thông tin ngân hàng (hoàn tiền)",
+      "account": "Số tài khoản",
+      "evidenceTitle": "Bằng chứng ({count})",
+      "evidenceAlt": "Ảnh bằng chứng RMA"
     },
     "financePage": {
       "payoutBatches": "Lô chi trả",
