@@ -15,6 +15,7 @@ import { AdminIconButton } from "@/components/admin/AdminIconButton";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { getErrorMessage } from "@/lib/queries/utils";
 
 function formatBytes(n: number): string {
@@ -39,6 +40,9 @@ function MarketingInner() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; fileName: string } | null>(
+    null,
+  );
   const fileRef = useRef<HTMLInputElement>(null);
 
   const { data, isLoading, isError, error } = useAdminMarketingFolders(page, 20);
@@ -210,11 +214,7 @@ function MarketingInner() {
                       icon={Trash2}
                       tone="danger"
                       disabled={deleteAsset.isPending}
-                      onClick={() => {
-                        if (confirm(t("admin.marketing.confirmDelete", { name: a.fileName }))) {
-                          void deleteAsset.mutateAsync(a.id);
-                        }
-                      }}
+                      onClick={() => setDeleteTarget({ id: a.id, fileName: a.fileName })}
                     />
                   </li>
                 ))}
@@ -228,6 +228,24 @@ function MarketingInner() {
           )}
         </div>
       </div>
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title={t("confirm.deleteAssetTitle")}
+        description={
+          deleteTarget
+            ? t("confirm.deleteAssetDesc", { name: deleteTarget.fileName })
+            : undefined
+        }
+        confirmLabel={t("confirm.deleteAssetBtn")}
+        tone="danger"
+        busy={deleteAsset.isPending}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          await deleteAsset.mutateAsync(deleteTarget.id);
+          setDeleteTarget(null);
+        }}
+      />
     </>
   );
 }
