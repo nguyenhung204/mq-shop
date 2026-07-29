@@ -6,6 +6,7 @@ import {
   ArrowUpRight,
   Boxes,
   Package,
+  RotateCcw,
   ShoppingBag,
   Truck,
   XCircle,
@@ -25,8 +26,8 @@ import { getErrorMessage } from "@/lib/queries/utils";
 function DashboardSkeleton() {
   return (
     <div className="space-y-4" aria-busy="true" aria-label="Loading dashboard">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {Array.from({ length: 4 }).map((_, i) => (
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {Array.from({ length: 5 }).map((_, i) => (
           <Skeleton key={i} className="h-20 rounded-xl" />
         ))}
       </div>
@@ -94,7 +95,7 @@ function SummarySection({
   t: (key: string, vars?: Record<string, string>) => string;
 }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
       <KpiCard
         label={t("seller.dashboard.revenueThisMonth")}
         value={formatMoneyLocale(summary.revenueThisMonth, locale)}
@@ -120,6 +121,22 @@ function SummarySection({
         label={t("seller.dashboard.cancelled")}
         value={String(summary.cancelledOrders)}
         icon={XCircle}
+      />
+      <KpiCard
+        label={t("seller.dashboard.rmaRate")}
+        value={
+          summary.rmaRate.rmaRatePercent !== null
+            ? `${summary.rmaRate.rmaRatePercent.toFixed(1)}%`
+            : t("seller.dashboard.growthNA")
+        }
+        icon={RotateCcw}
+        sub={
+          summary.rmaRate.rmaRatePercent !== null && summary.rmaRate.rmaRatePercent > 5 ? (
+            <span className="text-xs text-red-500 font-medium">
+              {t("seller.dashboard.rmaWarning")}
+            </span>
+          ) : undefined
+        }
       />
     </div>
   );

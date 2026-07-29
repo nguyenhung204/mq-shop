@@ -64,6 +64,7 @@ export type {
   DashboardLowStock,
   SellerDashboardPayload,
   SellerDashboardSection,
+  RmaRateResult,
 } from "./seller-dashboard";
 export {
   ADMIN_DASHBOARD_QUEUE_ORDER,

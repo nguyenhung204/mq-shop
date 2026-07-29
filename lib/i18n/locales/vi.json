@@ -1440,7 +1440,9 @@
       "viewInventory": "Xem kho hàng",
       "noData": "Chưa có dữ liệu thống kê.",
       "updatedAt": "Cập nhật: {time}",
-      "error": "Không thể tải dữ liệu dashboard."
+      "error": "Không thể tải dữ liệu dashboard.",
+      "rmaRate": "Tỷ lệ RMA",
+      "rmaWarning": "Cao"
     },
     "shop": {
       "sectionsAria": "Mục shop",

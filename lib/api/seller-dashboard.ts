@@ -4,6 +4,12 @@ import { api } from "./client";
 // Types (aligned with docs/SELLER-DASHBOARD-API.md)
 // ---------------------------------------------------------------------------
 
+export interface RmaRateResult {
+  totalRma: number;
+  totalDelivered: number;
+  rmaRatePercent: number | null;
+}
+
 export interface DashboardSummary {
   revenueThisMonth: string;
   revenueLastMonth: string;
@@ -13,6 +19,7 @@ export interface DashboardSummary {
   cancelledOrders: number;
   pendingOrders: number;
   processingOrders: number;
+  rmaRate: RmaRateResult;
 }
 
 export interface LowStockItem {

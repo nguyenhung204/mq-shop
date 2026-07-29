@@ -1440,7 +1440,9 @@
       "viewInventory": "查看庫存",
       "noData": "尚無統計資料。",
       "updatedAt": "更新時間：{time}",
-      "error": "無法載入儀表板資料。"
+      "error": "無法載入儀表板資料。",
+      "rmaRate": "退貨率",
+      "rmaWarning": "偏高"
     },
     "shop": {
       "sectionsAria": "商店區塊",
