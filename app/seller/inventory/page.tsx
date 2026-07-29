@@ -90,7 +90,7 @@ function WarehousesTab() {
     e.preventDefault();
     const trimmed = code.trim();
     if (!trimmed || trimmed.length > 32 || !WH_CODE_RE.test(trimmed)) {
-      setFormError("Code: letters, numbers, _ or - (max 32).");
+      setFormError(t("seller.inventoryPage.warehouseCodeHint"));
       return;
     }
     setFormError("");
@@ -240,12 +240,11 @@ function VariantsTab() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-mq-text-muted">
-        Prefer adding SKUs on the{" "}
+        {t("seller.inventoryPage.preferProductsHintBefore")}{" "}
         <Link href="/seller/products" className="underline">
-          Products
+          {t("seller.inventoryPage.productsLink")}
         </Link>{" "}
-        form. This shortcut still needs a product + sell price. Stock starts at 0 — use slips to
-        receive goods.
+        {t("seller.inventoryPage.preferProductsHintAfter")}
       </p>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -291,7 +290,7 @@ function VariantsTab() {
             onChange={(e) => setProductId(e.target.value)}
             required
           >
-            <option value="">Select product</option>
+            <option value="">{t("seller.inventoryPage.selectProduct")}</option>
             {productOptions.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.title || p.name || p.id.slice(0, 8)}
@@ -328,7 +327,7 @@ function VariantsTab() {
               checked={isEnrollmentPackage}
               onChange={(e) => setIsEnrollmentPackage(e.target.checked)}
             />
-            Enrollment package (MLM)
+            {t("seller.inventoryPage.enrollmentPackage")}
           </label>
           <button className="mq-btn mq-btn-primary sm:col-span-2" disabled={createVariant.isPending}>
             {createVariant.isPending ? t("admin.common.working") : t("seller.inventoryPage.createSku")}
@@ -372,7 +371,7 @@ function VariantsTab() {
                       {v.costPrice != null ? formatMoney(v.costPrice) : "—"}
                     </td>
                     <td className="py-2.5 text-xs text-mq-text-muted">
-                      {v.isEnrollmentPackage ? "Enrollment pkg" : "—"}
+                      {v.isEnrollmentPackage ? t("seller.inventoryPage.enrollmentPkgShort") : "—"}
                     </td>
                   </tr>
                 ))}
@@ -444,11 +443,11 @@ function SlipsTab() {
     setFormError("");
     const skus = lines.map((l) => l.sku.trim()).filter(Boolean);
     if (!skus.length) {
-      setFormError("Add at least one SKU line.");
+      setFormError(t("seller.inventoryPage.addSkuLineError"));
       return;
     }
     if (new Set(skus).size !== skus.length) {
-      setFormError("Duplicate SKU in slip items — each SKU can appear only once.");
+      setFormError(t("seller.inventoryPage.duplicateSkuError"));
       return;
     }
     const payloadItems = [];
@@ -457,13 +456,13 @@ function SlipsTab() {
       if (!sku) continue;
       const quantity = Number(line.quantity);
       if (!Number.isInteger(quantity) || quantity < 1) {
-        setFormError(`Invalid quantity for SKU “${sku}”.`);
+        setFormError(t("seller.inventoryPage.invalidQuantityError", { sku }));
         return;
       }
       const costRaw = line.unitCost.trim();
       const unitCost = costRaw === "" ? undefined : Number(costRaw);
       if (unitCost != null && (!Number.isFinite(unitCost) || unitCost < 0)) {
-        setFormError(`Invalid unit cost for SKU “${sku}”.`);
+        setFormError(t("seller.inventoryPage.invalidUnitCostError", { sku }));
         return;
       }
       payloadItems.push({
@@ -493,10 +492,7 @@ function SlipsTab() {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-mq-text-muted">
-        Slips are multi-SKU stock-change requests. Creating a slip does not change stock until you
-        approve it.
-      </p>
+      <p className="text-sm text-mq-text-muted">{t("seller.inventoryPage.slipsDesc")}</p>
 
       <div className="flex flex-wrap items-center gap-3">
         <select
@@ -550,7 +546,7 @@ function SlipsTab() {
             </select>
             <input
               className="mq-input sm:col-span-2"
-              placeholder="Location note (optional)"
+              placeholder={t("seller.inventoryPage.locationNote")}
               value={locationNote}
               maxLength={300}
               onChange={(e) => setLocationNote(e.target.value)}
@@ -565,7 +561,7 @@ function SlipsTab() {
                 className="mq-btn mq-btn-outline text-xs"
                 onClick={() => setLines((prev) => [...prev, emptySlipLine()])}
               >
-                Add line
+                {t("seller.inventoryPage.addLine")}
               </button>
             </div>
             {lines.map((line) => (
@@ -591,7 +587,7 @@ function SlipsTab() {
                   type="number"
                   min={1}
                   step={1}
-                  aria-label="Quantity"
+                  aria-label={t("seller.inventoryPage.quantity")}
                   value={line.quantity}
                   onChange={(e) => updateLine(line.key, { quantity: e.target.value })}
                   required
@@ -601,8 +597,8 @@ function SlipsTab() {
                   type="number"
                   min={0}
                   step="0.01"
-                  placeholder="Unit cost"
-                  aria-label="Unit cost"
+                  placeholder={t("seller.inventoryPage.unitCost")}
+                  aria-label={t("seller.inventoryPage.unitCost")}
                   value={line.unitCost}
                   onChange={(e) => updateLine(line.key, { unitCost: e.target.value })}
                 />
@@ -610,7 +606,7 @@ function SlipsTab() {
                   <button
                     type="button"
                     className="mq-icon-btn text-mq-text-muted"
-                    aria-label="Remove line"
+                    aria-label={t("seller.inventoryPage.removeLine")}
                     onClick={() =>
                       setLines((prev) => prev.filter((l) => l.key !== line.key))
                     }
@@ -704,7 +700,11 @@ function SlipsTab() {
                     <td className="py-2.5 pr-3 text-xs text-mq-text-muted">
                       {formatDate(s.createdAt)}
                       {s.processedAt ? (
-                        <span className="block">Processed {formatDate(s.processedAt)}</span>
+                        <span className="block">
+                          {t("seller.inventoryPage.processed", {
+                            date: formatDate(s.processedAt),
+                          })}
+                        </span>
                       ) : null}
                     </td>
                     <td className="py-2.5">
@@ -791,8 +791,9 @@ function LedgerTab() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-mq-text-muted">
-        Immutable history. Each approved slip writes one ledger row per item. Use{" "}
-        <code>quantityAfter</code> as the historical stock figure.
+        {t("seller.inventoryPage.ledgerDescBefore")}{" "}
+        <code>quantityAfter</code>{" "}
+        {t("seller.inventoryPage.ledgerDescAfter")}
       </p>
 
       <div className="flex flex-wrap gap-3">
@@ -845,8 +846,8 @@ function LedgerTab() {
                   <th className="py-2 pr-3 font-medium">{t("admin.common.when")}</th>
                   <th className="py-2 pr-3 font-medium">{t("seller.productsPage.sku")}</th>
                   <th className="py-2 pr-3 font-medium">{t("seller.promotions.type")}</th>
-                  <th className="py-2 pr-3 font-medium">Qty</th>
-                  <th className="py-2 pr-3 font-medium">Before → After</th>
+                  <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.qty")}</th>
+                  <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.beforeAfter")}</th>
                   <th className="py-2 font-medium">{t("seller.inventoryPage.slips")}</th>
                 </tr>
               </thead>

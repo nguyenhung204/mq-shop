@@ -34,7 +34,7 @@ function CategoriesInner() {
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
-      toast.success("Category created");
+      toast.success(t("toast.categoryCreated"));
       setForm({ name: "", nameVi: "", slug: "", parentId: "" });
       formAlerts.clearAlerts();
     },
@@ -49,7 +49,7 @@ function CategoriesInner() {
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
-      toast.success("Category updated");
+      toast.success(t("toast.categoryUpdated"));
       setEditing(null);
       setForm({ name: "", nameVi: "", slug: "", parentId: "" });
       formAlerts.clearAlerts();

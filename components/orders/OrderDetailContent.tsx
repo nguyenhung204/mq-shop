@@ -170,8 +170,11 @@ function OrderDetailInner() {
   return (
     <>
       <PageHero
-        title="Order detail"
-        breadcrumb={[{ label: "Orders", href: "/orders" }, { label: id.slice(0, 8) }]}
+        title={t("orders.detail.title")}
+        breadcrumb={[
+          { label: t("orders.detail.breadcrumbOrders"), href: "/orders" },
+          { label: id.slice(0, 8) },
+        ]}
       />
       <Container className="py-10 md:py-14 max-w-3xl mx-auto space-y-6">
         {isLoading && <OrderDetailSkeleton />}
@@ -196,31 +199,40 @@ function OrderDetailInner() {
                   {translateStatus(t, "rmaMessage", rmaInfo.status)}
                 </p>
                 {rmaInfo.reason ? (
-                  <p className="text-mq-text-secondary">Reason: {rmaInfo.reason}</p>
+                  <p className="text-mq-text-secondary">
+                    {t("orders.detail.reasonLabel", { reason: rmaInfo.reason })}
+                  </p>
                 ) : null}
                 {rmaInfo.note ? (
-                  <p className="text-xs text-mq-text-muted">Note: {rmaInfo.note}</p>
+                  <p className="text-xs text-mq-text-muted">
+                    {t("orders.detail.noteLabel", { note: rmaInfo.note })}
+                  </p>
                 ) : null}
                 {hasBlockingRma(order) && !showRma ? (
                   <p className="text-xs text-mq-text-muted pt-1">
-                    A return request is already open for this order.
+                    {t("orders.detail.blockingRmaHint")}
                   </p>
                 ) : null}
               </div>
             ) : null}
             <p className="text-sm">
-              Total: <strong>{formatMoney(order.total)}</strong> {order.currency}
+              {t("orders.detail.totalLabel")}: <strong>{formatMoney(order.total)}</strong> {order.currency}
               <span className="text-mq-text-muted">
                 {" "}
-                (subtotal {formatMoney(order.subtotal)} + ship {formatMoney(order.shippingFee)})
+                {t("orders.detail.subtotalShipHint", {
+                  subtotal: formatMoney(order.subtotal),
+                  shippingFee: formatMoney(order.shippingFee),
+                })}
               </span>
             </p>
             <p className="text-sm text-mq-text-secondary">
-              Ship to: {formatAddress(order.shippingAddress)}
+              {t("orders.detail.shipTo")}: {formatAddress(order.shippingAddress)}
             </p>
             {order.deliveredAt ? (
               <p className="text-xs text-mq-text-muted">
-                Delivered {new Date(order.deliveredAt).toLocaleString()}
+                {t("orders.detail.delivered", {
+                  date: new Date(order.deliveredAt).toLocaleString(),
+                })}
               </p>
             ) : null}
             <ul className="divide-y divide-mq-border">
@@ -274,7 +286,11 @@ function OrderDetailInner() {
                     })
                   }
                 >
-                  {updateStatus.isPending ? "Updating…" : `Mark ${translateStatus(t, "order", nextStatus)}`}
+                  {updateStatus.isPending
+                    ? t("orders.detail.updating")
+                    : t("orders.detail.markStatus", {
+                        status: translateStatus(t, "order", nextStatus),
+                      })}
                 </button>
               </div>
             ) : null}
@@ -284,10 +300,10 @@ function OrderDetailInner() {
                 onSubmit={(e) => void onCancel(e)}
                 className="space-y-3 pt-4 border-t border-mq-border"
               >
-                <h3 className="text-sm font-medium">Cancel order</h3>
+                <h3 className="text-sm font-medium">{t("orders.detail.cancelOrderTitle")}</h3>
                 <input
                   className="mq-input"
-                  placeholder="Reason"
+                  placeholder={t("orders.detail.reasonPlaceholder")}
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   required
@@ -297,13 +313,15 @@ function OrderDetailInner() {
                   className="mq-btn mq-btn-outline"
                   disabled={cancelOrder.isPending}
                 >
-                  {cancelOrder.isPending ? "Cancelling…" : "Cancel order"}
+                  {cancelOrder.isPending
+                    ? t("orders.detail.cancelling")
+                    : t("orders.detail.cancelOrderBtn")}
                 </button>
               </form>
             )}
             {showRma ? (
               <Link href={`/orders/${id}/rma`} className="mq-btn mq-btn-primary inline-flex">
-                Request return (RMA)
+                {t("orders.detail.requestReturn")}
               </Link>
             ) : null}
           </div>

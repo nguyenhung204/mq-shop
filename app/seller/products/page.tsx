@@ -74,6 +74,7 @@ function formatOptionsText(opts: Record<string, string> | null | undefined): str
 /** Parse `size=M, color=black` or `size:M; color:black`. Empty → undefined. */
 function parseOptionsText(
   raw: string,
+  t: (key: string, vars?: Record<string, string>) => string,
 ): { ok: true; options?: Record<string, string> } | { ok: false; error: string } {
   const trimmed = raw.trim();
   if (!trimmed) return { ok: true, options: undefined };
@@ -85,13 +86,13 @@ function parseOptionsText(
     if (!m) {
       return {
         ok: false,
-        error: `Invalid options “${piece}”. Use key=value (e.g. size=M, color=black).`,
+        error: t("seller.productsPage.invalidOptionError", { piece }),
       };
     }
     const key = m[1].trim();
     const value = m[2].trim();
     if (!key || !value) {
-      return { ok: false, error: "Option key and value cannot be empty." };
+      return { ok: false, error: t("seller.productsPage.optionKeyValueError") };
     }
     out[key] = value;
   }
@@ -240,20 +241,20 @@ function ProductsInner() {
     const picked = Array.from(files);
     const room = MAX_IMAGES - existingUrls.length - newFiles.length;
     if (room <= 0) {
-      setFormError(`Maximum ${MAX_IMAGES} images.`);
+      setFormError(t("seller.productsPage.maxImagesError", { max: String(MAX_IMAGES) }));
       return;
     }
     const next: File[] = [];
     for (const file of picked.slice(0, room)) {
       if (file.size > MAX_BYTES) {
-        setFormError(`“${file.name}” exceeds 5MB.`);
+        setFormError(t("seller.productsPage.imageTooLargeError", { name: file.name }));
         return;
       }
       if (
         !ACCEPT.split(",").includes(file.type) &&
         !/\.(jpe?g|png|webp|gif)$/i.test(file.name)
       ) {
-        setFormError(`“${file.name}” is not JPEG/PNG/WebP/GIF.`);
+        setFormError(t("seller.productsPage.imageInvalidTypeError", { name: file.name }));
         return;
       }
       next.push(file);
@@ -297,14 +298,14 @@ function ProductsInner() {
       const sku = v.sku.trim();
       const sellingPrice = Number(v.sellingPrice);
       if (!sku) {
-        setFormError("Each variant needs a SKU.");
+        setFormError(t("seller.productsPage.skuRequiredError"));
         return null;
       }
       if (!Number.isFinite(sellingPrice) || sellingPrice < 0) {
-        setFormError(`Invalid sell price for SKU “${sku}”.`);
+        setFormError(t("seller.productsPage.invalidSellPriceError", { sku }));
         return null;
       }
-      const parsed = parseOptionsText(v.optionsText);
+      const parsed = parseOptionsText(v.optionsText, t);
       if (!parsed.ok) {
         setFormError(parsed.error);
         return null;
@@ -312,19 +313,21 @@ function ProductsInner() {
       cleaned.push({ sku, sellingPrice, options: parsed.options });
     }
     if (!cleaned.length) {
-      setFormError("Add at least one variant (SKU + sell price).");
+      setFormError(t("seller.productsPage.variantRequiredError"));
       return null;
     }
     return cleaned;
   };
 
   const validateImageFile = (file: File): string | null => {
-    if (file.size > MAX_BYTES) return `“${file.name}” exceeds 5MB.`;
+    if (file.size > MAX_BYTES) {
+      return t("seller.productsPage.imageTooLargeError", { name: file.name });
+    }
     if (
       !ACCEPT.split(",").includes(file.type) &&
       !/\.(jpe?g|png|webp|gif)$/i.test(file.name)
     ) {
-      return `“${file.name}” is not JPEG/PNG/WebP/GIF.`;
+      return t("seller.productsPage.imageInvalidTypeError", { name: file.name });
     }
     return null;
   };
@@ -336,7 +339,7 @@ function ProductsInner() {
     const currentCount = draft?.images?.length ?? 0;
     const room = MAX_IMAGES - currentCount;
     if (room <= 0) {
-      setFormError(`Maximum ${MAX_IMAGES} images per SKU.`);
+      setFormError(t("seller.productsPage.maxImagesPerSkuError", { max: String(MAX_IMAGES) }));
       return;
     }
     const picked: File[] = [];
@@ -389,16 +392,16 @@ function ProductsInner() {
 
     const totalImages = existingUrls.length + newFiles.length;
     if (totalImages > MAX_IMAGES) {
-      setFormError(`Maximum ${MAX_IMAGES} images.`);
+      setFormError(t("seller.productsPage.maxImagesError", { max: String(MAX_IMAGES) }));
       return;
     }
 
     const cleaned = validateVariants();
     if (!cleaned) return;
 
-    const attrsParsed = parseOptionsText(form.attributesText);
+    const attrsParsed = parseOptionsText(form.attributesText, t);
     if (!attrsParsed.ok) {
-      setFormError(attrsParsed.error.replace("options", "attributes"));
+      setFormError(attrsParsed.error);
       return;
     }
 
@@ -465,7 +468,7 @@ function ProductsInner() {
         }
 
         if (wasRejected) {
-          toast.success("Resubmitted — Pending review");
+          toast.success(t("seller.productsPage.resubmitted"));
         }
       } else {
         const created = await createProduct.mutateAsync({
@@ -563,8 +566,7 @@ function ProductsInner() {
                 </p>
               ) : null}
               <p className="text-xs opacity-90">
-                Changing title, description, category, gallery, sell price, or options sends the
-                product back to Pending.
+                {t("seller.productsPage.rejectedChangeHint")}
               </p>
             </div>
           ) : null}
@@ -578,7 +580,7 @@ function ProductsInner() {
             onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
             required
           >
-            <option value="">Category</option>
+            <option value="">{t("seller.productsPage.categorySelect")}</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
                 {locale ? categoryLabel(c, locale) : c.name || c.slug}
@@ -620,8 +622,9 @@ function ProductsInner() {
               </button>
             </div>
             <p className="text-xs text-mq-text-muted">
-              Sell price lives on each SKU. Optional options:{" "}
-              <code>size=M, color=black</code>. Stock starts at 0 — adjust via{" "}
+              {t("seller.productsPage.variantsHintBefore")}{" "}
+              <code>{t("seller.productsPage.optionsExample")}</code>.{" "}
+              {t("seller.productsPage.variantsHintAfter")}{" "}
               <Link href="/seller/inventory" className="underline">
                 {t("seller.ordersPage.inventorySlips")}
               </Link>
@@ -682,9 +685,12 @@ function ProductsInner() {
                   {v.id && editing ? (
                     <div className="space-y-2 rounded-[var(--mq-radius-sm)] bg-mq-surface-subtle p-3">
                       <div className="flex flex-wrap items-baseline justify-between gap-2">
-                        <p className="text-xs font-medium">SKU images</p>
+                        <p className="text-xs font-medium">{t("seller.productsPage.skuImages")}</p>
                         <p className="text-[11px] text-mq-text-muted">
-                          {(v.images?.length ?? 0)}/{MAX_IMAGES} · empty → product gallery
+                          {t("seller.productsPage.skuImagesCount", {
+                            count: String(v.images?.length ?? 0),
+                            max: String(MAX_IMAGES),
+                          })}
                         </p>
                       </div>
                       <input
@@ -723,7 +729,9 @@ function ProductsInner() {
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-[11px] text-mq-text-muted">No SKU images yet.</p>
+                        <p className="text-[11px] text-mq-text-muted">
+                          {t("seller.productsPage.noSkuImages")}
+                        </p>
                       )}
                     </div>
                   ) : null}
@@ -736,7 +744,10 @@ function ProductsInner() {
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h3 className="text-sm font-semibold">{t("seller.productsPage.gallery")}</h3>
               <p className="text-xs text-mq-text-muted">
-                {existingUrls.length + newFiles.length}/{MAX_IMAGES} · ≤5MB · JPEG/PNG/WebP/GIF
+                {t("seller.productsPage.gallerySummary", {
+                  count: String(existingUrls.length + newFiles.length),
+                  max: String(MAX_IMAGES),
+                })}
               </p>
             </div>
             <input
@@ -774,7 +785,9 @@ function ProductsInner() {
                   >
                     <p className="line-clamp-3 break-all">{file.name}</p>
                     <p className="text-mq-text-muted mt-1">
-                      {(file.size / 1024).toFixed(0)} KB · pending upload
+                      {t("seller.productsPage.pendingUpload", {
+                        size: (file.size / 1024).toFixed(0),
+                      })}
                     </p>
                     <button
                       type="button"
@@ -787,10 +800,7 @@ function ProductsInner() {
                 ))}
               </ul>
             )}
-            <p className="text-xs text-mq-text-muted">
-              Images upload to MinIO after the product exists (
-              <code>POST /products/:id/images</code>). Optional on create.
-            </p>
+            <p className="text-xs text-mq-text-muted">{t("seller.productsPage.galleryUploadHint")}</p>
           </div>
 
           <div className="sm:col-span-2 flex flex-wrap gap-2">
