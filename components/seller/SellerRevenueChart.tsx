@@ -151,7 +151,7 @@ export function SellerRevenueChart() {
                 return (
                   <ChartTooltip
                     label={label as string}
-                    payload={payload}
+                    payload={payload as ReadonlyArray<{ value?: number | string; name?: string; dataKey?: string | number }>}
                     locale={locale}
                     t={t}
                   />
@@ -201,7 +201,7 @@ function ChartTooltip({
   t,
 }: {
   label: string;
-  payload: Array<{ value?: number | string; name?: string; dataKey?: string | number }>;
+  payload: ReadonlyArray<{ value?: number | string; name?: string; dataKey?: string | number }>;
   locale: Locale | null;
   t: (key: string) => string;
 }) {
