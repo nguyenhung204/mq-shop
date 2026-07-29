@@ -25,6 +25,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton, TableSkeleton } from "@/components/ui/Skeleton";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 type TabId = "slips" | "ledger";
 
@@ -109,7 +110,7 @@ function SlipsTab() {
 
       {isError && (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : t("admin.common.failed")}
+          {getErrorMessage(error, t("admin.common.failed"))}
         </div>
       )}
       {isLoading ? (
@@ -186,9 +187,7 @@ function SlipsTab() {
                 loading={detailQuery.isLoading}
                 error={
                   detailQuery.isError
-                    ? detailQuery.error instanceof Error
-                      ? detailQuery.error.message
-                      : t("admin.common.failed")
+                    ? getErrorMessage(detailQuery.error, t("admin.common.failed"))
                     : null
                 }
               />
@@ -285,7 +284,7 @@ function LedgerTab() {
         <p className="text-sm text-mq-text-muted">{t("admin.inventoryPage.selectShopLoad")}</p>
       ) : isError ? (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : t("admin.common.failed")}
+          {getErrorMessage(error, t("admin.common.failed"))}
         </div>
       ) : isLoading || (isFetching && !data) ? (
         <TableSkeleton rows={5} cols={6} />

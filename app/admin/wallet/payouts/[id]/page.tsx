@@ -18,6 +18,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { WalletPayoutDetailFields } from "@/components/wallet/walletPayoutUi";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 function WalletPayoutDetailInner({ payoutId }: { payoutId: string }) {
   const { t } = useLanguage();
@@ -65,7 +66,7 @@ function WalletPayoutDetailInner({ payoutId }: { payoutId: string }) {
         {isLoading ? <AdminCardListSkeleton count={2} /> : null}
         {isError ? (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : t("admin.common.failed")}
+            {getErrorMessage(error, t("admin.common.failed"))}
           </div>
         ) : null}
 

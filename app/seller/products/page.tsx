@@ -31,6 +31,7 @@ import { translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 import { categoryLabel } from "@/lib/api/categoryLabel";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 const MAX_IMAGES = 10;
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -353,7 +354,7 @@ function ProductsInner() {
         prev.map((v) => (v.id === variantId ? { ...v, images: urls } : v)),
       );
     } catch (err) {
-      if (err instanceof ApiError) setFormError(err.message);
+      if (err instanceof ApiError) setFormError(getErrorMessage(err));
     }
   };
 
@@ -372,7 +373,7 @@ function ProductsInner() {
         prev.map((v) => (v.id === variantId ? { ...v, images: urls } : v)),
       );
     } catch (err) {
-      if (err instanceof ApiError) setFormError(err.message);
+      if (err instanceof ApiError) setFormError(getErrorMessage(err));
     }
   };
 
@@ -478,9 +479,9 @@ function ProductsInner() {
       resetForm();
     } catch (err) {
       if (err instanceof ApiError) {
-        setFormError(err.message);
+        setFormError(getErrorMessage(err, t("toast.createFailed"), locale));
       } else {
-        toast.error("Save failed");
+        setFormError(t("toast.somethingWentWrong"));
       }
     }
   };
@@ -504,7 +505,7 @@ function ProductsInner() {
     <div className="space-y-6">
       {isError && (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : t("admin.common.failed")}
+          {getErrorMessage(error, t("admin.common.failed"))}
         </div>
       )}
 

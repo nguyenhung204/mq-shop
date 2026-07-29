@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { adminApi, adminPlatformStaffApi, adminStaffApi } from "@/lib/api";
 import { adminDashboardApi } from "@/lib/api/admin-dashboard";
 import { ApiError } from "@/lib/api/client";
@@ -11,6 +10,7 @@ import type { CreatePlatformStaffRequest } from "@/lib/api/staff";
 import { parsePage } from "@/lib/api/utils";
 import { tt } from "@/lib/i18n/tt";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { actionToastError, actionToastSuccess } from "@/lib/queries/mutation-feedback";
 import {
   useCreateBannerMultipart,
   useDeleteBanner,
@@ -122,9 +122,9 @@ export function useApproveShop() {
       // Shop APPROVED → seller_granted may auto-promote owner (realtime on BE).
       void queryClient.invalidateQueries({ queryKey: ["mlm"] });
       void queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
-      toast.success(tt("toast.shopApproved"));
+      actionToastSuccess(tt("toast.shopApproved"));
     },
-    onError: (e) => toast.error(shopActionError(e)),
+    onError: (e) => actionToastError(shopActionError(e)),
   });
 }
 
@@ -135,9 +135,9 @@ export function useRejectShop() {
       adminApi.rejectShop(id, { reason }),
     onSuccess: () => {
       invalidate();
-      toast.success(tt("toast.shopRejected"));
+      actionToastSuccess(tt("toast.shopRejected"));
     },
-    onError: (e) => toast.error(shopActionError(e)),
+    onError: (e) => actionToastError(shopActionError(e)),
   });
 }
 
@@ -148,9 +148,9 @@ export function useSuspendShop() {
       adminApi.suspendShop(id, reason ? { reason } : undefined),
     onSuccess: () => {
       invalidate();
-      toast.success(tt("toast.shopLocked"));
+      actionToastSuccess(tt("toast.shopLocked"));
     },
-    onError: (e) => toast.error(shopActionError(e)),
+    onError: (e) => actionToastError(shopActionError(e)),
   });
 }
 
@@ -160,9 +160,9 @@ export function useUnlockShop() {
     mutationFn: (id: string) => adminApi.unlockShop(id),
     onSuccess: () => {
       invalidate();
-      toast.success(tt("toast.shopUnlocked"));
+      actionToastSuccess(tt("toast.shopUnlocked"));
     },
-    onError: (e) => toast.error(shopActionError(e)),
+    onError: (e) => actionToastError(shopActionError(e)),
   });
 }
 
@@ -184,9 +184,9 @@ export function useApproveProduct() {
     mutationFn: (id: string) => adminApi.approveProduct(id),
     onSuccess: () => {
       invalidate();
-      toast.success(tt("toast.productApproved"));
+      actionToastSuccess(tt("toast.productApproved"));
     },
-    onError: (e) => toast.error(productActionError(e)),
+    onError: (e) => actionToastError(productActionError(e)),
   });
 }
 
@@ -197,9 +197,9 @@ export function useRejectProduct() {
       adminApi.rejectProduct(id, { reason }),
     onSuccess: () => {
       invalidate();
-      toast.success(tt("toast.productRejected"));
+      actionToastSuccess(tt("toast.productRejected"));
     },
-    onError: (e) => toast.error(productActionError(e)),
+    onError: (e) => actionToastError(productActionError(e)),
   });
 }
 
@@ -209,9 +209,9 @@ export function useHideAdminProduct() {
     mutationFn: (id: string) => adminApi.hideProduct(id),
     onSuccess: () => {
       invalidate();
-      toast.success(tt("toast.productHidden"));
+      actionToastSuccess(tt("toast.productHidden"));
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
+    onError: (e) => actionToastError(getErrorMessage(e)),
   });
 }
 
@@ -221,14 +221,14 @@ export function useUnhideAdminProduct() {
     mutationFn: (id: string) => adminApi.unhideProduct(id),
     onSuccess: () => {
       invalidate();
-      toast.success(tt("toast.productUnhidden"));
+      actionToastSuccess(tt("toast.productUnhidden"));
     },
     onError: (e) => {
       if (e instanceof ApiError && e.code === "PRODUCT_NOT_HIDDEN") {
-        toast.error(tt("toast.productNotHidden"));
+        actionToastError(tt("toast.productNotHidden"));
         return;
       }
-      toast.error(getErrorMessage(e));
+      actionToastError(getErrorMessage(e));
     },
   });
 }
@@ -250,9 +250,9 @@ export function useToggleBanner() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: adminKeys.all });
       void qc.invalidateQueries({ queryKey: ["banners"] });
-      toast.success(tt("toast.bannerUpdated"));
+      actionToastSuccess(tt("toast.bannerUpdated"));
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
+    onError: (e) => actionToastError(getErrorMessage(e)),
   });
 }
 
@@ -277,9 +277,9 @@ export function useAdminUserAction() {
         unlock: tt("toast.userUnlocked"),
         delete: tt("toast.userDeleted"),
       };
-      toast.success(labels[action]);
+      actionToastSuccess(labels[action]);
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
+    onError: (e) => actionToastError(getErrorMessage(e)),
   });
 }
 
@@ -294,9 +294,8 @@ export function useCreateStaff() {
     }) => adminStaffApi.create(body),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: adminKeys.staff() });
-      toast.success(tt("toast.staffCreated"));
+      actionToastSuccess(tt("toast.staffCreated"));
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
   });
 }
 
@@ -346,9 +345,8 @@ export function useUpdateStaffRoles() {
     }) => adminStaffApi.updateRoles(userId, body),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: adminKeys.staff() });
-      toast.success(tt("toast.staffRolesUpdated"));
+      actionToastSuccess(tt("toast.staffRolesUpdated"));
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
   });
 }
 
@@ -367,13 +365,13 @@ export function useStaffDualControlAction() {
     },
     onSuccess: (_d, vars) => {
       void queryClient.invalidateQueries({ queryKey: adminKeys.staff() });
-      toast.success(
+      actionToastSuccess(
         vars.kind === "approve"
           ? tt("toast.staffApproved")
           : tt("toast.staffRejected"),
       );
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
+    onError: (e) => actionToastError(getErrorMessage(e)),
   });
 }
 
@@ -393,7 +391,7 @@ export function useStaffAccountAction() {
     },
     onSuccess: (_d, vars) => {
       void queryClient.invalidateQueries({ queryKey: adminKeys.staff() });
-      toast.success(
+      actionToastSuccess(
         vars.kind === "lock"
           ? tt("toast.staffLocked")
           : vars.kind === "unlock"
@@ -401,7 +399,7 @@ export function useStaffAccountAction() {
             : tt("toast.staffDeleted"),
       );
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
+    onError: (e) => actionToastError(getErrorMessage(e)),
   });
 }
 
@@ -432,9 +430,8 @@ export function useCreatePlatformStaff() {
       adminPlatformStaffApi.create(body),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: adminKeys.platformStaff() });
-      toast.success(tt("toast.platformStaffCreated"));
+      actionToastSuccess(tt("toast.platformStaffCreated"));
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
   });
 }
 
@@ -450,9 +447,9 @@ export function useUpdatePlatformStaffRoles() {
     }) => adminPlatformStaffApi.updateRoles(userId, { roles }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: adminKeys.platformStaff() });
-      toast.success(tt("toast.platformStaffRolesUpdated"));
+      actionToastSuccess(tt("toast.platformStaffRolesUpdated"));
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
+    onError: (e) => actionToastError(getErrorMessage(e)),
   });
 }
 
@@ -471,12 +468,12 @@ export function usePlatformStaffDualControlAction() {
     },
     onSuccess: (_d, vars) => {
       void queryClient.invalidateQueries({ queryKey: adminKeys.platformStaff() });
-      toast.success(
+      actionToastSuccess(
         vars.kind === "approve"
           ? tt("toast.platformStaffApproved")
           : tt("toast.platformStaffRejected"),
       );
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
+    onError: (e) => actionToastError(getErrorMessage(e)),
   });
 }

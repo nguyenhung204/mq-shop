@@ -9,6 +9,7 @@ import {
   useCatalogCategories,
   useCatalogListingPage,
 } from "@/lib/queries/catalog";
+import { getErrorMessage } from "@/lib/queries/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { PaginationBar } from "@/components/ui/PaginationBar";
@@ -242,9 +243,7 @@ export function ShopContent() {
           <div className={`min-w-0 ${pending ? "opacity-70 transition-opacity" : ""}`}>
             {listingQuery.isError ? (
               <div className="mq-alert mq-alert-error">
-                {listingQuery.error instanceof Error
-                  ? listingQuery.error.message
-                  : t("storefront.loadFailed")}
+                {getErrorMessage(listingQuery.error, t("storefront.loadFailed"))}
               </div>
             ) : listingQuery.isLoading ? (
               <p className="text-sm text-mq-text-muted py-16 text-center">

@@ -17,6 +17,7 @@ import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButto
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 type FormState = {
   title: string;
@@ -134,7 +135,7 @@ function BannersInner() {
       <div className="space-y-6">
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : t("admin.common.failed")}
+            {getErrorMessage(error, t("admin.common.failed"))}
           </div>
         )}
 

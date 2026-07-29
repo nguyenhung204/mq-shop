@@ -284,6 +284,8 @@
     }
   },
   "orders": {
+    "loadFailed": "Failed to load orders.",
+    "loadDetailFailed": "Failed to load order.",
     "review": {
       "write": "Write a review",
       "edit": "Edit your review",
@@ -327,6 +329,31 @@
       "resetFailed": "Could not reset password. Please try again."
     },
     "backToLogin": "Back to login",
+    "loginPage": {
+      "description": "Welcome back. Sign in to continue shopping.",
+      "asideTitle": "Welcome back",
+      "asideText": "Pick up where you left off — wishlist, orders, and soft finds waiting.",
+      "signingIn": "Signing in…",
+      "emailLabel": "Email"
+    },
+    "registerPage": {
+      "description": "Create an account to checkout faster and track orders.",
+      "asideTitle": "Join MQ",
+      "asideText": "Create your account and unlock a calmer way to shop essentials.",
+      "fullName": "Full name",
+      "referralCode": "Referral code: {code}"
+    },
+    "verifyOtp": {
+      "title": "Verify email",
+      "description": "Enter the 6-digit code we sent to your email.",
+      "asideTitle": "Almost there",
+      "asideText": "One quick code to confirm your email and activate your MQ account.",
+      "signingIn": "Signing in…",
+      "verify": "Verify",
+      "resendOtp": "Resend OTP",
+      "otpResent": "OTP resent. The new code is valid for 10 minutes.",
+      "otpCode": "OTP code"
+    },
     "noAccount": "Don't have an account?",
     "haveAccount": "Already have an account?",
     "myProfile": "My profile",
@@ -383,8 +410,10 @@
       "profileUpdated": "Profile updated.",
       "dsarSubmitted": "Erasure request submitted.",
       "passwordTooShort": "Password must be at least 8 characters.",
+      "passwordUpdatedRedirect": "Password updated successfully. Redirecting to sign in…",
       "otpSent": "OTP sent to the new email.",
-      "emailUpdated": "Email updated."
+      "emailUpdated": "Email updated.",
+      "signedOut": "Signed out."
     },
     "links": {
       "orders": "Orders",
@@ -1283,6 +1312,7 @@
       "applyWarningTitle": "Important",
       "applyTaxIdWarning": "Please double-check that your tax ID is correct before submitting. You are responsible for verifying its accuracy.",
       "applyTaxIdHint": "Enter 1–15 digits. Verify against your business registration.",
+      "documentRequired": "Please upload a business document.",
       "logo": "Logo",
       "banner": "Banner",
       "noLogo": "No logo",
@@ -1606,6 +1636,20 @@
   },
   "toast": {
     "somethingWentWrong": "Something went wrong",
+    "invalidCredentials": "Invalid email or password.",
+    "incorrectPassword": "Current password is incorrect.",
+    "accountLocked": "This account is locked.",
+    "sessionExpired": "Session expired. Please sign in again.",
+    "emailAlreadyInUse": "This email is already in use.",
+    "tooManyRequests": "Too many attempts. Please wait and try again.",
+    "registrationNotFound": "Registration session expired. Please register again.",
+    "registrationFailed": "Registration failed.",
+    "verificationFailed": "Verification failed.",
+    "resendFailed": "Could not resend OTP.",
+    "taxIdTaken": "This tax ID is already registered.",
+    "shopNameTaken": "This shop name is already taken.",
+    "productNotFound": "Product not found.",
+    "orderNotFound": "Order not found.",
     "promoSubmitted": "Promotion submitted for review",
     "promoCreated": "Promotion created",
     "promoUpdated": "Promotion updated",

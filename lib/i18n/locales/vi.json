@@ -284,6 +284,8 @@
     }
   },
   "orders": {
+    "loadFailed": "Không tải được đơn hàng.",
+    "loadDetailFailed": "Không tải được chi tiết đơn.",
     "review": {
       "write": "Viết đánh giá",
       "edit": "Sửa đánh giá",
@@ -327,6 +329,31 @@
       "resetFailed": "Không đặt lại được mật khẩu. Vui lòng thử lại."
     },
     "backToLogin": "Quay lại đăng nhập",
+    "loginPage": {
+      "description": "Chào mừng trở lại. Đăng nhập để tiếp tục mua sắm.",
+      "asideTitle": "Chào mừng trở lại",
+      "asideText": "Tiếp tục từ nơi bạn dừng — yêu thích, đơn hàng và ưu đãi đang chờ.",
+      "signingIn": "Đang đăng nhập…",
+      "emailLabel": "Email"
+    },
+    "registerPage": {
+      "description": "Tạo tài khoản để thanh toán nhanh hơn và theo dõi đơn hàng.",
+      "asideTitle": "Gia nhập MQ",
+      "asideText": "Tạo tài khoản và trải nghiệm mua sắm nhẹ nhàng hơn.",
+      "fullName": "Họ và tên",
+      "referralCode": "Mã giới thiệu: {code}"
+    },
+    "verifyOtp": {
+      "title": "Xác minh email",
+      "description": "Nhập mã 6 số đã gửi tới email của bạn.",
+      "asideTitle": "Sắp xong rồi",
+      "asideText": "Xác nhận email để kích hoạt tài khoản MQ.",
+      "signingIn": "Đang đăng nhập…",
+      "verify": "Xác minh",
+      "resendOtp": "Gửi lại OTP",
+      "otpResent": "Đã gửi lại OTP. Mã mới có hiệu lực 10 phút.",
+      "otpCode": "Mã OTP"
+    },
     "noAccount": "Chưa có tài khoản?",
     "haveAccount": "Đã có tài khoản?",
     "myProfile": "Hồ sơ của tôi",
@@ -383,8 +410,10 @@
       "profileUpdated": "Đã cập nhật hồ sơ.",
       "dsarSubmitted": "Đã gửi yêu cầu xoá dữ liệu.",
       "passwordTooShort": "Mật khẩu phải có ít nhất 8 ký tự.",
+      "passwordUpdatedRedirect": "Đổi mật khẩu thành công. Đang chuyển về trang đăng nhập…",
       "otpSent": "Đã gửi OTP tới email mới.",
-      "emailUpdated": "Đã cập nhật email."
+      "emailUpdated": "Đã cập nhật email.",
+      "signedOut": "Đã đăng xuất."
     },
     "links": {
       "orders": "Đơn hàng",
@@ -1283,6 +1312,7 @@
       "applyWarningTitle": "Lưu ý",
       "applyTaxIdWarning": "Vui lòng tự kiểm tra kỹ độ chính xác của mã số thuế (MST) trước khi gửi hồ sơ. Bạn chịu trách nhiệm về thông tin đã nhập.",
       "applyTaxIdHint": "Nhập 1–15 chữ số. Đối chiếu với giấy đăng ký kinh doanh của bạn.",
+      "documentRequired": "Vui lòng tải lên giấy tờ kinh doanh.",
       "logo": "Logo",
       "banner": "Banner",
       "noLogo": "Chưa có logo",
@@ -1606,6 +1636,20 @@
   },
   "toast": {
     "somethingWentWrong": "Đã xảy ra lỗi",
+    "invalidCredentials": "Email hoặc mật khẩu không đúng.",
+    "incorrectPassword": "Mật khẩu hiện tại không đúng.",
+    "accountLocked": "Tài khoản này đã bị khoá.",
+    "sessionExpired": "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.",
+    "emailAlreadyInUse": "Email này đã được sử dụng.",
+    "tooManyRequests": "Quá nhiều lần thử. Vui lòng đợi rồi thử lại.",
+    "registrationNotFound": "Phiên đăng ký hết hạn. Vui lòng đăng ký lại.",
+    "registrationFailed": "Đăng ký thất bại.",
+    "verificationFailed": "Xác minh thất bại.",
+    "resendFailed": "Không gửi lại được OTP.",
+    "taxIdTaken": "Mã số thuế này đã được đăng ký.",
+    "shopNameTaken": "Tên shop này đã được sử dụng.",
+    "productNotFound": "Không tìm thấy sản phẩm.",
+    "orderNotFound": "Không tìm thấy đơn hàng.",
     "promoSubmitted": "Đã gửi khuyến mãi chờ duyệt",
     "promoCreated": "Đã tạo khuyến mãi",
     "promoUpdated": "Đã cập nhật khuyến mãi",

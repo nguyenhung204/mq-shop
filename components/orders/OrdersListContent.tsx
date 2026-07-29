@@ -11,6 +11,7 @@ import { Container, PageHero } from "@/components/ui/shared";
 import { OrderListSkeleton } from "@/components/ui/Skeleton";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { translateStatus } from "@/lib/i18n/status";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 function OrdersInner() {
   const { t } = useLanguage();
@@ -59,7 +60,7 @@ function OrdersInner() {
         {isLoading && <OrderListSkeleton />}
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : "Failed to load orders"}
+            {getErrorMessage(error, t("orders.loadFailed"))}
           </div>
         )}
         {!isLoading && orders.length === 0 && !isError && (

@@ -6,6 +6,7 @@ import type { LandingCostItemInput, LandingCostResult } from "@/lib/api/finance"
 import { formatMoney } from "@/lib/api/utils";
 import { useCalculateLandingCost } from "@/lib/queries/finance";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 type LineForm = {
   key: string;
@@ -35,7 +36,7 @@ function isPositiveInt(value: string): boolean {
 }
 
 export function LandingCostCalculator() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const calculate = useCalculateLandingCost();
   const [lines, setLines] = useState<LineForm[]>([newLine()]);
   const [shippingFee, setShippingFee] = useState("");
@@ -97,8 +98,8 @@ export function LandingCostCalculator() {
         ...(promoDiscount.trim() ? { promoDiscount: promoDiscount.trim() } : {}),
       });
       setResult(data);
-    } catch {
-      /* toast */
+    } catch (err) {
+      setFormError(getErrorMessage(err, t("toast.landingCostFailed"), locale));
     }
   };
 

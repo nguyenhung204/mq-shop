@@ -113,8 +113,6 @@ export function useCreateFinanceConfig() {
       void qc.invalidateQueries({ queryKey: financeKeys.all });
       toast.success(tt("toast.financeConfigSubmitted"));
     },
-    onError: (e) =>
-      toast.error(financeErrorMessage(e, tt("toast.financeConfigCreateFailed"))),
   });
 }
 
@@ -216,7 +214,6 @@ export function useRejectSellerPayout() {
 export function useCalculateLandingCost() {
   return useMutation({
     mutationFn: (body: LandingCostRequest) => landingCostApi.calculate(body),
-    onError: (e) => toast.error(financeErrorMessage(e, tt("toast.landingCostFailed"))),
   });
 }
 

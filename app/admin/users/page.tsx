@@ -99,7 +99,7 @@ function UsersInner() {
       <div className="space-y-6">
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : t("admin.common.failed")}
+            {getErrorMessage(error, t("admin.common.failed"))}
           </div>
         )}
 
@@ -136,7 +136,9 @@ function UsersInner() {
                 </tr>
               </thead>
               <tbody>
-                {items.map((u) => (
+                {items.map((u) => {
+                  const isLocked = u.status === "LOCKED";
+                  return (
                   <tr key={u.id} className="border-t border-mq-border">
                     <td className="p-3">{u.email}</td>
                     <td className="p-3">{u.fullName || "—"}</td>
@@ -148,7 +150,7 @@ function UsersInner() {
                           label={t("admin.common.lock")}
                           icon={Lock}
                           tone="warn"
-                          disabled={action.isPending}
+                          disabled={action.isPending || isLocked}
                           onClick={() =>
                             setPending({ userId: u.id, email: u.email, kind: "lock" })
                           }
@@ -157,7 +159,7 @@ function UsersInner() {
                           label={t("admin.common.unlock")}
                           icon={Unlock}
                           tone="approve"
-                          disabled={action.isPending}
+                          disabled={action.isPending || !isLocked}
                           onClick={() => void action.mutateAsync({ userId: u.id, kind: "unlock" })}
                         />
                         <AdminIconButton
@@ -172,7 +174,8 @@ function UsersInner() {
                       </AdminActions>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

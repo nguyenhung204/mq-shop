@@ -15,6 +15,7 @@ import { AdminIconButton } from "@/components/admin/AdminIconButton";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`;
@@ -107,7 +108,7 @@ function MarketingInner() {
 
           {isError && (
             <div className="mq-alert mq-alert-error">
-              {error instanceof Error ? error.message : t("admin.marketing.loadFailed")}
+              {getErrorMessage(error, t("admin.marketing.loadFailed"))}
             </div>
           )}
 

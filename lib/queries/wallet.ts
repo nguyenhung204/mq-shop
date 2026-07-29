@@ -240,7 +240,6 @@ export function useRequestWalletPinOtp() {
   return useMutation({
     mutationFn: () => walletApi.requestPinOtp(),
     onSuccess: () => toast.success(tt("toast.walletPinOtpSent")),
-    onError: (e) => toast.error(walletErrorMessage(e, tt("toast.walletPinOtpFailed"))),
   });
 }
 
@@ -252,15 +251,12 @@ export function useConfirmWalletPin() {
       toast.success(tt("toast.walletPinSet"));
       void qc.invalidateQueries({ queryKey: walletKeys.all });
     },
-    onError: (e) => toast.error(walletErrorMessage(e, tt("toast.walletPinConfirmFailed"))),
   });
 }
 
 export function useTransferPreview() {
   return useMutation({
     mutationFn: (body: TransferPreviewBody) => walletApi.transferPreview(body),
-    onError: (e) =>
-      toast.error(walletErrorMessage(e, tt("toast.walletTransferPreviewFailed"))),
   });
 }
 
@@ -294,7 +290,6 @@ export function useWalletTransfer() {
     },
     onError: (e) => {
       onWalletIdempotencyError(e, idempotency);
-      toast.error(walletErrorMessage(e, tt("toast.walletTransferFailed")));
     },
   });
 }
@@ -312,7 +307,6 @@ export function useWalletWithdraw() {
     },
     onError: (e) => {
       onWalletIdempotencyError(e, idempotency);
-      toast.error(walletErrorMessage(e, tt("toast.walletWithdrawFailed")));
     },
   });
 }

@@ -19,6 +19,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 const STATUSES: Array<FinanceConfigStatus | ""> = [
   "",
@@ -86,7 +87,7 @@ function formatWhen(iso: string | null | undefined): string {
 }
 
 function FinanceConfigsInner() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { hasRole } = useAuth();
   const canSubmit = hasRole("SUPER_ADMIN");
   const canReview = hasRole("ACCOUNTANT") || hasRole("SUPER_ADMIN");
@@ -125,8 +126,8 @@ function FinanceConfigsInner() {
       setShowForm(false);
       setStatus("PENDING_APPROVAL");
       setPage(1);
-    } catch {
-      /* toast */
+    } catch (err) {
+      setFormError(getErrorMessage(err, t("toast.financeConfigCreateFailed"), locale));
     }
   };
 
@@ -296,7 +297,7 @@ function FinanceConfigsInner() {
 
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : t("admin.common.failed")}
+            {getErrorMessage(error, t("admin.common.failed"))}
           </div>
         )}
 

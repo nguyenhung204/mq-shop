@@ -8,6 +8,8 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
 import { CountrySelect } from "@/components/ui/CountrySelect";
 import { ShopCardSkeleton } from "@/components/ui/Skeleton";
+import { FormAlerts, useFormAlerts } from "@/lib/ui/form-feedback";
+import { getErrorMessage } from "@/lib/queries/utils";
 import "./shop.css";
 
 export type ShopSection = "overview" | "details" | "branding" | "apply";
@@ -27,7 +29,12 @@ type Props = {
 };
 
 export function ShopDashboard({ initialSection }: Props) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+  const applyAlerts = useFormAlerts({
+    locale,
+    t,
+    defaultErrorFallback: t("toast.applyFailed"),
+  });
   const { data: shop, isLoading, isError, error } = useSellerShop();
   const applyShop = useApplyShop();
   const canReapply = shop?.status === "REJECTED" && !shop.isSuspended;
@@ -77,14 +84,22 @@ export function ShopDashboard({ initialSection }: Props) {
 
   const apply = async (e: FormEvent) => {
     e.preventDefault();
-    if (!documentFile) return;
-    const fd = new FormData();
-    fd.append("name", form.name);
-    fd.append("taxId", form.taxId);
-    fd.append("countryCode", form.countryCode);
-    fd.append("document", documentFile);
-    await applyShop.mutateAsync(fd);
-    setSection("overview");
+    if (!documentFile) {
+      applyAlerts.setLocalError("seller.shop.documentRequired");
+      return;
+    }
+    applyAlerts.clearAlerts();
+    try {
+      const fd = new FormData();
+      fd.append("name", form.name);
+      fd.append("taxId", form.taxId);
+      fd.append("countryCode", form.countryCode);
+      fd.append("document", documentFile);
+      await applyShop.mutateAsync(fd);
+      setSection("overview");
+    } catch (err) {
+      applyAlerts.setErrorFromApi(err);
+    }
   };
 
   if (isLoading) return <ShopCardSkeleton />;
@@ -93,7 +108,7 @@ export function ShopDashboard({ initialSection }: Props) {
     <div className="space-y-4">
       {isError && shop !== null ? (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : t("admin.common.failed")}
+          {getErrorMessage(error, t("admin.common.failed"))}
         </div>
       ) : null}
 
@@ -290,6 +305,7 @@ export function ShopDashboard({ initialSection }: Props) {
             <p>{t("seller.titles.shopDesc")}</p>
           </header>
           <form className="mq-shop-form" onSubmit={(e) => void apply(e)}>
+            <FormAlerts error={applyAlerts.error} />
             <div className="mq-shop-apply-warn" role="alert">
               <p className="mq-shop-apply-warn-title">{t("seller.shop.applyWarningTitle")}</p>
               <p className="mq-shop-apply-warn-desc">{t("seller.shop.applyTaxIdWarning")}</p>

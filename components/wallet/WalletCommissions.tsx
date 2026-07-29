@@ -14,6 +14,7 @@ import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { WalletRankProgress } from "@/components/wallet/WalletRankProgress";
 import { WalletBonusGuide } from "@/components/wallet/WalletBonusGuide";
 import { mlmRankLabel } from "@/lib/i18n/mlm-rank";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 
 const TYPES: Array<CommissionType | "ALL"> = [
@@ -81,7 +82,7 @@ function CommissionsPanel({ embedded = false }: { embedded?: boolean }) {
 
       {isError ? (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : t("wallet.loadFailed")}
+          {getErrorMessage(error, t("wallet.loadFailed"))}
         </div>
       ) : null}
 

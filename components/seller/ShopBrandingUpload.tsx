@@ -1,23 +1,22 @@
 "use client";
 
-import { ChangeEvent, useRef } from "react";
-import { toast } from "sonner";
+import { ChangeEvent, useRef, useState } from "react";
 import { useUploadShopBanner, useUploadShopLogo } from "@/lib/queries/seller";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { FormAlerts } from "@/lib/ui/form-feedback";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 const ACCEPT = "image/jpeg,image/png,image/webp,image/gif";
 const MAX_BYTES = 5 * 1024 * 1024;
 
-function validateFile(file: File, t: (key: string) => string): boolean {
+function validateFile(file: File, t: (key: string) => string): string | null {
   if (!ACCEPT.split(",").includes(file.type)) {
-    toast.error(t("toast.invalidImageType"));
-    return false;
+    return t("toast.invalidImageType");
   }
   if (file.size > MAX_BYTES) {
-    toast.error(t("toast.imageTooLarge"));
-    return false;
+    return t("toast.imageTooLarge");
   }
-  return true;
+  return null;
 }
 
 type Props = {
@@ -27,30 +26,52 @@ type Props = {
 };
 
 export function ShopBrandingUpload({ logoUrl, bannerUrl, canEdit }: Props) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const logoInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
   const uploadLogo = useUploadShopLogo();
   const uploadBanner = useUploadShopBanner();
+  const [error, setError] = useState("");
 
-  const onLogoChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const onLogoChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
-    if (!file || !validateFile(file, t)) return;
-    void uploadLogo.mutateAsync(file);
+    if (!file) return;
+    const validationError = validateFile(file, t);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    setError("");
+    try {
+      await uploadLogo.mutateAsync(file);
+    } catch (err) {
+      setError(getErrorMessage(err, t("toast.logoUploadFailed"), locale));
+    }
   };
 
-  const onBannerChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const onBannerChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
-    if (!file || !validateFile(file, t)) return;
-    void uploadBanner.mutateAsync(file);
+    if (!file) return;
+    const validationError = validateFile(file, t);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    setError("");
+    try {
+      await uploadBanner.mutateAsync(file);
+    } catch (err) {
+      setError(getErrorMessage(err, t("toast.shopBannerUploadFailed"), locale));
+    }
   };
 
   const busy = uploadLogo.isPending || uploadBanner.isPending;
 
   return (
     <div className="space-y-5">
+      <FormAlerts error={error} />
       <p className="mq-shop-hint">{t("seller.shop.mediaHint")}</p>
 
       <div className="flex flex-wrap gap-6">

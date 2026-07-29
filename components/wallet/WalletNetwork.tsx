@@ -8,6 +8,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { Container, PageHero } from "@/components/ui/shared";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 const PAGE_SIZE = 20;
 
@@ -73,7 +74,7 @@ function NetworkPanel({ embedded = false }: { embedded?: boolean }) {
       {isLoading ? <AdminCardListSkeleton count={4} /> : null}
       {isError ? (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : t("wallet.loadFailed")}
+          {getErrorMessage(error, t("wallet.loadFailed"))}
         </div>
       ) : null}
 

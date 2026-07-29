@@ -10,6 +10,7 @@ import { ApiError } from "@/lib/api/client";
 import { useFlyToCart } from "@/components/cart/FlyToCartProvider";
 import { useCart } from "@/components/providers/CartProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 export function AddToCartButton({
   product,
@@ -51,7 +52,7 @@ export function AddToCartButton({
       }
     } catch (err) {
       toast.error(
-        err instanceof ApiError ? err.message : "Could not add this product to cart.",
+        getErrorMessage(err, "Could not add this product to cart."),
       );
     } finally {
       setBusy(false);

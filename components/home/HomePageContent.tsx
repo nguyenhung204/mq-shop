@@ -7,6 +7,7 @@ import { catalogApi } from "@/lib/api";
 import { mapListingCard } from "@/lib/api/mapProduct";
 import type { ApiCategory } from "@/lib/api/types";
 import type { Product } from "@/lib/data/products";
+import { getErrorMessage } from "@/lib/queries/utils";
 import { categoryImages, miscImages } from "@/lib/images";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { HeroSlider } from "@/components/home/HeroSlider";
@@ -56,7 +57,7 @@ export function HomePageContent() {
       })
       .catch((err: unknown) => {
         setListing([]);
-        setError(err instanceof Error ? err.message : t("home.loadProductsFailed"));
+        setError(getErrorMessage(err, t("home.loadProductsFailed")));
       })
       .finally(() => setLoadingProducts(false));
   }, [t]);

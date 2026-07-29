@@ -19,6 +19,8 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateRoles, translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
+import { getErrorMessage } from "@/lib/queries/utils";
+import { FormAlerts, useFormAlerts } from "@/lib/ui/form-feedback";
 
 const STATUS_FILTERS = ["", "ACTIVE", "PENDING", "LOCKED", "DELETED"] as const;
 
@@ -30,7 +32,7 @@ function statusBadgeClass(status: string | undefined): string {
 }
 
 function PlatformStaffInner() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { hasRole } = useAuth();
   const isSuperAdmin = hasRole("SUPER_ADMIN");
   const [statusFilter, setStatusFilter] = useState("");
@@ -45,6 +47,8 @@ function PlatformStaffInner() {
 
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
+  const createAlerts = useFormAlerts({ locale, t });
+  const editAlerts = useFormAlerts({ locale, t });
 
   const { data, isLoading, isError, error } = useAdminPlatformStaffList({
     status: statusFilter || undefined,
@@ -62,6 +66,7 @@ function PlatformStaffInner() {
     setCreateOpen(false);
     setEmail("");
     setFullName("");
+    createAlerts.clearAlerts();
   };
 
   useEffect(() => {
@@ -78,6 +83,7 @@ function PlatformStaffInner() {
 
   const onCreate = async (e: FormEvent) => {
     e.preventDefault();
+    createAlerts.clearAlerts();
     try {
       const res = await createStaff.mutateAsync({
         email: email.trim(),
@@ -94,12 +100,13 @@ function PlatformStaffInner() {
         setPendingNotice(true);
         toast.message(t("admin.platformStaff.pendingNotice"));
       }
-    } catch {
-      /* toast */
+    } catch (err) {
+      createAlerts.setErrorFromApi(err);
     }
   };
 
   const onReaffirmRoles = async (u: AuthUser) => {
+    editAlerts.clearAlerts();
     try {
       const user = await updateRoles.mutateAsync({
         userId: u.id,
@@ -110,8 +117,8 @@ function PlatformStaffInner() {
         setPendingNotice(true);
         toast.message(t("admin.platformStaff.pendingNotice"));
       }
-    } catch {
-      /* toast */
+    } catch (err) {
+      editAlerts.setErrorFromApi(err);
     }
   };
 
@@ -145,7 +152,7 @@ function PlatformStaffInner() {
       <div className="space-y-6">
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : t("admin.common.failed")}
+            {getErrorMessage(error, t("admin.common.failed"))}
           </div>
         )}
         {pendingNotice ? (
@@ -293,6 +300,7 @@ function PlatformStaffInner() {
               </button>
             </div>
             <form className="mq-admin-modal-body space-y-3" onSubmit={(e) => void onCreate(e)}>
+              <FormAlerts error={createAlerts.error} />
               <p className="text-xs text-mq-text-muted">{t("admin.platformStaff.createHint")}</p>
               <div>
                 <label className="block text-xs font-medium text-mq-text-muted mb-1.5">
@@ -381,6 +389,7 @@ function PlatformStaffInner() {
               </button>
             </div>
             <div className="mq-admin-modal-body space-y-3">
+              <FormAlerts error={editAlerts.error} />
               <p className="text-sm text-mq-text-secondary">
                 {t("admin.platformStaff.reaffirmHint")}
               </p>

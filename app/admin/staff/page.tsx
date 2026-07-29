@@ -22,6 +22,8 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateRoles, translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
+import { getErrorMessage } from "@/lib/queries/utils";
+import { FormAlerts, useFormAlerts } from "@/lib/ui/form-feedback";
 
 const STAFF_ROLES: StaffRole[] = ["WAREHOUSE", "CS", "ACCOUNTANT"];
 const POOL_FILTERS: StaffPoolRole[] = ["BUYER", "WAREHOUSE", "CS", "ACCOUNTANT"];
@@ -53,7 +55,7 @@ function statusBadgeClass(status: string | undefined): string {
 }
 
 function StaffInner() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { hasRole } = useAuth();
   const isSuperAdmin = hasRole("SUPER_ADMIN");
   const [shopFilter, setShopFilter] = useState("");
@@ -74,7 +76,8 @@ function StaffInner() {
   const [role, setRole] = useState<StaffRole>("WAREHOUSE");
   const [shopId, setShopId] = useState("");
   const [assignRole, setAssignRole] = useState<StaffRole>("WAREHOUSE");
-  const [assignShopId, setAssignShopId] = useState("");
+  const createAlerts = useFormAlerts({ locale, t });
+  const assignAlerts = useFormAlerts({ locale, t });
 
   const { data: shopsPage } = useAdminShops("APPROVED", 1, 100);
   const shops = shopsPage?.items ?? [];
@@ -123,12 +126,14 @@ function StaffInner() {
     setFullName("");
     setRole("WAREHOUSE");
     setShopId("");
+    createAlerts.clearAlerts();
   };
 
   const closeAssign = () => {
     setAssignOpen(null);
     setAssignRole("WAREHOUSE");
     setAssignShopId("");
+    assignAlerts.clearAlerts();
   };
 
   useEffect(() => {
@@ -145,6 +150,7 @@ function StaffInner() {
 
   const onCreate = async (e: FormEvent) => {
     e.preventDefault();
+    createAlerts.clearAlerts();
     try {
       const res = await createStaff.mutateAsync({
         email: email.trim(),
@@ -162,8 +168,8 @@ function StaffInner() {
         setPendingNotice(true);
         toast.message(t("admin.staffPage.pendingNotice"));
       }
-    } catch {
-      /* toast in mutation */
+    } catch (err) {
+      createAlerts.setErrorFromApi(err);
     }
   };
 
@@ -176,8 +182,9 @@ function StaffInner() {
   const onAssign = async (e: FormEvent) => {
     e.preventDefault();
     if (!assignOpen) return;
+    assignAlerts.clearAlerts();
     if (!assignShopId) {
-      toast.error(t("admin.staffPage.shopRequired"));
+      assignAlerts.setLocalError("admin.staffPage.shopRequired");
       return;
     }
     try {
@@ -194,8 +201,8 @@ function StaffInner() {
         setPendingNotice(true);
         toast.message(t("admin.staffPage.pendingNotice"));
       }
-    } catch {
-      /* toast */
+    } catch (err) {
+      assignAlerts.setErrorFromApi(err);
     }
   };
 
@@ -229,7 +236,7 @@ function StaffInner() {
       <div className="space-y-6">
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : t("admin.common.failed")}
+            {getErrorMessage(error, t("admin.common.failed"))}
           </div>
         )}
         {pendingNotice ? (
@@ -319,6 +326,7 @@ function StaffInner() {
                 {items.map((u) => {
                   const candidate = isBuyerCandidate(u);
                   const pending = hasPendingStaffChange(u);
+                  const isLocked = u.status === "LOCKED";
                   return (
                     <tr key={u.id} className="border-t border-mq-border">
                       <td className="p-3">{u.email}</td>
@@ -393,7 +401,7 @@ function StaffInner() {
                                 label={t("admin.common.lock")}
                                 icon={Lock}
                                 tone="warn"
-                                disabled={accountAction.isPending}
+                                disabled={accountAction.isPending || isLocked}
                                 onClick={() =>
                                   setPending({ userId: u.id, email: u.email, kind: "lock" })
                                 }
@@ -402,7 +410,7 @@ function StaffInner() {
                                 label={t("admin.common.unlock")}
                                 icon={Unlock}
                                 tone="approve"
-                                disabled={accountAction.isPending}
+                                disabled={accountAction.isPending || !isLocked}
                                 onClick={() =>
                                   void accountAction.mutateAsync({
                                     userId: u.id,
@@ -462,6 +470,7 @@ function StaffInner() {
               </button>
             </div>
             <form className="mq-admin-modal-body space-y-3" onSubmit={(e) => void onCreate(e)}>
+              <FormAlerts error={createAlerts.error} />
               <p className="text-xs text-mq-text-muted">
                 {t("admin.staffPage.createHint")}
               </p>
@@ -579,6 +588,7 @@ function StaffInner() {
               </button>
             </div>
             <form className="mq-admin-modal-body space-y-3" onSubmit={(e) => void onAssign(e)}>
+              <FormAlerts error={assignAlerts.error} />
               <div>
                 <label className="block text-xs font-medium text-mq-text-muted mb-1.5">
                   {t("admin.staffPage.role")}

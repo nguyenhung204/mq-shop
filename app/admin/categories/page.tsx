@@ -9,11 +9,13 @@ import { getErrorMessage } from "@/lib/queries/utils";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { FormAlerts, useFormAlerts } from "@/lib/ui/form-feedback";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 
 function CategoriesInner() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const queryClient = useQueryClient();
+  const formAlerts = useFormAlerts({ locale, t, defaultErrorFallback: t("admin.common.failed") });
   const [form, setForm] = useState({ name: "", nameVi: "", slug: "", parentId: "" });
   const [editing, setEditing] = useState<ApiCategory | null>(null);
 
@@ -34,8 +36,8 @@ function CategoriesInner() {
       void queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
       toast.success("Category created");
       setForm({ name: "", nameVi: "", slug: "", parentId: "" });
+      formAlerts.clearAlerts();
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
   });
 
   const updateCat = useMutation({
@@ -50,14 +52,19 @@ function CategoriesInner() {
       toast.success("Category updated");
       setEditing(null);
       setForm({ name: "", nameVi: "", slug: "", parentId: "" });
+      formAlerts.clearAlerts();
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
   });
 
-  const submit = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (editing) void updateCat.mutateAsync();
-    else void createCat.mutateAsync();
+    formAlerts.clearAlerts();
+    try {
+      if (editing) await updateCat.mutateAsync();
+      else await createCat.mutateAsync();
+    } catch (err) {
+      formAlerts.setErrorFromApi(err);
+    }
   };
 
   return (
@@ -69,11 +76,14 @@ function CategoriesInner() {
       <div className="space-y-6">
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : t("admin.common.failed")}
+            {getErrorMessage(error, t("admin.common.failed"))}
           </div>
         )}
 
-        <form className="mq-card p-5 grid sm:grid-cols-2 gap-3 max-w-3xl" onSubmit={submit}>
+        <form className="mq-card p-5 grid sm:grid-cols-2 gap-3 max-w-3xl" onSubmit={(e) => void submit(e)}>
+          <div className="sm:col-span-2">
+            <FormAlerts error={formAlerts.error} />
+          </div>
           <h2 className="sm:col-span-2 text-lg">
             {editing ? `${t("admin.common.edit")} ${editing.id}` : t("admin.categoriesPage.create")}
           </h2>

@@ -12,6 +12,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { PaginationBar } from "@/components/ui/PaginationBar";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 const STATUSES: Array<SettlementStatus | ""> = [
   "",
@@ -130,7 +131,7 @@ function SettlementsInner() {
         {isLoading && <AdminCardListSkeleton count={6} />}
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : t("admin.common.failed")}
+            {getErrorMessage(error, t("admin.common.failed"))}
           </div>
         )}
         {!isLoading && items.length === 0 && !isError && (

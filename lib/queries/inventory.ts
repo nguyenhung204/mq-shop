@@ -203,7 +203,6 @@ export function useCreateWarehouse() {
       invalidate();
       toast.success(tt("toast.warehouseCreated"));
     },
-    onError: (e) => toast.error(inventoryErrorMessage(e, tt("toast.createWarehouseFailed"))),
   });
 }
 
@@ -215,7 +214,6 @@ export function useCreateVariant() {
       invalidate();
       toast.success(tt("toast.skuCreated"));
     },
-    onError: (e) => toast.error(inventoryErrorMessage(e, tt("toast.createSkuFailed"))),
   });
 }
 

@@ -35,6 +35,7 @@ import {
 import { SlipDetailBody } from "@/components/inventory/SlipDetailBody";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 type TabId = "warehouses" | "variants" | "slips" | "ledger";
 
@@ -137,7 +138,7 @@ function WarehousesTab() {
 
       {isError && (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : t("admin.common.failed")}
+          {getErrorMessage(error, t("admin.common.failed"))}
         </div>
       )}
       {isLoading ? (
@@ -336,7 +337,7 @@ function VariantsTab() {
 
       {isError && (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : t("admin.common.failed")}
+          {getErrorMessage(error, t("admin.common.failed"))}
         </div>
       )}
       {isLoading ? (
@@ -632,7 +633,7 @@ function SlipsTab() {
 
       {isError && (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : t("admin.common.failed")}
+          {getErrorMessage(error, t("admin.common.failed"))}
         </div>
       )}
       {isLoading ? (
@@ -735,9 +736,7 @@ function SlipsTab() {
                           loading={detailQuery.isLoading}
                           error={
                             detailQuery.isError
-                              ? detailQuery.error instanceof Error
-                                ? detailQuery.error.message
-                                : t("admin.common.failed")
+                              ? getErrorMessage(detailQuery.error, t("admin.common.failed"))
                               : null
                           }
                         />
@@ -814,7 +813,7 @@ function LedgerTab() {
 
       {isError && (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : t("admin.common.failed")}
+          {getErrorMessage(error, t("admin.common.failed"))}
         </div>
       )}
       {isLoading ? (

@@ -15,6 +15,7 @@ import {
   useReviewReply,
 } from "@/lib/queries/reviews";
 import type { ProductReview } from "@/lib/api/reviews";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 function SellerProductReviews({
   productId,
@@ -53,7 +54,7 @@ function SellerProductReviews({
       </div>
       {isError ? (
         <div className="mq-alert mq-alert-error text-sm">
-          {error instanceof Error ? error.message : t("admin.common.failed")}
+          {getErrorMessage(error, t("admin.common.failed"))}
         </div>
       ) : null}
       {isLoading ? (
@@ -184,7 +185,7 @@ function SellerReviewsInner() {
 
       {isError ? (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : t("admin.common.failed")}
+          {getErrorMessage(error, t("admin.common.failed"))}
         </div>
       ) : null}
 

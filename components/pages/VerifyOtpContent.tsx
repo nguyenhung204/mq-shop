@@ -2,32 +2,45 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { AuthPanel } from "@/components/auth/AuthPanel";
 import { OtpCountdown } from "@/components/auth/OtpCountdown";
 import { authApi } from "@/lib/api/auth";
-import { ApiError, setTokens } from "@/lib/api/client";
+import { setTokens } from "@/lib/api/client";
 import { postAuthPath } from "@/lib/auth/routes";
+import { getErrorMessage } from "@/lib/queries/utils";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export function VerifyOtpContent() {
+  const { t, locale } = useLanguage();
   const searchParams = useSearchParams();
   const router = useRouter();
   const { setUser } = useAuth();
   const [email, setEmail] = useState(searchParams.get("email") || "");
   const [code, setCode] = useState("");
-  const [error, setError] = useState("");
-  const [ok, setOk] = useState("");
+  const [apiError, setApiError] = useState<{ err: unknown; fallbackKey: string } | null>(null);
+  const [localErrorKey, setLocalErrorKey] = useState<string | null>(null);
+  const [okKey, setOkKey] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const [timerKey, setTimerKey] = useState(0);
   const [expired, setExpired] = useState(false);
 
+  const error = useMemo(() => {
+    if (localErrorKey) return t(localErrorKey);
+    if (apiError) return getErrorMessage(apiError.err, t(apiError.fallbackKey), locale);
+    return "";
+  }, [localErrorKey, apiError, locale, t]);
+
+  const ok = useMemo(() => (okKey ? t(okKey) : ""), [okKey, t]);
+
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError("");
+    setApiError(null);
+    setLocalErrorKey(null);
     if (expired) {
-      setError("OTP expired. Please resend a new code.");
+      setLocalErrorKey("account.forgot.otpExpired");
       return;
     }
     setBusy(true);
@@ -39,28 +52,25 @@ export function VerifyOtpContent() {
       router.replace(postAuthPath(data?.user));
     } catch (err) {
       setRedirecting(false);
-      const codeName = err instanceof ApiError ? err.code : null;
-      if (codeName === "INVALID_OTP") setError("Invalid or expired OTP.");
-      else if (codeName === "REGISTRATION_NOT_FOUND")
-        setError("Registration session expired. Please register again.");
-      else setError(err instanceof ApiError ? err.message : "Verification failed");
+      setApiError({ err, fallbackKey: "toast.verificationFailed" });
     } finally {
       setBusy(false);
     }
   };
 
   const onResend = async () => {
-    setError("");
-    setOk("");
+    setApiError(null);
+    setLocalErrorKey(null);
+    setOkKey(null);
     setBusy(true);
     try {
       await authApi.resendOtp({ email });
-      setOk("OTP resent. The new code is valid for 10 minutes.");
+      setOkKey("account.verifyOtp.otpResent");
       setCode("");
       setExpired(false);
       setTimerKey((key) => key + 1);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Resend failed");
+      setApiError({ err, fallbackKey: "toast.resendFailed" });
     } finally {
       setBusy(false);
     }
@@ -68,14 +78,16 @@ export function VerifyOtpContent() {
 
   return (
     <AuthPanel
-      title="Verify email"
-      description="Enter the 6-digit code we sent to your email."
-      asideTitle="Almost there"
-      asideText="One quick code to confirm your email and activate your MQ account."
-      footer={<Link href="/my-account">Back to login</Link>}
+      title={t("account.verifyOtp.title")}
+      description={t("account.verifyOtp.description")}
+      asideTitle={t("account.verifyOtp.asideTitle")}
+      asideText={t("account.verifyOtp.asideText")}
+      footer={<Link href="/my-account">{t("account.backToLogin")}</Link>}
     >
       {redirecting ? (
-        <p className="py-8 text-center text-sm text-mq-text-muted">Signing in…</p>
+        <p className="py-8 text-center text-sm text-mq-text-muted">
+          {t("account.verifyOtp.signingIn")}
+        </p>
       ) : (
         <>
           {error && <div className="mq-alert mq-alert-error">{error}</div>}
@@ -83,7 +95,7 @@ export function VerifyOtpContent() {
           <OtpCountdown resetKey={timerKey} onExpireChange={setExpired} />
           <form className="mq-auth-actions flex w-full flex-col gap-2.5" onSubmit={onSubmit}>
             <div className="mq-auth-field">
-              <label htmlFor="otp-email">Email</label>
+              <label htmlFor="otp-email">{t("account.emailAddress")}</label>
               <input
                 id="otp-email"
                 type="email"
@@ -94,7 +106,7 @@ export function VerifyOtpContent() {
               />
             </div>
             <div className="mq-auth-field">
-              <label htmlFor="otp-code">OTP code</label>
+              <label htmlFor="otp-code">{t("account.verifyOtp.otpCode")}</label>
               <input
                 id="otp-code"
                 className="mq-input"
@@ -112,7 +124,7 @@ export function VerifyOtpContent() {
               className="mq-btn mq-btn-primary w-full"
               disabled={busy || expired || code.length !== 6}
             >
-              Verify
+              {t("account.verifyOtp.verify")}
             </button>
             <button
               type="button"
@@ -120,7 +132,7 @@ export function VerifyOtpContent() {
               disabled={busy || !email}
               onClick={() => void onResend()}
             >
-              Resend OTP
+              {t("account.verifyOtp.resendOtp")}
             </button>
           </form>
         </>
