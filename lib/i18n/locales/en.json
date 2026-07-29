@@ -1451,7 +1451,16 @@
       "range12m": "12 months",
       "comparePrevious": "Compare previous",
       "currentPeriod": "Current",
-      "previousPeriod": "Previous"
+      "previousPeriod": "Previous",
+      "topProducts": "Top Products",
+      "topProductsDesc": "Ranked by quantity sold",
+      "quantity": "Qty",
+      "totalRevenue": "Revenue",
+      "range7dShort": "7D",
+      "range30dShort": "30D",
+      "range90d": "90 days",
+      "range90dShort": "90D",
+      "noProducts": "No products sold yet."
     },
     "shop": {
       "sectionsAria": "Shop sections",

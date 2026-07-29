@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { catalogApi, cmsApi, sellerApi, sellerDashboardApi, shopApi } from "@/lib/api";
 import { ApiError } from "@/lib/api/client";
-import type { RevenueChartRange } from "@/lib/api/seller-dashboard";
+import type { RevenueChartRange, TopProductsRange } from "@/lib/api/seller-dashboard";
 import type {
   AddProductVariantRequest,
   ApiCategory,
@@ -34,6 +34,8 @@ export const sellerKeys = {
     [...sellerKeys.all, "dashboard", threshold] as const,
   revenueChart: (range?: string, compare?: boolean) =>
     [...sellerKeys.all, "revenueChart", range, compare] as const,
+  topProducts: (range?: string, limit?: number) =>
+    [...sellerKeys.all, "topProducts", range, limit] as const,
 };
 
 export type MarketingMaterialFolder = {
@@ -73,6 +75,14 @@ export function useSellerRevenueChart(
   return useQuery({
     queryKey: sellerKeys.revenueChart(range, comparePrevious),
     queryFn: () => sellerDashboardApi.revenueChart({ range, comparePrevious }),
+    staleTime: 5 * 60_000,
+  });
+}
+
+export function useSellerTopProducts(range?: TopProductsRange, limit = 10) {
+  return useQuery({
+    queryKey: sellerKeys.topProducts(range, limit),
+    queryFn: () => sellerDashboardApi.topProducts({ range, limit }),
     staleTime: 5 * 60_000,
   });
 }

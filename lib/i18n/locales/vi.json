@@ -1451,7 +1451,16 @@
       "range12m": "12 tháng",
       "comparePrevious": "So sánh kỳ trước",
       "currentPeriod": "Kỳ này",
-      "previousPeriod": "Kỳ trước"
+      "previousPeriod": "Kỳ trước",
+      "topProducts": "Sản phẩm bán chạy",
+      "topProductsDesc": "Xếp hạng theo số lượng bán",
+      "quantity": "Số lượng",
+      "totalRevenue": "Doanh thu",
+      "range7dShort": "7N",
+      "range30dShort": "30N",
+      "range90d": "90 ngày",
+      "range90dShort": "90N",
+      "noProducts": "Chưa có sản phẩm bán ra."
     },
     "shop": {
       "sectionsAria": "Mục shop",

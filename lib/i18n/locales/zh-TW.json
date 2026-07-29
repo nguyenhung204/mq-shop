@@ -1451,7 +1451,16 @@
       "range12m": "12 個月",
       "comparePrevious": "對比前期",
       "currentPeriod": "本期",
-      "previousPeriod": "前期"
+      "previousPeriod": "前期",
+      "topProducts": "熱銷商品",
+      "topProductsDesc": "依銷售量排名",
+      "quantity": "數量",
+      "totalRevenue": "營收",
+      "range7dShort": "7天",
+      "range30dShort": "30天",
+      "range90d": "90 天",
+      "range90dShort": "90天",
+      "noProducts": "尚無商品售出。"
     },
     "shop": {
       "sectionsAria": "商店區塊",

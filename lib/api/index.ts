@@ -68,6 +68,9 @@ export type {
   RevenueChartRange,
   RevenueTimePoint,
   RevenueChartPayload,
+  TopProductsRange,
+  TopProductItem,
+  TopProductsPayload,
 } from "./seller-dashboard";
 export {
   ADMIN_DASHBOARD_QUEUE_ORDER,

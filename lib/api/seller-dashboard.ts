@@ -66,6 +66,26 @@ export interface RevenueChartPayload {
 }
 
 // ---------------------------------------------------------------------------
+// Top Products types
+// ---------------------------------------------------------------------------
+
+export type TopProductsRange = "7d" | "30d" | "90d";
+
+export interface TopProductItem {
+  productId: string;
+  title: string;
+  totalQuantity: number;
+  totalRevenue: string;
+  thumbnailUrl: string | null;
+}
+
+export interface TopProductsPayload {
+  range: string;
+  items: TopProductItem[];
+  generatedAt: string;
+}
+
+// ---------------------------------------------------------------------------
 // API
 // ---------------------------------------------------------------------------
 
@@ -92,5 +112,15 @@ export const sellerDashboardApi = {
     if (params?.range) query.range = params.range;
     if (params?.comparePrevious) query.comparePrevious = "true";
     return api.get<RevenueChartPayload>("/seller/dashboard/revenue-chart", { query });
+  },
+
+  topProducts: async (params?: {
+    range?: TopProductsRange;
+    limit?: number;
+  }): Promise<TopProductsPayload> => {
+    const query: Record<string, string | number> = {};
+    if (params?.range) query.range = params.range;
+    if (params?.limit) query.limit = params.limit;
+    return api.get<TopProductsPayload>("/seller/dashboard/top-products", { query });
   },
 };
