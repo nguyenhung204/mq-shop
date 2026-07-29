@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { catalogApi, cmsApi, sellerApi, shopApi } from "@/lib/api";
+import { catalogApi, cmsApi, sellerApi, sellerDashboardApi, shopApi } from "@/lib/api";
 import { ApiError } from "@/lib/api/client";
 import type {
   AddProductVariantRequest,
@@ -29,6 +29,8 @@ export const sellerKeys = {
   categories: () => [...sellerKeys.all, "categories"] as const,
   shop: () => [...sellerKeys.all, "shop"] as const,
   materials: () => [...sellerKeys.all, "materials"] as const,
+  dashboard: (threshold?: number) =>
+    [...sellerKeys.all, "dashboard", threshold] as const,
 };
 
 export type MarketingMaterialFolder = {
@@ -45,6 +47,19 @@ export function useMarketingMaterials(page = 1, pageSize = 20) {
       parsePage<import("@/lib/api/promotions").MarketingFolder>(
         await cmsApi.folders({ page, pageSize }),
       ),
+  });
+}
+
+export function useSellerDashboard(lowStockThreshold?: number) {
+  return useQuery({
+    queryKey: sellerKeys.dashboard(lowStockThreshold),
+    queryFn: () =>
+      sellerDashboardApi.get({
+        sections: ["summary", "lowStock"],
+        lowStockThreshold,
+      }),
+    staleTime: 60_000,
+    refetchOnWindowFocus: true,
   });
 }
 
