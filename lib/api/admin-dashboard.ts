@@ -106,6 +106,74 @@ export function normalizeDashboardHref(
   return QUEUE_HREF_FALLBACKS[key];
 }
 
+// ---------------------------------------------------------------------------
+// Chart types (Section 9 — Admin Dashboard Charts)
+// ---------------------------------------------------------------------------
+
+export type AdminChartRange = "7d" | "30d" | "12m";
+export type TopShopsRange = "7d" | "30d" | "90d";
+
+export interface GmvTimePoint {
+  date: string;
+  gmv: string;
+  orderCount: number;
+}
+
+export interface GmvChartPayload {
+  range: string;
+  groupBy: "day" | "month";
+  current: GmvTimePoint[];
+  generatedAt: string;
+}
+
+export interface OrdersTimePoint {
+  date: string;
+  count: number;
+}
+
+export interface OrdersChartPayload {
+  range: string;
+  groupBy: "day" | "month";
+  current: OrdersTimePoint[];
+  generatedAt: string;
+}
+
+export interface OrderStatusItem {
+  status: string;
+  count: number;
+}
+
+export interface OrderStatusPayload {
+  range: string;
+  distribution: OrderStatusItem[];
+  generatedAt: string;
+}
+
+export interface TopShopItem {
+  shopId: string;
+  shopName: string;
+  revenue: string;
+  orderCount: number;
+}
+
+export interface TopShopsPayload {
+  range: string;
+  items: TopShopItem[];
+  generatedAt: string;
+}
+
+export interface NewUsersTimePoint {
+  date: string;
+  count: number;
+}
+
+export interface NewUsersChartPayload {
+  range: string;
+  groupBy: "day" | "month";
+  current: NewUsersTimePoint[];
+  generatedAt: string;
+}
+
 export const adminDashboardApi = {
   get: async (sections: AdminDashboardSection[] | string = ["queues", "snapshot"]) => {
     const sectionsParam = Array.isArray(sections) ? sections.join(",") : sections;
@@ -113,5 +181,39 @@ export const adminDashboardApi = {
       query: { sections: sectionsParam },
     });
     return unwrapDashboardPayload(res);
+  },
+
+  gmvChart: async (range?: AdminChartRange): Promise<GmvChartPayload> => {
+    const query: Record<string, string> = {};
+    if (range) query.range = range;
+    return api.get<GmvChartPayload>("/admin/dashboard/gmv-chart", { query });
+  },
+
+  ordersChart: async (range?: AdminChartRange): Promise<OrdersChartPayload> => {
+    const query: Record<string, string> = {};
+    if (range) query.range = range;
+    return api.get<OrdersChartPayload>("/admin/dashboard/orders-chart", { query });
+  },
+
+  orderStatus: async (range?: AdminChartRange): Promise<OrderStatusPayload> => {
+    const query: Record<string, string> = {};
+    if (range) query.range = range;
+    return api.get<OrderStatusPayload>("/admin/dashboard/order-status", { query });
+  },
+
+  topShops: async (params?: {
+    range?: TopShopsRange;
+    limit?: number;
+  }): Promise<TopShopsPayload> => {
+    const query: Record<string, string | number> = {};
+    if (params?.range) query.range = params.range;
+    if (params?.limit) query.limit = params.limit;
+    return api.get<TopShopsPayload>("/admin/dashboard/top-shops", { query });
+  },
+
+  newUsersChart: async (range?: AdminChartRange): Promise<NewUsersChartPayload> => {
+    const query: Record<string, string> = {};
+    if (range) query.range = range;
+    return api.get<NewUsersChartPayload>("/admin/dashboard/new-users-chart", { query });
   },
 };

@@ -56,6 +56,18 @@ export type {
   AdminDashboardSnapshot,
   AdminDashboardPayload,
   AdminDashboardSection,
+  AdminChartRange,
+  TopShopsRange,
+  GmvTimePoint,
+  GmvChartPayload,
+  OrdersTimePoint,
+  OrdersChartPayload,
+  OrderStatusItem,
+  OrderStatusPayload,
+  TopShopItem,
+  TopShopsPayload,
+  NewUsersTimePoint,
+  NewUsersChartPayload,
 } from "./admin-dashboard";
 export { sellerDashboardApi } from "./seller-dashboard";
 export type {
