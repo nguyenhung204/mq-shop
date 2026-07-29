@@ -24,7 +24,7 @@ import { getErrorMessage } from "@/lib/queries/utils";
 
 function RmaInner() {
   const { t } = useLanguage();
-  const [status, setStatus] = useState<RmaStatus | "">("PENDING");
+  const [status, setStatus] = useState<RmaStatus | "">("");
   const [rejectId, setRejectId] = useState<string | null>(null);
   const [refundId, setRefundId] = useState<string | null>(null);
   const { data, isLoading, isError, error } = useAdminRma(status || undefined);

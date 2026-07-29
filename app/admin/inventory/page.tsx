@@ -75,7 +75,7 @@ function slipItemsSummary(
 
 function SlipsTab() {
   const { t } = useLanguage();
-  const [status, setStatus] = useState<InventorySlipStatus | "">("PENDING");
+  const [status, setStatus] = useState<InventorySlipStatus | "">("");
   const [page, setPage] = useState(1);
   const [detailId, setDetailId] = useState<string | null>(null);
   const { data, isLoading, isError, error } = useAdminInventorySlips({

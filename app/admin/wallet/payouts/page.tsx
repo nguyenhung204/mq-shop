@@ -62,7 +62,7 @@ function WalletPayoutsInner() {
     hasRole("ACCOUNTANT") ||
     hasRole("SUPER_ADMIN");
 
-  const [status, setStatus] = useState<PayoutRequestStatus | "">("PENDING");
+  const [status, setStatus] = useState<PayoutRequestStatus | "">("");
   const [userId, setUserId] = useState("");
   const [page, setPage] = useState(1);
   const [rejectId, setRejectId] = useState<string | null>(null);
