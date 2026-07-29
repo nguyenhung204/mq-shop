@@ -125,13 +125,13 @@ function SummarySection({
       <KpiCard
         label={t("seller.dashboard.rmaRate")}
         value={
-          summary.rmaRate.rmaRatePercent !== null
+          summary.rmaRate?.rmaRatePercent != null
             ? `${summary.rmaRate.rmaRatePercent.toFixed(1)}%`
             : t("seller.dashboard.growthNA")
         }
         icon={RotateCcw}
         sub={
-          summary.rmaRate.rmaRatePercent !== null && summary.rmaRate.rmaRatePercent > 5 ? (
+          summary.rmaRate?.rmaRatePercent != null && summary.rmaRate.rmaRatePercent > 5 ? (
             <span className="text-xs text-red-500 font-medium">
               {t("seller.dashboard.rmaWarning")}
             </span>

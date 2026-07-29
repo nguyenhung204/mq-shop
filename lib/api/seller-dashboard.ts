@@ -19,7 +19,7 @@ export interface DashboardSummary {
   cancelledOrders: number;
   pendingOrders: number;
   processingOrders: number;
-  rmaRate: RmaRateResult;
+  rmaRate?: RmaRateResult;
 }
 
 export interface LowStockItem {
