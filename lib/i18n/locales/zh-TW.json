@@ -284,6 +284,8 @@
     }
   },
   "orders": {
+    "loadFailed": "無法載入訂單。",
+    "loadDetailFailed": "無法載入訂單詳情。",
     "review": {
       "write": "撰寫評價",
       "edit": "編輯評價",
@@ -327,6 +329,31 @@
       "resetFailed": "無法重設密碼，請再試一次。"
     },
     "backToLogin": "返回登入",
+    "loginPage": {
+      "description": "歡迎回來，登入以繼續購物。",
+      "asideTitle": "歡迎回來",
+      "asideText": "從上次離開的地方繼續 — 願望清單、訂單與優惠等著您。",
+      "signingIn": "登入中…",
+      "emailLabel": "電子郵件"
+    },
+    "registerPage": {
+      "description": "建立帳號以更快結帳並追蹤訂單。",
+      "asideTitle": "加入 MQ",
+      "asideText": "建立帳號，享受更輕鬆的購物體驗。",
+      "fullName": "姓名",
+      "referralCode": "推薦碼：{code}"
+    },
+    "verifyOtp": {
+      "title": "驗證電子郵件",
+      "description": "輸入我們寄到您信箱的 6 位數驗證碼。",
+      "asideTitle": "快完成了",
+      "asideText": "確認電子郵件以啟用 MQ 帳號。",
+      "signingIn": "登入中…",
+      "verify": "驗證",
+      "resendOtp": "重新寄送 OTP",
+      "otpResent": "已重新寄送 OTP，新驗證碼 10 分鐘內有效。",
+      "otpCode": "OTP 驗證碼"
+    },
     "noAccount": "還沒有帳號？",
     "haveAccount": "已經有帳號？",
     "myProfile": "我的個人資料",
@@ -383,8 +410,10 @@
       "profileUpdated": "個人資料已更新。",
       "dsarSubmitted": "已送出刪除申請。",
       "passwordTooShort": "密碼至少需要 8 個字元。",
+      "passwordUpdatedRedirect": "密碼已更新成功，正在前往登入頁…",
       "otpSent": "OTP 已寄至新電子郵件。",
-      "emailUpdated": "電子郵件已更新。"
+      "emailUpdated": "電子郵件已更新。",
+      "signedOut": "已登出。"
     },
     "links": {
       "orders": "訂單",
@@ -1283,6 +1312,7 @@
       "applyWarningTitle": "重要提醒",
       "applyTaxIdWarning": "提交前請自行仔細核對稅籍編號是否正確，您須對所填資訊負責。",
       "applyTaxIdHint": "輸入 1–15 位數字，請與商業登記文件核對。",
+      "documentRequired": "請上傳營業文件。",
       "logo": "Logo",
       "banner": "橫幅",
       "noLogo": "尚無 Logo",
@@ -1606,6 +1636,20 @@
   },
   "toast": {
     "somethingWentWrong": "發生錯誤",
+    "invalidCredentials": "電子郵件或密碼不正確。",
+    "incorrectPassword": "目前密碼不正確。",
+    "accountLocked": "此帳號已被鎖定。",
+    "sessionExpired": "工作階段已過期，請重新登入。",
+    "emailAlreadyInUse": "此電子郵件已被使用。",
+    "tooManyRequests": "嘗試次數過多，請稍後再試。",
+    "registrationNotFound": "註冊工作階段已過期，請重新註冊。",
+    "registrationFailed": "註冊失敗。",
+    "verificationFailed": "驗證失敗。",
+    "resendFailed": "無法重新寄送 OTP。",
+    "taxIdTaken": "此稅籍編號已被註冊。",
+    "shopNameTaken": "此商店名稱已被使用。",
+    "productNotFound": "找不到商品。",
+    "orderNotFound": "找不到訂單。",
     "promoSubmitted": "促銷已送審",
     "promoCreated": "已建立促銷",
     "promoUpdated": "已更新促銷",

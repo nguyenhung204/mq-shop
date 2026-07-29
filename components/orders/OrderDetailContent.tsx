@@ -25,6 +25,7 @@ import { Container, PageHero } from "@/components/ui/shared";
 import { OrderDetailSkeleton } from "@/components/ui/Skeleton";
 
 import { PRODUCT_FALLBACK_IMAGE } from "@/lib/images";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 const FALLBACK_IMAGE = PRODUCT_FALLBACK_IMAGE;
 
@@ -168,7 +169,7 @@ function OrderDetailInner() {
         {isLoading && <OrderDetailSkeleton />}
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : "Failed to load"}
+            {getErrorMessage(error, t("orders.loadDetailFailed"))}
           </div>
         )}
         {order && (

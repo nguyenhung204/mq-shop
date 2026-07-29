@@ -17,8 +17,8 @@ import {
   Wallet,
 } from "lucide-react";
 import { authApi } from "@/lib/api/auth";
-import { ApiError } from "@/lib/api/client";
 import type { AuthUser } from "@/lib/api/types";
+import { getErrorMessage } from "@/lib/queries/utils";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -29,6 +29,8 @@ import { Container } from "@/components/ui/shared";
 import "./account.css";
 
 type AccountSection = "profile" | "password" | "email" | "privacy" | "links";
+
+const PASSWORD_REDIRECT_DELAY_MS = 1500;
 
 function userInitials(user: AuthUser | null | undefined): string {
   const name = user?.fullName?.trim();
@@ -58,7 +60,7 @@ function AccountAvatar({ user, size = "lg" }: { user: AuthUser | null; size?: "s
 }
 
 function AccountInner() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { user, logout, refreshUser } = useAuth();
   const router = useRouter();
   const { data: shop } = useSellerShop();
@@ -70,13 +72,28 @@ function AccountInner() {
   const [newPassword, setNewPassword] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [emailCode, setEmailCode] = useState("");
-  const [msg, setMsg] = useState("");
-  const [err, setErr] = useState("");
+  const [apiError, setApiError] = useState<unknown>(null);
+  const [localErrorKey, setLocalErrorKey] = useState<string | null>(null);
+  const [msgKey, setMsgKey] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [dsarNote, setDsarNote] = useState("");
   const { data: dsarPage, isLoading: dsarLoading } = useMyDsarRequests();
   const createDsar = useCreateMyDsar();
   const dsarItems = dsarPage?.items ?? [];
+
+  const err = useMemo(() => {
+    if (localErrorKey) return t(localErrorKey);
+    if (apiError) return getErrorMessage(apiError, t("toast.somethingWentWrong"), locale);
+    return "";
+  }, [localErrorKey, apiError, locale, t]);
+
+  const msg = useMemo(() => (msgKey ? t(msgKey) : ""), [msgKey, t]);
+
+  const clearAlerts = () => {
+    setApiError(null);
+    setLocalErrorKey(null);
+    setMsgKey(null);
+  };
 
   const navItems = useMemo(
     () =>
@@ -91,20 +108,12 @@ function AccountInner() {
   );
 
   const run = async (fn: () => Promise<void>) => {
-    setErr("");
-    setMsg("");
+    clearAlerts();
     setBusy(true);
     try {
       await fn();
     } catch (e) {
-      const code = e instanceof ApiError ? e.code : null;
-      setErr(
-        code
-          ? `${e instanceof ApiError ? e.message : "Request failed"} (${code})`
-          : e instanceof ApiError
-            ? e.message
-            : "Request failed",
-      );
+      setApiError(e);
     } finally {
       setBusy(false);
     }
@@ -112,8 +121,7 @@ function AccountInner() {
 
   const selectSection = (next: AccountSection) => {
     setSection(next);
-    setErr("");
-    setMsg("");
+    clearAlerts();
   };
 
   return (
@@ -189,7 +197,7 @@ function AccountInner() {
                     if (avatarFile) await authApi.uploadAvatar(avatarFile);
                     await refreshUser();
                     setAvatarFile(null);
-                    setMsg(t("account.messages.profileUpdated"));
+                    setMsgKey("account.messages.profileUpdated");
                   });
                 }}
               >
@@ -245,13 +253,16 @@ function AccountInner() {
                 onSubmit={(e: FormEvent) => {
                   e.preventDefault();
                   if (newPassword.length < 8) {
-                    setErr(t("account.messages.passwordTooShort"));
+                    setApiError(null);
+                    setLocalErrorKey("account.messages.passwordTooShort");
                     return;
                   }
                   void run(async () => {
                     await authApi.changePassword({ currentPassword, newPassword });
                     setCurrentPassword("");
                     setNewPassword("");
+                    setMsgKey("account.messages.passwordUpdatedRedirect");
+                    await new Promise((resolve) => setTimeout(resolve, PASSWORD_REDIRECT_DELAY_MS));
                     await logout();
                     router.replace("/my-account?passwordReset=1");
                   });
@@ -314,7 +325,7 @@ function AccountInner() {
                   onClick={() =>
                     void run(async () => {
                       await authApi.requestEmailOtp({ newEmail });
-                      setMsg(t("account.messages.otpSent"));
+                      setMsgKey("account.messages.otpSent");
                     })
                   }
                 >
@@ -339,7 +350,7 @@ function AccountInner() {
                     void run(async () => {
                       await authApi.confirmEmailChange({ email: newEmail, otp: emailCode });
                       await refreshUser();
-                      setMsg(t("account.messages.emailUpdated"));
+                      setMsgKey("account.messages.emailUpdated");
                     })
                   }
                 >
@@ -362,7 +373,7 @@ function AccountInner() {
                   void run(async () => {
                     await createDsar.mutateAsync(dsarNote || undefined);
                     setDsarNote("");
-                    setMsg(t("account.messages.dsarSubmitted"));
+                    setMsgKey("account.messages.dsarSubmitted");
                   });
                 }}
               >

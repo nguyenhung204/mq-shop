@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/SearchableSelect";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 import { useAdminProducts, useAdminShops } from "@/lib/queries/admin";
+import { getErrorMessage } from "@/lib/queries/utils";
 import {
   useAdminHideReview,
   useAdminReviews,
@@ -101,7 +102,7 @@ function AdminReviewsInner() {
       <div className="space-y-6">
         {isError ? (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : t("admin.common.failed")}
+            {getErrorMessage(error, t("admin.common.failed"))}
           </div>
         ) : null}
 

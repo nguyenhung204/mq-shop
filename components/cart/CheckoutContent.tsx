@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { formatPrice } from "@/lib/data/products";
 import { splitStoredPhone, toE164 } from "@/lib/data/phone";
-import { ApiError } from "@/lib/api/client";
+import { getErrorMessage } from "@/lib/queries/utils";
 import {
   checkoutSchema,
   type CheckoutFormValues,
@@ -23,9 +23,10 @@ import { PhoneInput } from "@/components/ui/PhoneInput";
 import { AddressRegionFields } from "@/components/ui/AddressRegionFields";
 import { QuantityStepper } from "@/components/ui/QuantityStepper";
 import { Container, PageHero } from "@/components/ui/shared";
+import { FormAlerts } from "@/lib/ui/form-feedback";
 
 export function CheckoutContent() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { items, itemCount, subtotal, clearCart, checkoutItems, updateQuantity } = useCart();
   const [cartReady, setCartReady] = useState(() =>
@@ -38,6 +39,7 @@ export function CheckoutContent() {
   const [profileSeeded, setProfileSeeded] = useState(false);
   const [nationalPhone, setNationalPhone] = useState("");
   const [dialCountry, setDialCountry] = useState("VN");
+  const [submitError, setSubmitError] = useState<unknown>(null);
   const [dialTouched, setDialTouched] = useState(false);
   const quote = useShippingQuote();
   const checkout = useCheckout();
@@ -205,6 +207,7 @@ export function CheckoutContent() {
   const previewTotal = subtotal + (shippingFee ?? 0);
 
   const onSubmit = async (values: CheckoutFormValues) => {
+    setSubmitError(null);
     try {
       const phone = toE164(
         dialCountry,
@@ -226,11 +229,13 @@ export function CheckoutContent() {
         description: order.code,
       });
     } catch (err) {
-      if (!(err instanceof ApiError)) {
-        toast.error(t("checkout.failed"));
-      }
+      setSubmitError(err);
     }
   };
+
+  const submitErrorText = submitError
+    ? getErrorMessage(submitError, t("checkout.failed"), locale)
+    : "";
 
   return (
     <>
@@ -247,6 +252,7 @@ export function CheckoutContent() {
           className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-10"
         >
           <div className="space-y-6 min-w-0">
+            <FormAlerts error={submitErrorText} />
             <section className="border border-mq-border bg-mq-surface p-6 rounded-[var(--mq-radius-lg)] shadow-[var(--mq-shadow-sm)]">
               <h2 className="text-lg font-semibold text-mq-text mb-1">
                 {t("checkout.customerDetails")}

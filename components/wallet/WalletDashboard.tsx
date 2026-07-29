@@ -22,6 +22,7 @@ import { WalletSkeleton } from "@/components/ui/Skeleton";
 import { WalletRankProgress } from "@/components/wallet/WalletRankProgress";
 import { buildReferralRegisterUrl } from "@/lib/mlm/referralLink";
 import { mlmRankLabel } from "@/lib/i18n/mlm-rank";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 const TX_REASONS: Array<WalletTxReason | ""> = [
   "",
@@ -64,7 +65,7 @@ function PinSetupCard({
   onDone: () => void;
   onCancel?: () => void;
 }) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const requestOtp = useRequestWalletPinOtp();
   const confirmPin = useConfirmWalletPin();
   const [otpSent, setOtpSent] = useState(false);
@@ -93,8 +94,8 @@ function PinSetupCard({
     try {
       await requestOtp.mutateAsync();
       setOtpSent(true);
-    } catch {
-      /* toast from hook */
+    } catch (err) {
+      setLocalError(getErrorMessage(err, t("toast.walletPinOtpFailed"), locale));
     }
   };
 
@@ -112,8 +113,8 @@ function PinSetupCard({
     try {
       await confirmPin.mutateAsync({ otp, pin, confirmPin: confirm });
       onDone();
-    } catch {
-      /* toast from hook */
+    } catch (err) {
+      setLocalError(getErrorMessage(err, t("toast.walletPinConfirmFailed"), locale));
     }
   };
 
@@ -276,7 +277,7 @@ function WalletInner({ embedded = false }: { embedded?: boolean }) {
       {isLoading && <WalletSkeleton />}
       {isError && (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : t("wallet.loadFailed")}
+          {getErrorMessage(error, t("wallet.loadFailed"))}
         </div>
       )}
       {!isLoading && (

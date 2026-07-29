@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/SearchableSelect";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { isValidNationalPhone, toE164 } from "@/lib/data/phone";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 function buyerLabel(u: AuthUser): string {
   const name = u.fullName?.trim();
@@ -369,7 +370,7 @@ function OrdersInner() {
       <div className="space-y-4">
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : t("admin.common.failed")}
+            {getErrorMessage(error, t("admin.common.failed"))}
           </div>
         )}
         {isLoading ? <AdminCardListSkeleton count={4} /> : null}

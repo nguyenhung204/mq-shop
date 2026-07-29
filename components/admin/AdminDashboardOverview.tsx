@@ -33,6 +33,7 @@ import type { Locale } from "@/lib/i18n/types";
 import { useAdminDashboard } from "@/lib/queries/admin";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 const QUEUE_ICONS: Record<keyof AdminDashboardQueues, LucideIcon> = {
   shopsPending: Store,
@@ -152,7 +153,7 @@ export function AdminDashboardOverview() {
     <section className="mb-6 space-y-5">
       {isError ? (
         <div className="mq-alert mq-alert-error text-sm">
-          {error instanceof Error ? error.message : t("admin.common.failed")}
+          {getErrorMessage(error, t("admin.common.failed"))}
         </div>
       ) : null}
 

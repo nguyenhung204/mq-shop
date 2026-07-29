@@ -9,6 +9,7 @@ import { AuthGuard } from "@/components/guards/AuthGuard";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { PaginationBar } from "@/components/ui/PaginationBar";
+import { getErrorMessage } from "@/lib/queries/utils";
 import { useState } from "react";
 
 function MaterialsInner() {
@@ -23,7 +24,7 @@ function MaterialsInner() {
     <div className="space-y-4">
       {isError && (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : t("seller.materials.loadFailed")}
+          {getErrorMessage(error, t("seller.materials.loadFailed"))}
         </div>
       )}
 

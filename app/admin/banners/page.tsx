@@ -17,6 +17,8 @@ import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButto
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 type FormState = {
   title: string;
@@ -57,6 +59,7 @@ function BannersInner() {
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<Banner | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
+  const [deleteTarget, setDeleteTarget] = useState<Banner | null>(null);
 
   const { data, isLoading, isError, error } = useAdminBanners(lang, page);
   const items = data?.items ?? [];
@@ -134,7 +137,7 @@ function BannersInner() {
       <div className="space-y-6">
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : t("admin.common.failed")}
+            {getErrorMessage(error, t("admin.common.failed"))}
           </div>
         )}
 
@@ -251,11 +254,7 @@ function BannersInner() {
                   icon={Trash2}
                   tone="danger"
                   disabled={deleteBanner.isPending}
-                  onClick={() => {
-                    if (confirm(t("admin.banners.confirmDelete", { title: b.title }))) {
-                      void deleteBanner.mutateAsync(b.id);
-                    }
-                  }}
+                  onClick={() => setDeleteTarget(b)}
                 />
               </AdminActions>
             </div>
@@ -269,6 +268,24 @@ function BannersInner() {
 
         {meta && <PaginationBar page={page} meta={meta} onPageChange={setPage} />}
       </div>
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title={t("confirm.deleteBannerTitle")}
+        description={
+          deleteTarget
+            ? t("confirm.deleteBannerDesc", { title: deleteTarget.title })
+            : undefined
+        }
+        confirmLabel={t("confirm.deleteBannerBtn")}
+        tone="danger"
+        busy={deleteBanner.isPending}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          await deleteBanner.mutateAsync(deleteTarget.id);
+          setDeleteTarget(null);
+        }}
+      />
     </>
   );
 }

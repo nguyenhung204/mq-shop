@@ -135,7 +135,6 @@ export function useCheckout() {
       if (e instanceof ApiError && e.code === "IDEMPOTENCY_KEY_REUSE_MISMATCH") {
         idempotency.invalidate();
       }
-      toast.error(orderErrorMessage(e, tt("toast.checkoutFailed")));
     },
   });
 }
@@ -198,7 +197,6 @@ export function useCreateRma(orderId: string) {
       void queryClient.invalidateQueries({ queryKey: orderKeys.detail(orderId) });
       toast.success(tt("toast.rmaSubmitted"));
     },
-    onError: (e) => toast.error(orderErrorMessage(e, tt("toast.rmaFailed"))),
   });
 }
 

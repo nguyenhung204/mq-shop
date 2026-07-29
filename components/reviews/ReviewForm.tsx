@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { X } from "lucide-react";
 import { ReviewStarsInput } from "@/components/reviews/ReviewStarsInput";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { getErrorMessage } from "@/lib/queries/utils";
 import {
   useCreateReview,
   useDeleteReview,
@@ -27,7 +28,7 @@ export function ReviewForm({
   onDone?: () => void;
   onCancel?: () => void;
 }) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const createReview = useCreateReview(productId);
   const updateReview = useUpdateReview(productId);
   const deleteReview = useDeleteReview(productId);
@@ -83,8 +84,9 @@ export function ReviewForm({
       }
       setFiles([]);
       onDone?.();
-    } catch {
-      /* toast */
+    } catch (err) {
+      const fallback = existing ? t("toast.reviewUpdateFailed") : t("toast.reviewCreateFailed");
+      setLocalError(getErrorMessage(err, fallback, locale));
     }
   };
 

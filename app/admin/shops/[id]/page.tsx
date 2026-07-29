@@ -16,6 +16,7 @@ import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButto
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
+import { getErrorMessage } from "@/lib/queries/utils";
 import { Check, ShieldAlert, ShieldCheck, X } from "lucide-react";
 
 function reasonText(reason: string | LocalizedText | null | undefined): string {
@@ -55,7 +56,7 @@ function ShopDetailInner({ id }: { id: string }) {
 
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : t("admin.common.failed")}
+            {getErrorMessage(error, t("admin.common.failed"))}
           </div>
         )}
         {isLoading && <p className="text-sm text-mq-text-muted">{t("admin.common.loading")}</p>}

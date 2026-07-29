@@ -12,6 +12,7 @@ import { AuthGuard } from "@/components/guards/AuthGuard";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { OrderListSkeleton } from "@/components/ui/Skeleton";
 import { PaginationBar } from "@/components/ui/PaginationBar";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 function SellerOrdersInner() {
   const { t } = useLanguage();
@@ -65,7 +66,7 @@ function SellerOrdersInner() {
       {isLoading && <OrderListSkeleton />}
       {isError && (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : t("admin.common.failed")}
+          {getErrorMessage(error, t("admin.common.failed"))}
         </div>
       )}
       {!isLoading && !isError && orders.length === 0 ? (

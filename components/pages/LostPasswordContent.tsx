@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { AuthPanel } from "@/components/auth/AuthPanel";
 import { OtpCountdown } from "@/components/auth/OtpCountdown";
 import { authApi } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
+import { getErrorMessage } from "@/lib/queries/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
 type MsgKey =
@@ -26,14 +27,14 @@ type MsgKey =
  * Reset maps missing user → INVALID_OTP (same as wrong OTP).
  */
 export function LostPasswordContent() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const router = useRouter();
   const [step, setStep] = useState<"request" | "reset">("request");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [errorKey, setErrorKey] = useState<MsgKey | "">("");
-  const [errorRaw, setErrorRaw] = useState("");
+  const [apiError, setApiError] = useState<unknown>(null);
   const [okKey, setOkKey] = useState<MsgKey | "">("");
   const [busy, setBusy] = useState(false);
   const [timerKey, setTimerKey] = useState(0);
@@ -41,7 +42,7 @@ export function LostPasswordContent() {
 
   const clearAlerts = () => {
     setErrorKey("");
-    setErrorRaw("");
+    setApiError(null);
     setOkKey("");
   };
 
@@ -63,7 +64,7 @@ export function LostPasswordContent() {
       if (err instanceof ApiError && err.code === "TOO_MANY_REQUESTS") {
         setErrorKey("account.forgot.tooManyRequests");
       } else if (err instanceof ApiError) {
-        setErrorRaw(err.message);
+        setApiError(err);
       } else {
         setErrorKey("account.forgot.requestFailed");
       }
@@ -100,7 +101,7 @@ export function LostPasswordContent() {
       } else if (codeName === "TOO_MANY_REQUESTS") {
         setErrorKey("account.forgot.tooManyRequests");
       } else if (err instanceof ApiError) {
-        setErrorRaw(err.message);
+        setApiError(err);
       } else {
         setErrorKey("account.forgot.resetFailed");
       }
@@ -109,7 +110,15 @@ export function LostPasswordContent() {
     }
   };
 
-  const errorText = errorKey ? t(errorKey) : errorRaw;
+  const errorText = useMemo(() => {
+    if (errorKey) return t(errorKey);
+    if (apiError) {
+      const fallback = step === "reset" ? t("account.forgot.resetFailed") : t("account.forgot.requestFailed");
+      return getErrorMessage(apiError, fallback, locale);
+    }
+    return "";
+  }, [errorKey, apiError, step, locale, t]);
+
   const okText = okKey ? t(okKey) : "";
 
   return (

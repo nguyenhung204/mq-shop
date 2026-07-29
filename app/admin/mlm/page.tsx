@@ -32,6 +32,7 @@ import {
   type SearchableSelectOption,
 } from "@/components/ui/SearchableSelect";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 function userLabel(u: AuthUser): string {
   const name = u.fullName?.trim();
@@ -539,7 +540,7 @@ function MlmAdminInner() {
             {isLoading ? <AdminCardListSkeleton count={2} /> : null}
             {isError ? (
               <div className="mq-alert mq-alert-error">
-                {error instanceof Error ? error.message : t("admin.common.failed")}
+                {getErrorMessage(error, t("admin.common.failed"))}
               </div>
             ) : null}
             {(ranks ?? []).length > 0 ? (
@@ -617,9 +618,7 @@ function MlmAdminInner() {
 
             {monthlyIsError ? (
               <div className="mq-alert mq-alert-error">
-                {monthlyErr instanceof Error
-                  ? monthlyErr.message
-                  : t("admin.common.failed")}
+                {getErrorMessage(monthlyErr, t("admin.common.failed"))}
               </div>
             ) : null}
             {monthlyError ? (
@@ -981,7 +980,7 @@ function MlmAdminInner() {
               ) : null}
               {treeError ? (
                 <div className="mq-alert mq-alert-error break-words">
-                  {treeErr instanceof Error ? treeErr.message : t("admin.common.failed")}
+                  {getErrorMessage(treeErr, t("admin.common.failed"))}
                 </div>
               ) : null}
               {tree ? (

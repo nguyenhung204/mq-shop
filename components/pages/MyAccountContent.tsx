@@ -2,17 +2,16 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
-import { ApiError } from "@/lib/api/client";
-import { statusMessage } from "@/lib/api/utils";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { postAuthPath } from "@/lib/auth/routes";
+import { getErrorMessage } from "@/lib/queries/utils";
 import { AuthPanel } from "@/components/auth/AuthPanel";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Container, PageHero } from "@/components/ui/shared";
 
 export function MyAccountContent() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { user, login, logout, isAuthenticated, hasRole } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -24,20 +23,30 @@ export function MyAccountContent() {
 
   const [loginId, setLoginId] = useState("");
   const [loginPw, setLoginPw] = useState("");
-  const [error, setError] = useState("");
-  const [info, setInfo] = useState("");
+  const [loginError, setLoginError] = useState<unknown>(null);
+  const [infoKey, setInfoKey] = useState<string | null>(
+    passwordReset ? "account.forgot.passwordUpdated" : null,
+  );
   const [busy, setBusy] = useState(false);
   /** Avoid flashing the My Account hub before post-login navigation. */
   const [redirecting, setRedirecting] = useState(false);
 
+  const error = useMemo(
+    () =>
+      loginError ? getErrorMessage(loginError, t("toast.somethingWentWrong"), locale) : "",
+    [loginError, locale, t],
+  );
+
+  const info = useMemo(() => (infoKey ? t(infoKey) : ""), [infoKey, t]);
+
   useEffect(() => {
     if (!passwordReset || isAuthenticated) return;
-    setInfo(t("account.forgot.passwordUpdated"));
-  }, [passwordReset, isAuthenticated, t]);
+    setInfoKey("account.forgot.passwordUpdated");
+  }, [passwordReset, isAuthenticated]);
 
   const onLogin = async (e: FormEvent) => {
     e.preventDefault();
-    setError("");
+    setLoginError(null);
     setBusy(true);
     setRedirecting(true);
     try {
@@ -45,17 +54,7 @@ export function MyAccountContent() {
       router.replace(postAuthPath(loggedIn));
     } catch (err) {
       setRedirecting(false);
-      const code = err instanceof ApiError ? err.code : null;
-      if (code === "INVALID_CREDENTIALS") setError("Invalid email or password.");
-      else if (code === "ACCOUNT_LOCKED") setError("This account is locked.");
-      else if (code === "UNAUTHORIZED") setError("Session expired. Please sign in again.");
-      else {
-        setError(
-          err instanceof ApiError
-            ? err.message || statusMessage(String(err.body?.message ?? ""))
-            : "Login failed",
-        );
-      }
+      setLoginError(err);
     } finally {
       setBusy(false);
     }
@@ -65,11 +64,11 @@ export function MyAccountContent() {
     return (
       <AuthPanel
         title={t("account.login")}
-        description="Welcome back. Sign in to continue shopping."
-        asideTitle="Welcome back"
-        asideText="Pick up where you left off — wishlist, orders, and soft finds waiting."
+        description={t("account.loginPage.description")}
+        asideTitle={t("account.loginPage.asideTitle")}
+        asideText={t("account.loginPage.asideText")}
       >
-        <p className="py-8 text-center text-sm text-mq-text-muted">Signing in…</p>
+        <p className="py-8 text-center text-sm text-mq-text-muted">{t("account.loginPage.signingIn")}</p>
       </AuthPanel>
     );
   }
@@ -123,7 +122,7 @@ export function MyAccountContent() {
               className="mq-btn mq-btn-outline mt-4"
               onClick={async () => {
                 await logout();
-                setInfo("Signed out.");
+                setInfoKey("account.messages.signedOut");
               }}
             >
               Sign out
@@ -138,9 +137,9 @@ export function MyAccountContent() {
   return (
     <AuthPanel
       title={t("account.login")}
-      description="Welcome back. Sign in to continue shopping."
-      asideTitle="Welcome back"
-      asideText="Pick up where you left off — wishlist, orders, and soft finds waiting."
+      description={t("account.loginPage.description")}
+      asideTitle={t("account.loginPage.asideTitle")}
+      asideText={t("account.loginPage.asideText")}
       footer={
         <>
           {t("account.noAccount")} <Link href={registerHref}>{t("account.register")}</Link>
@@ -151,7 +150,7 @@ export function MyAccountContent() {
       {info && <div className="mq-alert mq-alert-success">{info}</div>}
       <form className="mq-auth-actions flex w-full flex-col gap-2.5" onSubmit={onLogin}>
         <div className="mq-auth-field">
-          <label htmlFor="login-email">Email</label>
+          <label htmlFor="login-email">{t("account.loginPage.emailLabel")}</label>
           <input
             id="login-email"
             type="email"

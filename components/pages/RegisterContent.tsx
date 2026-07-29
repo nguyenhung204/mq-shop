@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { AuthPanel } from "@/components/auth/AuthPanel";
 import { authApi } from "@/lib/api/auth";
-import { ApiError } from "@/lib/api/client";
+import { getErrorMessage } from "@/lib/queries/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export function RegisterContent() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
   const refCode = searchParams.get("ref") || "";
@@ -17,14 +17,22 @@ export function RegisterContent() {
   const [regEmail, setRegEmail] = useState("");
   const [regPw, setRegPw] = useState("");
   const [regName, setRegName] = useState("");
-  const [error, setError] = useState("");
+  const [apiError, setApiError] = useState<unknown>(null);
+  const [localErrorKey, setLocalErrorKey] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  const error = useMemo(() => {
+    if (localErrorKey) return t(localErrorKey);
+    if (apiError) return getErrorMessage(apiError, t("toast.registrationFailed"), locale);
+    return "";
+  }, [localErrorKey, apiError, locale, t]);
 
   const onRegister = async (e: FormEvent) => {
     e.preventDefault();
-    setError("");
+    setApiError(null);
+    setLocalErrorKey(null);
     if (regPw.length < 8) {
-      setError("Password must be at least 8 characters.");
+      setLocalErrorKey("account.messages.passwordTooShort");
       return;
     }
     setBusy(true);
@@ -37,12 +45,7 @@ export function RegisterContent() {
       });
       router.push(`/my-account/verify-otp?email=${encodeURIComponent(regEmail)}`);
     } catch (err) {
-      const code = err instanceof ApiError ? err.code : null;
-      if (code === "EMAIL_ALREADY_IN_USE") setError("Email already in use.");
-      else if (code === "REFERRER_NOT_FOUND" || code === "REFERRER_INVALID") {
-        setError("Referral code is invalid or not found.");
-      } else if (code === "TOO_MANY_REQUESTS") setError("Too many requests. Try again later.");
-      else setError(err instanceof ApiError ? err.message : "Registration failed");
+      setApiError(err);
     } finally {
       setBusy(false);
     }
@@ -51,9 +54,9 @@ export function RegisterContent() {
   return (
     <AuthPanel
       title={t("account.register")}
-      description="Create an account to checkout faster and track orders."
-      asideTitle="Join MQ"
-      asideText="Create your account and unlock a calmer way to shop essentials."
+      description={t("account.registerPage.description")}
+      asideTitle={t("account.registerPage.asideTitle")}
+      asideText={t("account.registerPage.asideText")}
       footer={
         <>
           {t("account.haveAccount")}{" "}
@@ -64,7 +67,7 @@ export function RegisterContent() {
       {error && <div className="mq-alert mq-alert-error">{error}</div>}
       <form className="mq-auth-actions flex w-full flex-col gap-2.5" onSubmit={onRegister}>
         <div className="mq-auth-field">
-          <label htmlFor="reg-name">Full name</label>
+          <label htmlFor="reg-name">{t("account.registerPage.fullName")}</label>
           <input
             id="reg-name"
             className="mq-input"
@@ -97,7 +100,9 @@ export function RegisterContent() {
             autoComplete="new-password"
           />
         </div>
-        {refCode ? <p className="mq-auth-hint">Referral code: {refCode}</p> : null}
+        {refCode ? (
+          <p className="mq-auth-hint">{t("account.registerPage.referralCode", { code: refCode })}</p>
+        ) : null}
         <p className="mq-auth-hint">{t("account.registerNote")}</p>
         <button type="submit" className="mq-btn mq-btn-primary w-full" disabled={busy}>
           {t("account.register")}

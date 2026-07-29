@@ -9,10 +9,11 @@ import { AuthGuard } from "@/components/guards/AuthGuard";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Container, PageHero } from "@/components/ui/shared";
 import { translateStatus } from "@/lib/i18n/status";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 function CreateRmaInner() {
   const { id } = useParams<{ id: string }>();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const router = useRouter();
   const { data: order } = useOrder(id);
   const createRma = useCreateRma(id);
@@ -42,8 +43,8 @@ function CreateRmaInner() {
         evidence: files.length ? files.slice(0, 5) : undefined,
       });
       router.push(`/orders/${id}`);
-    } catch {
-      setError("Failed to create RMA");
+    } catch (err) {
+      setError(getErrorMessage(err, t("toast.rmaFailed"), locale));
     }
   };
 

@@ -9,6 +9,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Container, PageHero } from "@/components/ui/shared";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { WalletPayoutDetailFields } from "@/components/wallet/walletPayoutUi";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 function WithdrawalDetailInner({
   payoutId,
@@ -45,7 +46,7 @@ function WithdrawalDetailInner({
       {isLoading ? <AdminCardListSkeleton count={2} /> : null}
       {isError ? (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : t("wallet.loadFailed")}
+          {getErrorMessage(error, t("wallet.loadFailed"))}
         </div>
       ) : null}
       {payout ? <WalletPayoutDetailFields payout={payout} labels={labels} /> : null}

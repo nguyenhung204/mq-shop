@@ -90,7 +90,6 @@ export function useCreateReview(productId: string) {
       void queryClient.invalidateQueries({ queryKey: reviewKeys.product(productId) });
       toast.success(tt("toast.reviewCreated"));
     },
-    onError: (e) => toast.error(reviewError(e, tt("toast.reviewCreateFailed"))),
   });
 }
 
@@ -116,7 +115,6 @@ export function useUpdateReview(productId: string) {
       void queryClient.invalidateQueries({ queryKey: reviewKeys.product(productId) });
       toast.success(tt("toast.reviewUpdated"));
     },
-    onError: (e) => toast.error(reviewError(e, tt("toast.reviewUpdateFailed"))),
   });
 }
 

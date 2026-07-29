@@ -17,6 +17,7 @@ import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButto
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 function statusBadgeClass(status: SellerPayout["status"]): string {
   switch (status) {
@@ -69,7 +70,7 @@ function PayoutDetailInner({ payoutId }: { payoutId: string }) {
         {isLoading && <AdminCardListSkeleton count={3} />}
         {isError && (
           <div className="mq-alert mq-alert-error">
-            {error instanceof Error ? error.message : t("admin.common.failed")}
+            {getErrorMessage(error, t("admin.common.failed"))}
           </div>
         )}
 

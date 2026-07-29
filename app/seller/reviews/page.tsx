@@ -8,6 +8,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Stars } from "@/components/ui/shared";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useSellerProducts } from "@/lib/queries/seller";
 import {
   useDeleteReviewReply,
@@ -15,6 +16,7 @@ import {
   useReviewReply,
 } from "@/lib/queries/reviews";
 import type { ProductReview } from "@/lib/api/reviews";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 function SellerProductReviews({
   productId,
@@ -27,6 +29,7 @@ function SellerProductReviews({
   const [page, setPage] = useState(1);
   const [replyFor, setReplyFor] = useState<ProductReview | null>(null);
   const [body, setBody] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<ProductReview | null>(null);
   const { data, isLoading, isError, error } = useProductReviews(productId, page, 10);
   const reply = useReviewReply(productId);
   const deleteReply = useDeleteReviewReply(productId);
@@ -53,7 +56,7 @@ function SellerProductReviews({
       </div>
       {isError ? (
         <div className="mq-alert mq-alert-error text-sm">
-          {error instanceof Error ? error.message : t("admin.common.failed")}
+          {getErrorMessage(error, t("admin.common.failed"))}
         </div>
       ) : null}
       {isLoading ? (
@@ -106,15 +109,7 @@ function SellerProductReviews({
                     icon={Trash2}
                     tone="danger"
                     disabled={deleteReply.isPending}
-                    onClick={() => {
-                      if (
-                        typeof window !== "undefined" &&
-                        !window.confirm(t("seller.reviews.deleteReplyConfirm"))
-                      ) {
-                        return;
-                      }
-                      void deleteReply.mutateAsync(review.id);
-                    }}
+                    onClick={() => setDeleteTarget(review)}
                   />
                 ) : null}
               </AdminActions>
@@ -162,6 +157,21 @@ function SellerProductReviews({
           </div>
         </form>
       ) : null}
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title={t("confirm.deleteReplyTitle")}
+        description={t("confirm.deleteReplyDesc")}
+        confirmLabel={t("confirm.deleteReplyBtn")}
+        tone="danger"
+        busy={deleteReply.isPending}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          await deleteReply.mutateAsync(deleteTarget.id);
+          setDeleteTarget(null);
+        }}
+      />
     </section>
   );
 }
@@ -184,7 +194,7 @@ function SellerReviewsInner() {
 
       {isError ? (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : t("admin.common.failed")}
+          {getErrorMessage(error, t("admin.common.failed"))}
         </div>
       ) : null}
 

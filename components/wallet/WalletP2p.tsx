@@ -18,6 +18,7 @@ import {
   type SearchableSelectOption,
 } from "@/components/ui/SearchableSelect";
 import { Container, PageHero } from "@/components/ui/shared";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 const AMOUNT_PRESETS = [10, 20, 50, 100, 200, 500] as const;
 
@@ -33,7 +34,7 @@ function P2pPanel({
   embedded?: boolean;
   walletHref?: string;
 }) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { user } = useAuth();
   const { data: balance } = useWallet();
   const previewMut = useTransferPreview();
@@ -150,8 +151,8 @@ function P2pPanel({
         pickedUserId ? { userId: pickedUserId } : { email: em },
       );
       setPreview(res);
-    } catch {
-      /* toast from hook */
+    } catch (err) {
+      setLocalError(getErrorMessage(err, t("toast.walletTransferPreviewFailed"), locale));
     }
   };
 
@@ -182,8 +183,8 @@ function P2pPanel({
       setAmount("");
       setEmail("");
       setPickedUserId("");
-    } catch {
-      /* toast from hook */
+    } catch (err) {
+      setLocalError(getErrorMessage(err, t("toast.walletTransferFailed"), locale));
     }
   };
 

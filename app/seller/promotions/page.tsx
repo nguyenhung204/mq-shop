@@ -23,6 +23,7 @@ import { translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { TableSkeleton } from "@/components/ui/Skeleton";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 const TYPES: PromotionType[] = ["PERCENT", "FIXED", "FREE_SHIP", "VOUCHER"];
 const STATUSES: Array<PromotionStatus | ""> = [
@@ -433,7 +434,7 @@ function PromotionsInner() {
 
       {isError && (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : t("seller.promotions.loadFailed")}
+          {getErrorMessage(error, t("seller.promotions.loadFailed"))}
         </div>
       )}
 

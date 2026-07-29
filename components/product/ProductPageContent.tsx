@@ -14,6 +14,7 @@ import { ProductCarousel } from "@/components/ui/ProductCarousel";
 import { Container, PageHero, Stars } from "@/components/ui/shared";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { useProductReviews, useProductReviewSummary } from "@/lib/queries/reviews";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 const TAB_KEYS = [
   "product.tabDescription",
@@ -48,7 +49,7 @@ function ProductReviewsTab({ productId }: { productId: string }) {
       ) : null}
       {isError ? (
         <div className="mq-alert mq-alert-error text-sm">
-          {error instanceof Error ? error.message : t("admin.common.failed")}
+          {getErrorMessage(error, t("admin.common.failed"))}
         </div>
       ) : null}
       {isLoading ? (

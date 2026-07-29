@@ -6,6 +6,7 @@ import { AuthGuard } from "@/components/guards/AuthGuard";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
 import { OrderListSkeleton } from "@/components/ui/Skeleton";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 function SellerRmaInner() {
   const { t } = useLanguage();
@@ -22,7 +23,7 @@ function SellerRmaInner() {
       {isLoading && <OrderListSkeleton />}
       {isError && (
         <div className="mq-alert mq-alert-error">
-          {error instanceof Error ? error.message : t("admin.common.failed")}
+          {getErrorMessage(error, t("admin.common.failed"))}
         </div>
       )}
       {refunded.length === 0 && !isLoading ? (

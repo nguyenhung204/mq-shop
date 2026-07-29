@@ -14,6 +14,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { Container, PageHero } from "@/components/ui/shared";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
+import { getErrorMessage } from "@/lib/queries/utils";
 import {
   formatWalletPayoutWhen,
   walletPayoutStatusBadgeClass,
@@ -37,7 +38,7 @@ function WithdrawPanel({
   walletHref?: string;
   detailHrefBase?: string;
 }) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { user } = useAuth();
   const withdraw = useWalletWithdraw();
 
@@ -81,8 +82,8 @@ function WithdrawPanel({
       setAmount("");
       setPin("");
       setPage(1);
-    } catch {
-      /* toast from hook */
+    } catch (err) {
+      setLocalError(getErrorMessage(err, t("toast.walletWithdrawFailed"), locale));
     }
   };
 
@@ -200,7 +201,7 @@ function WithdrawPanel({
 
           {isError ? (
             <div className="mq-alert mq-alert-error">
-              {error instanceof Error ? error.message : t("wallet.loadFailed")}
+              {getErrorMessage(error, t("wallet.loadFailed"))}
             </div>
           ) : null}
 

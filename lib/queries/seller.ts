@@ -149,7 +149,6 @@ export function useUploadProductImages() {
     onSuccess: () => {
       invalidate();
     },
-    onError: (e) => toast.error(productImageErrorMessage(e, tt("toast.imageUploadFailed"))),
   });
 }
 
@@ -161,7 +160,6 @@ export function useDeleteProductImages() {
     onSuccess: () => {
       invalidate();
     },
-    onError: (e) => toast.error(productImageErrorMessage(e, tt("toast.removeImagesFailed"))),
   });
 }
 
@@ -181,7 +179,6 @@ export function useUploadVariantImages() {
       invalidate();
       toast.success(tt("toast.skuImagesUploaded"));
     },
-    onError: (e) => toast.error(productImageErrorMessage(e, tt("toast.skuImageUploadFailed"))),
   });
 }
 
@@ -201,7 +198,6 @@ export function useDeleteVariantImages() {
       invalidate();
       toast.success(tt("toast.skuImageRemoved"));
     },
-    onError: (e) => toast.error(productImageErrorMessage(e, tt("toast.removeSkuImagesFailed"))),
   });
 }
 
@@ -213,7 +209,6 @@ export function useCreateSellerProduct() {
       invalidate();
       toast.success(tt("toast.productCreatedPending"));
     },
-    onError: (e) => toast.error(productErrorMessage(e, tt("toast.createFailed"))),
   });
 }
 
@@ -234,7 +229,6 @@ export function useUpdateSellerProduct() {
       if (vars.silent) return;
       toast.success(tt("toast.productUpdated"));
     },
-    onError: (e) => toast.error(productErrorMessage(e, tt("toast.updateFailed"))),
   });
 }
 
@@ -254,7 +248,6 @@ export function useAddSellerVariant() {
       invalidate();
       if (!vars.silent) toast.success(tt("toast.skuAdded"));
     },
-    onError: (e) => toast.error(productErrorMessage(e, tt("toast.addSkuFailed"))),
   });
 }
 
@@ -276,7 +269,6 @@ export function useUpdateSellerVariant() {
       invalidate();
       if (!vars.silent) toast.success(tt("toast.skuUpdated"));
     },
-    onError: (e) => toast.error(productErrorMessage(e, tt("toast.updateSkuFailed"))),
   });
 }
 
@@ -318,7 +310,6 @@ export function useApplyShop() {
       queryClient.setQueryData(sellerKeys.shop(), shop);
       toast.success(tt("toast.applicationSubmitted"));
     },
-    onError: (e) => toast.error(getErrorMessage(e, tt("toast.applyFailed"))),
   });
 }
 
@@ -352,7 +343,6 @@ export function useUploadShopLogo() {
       queryClient.setQueryData(sellerKeys.shop(), shop);
       toast.success(tt("toast.logoUpdated"));
     },
-    onError: (e) => toast.error(shopMediaErrorMessage(e, tt("toast.logoUploadFailed"))),
   });
 }
 
@@ -364,7 +354,6 @@ export function useUploadShopBanner() {
       queryClient.setQueryData(sellerKeys.shop(), shop);
       toast.success(tt("toast.shopBannerUpdated"));
     },
-    onError: (e) => toast.error(shopMediaErrorMessage(e, tt("toast.shopBannerUploadFailed"))),
   });
 }
 
