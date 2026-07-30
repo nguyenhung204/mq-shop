@@ -1,46 +1,70 @@
 /**
  * Simple dictionary-based auto-translate for category names.
- * Covers the 26 seeded categories + common e-commerce terms.
+ * Covers all 27 seeded categories + common e-commerce terms.
  * Falls back to empty string if no match found (user types manually).
  */
 
 type LangTriple = { en: string; vi: string; tw: string };
 
 const DICTIONARY: LangTriple[] = [
+  // ── Root categories ──
   { en: "Electronics", vi: "Điện tử", tw: "電子產品" },
-  { en: "Smartphones", vi: "Điện thoại thông minh", tw: "智慧手機" },
-  { en: "Laptops", vi: "Máy tính xách tay", tw: "筆記型電腦" },
-  { en: "Audio", vi: "Âm thanh", tw: "音響設備" },
-  { en: "Accessories", vi: "Phụ kiện", tw: "配件" },
   { en: "Fashion", vi: "Thời trang", tw: "時尚" },
-  { en: "Men's Clothing", vi: "Quần áo nam", tw: "男裝" },
-  { en: "Women's Clothing", vi: "Quần áo nữ", tw: "女裝" },
-  { en: "Shoes", vi: "Giày dép", tw: "鞋類" },
-  { en: "Bags & Wallets", vi: "Túi xách & Ví", tw: "包包與皮夾" },
-  { en: "Home & Living", vi: "Nhà cửa & Đời sống", tw: "居家生活" },
-  { en: "Furniture", vi: "Nội thất", tw: "家具" },
+  { en: "Home & Living", vi: "Nhà cửa & đời sống", tw: "居家生活" },
+  { en: "Beauty", vi: "Làm đẹp", tw: "美妝" },
+  { en: "Toys", vi: "Đồ chơi", tw: "玩具" },
+  { en: "Sports & Outdoors", vi: "Thể thao & ngoài trời", tw: "運動與戶外" },
+  { en: "Books", vi: "Sách", tw: "書籍" },
+  { en: "Groceries", vi: "Thực phẩm", tw: "食品雜貨" },
+
+  // ── Electronics children ──
+  { en: "Phones & Accessories", vi: "Điện thoại & phụ kiện", tw: "手機與配件" },
+  { en: "Computers & Peripherals", vi: "Máy tính & linh kiện", tw: "電腦與周邊" },
+  { en: "Audio", vi: "Âm thanh", tw: "音響設備" },
+
+  // ── Fashion children ──
+  { en: "Men", vi: "Nam", tw: "男裝" },
+  { en: "Women", vi: "Nữ", tw: "女裝" },
+  { en: "Footwear", vi: "Giày dép", tw: "鞋類" },
+
+  // ── Home & Living children ──
+  { en: "Furniture", vi: "Nội thất", tw: "傢俱" },
+  { en: "Lighting", vi: "Đèn & chiếu sáng", tw: "燈飾照明" },
   { en: "Kitchen", vi: "Nhà bếp", tw: "廚房用品" },
-  { en: "Decor", vi: "Trang trí", tw: "裝飾品" },
-  { en: "Bedding", vi: "Chăn ga gối", tw: "寢具" },
-  { en: "Beauty & Health", vi: "Sắc đẹp & Sức khoẻ", tw: "美容保健" },
+
+  // ── Beauty children ──
   { en: "Skincare", vi: "Chăm sóc da", tw: "護膚" },
   { en: "Makeup", vi: "Trang điểm", tw: "彩妝" },
+
+  // ── Toys children ──
+  { en: "Building Sets", vi: "Lắp ráp", tw: "積木組合" },
+  { en: "Outdoor Toys", vi: "Ngoài trời", tw: "戶外玩具" },
+
+  // ── Sports children ──
+  { en: "Fitness", vi: "Thể hình", tw: "健身" },
+  { en: "Camping", vi: "Cắm trại", tw: "露營" },
+
+  // ── Books children ──
+  { en: "Fiction", vi: "Văn học", tw: "小說" },
+  { en: "Education", vi: "Giáo dục", tw: "教育" },
+
+  // ── Groceries children ──
+  { en: "Snacks", vi: "Đồ ăn vặt", tw: "零食" },
+  { en: "Beverages", vi: "Đồ uống", tw: "飲料" },
+
+  // ── Common extras (not seeded but useful) ──
+  { en: "Accessories", vi: "Phụ kiện", tw: "配件" },
+  { en: "Bags & Wallets", vi: "Túi xách & Ví", tw: "包包與皮夾" },
+  { en: "Decor", vi: "Trang trí", tw: "裝飾品" },
+  { en: "Bedding", vi: "Chăn ga gối", tw: "寢具" },
   { en: "Hair Care", vi: "Chăm sóc tóc", tw: "護髮" },
   { en: "Supplements", vi: "Thực phẩm chức năng", tw: "保健食品" },
-  { en: "Toys & Kids", vi: "Đồ chơi & Trẻ em", tw: "玩具與兒童" },
-  { en: "Educational Toys", vi: "Đồ chơi giáo dục", tw: "教育玩具" },
-  { en: "Baby Gear", vi: "Đồ dùng cho bé", tw: "嬰兒用品" },
-  { en: "Outdoor Toys", vi: "Đồ chơi ngoài trời", tw: "戶外玩具" },
-  { en: "Board Games", vi: "Trò chơi bàn", tw: "桌遊" },
-  { en: "Sports & Outdoors", vi: "Thể thao & Ngoài trời", tw: "運動與戶外" },
-  // Common generic terms
-  { en: "Food & Beverages", vi: "Thực phẩm & Đồ uống", tw: "食品與飲料" },
-  { en: "Books", vi: "Sách", tw: "書籍" },
   { en: "Stationery", vi: "Văn phòng phẩm", tw: "文具" },
   { en: "Pets", vi: "Thú cưng", tw: "寵物" },
   { en: "Automotive", vi: "Ô tô & Xe máy", tw: "汽機車" },
   { en: "Jewelry", vi: "Trang sức", tw: "珠寶" },
   { en: "Watches", vi: "Đồng hồ", tw: "手錶" },
+  { en: "Food & Beverages", vi: "Thực phẩm & Đồ uống", tw: "食品與飲料" },
 ];
 
 // Normalized lookup maps for fast matching
