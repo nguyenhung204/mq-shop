@@ -233,7 +233,9 @@ export type ApiCategory = {
   /** English (default) display name */
   name: string;
   nameVi?: string;
-  /** Traditional Chinese — optional until BE ships the field */
+  /** Traditional Chinese (name_tw column). */
+  nameTw?: string | null;
+  /** @deprecated alias — use `nameTw` */
   nameZhTw?: string | null;
   parentId?: string | null;
 };

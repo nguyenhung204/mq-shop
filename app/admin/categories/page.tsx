@@ -259,7 +259,7 @@ function CategoriesInner() {
                     <td className="p-3 font-mono text-xs">{c.id}</td>
                     <td className="p-3">{c.name}</td>
                     <td className="p-3 text-mq-text-muted">{c.nameVi || "—"}</td>
-                    <td className="p-3 text-mq-text-muted">{c.nameZhTw || "—"}</td>
+                    <td className="p-3 text-mq-text-muted">{c.nameTw || "—"}</td>
                     <td className="p-3">{c.slug}</td>
                     <td className="p-3">{c.parentId || "—"}</td>
                     <td className="p-3">
@@ -271,7 +271,7 @@ function CategoriesInner() {
                           setForm({
                             name: c.name,
                             nameVi: c.nameVi || "",
-                            nameTw: c.nameZhTw || "",
+                            nameTw: c.nameTw || "",
                             slug: c.slug,
                             parentId: c.parentId || "",
                           });
