@@ -27,18 +27,20 @@ type PendingUserAction = {
 function UsersInner() {
   const { t } = useLanguage();
   const [status, setStatus] = useState("");
+  const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pending, setPending] = useState<PendingUserAction | null>(null);
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["admin", "users", status, page],
+    queryKey: ["admin", "users", status, search, page],
     queryFn: async () =>
       parsePage<AuthUser>(
         await adminApi.users({
           page,
           pageSize: 10,
           status: status || undefined,
+          q: search.trim() || undefined,
         }),
       ),
   });
@@ -104,6 +106,15 @@ function UsersInner() {
         )}
 
         <div className="flex flex-wrap gap-3 items-center">
+          <input
+            className="mq-input max-w-xs"
+            placeholder={t("admin.common.searchPlaceholder")}
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
           <select
             className="mq-input max-w-xs"
             value={status}

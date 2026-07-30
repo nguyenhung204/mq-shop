@@ -171,8 +171,8 @@ function P2pPanel({
     }
     try {
       await transferMut.mutateAsync({
-        ...(preview.userId
-          ? { userId: preview.userId }
+        ...(pickedUserId
+          ? { userId: pickedUserId }
           : { email: preview.email }),
         amount: n,
         pin,

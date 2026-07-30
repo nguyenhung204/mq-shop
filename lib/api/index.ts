@@ -120,6 +120,14 @@ export type {
   ExportFinanceReportResult,
 } from "./finance";
 export { walletApi, adminWalletPayoutApi, adminWalletApi } from "./wallet";
+export { csApi } from "./cs";
+export type {
+  CsCustomerListItem,
+  CsCustomerDetail,
+  CsCustomerStats,
+  CsCustomerRecentOrder,
+  CsCustomerOrderItem,
+} from "./cs";
 export type {
   Wallet,
   WalletTxReason,
@@ -410,7 +418,7 @@ export type {
 export { BANNER_LANGS, BANNER_LANG_LABELS } from "./promotions";
 
 export const adminApi = {
-  users: (query?: { page?: number; pageSize?: number; status?: string }) =>
+  users: (query?: { page?: number; pageSize?: number; status?: string; q?: string }) =>
     api.get<AuthUser[] | { data: AuthUser[]; meta?: PageMeta } | Paginated<AuthUser>>("/admin/users", {
       query,
       withMeta: true,

@@ -32,6 +32,7 @@ export type ListStaffParams = {
   /** BUYER = candidates; WAREHOUSE|CS|ACCOUNTANT = assigned staff. */
   role?: StaffPoolRole;
   status?: string;
+  q?: string;
   page?: number;
   pageSize?: number;
 };
@@ -49,6 +50,7 @@ export type UpdatePlatformStaffRolesRequest = {
 
 export type ListPlatformStaffParams = {
   status?: string;
+  q?: string;
   page?: number;
   pageSize?: number;
 };
