@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Languages } from "lucide-react";
+import { Languages, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { adminApi, catalogApi } from "@/lib/api";
 import type { ApiCategory } from "@/lib/api/types";
@@ -10,6 +10,7 @@ import { autoTranslateCategory, type CategoryLang } from "@/lib/utils/category-t
 import { getErrorMessage } from "@/lib/queries/utils";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
+import { AdminIconButton } from "@/components/admin/AdminIconButton";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { FormAlerts, useFormAlerts } from "@/lib/ui/form-feedback";
 import { TableSkeleton } from "@/components/ui/Skeleton";
@@ -263,9 +264,9 @@ function CategoriesInner() {
                     <td className="p-3">{c.slug}</td>
                     <td className="p-3">{c.parentId || "—"}</td>
                     <td className="p-3">
-                      <button
-                        type="button"
-                        className="text-xs underline"
+                      <AdminIconButton
+                        label={t("admin.common.edit")}
+                        icon={Pencil}
                         onClick={() => {
                           setEditing(c);
                           setForm({
@@ -276,9 +277,7 @@ function CategoriesInner() {
                             parentId: c.parentId || "",
                           });
                         }}
-                      >
-                        {t("admin.common.edit")}
-                      </button>
+                      />
                     </td>
                   </tr>
                 ))}
