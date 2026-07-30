@@ -1112,10 +1112,15 @@
       "create": "Tạo danh mục",
       "nameEn": "Tên (EN)",
       "nameVi": "Tên (VI)",
+      "nameTw": "Tên (繁中)",
       "noParent": "Không có cha",
       "slug": "Slug",
       "parent": "Danh mục cha",
-      "empty": "Chưa có danh mục."
+      "empty": "Chưa có danh mục.",
+      "translateFrom": "Tự dịch sang 2 ngôn ngữ còn lại",
+      "translateHint": "Nhấn nút dịch (🌐) bên cạnh trường nào đã nhập để tự điền 2 ngôn ngữ còn lại.",
+      "translateSuccess": "Đã dịch thành công cả 3 ngôn ngữ.",
+      "translatePartial": "Không tìm thấy trong từ điển — vui lòng nhập thủ công."
     },
     "auditPage": {
       "filterAction": "vd. admin.shop.approve",

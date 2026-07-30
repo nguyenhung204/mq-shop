@@ -1112,10 +1112,15 @@
       "create": "Create category",
       "nameEn": "Name (EN)",
       "nameVi": "Name (VI)",
+      "nameTw": "Name (繁中)",
       "noParent": "No parent",
       "slug": "Slug",
       "parent": "Parent",
-      "empty": "No categories yet."
+      "empty": "No categories yet.",
+      "translateFrom": "Auto-translate to the other 2 languages",
+      "translateHint": "Click the translate button next to a filled field to auto-fill the other 2 languages.",
+      "translateSuccess": "All 3 languages translated successfully.",
+      "translatePartial": "Not found in dictionary — please enter manually."
     },
     "auditPage": {
       "filterAction": "e.g. admin.shop.approve",

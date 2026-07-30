@@ -444,12 +444,13 @@ export const adminApi = {
   createCategory: (body: {
     name: string;
     nameVi?: string;
+    nameTw?: string;
     slug?: string;
     parentId?: string | null;
   }) => api.post<ApiCategory>("/admin/categories", body),
   updateCategory: (
     id: string,
-    body: { name?: string; nameVi?: string | null; parentId?: string | null },
+    body: { name?: string; nameVi?: string | null; nameTw?: string | null; parentId?: string | null },
   ) => api.patch<ApiCategory>(`/admin/categories/${id}`, body),
   auditLogs: (query?: Record<string, string | number | undefined>) =>
     api.get<
