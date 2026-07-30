@@ -858,9 +858,9 @@
       "invite": "邀請 ADMIN",
       "empty": "此篩選條件無平台員工。",
       "roleHint": "僅可指派 ADMIN（不可在此指派 SUPER_ADMIN）。",
-      "createHint": "Admin 建立 → PENDING 待 Super Admin。Super Admin 建立 → ACTIVE 並產生臨時密碼。",
-      "pendingNotice": "變更已存為 PENDING。需 Super Admin 核准後才能以新角色登入。",
-      "reaffirmHint": "重新送出 ADMIN 角色以雙重審核（Admin → PENDING；Super Admin 立即套用）。"
+      "createHint": "Admin 建立 → 待 Super Admin 核准。Super Admin 建立 → 立即啟用並產生臨時密碼。",
+      "pendingNotice": "變更已儲存，等待核准。需 Super Admin 核准後才能以新角色登入。",
+      "reaffirmHint": "重新送出 Admin 角色以進行雙重審核（Admin → 等待核准；Super Admin 立即套用）。"
     },
     "backups": {
       "title": "備份",
@@ -874,21 +874,21 @@
       "size": "大小",
       "created": "建立時間",
       "download": "下載 ZIP",
-      "maintenanceNote": "dump 進行中時，寫入 API 可能回傳 503（軟維護）。GET 仍可用。"
+      "maintenanceNote": "備份進行中時，寫入操作可能暫時無法使用（軟維護模式）。讀取請求仍正常運作。"
     },
     "dsar": {
       "title": "DSAR 匿名化",
       "description": "核准並執行資料主體刪除申請。Execute 僅 Super Admin。",
       "create": "代使用者建立",
       "empty": "此篩選條件無 DSAR 申請。",
-      "hint": "Approve：SUBMITTED → APPROVED。Execute 會匿名化 PII 並將使用者標記為 DELETED（強制登出）。",
+      "hint": "核准：將申請從已送出移至已核准。執行：匿名化個人資料並將使用者標記為已刪除（強制登出）。",
       "id": "申請",
       "target": "目標使用者",
       "note": "備註",
       "created": "建立時間",
       "targetUserId": "目標使用者 ID",
       "execute": "執行",
-      "executeConfirm": "匿名化此使用者的姓名、電子郵件與頭像，並將帳號標記為 DELETED？"
+      "executeConfirm": "匿名化此使用者的姓名、電子郵件與頭像，並將帳號標記為已刪除？"
     },
     "audit": {
       "title": "稽核日誌",

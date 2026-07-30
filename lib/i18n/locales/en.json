@@ -858,9 +858,9 @@
       "invite": "Invite ADMIN",
       "empty": "No platform staff for this filter.",
       "roleHint": "Assignable role: ADMIN only (SUPER_ADMIN cannot be assigned here).",
-      "createHint": "Admin create → PENDING until Super Admin approves. Super Admin create → ACTIVE with a temporary password.",
-      "pendingNotice": "Change saved as PENDING. Super Admin must approve before the account can sign in with the new roles.",
-      "reaffirmHint": "Re-submit ADMIN role for dual-control (Admin → PENDING; Super Admin applies immediately)."
+      "createHint": "Admin creates → pending until Super Admin approves. Super Admin creates → active immediately with a temporary password.",
+      "pendingNotice": "Change saved and pending approval. Super Admin must approve before the account can sign in with the new roles.",
+      "reaffirmHint": "Re-submit the Admin role for dual-control review (Admin → pending approval; Super Admin applies immediately)."
     },
     "backups": {
       "title": "Backups",
@@ -874,21 +874,21 @@
       "size": "Size",
       "created": "Created",
       "download": "Download ZIP",
-      "maintenanceNote": "While a dump is RUNNING, mutating API calls may return 503 (soft maintenance). GET requests still work."
+      "maintenanceNote": "While a backup is running, write operations may be temporarily unavailable (soft maintenance). Read requests still work."
     },
     "dsar": {
       "title": "DSAR anonymization",
       "description": "Approve and execute data subject erasure requests. Execute is Super Admin only.",
       "create": "Create for user",
       "empty": "No DSAR requests in this filter.",
-      "hint": "Approve moves SUBMITTED → APPROVED. Execute anonymizes PII and marks the user DELETED (force logout).",
+      "hint": "Approve moves the request from submitted to approved. Execute anonymizes PII and marks the user as deleted (force logout).",
       "id": "Request",
       "target": "Target user",
       "note": "Note",
       "created": "Created",
       "targetUserId": "Target user ID",
       "execute": "Execute",
-      "executeConfirm": "Anonymize this user’s name, email, and avatar and mark the account DELETED?"
+      "executeConfirm": "Anonymize this user’s name, email, and avatar and mark the account deleted?"
     },
     "audit": {
       "title": "Audit logs",

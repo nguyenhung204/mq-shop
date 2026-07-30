@@ -858,9 +858,9 @@
       "invite": "Mời ADMIN",
       "empty": "Không có nhân sự nền tảng trong bộ lọc này.",
       "roleHint": "Chỉ gán được ADMIN (không gán SUPER_ADMIN tại đây).",
-      "createHint": "Admin tạo → PENDING chờ Super Admin. Super Admin tạo → ACTIVE kèm mật khẩu tạm.",
-      "pendingNotice": "Thay đổi đã lưu PENDING. Super Admin phải duyệt trước khi đăng nhập với vai trò mới.",
-      "reaffirmHint": "Gửi lại vai trò ADMIN để dual-control (Admin → PENDING; Super Admin áp dụng ngay)."
+      "createHint": "Admin tạo → chờ Super Admin duyệt. Super Admin tạo → hoạt động ngay kèm mật khẩu tạm.",
+      "pendingNotice": "Thay đổi đã lưu, đang chờ duyệt. Super Admin phải duyệt trước khi đăng nhập với vai trò mới.",
+      "reaffirmHint": "Gửi lại vai trò Admin để kiểm duyệt kép (Admin → chờ duyệt; Super Admin áp dụng ngay)."
     },
     "backups": {
       "title": "Sao lưu",
@@ -874,21 +874,21 @@
       "size": "Dung lượng",
       "created": "Tạo lúc",
       "download": "Tải ZIP",
-      "maintenanceNote": "Khi dump đang RUNNING, API ghi có thể trả 503 (bảo trì mềm). GET vẫn hoạt động."
+      "maintenanceNote": "Khi đang chạy backup, API ghi có thể tạm ngưng phục vụ (bảo trì mềm). Truy vấn đọc vẫn hoạt động."
     },
     "dsar": {
       "title": "Ẩn danh DSAR",
       "description": "Duyệt và thực thi yêu cầu xoá dữ liệu. Execute chỉ Super Admin.",
       "create": "Tạo hộ user",
       "empty": "Không có yêu cầu DSAR trong bộ lọc này.",
-      "hint": "Approve: SUBMITTED → APPROVED. Execute ẩn danh PII và đánh dấu user DELETED (force logout).",
+      "hint": "Duyệt: chuyển từ đã gửi sang đã duyệt. Thực thi: ẩn danh PII và đánh dấu tài khoản đã xoá (buộc đăng xuất).",
       "id": "Yêu cầu",
       "target": "User đích",
       "note": "Ghi chú",
       "created": "Tạo lúc",
       "targetUserId": "ID user đích",
       "execute": "Thực thi",
-      "executeConfirm": "Ẩn danh tên, email, avatar và đánh dấu tài khoản DELETED?"
+      "executeConfirm": "Ẩn danh tên, email, avatar và đánh dấu tài khoản đã xoá?"
     },
     "audit": {
       "title": "Nhật ký",
