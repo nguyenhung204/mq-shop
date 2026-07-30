@@ -204,8 +204,8 @@ export function ProductPageContent({
                     SKU {selected.sku}
                     {" · "}
                     {selected.availableStock > 0
-                      ? `${selected.availableStock} in stock`
-                      : "Out of stock"}
+                      ? t("product.stockLeft", { count: String(selected.availableStock) })
+                      : t("product.outOfStock")}
                   </p>
                 ) : null}
               </div>

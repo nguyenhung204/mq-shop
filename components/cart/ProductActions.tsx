@@ -20,7 +20,9 @@ export function ProductActions({ product }: { product: Product }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [qty, setQty] = useState(1);
-  const maxStock = Math.max(1, product.inStock ?? 99);
+  const stock = product.inStock ?? 0;
+  const maxStock = Math.max(1, stock);
+  const outOfStock = stock <= 0;
 
   useEffect(() => {
     setQty((q) => Math.min(Math.max(1, q), maxStock));
@@ -58,23 +60,32 @@ export function ProductActions({ product }: { product: Product }) {
         <QuantityStepper
           value={qty}
           min={1}
-          max={maxStock}
+          max={outOfStock ? 1 : maxStock}
           onChange={setQty}
         />
+        {stock > 0 && (
+          <span className={`text-xs ${stock <= 5 ? "text-orange-500 font-medium" : "text-mq-text-muted"}`}>
+            {t("product.stockLeft", { count: String(stock) })}
+          </span>
+        )}
       </div>
       <div className="flex flex-col sm:flex-row gap-3">
         <button
           type="button"
-          className="mq-btn mq-btn-primary flex-1"
-          disabled={busy}
+          className="mq-btn mq-btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={busy || outOfStock}
           onClick={(e) => void addResolved(e, false)}
         >
-          {busy ? "…" : t("common.addToCart")}
+          {outOfStock
+            ? t("product.outOfStock")
+            : busy
+              ? "…"
+              : t("common.addToCart")}
         </button>
         <button
           type="button"
-          className="mq-btn mq-btn-outline flex-1"
-          disabled={busy}
+          className="mq-btn mq-btn-outline flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={busy || outOfStock}
           onClick={(e) => void addResolved(e, true)}
         >
           {t("product.buyNow")}
