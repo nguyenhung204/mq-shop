@@ -61,6 +61,7 @@ function StaffInner() {
   const [shopFilter, setShopFilter] = useState("");
   const [roleFilter, setRoleFilter] = useState<StaffPoolRole | "">("BUYER");
   const [statusFilter, setStatusFilter] = useState("");
+  const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [createOpen, setCreateOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState<AuthUser | null>(null);
@@ -92,6 +93,7 @@ function StaffInner() {
     shopId: shopFilter || undefined,
     role: roleFilter,
     status: statusFilter || undefined,
+    q: search.trim() || undefined,
     page,
     pageSize: 20,
   });
@@ -259,6 +261,15 @@ function StaffInner() {
         ) : null}
 
         <div className="flex flex-wrap gap-3 items-center">
+          <input
+            className="mq-input max-w-[16rem]"
+            placeholder={t("admin.common.searchPlaceholder")}
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
           <select
             className="mq-input max-w-[16rem]"
             value={shopFilter}

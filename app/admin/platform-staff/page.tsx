@@ -36,6 +36,7 @@ function PlatformStaffInner() {
   const { hasRole } = useAuth();
   const isSuperAdmin = hasRole("SUPER_ADMIN");
   const [statusFilter, setStatusFilter] = useState("");
+  const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState<AuthUser | null>(null);
@@ -52,6 +53,7 @@ function PlatformStaffInner() {
 
   const { data, isLoading, isError, error } = useAdminPlatformStaffList({
     status: statusFilter || undefined,
+    q: search.trim() || undefined,
     page,
     pageSize: 20,
   });
@@ -169,6 +171,15 @@ function PlatformStaffInner() {
         ) : null}
 
         <div className="flex flex-wrap gap-3 items-center">
+          <input
+            className="mq-input max-w-[16rem]"
+            placeholder={t("admin.common.searchPlaceholder")}
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
           <select
             className="mq-input max-w-[11rem]"
             value={statusFilter}

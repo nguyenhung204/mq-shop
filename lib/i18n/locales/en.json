@@ -620,6 +620,7 @@
       "failed": "Failed",
       "loading": "Loading…",
       "allStatuses": "All statuses",
+      "searchPlaceholder": "Search by email or name…",
       "filterStatus": "Filter by status",
       "prev": "Prev",
       "next": "Next",

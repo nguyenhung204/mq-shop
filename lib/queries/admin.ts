@@ -359,6 +359,7 @@ export function useAdminStaffList(params: {
   shopId?: string;
   role?: StaffPoolRole | "";
   status?: string;
+  q?: string;
   page?: number;
   pageSize?: number;
 }) {
@@ -370,6 +371,7 @@ export function useAdminStaffList(params: {
       params.shopId ?? "",
       params.role ?? "",
       params.status ?? "",
+      params.q ?? "",
       page,
       pageSize,
     ],
@@ -379,6 +381,7 @@ export function useAdminStaffList(params: {
           shopId: params.shopId || undefined,
           role: params.role || undefined,
           status: params.status || undefined,
+          q: params.q || undefined,
           page,
           pageSize,
         }),
@@ -461,17 +464,19 @@ export function useStaffAccountAction() {
 
 export function useAdminPlatformStaffList(params: {
   status?: string;
+  q?: string;
   page?: number;
   pageSize?: number;
 }) {
   const page = params.page ?? 1;
   const pageSize = params.pageSize ?? 20;
   return useQuery({
-    queryKey: [...adminKeys.platformStaff(), params.status ?? "", page, pageSize],
+    queryKey: [...adminKeys.platformStaff(), params.status ?? "", params.q ?? "", page, pageSize],
     queryFn: async () =>
       parsePage<AuthUser>(
         await adminPlatformStaffApi.list({
           status: params.status || undefined,
+          q: params.q || undefined,
           page,
           pageSize,
         }),

@@ -620,6 +620,7 @@
       "failed": "Thất bại",
       "loading": "Đang tải…",
       "allStatuses": "Tất cả trạng thái",
+      "searchPlaceholder": "Tìm theo email hoặc tên…",
       "filterStatus": "Lọc theo trạng thái",
       "prev": "Trước",
       "next": "Sau",

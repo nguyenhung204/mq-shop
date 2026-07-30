@@ -410,7 +410,7 @@ export type {
 export { BANNER_LANGS, BANNER_LANG_LABELS } from "./promotions";
 
 export const adminApi = {
-  users: (query?: { page?: number; pageSize?: number; status?: string }) =>
+  users: (query?: { page?: number; pageSize?: number; status?: string; q?: string }) =>
     api.get<AuthUser[] | { data: AuthUser[]; meta?: PageMeta } | Paginated<AuthUser>>("/admin/users", {
       query,
       withMeta: true,

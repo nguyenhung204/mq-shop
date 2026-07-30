@@ -620,6 +620,7 @@
       "failed": "失敗",
       "loading": "載入中…",
       "allStatuses": "全部狀態",
+      "searchPlaceholder": "依電子郵件或姓名搜尋…",
       "filterStatus": "依狀態篩選",
       "prev": "上一頁",
       "next": "下一頁",
