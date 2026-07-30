@@ -1515,7 +1515,15 @@
       "replaceLogo": "Replace logo",
       "replaceBanner": "Replace banner",
       "mediaHint": "JPEG / PNG / WebP / GIF · ≤5MB. Logo ~512×512, banner ~1600×400 (stored as WebP).",
-      "mediaGate": "Logo and banner can only be updated when your shop is approved and active."
+      "mediaGate": "Logo and banner can only be updated when your shop is approved and active.",
+      "bankInfo": "Bank Information",
+      "bankInfoDesc": "Used to receive payouts from the platform. Required before a payout can be created.",
+      "bankName": "Bank name",
+      "accountNumber": "Account number",
+      "accountName": "Account holder name",
+      "bankInfoSaved": "Bank information saved.",
+      "bankInfoMissing": "Bank information not set up.",
+      "bankInfoMissingHint": "Please update to receive payouts."
     },
     "productsPage": {
       "pendingReview": "Pending review",
@@ -2113,6 +2121,7 @@
     "idempotencyKeyReuseMismatch": "Request data changed with a reused key. Please try again.",
     "idempotencyRequestInProgress": "This request is already in progress. Please wait a moment.",
     "validationError": "Invalid data. Please check the fields and try again.",
+    "payoutShopNoBankInfo": "Shop has not set up bank info. Please ask the seller to update before creating a payout.",
     "mlmRankUpdated": "MLM rank updated",
     "mlmRankUpdateFailed": "Failed to update MLM rank",
     "mlmReferrerUpdated": "Referrer updated",

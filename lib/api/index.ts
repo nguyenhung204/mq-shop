@@ -273,6 +273,8 @@ export const shopApi = {
     fd.append("banner", file);
     return api.postForm<ApiShop>("/shops/me/banner", fd);
   },
+  updateBankInfo: (body: { bankName: string; accountNumber: string; accountName: string }) =>
+    api.patch<ApiShop>("/shops/me/bank-info", body),
   listStaff: () => api.get<unknown[]>("/shops/me/staff"),
   addStaff: (body: { userId: string; role?: string }) =>
     api.post("/shops/me/staff", body),

@@ -362,8 +362,15 @@ export type ApiShop = {
   violationFlag?: boolean;
   isSuspended?: boolean;
   contactAdminRequired?: boolean;
+  bankInfo?: ShopBankInfo | null;
   createdAt?: string;
   updatedAt?: string;
+};
+
+export type ShopBankInfo = {
+  bankName: string;
+  accountNumber: string;
+  accountName: string;
 };
 
 export type ApiNotification = {

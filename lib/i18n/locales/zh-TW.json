@@ -1515,7 +1515,15 @@
       "replaceLogo": "更換 Logo",
       "replaceBanner": "更換橫幅",
       "mediaHint": "JPEG / PNG / WebP / GIF · ≤5MB。Logo ~512×512，橫幅 ~1600×400（存成 WebP）。",
-      "mediaGate": "商店已核准且正常營運時才能更新 Logo 與橫幅。"
+      "mediaGate": "商店已核准且正常營運時才能更新 Logo 與橫幅。",
+      "bankInfo": "銀行資料",
+      "bankInfoDesc": "用於接收平台撥款。建立撥款前必須填寫。",
+      "bankName": "銀行名稱",
+      "accountNumber": "帳號",
+      "accountName": "戶名",
+      "bankInfoSaved": "已儲存銀行資料。",
+      "bankInfoMissing": "尚未設定銀行資料。",
+      "bankInfoMissingHint": "請更新以便接收撥款。"
     },
     "productsPage": {
       "pendingReview": "待審核",
@@ -2113,6 +2121,7 @@
     "idempotencyKeyReuseMismatch": "請求內容已變更但重用舊 key，請重試。",
     "idempotencyRequestInProgress": "此請求處理中，請稍候。",
     "validationError": "資料無效，請檢查欄位後重試。",
+    "payoutShopNoBankInfo": "商店尚未設定銀行資料，請要求賣家先更新後再建立撥款。",
     "mlmRankUpdated": "已更新 MLM 等級",
     "mlmRankUpdateFailed": "更新 MLM 等級失敗",
     "mlmReferrerUpdated": "已更新推薦人",

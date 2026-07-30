@@ -1515,7 +1515,15 @@
       "replaceLogo": "Đổi logo",
       "replaceBanner": "Đổi banner",
       "mediaHint": "JPEG / PNG / WebP / GIF · ≤5MB. Logo ~512×512, banner ~1600×400 (lưu WebP).",
-      "mediaGate": "Chỉ có thể cập nhật logo và banner khi shop đã được duyệt và đang hoạt động."
+      "mediaGate": "Chỉ có thể cập nhật logo và banner khi shop đã được duyệt và đang hoạt động.",
+      "bankInfo": "Thông tin ngân hàng",
+      "bankInfoDesc": "Dùng để nhận thanh toán từ sàn. Bắt buộc trước khi tạo payout.",
+      "bankName": "Tên ngân hàng",
+      "accountNumber": "Số tài khoản",
+      "accountName": "Tên chủ tài khoản",
+      "bankInfoSaved": "Đã lưu thông tin ngân hàng.",
+      "bankInfoMissing": "Chưa thiết lập thông tin ngân hàng.",
+      "bankInfoMissingHint": "Vui lòng cập nhật để có thể nhận thanh toán."
     },
     "productsPage": {
       "pendingReview": "Chờ duyệt",
@@ -2113,6 +2121,7 @@
     "idempotencyKeyReuseMismatch": "Dữ liệu đã đổi nhưng dùng lại key cũ. Thử lại.",
     "idempotencyRequestInProgress": "Yêu cầu đang được xử lý. Đợi một lát.",
     "validationError": "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại các trường đã nhập.",
+    "payoutShopNoBankInfo": "Shop chưa cập nhật thông tin ngân hàng. Vui lòng yêu cầu seller thiết lập trước khi tạo payout.",
     "mlmRankUpdated": "Đã cập nhật rank MLM",
     "mlmRankUpdateFailed": "Cập nhật rank MLM thất bại",
     "mlmReferrerUpdated": "Đã cập nhật referrer",
