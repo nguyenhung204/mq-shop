@@ -161,13 +161,18 @@ function StaffInner() {
       });
       closeCreate();
       if (res.temporaryPassword) {
+        // New user created by Super Admin → show temp password
         setCreatedCred({
           email: res.user.email,
           temporaryPassword: res.temporaryPassword,
         });
-      } else if (hasPendingStaffChange(res.user) || !isSuperAdmin) {
+      } else if (hasPendingStaffChange(res.user)) {
+        // Admin assigned existing buyer → pending dual-control
         setPendingNotice(true);
         toast.message(t("admin.staffPage.pendingNotice"));
+      } else {
+        // Super Admin assigned existing buyer → applied immediately
+        toast.success(t("admin.staffPage.assignedExistingUser"));
       }
     } catch (err) {
       createAlerts.setErrorFromApi(err);
