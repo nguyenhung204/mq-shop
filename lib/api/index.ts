@@ -120,6 +120,14 @@ export type {
   ExportFinanceReportResult,
 } from "./finance";
 export { walletApi, adminWalletPayoutApi, adminWalletApi } from "./wallet";
+export { csApi } from "./cs";
+export type {
+  CsCustomerListItem,
+  CsCustomerDetail,
+  CsCustomerStats,
+  CsCustomerRecentOrder,
+  CsCustomerOrderItem,
+} from "./cs";
 export type {
   Wallet,
   WalletTxReason,

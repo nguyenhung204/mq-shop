@@ -586,6 +586,7 @@
       "staff": "Nhân sự",
       "platformStaff": "Nhân sự nền tảng",
       "audit": "Nhật ký",
+      "customers": "Khách hàng",
       "orders": "Đơn hàng",
       "rma": "RMA",
       "settlements": "Đối soát",
@@ -1033,6 +1034,23 @@
       "confirmLockDesc": "{email} sẽ không thể đăng nhập cho đến khi được mở khoá.",
       "confirmDeleteTitle": "Xoá tài khoản này?",
       "confirmDeleteDesc": "{email} sẽ bị xoá mềm và dữ liệu cá nhân được làm sạch. Không thể hoàn tác từ storefront."
+    },
+    "customersPage": {
+      "title": "Khách hàng",
+      "description": "Tìm kiếm và xem thông tin khách hàng.",
+      "searchHint": "Nhập email hoặc tên để tìm…",
+      "empty": "Không tìm thấy khách hàng.",
+      "totalOrders": "Tổng đơn",
+      "totalRma": "Tổng RMA",
+      "recentOrders": "Đơn hàng gần đây",
+      "allOrders": "Tất cả đơn hàng",
+      "noOrders": "Chưa có đơn hàng.",
+      "memberSince": "Tham gia",
+      "stats": "Thống kê",
+      "viewDetail": "Xem chi tiết",
+      "orderCode": "Mã đơn",
+      "orderTotal": "Tổng tiền",
+      "orderDate": "Ngày đặt"
     },
     "staffPage": {
       "allShopsUnassigned": "Tất cả shop (+ buyer chưa gán)",

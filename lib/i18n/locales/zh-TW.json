@@ -586,6 +586,7 @@
       "staff": "員工",
       "platformStaff": "平台員工",
       "audit": "稽核",
+      "customers": "客戶",
       "orders": "訂單",
       "rma": "RMA",
       "settlements": "結算",
@@ -1033,6 +1034,23 @@
       "confirmLockDesc": "{email} 將無法登入，直到帳號被解鎖。",
       "confirmDeleteTitle": "刪除此帳號？",
       "confirmDeleteDesc": "{email} 將被軟刪除並清除個人資料，無法從前台還原。"
+    },
+    "customersPage": {
+      "title": "客戶",
+      "description": "搜尋並查看客戶資訊。",
+      "searchHint": "輸入電子郵件或姓名搜尋…",
+      "empty": "找不到客戶。",
+      "totalOrders": "總訂單",
+      "totalRma": "總 RMA",
+      "recentOrders": "近期訂單",
+      "allOrders": "所有訂單",
+      "noOrders": "尚無訂單。",
+      "memberSince": "加入時間",
+      "stats": "統計",
+      "viewDetail": "查看詳情",
+      "orderCode": "訂單編號",
+      "orderTotal": "金額",
+      "orderDate": "日期"
     },
     "staffPage": {
       "allShopsUnassigned": "全部商店（+ 未指派買家）",

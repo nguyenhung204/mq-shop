@@ -586,6 +586,7 @@
       "staff": "Staff",
       "platformStaff": "Platform staff",
       "audit": "Audit",
+      "customers": "Customers",
       "orders": "Orders",
       "rma": "RMA",
       "settlements": "Settlements",
@@ -1033,6 +1034,23 @@
       "confirmLockDesc": "{email} will not be able to sign in until unlocked.",
       "confirmDeleteTitle": "Delete this account?",
       "confirmDeleteDesc": "{email} will be soft-deleted and personal data scrubbed. This cannot be undone from the storefront."
+    },
+    "customersPage": {
+      "title": "Customers",
+      "description": "Search and view customer information.",
+      "searchHint": "Search by email or name…",
+      "empty": "No customers found.",
+      "totalOrders": "Total orders",
+      "totalRma": "Total RMA",
+      "recentOrders": "Recent orders",
+      "allOrders": "All orders",
+      "noOrders": "No orders yet.",
+      "memberSince": "Member since",
+      "stats": "Statistics",
+      "viewDetail": "View details",
+      "orderCode": "Order code",
+      "orderTotal": "Total",
+      "orderDate": "Date"
     },
     "staffPage": {
       "allShopsUnassigned": "All shops (+ unassigned buyers)",
