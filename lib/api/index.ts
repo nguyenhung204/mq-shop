@@ -68,6 +68,8 @@ export type {
   TopShopsPayload,
   NewUsersTimePoint,
   NewUsersChartPayload,
+  CronJobInfo,
+  CronJobsPayload,
 } from "./admin-dashboard";
 export { sellerDashboardApi } from "./seller-dashboard";
 export type {
@@ -271,6 +273,8 @@ export const shopApi = {
     fd.append("banner", file);
     return api.postForm<ApiShop>("/shops/me/banner", fd);
   },
+  updateBankInfo: (body: { bankName: string; accountNumber: string; accountName: string }) =>
+    api.patch<ApiShop>("/shops/me/bank-info", body),
   listStaff: () => api.get<unknown[]>("/shops/me/staff"),
   addStaff: (body: { userId: string; role?: string }) =>
     api.post("/shops/me/staff", body),
@@ -442,12 +446,13 @@ export const adminApi = {
   createCategory: (body: {
     name: string;
     nameVi?: string;
+    nameTw?: string;
     slug?: string;
     parentId?: string | null;
   }) => api.post<ApiCategory>("/admin/categories", body),
   updateCategory: (
     id: string,
-    body: { name?: string; nameVi?: string | null; parentId?: string | null },
+    body: { name?: string; nameVi?: string | null; nameTw?: string | null; parentId?: string | null },
   ) => api.patch<ApiCategory>(`/admin/categories/${id}`, body),
   auditLogs: (query?: Record<string, string | number | undefined>) =>
     api.get<

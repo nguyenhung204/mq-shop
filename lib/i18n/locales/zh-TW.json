@@ -409,6 +409,7 @@
     "register": "註冊",
     "username": "使用者名稱或電子郵件",
     "password": "密碼",
+    "confirmPassword": "確認密碼",
     "rememberMe": "記住我",
     "logIn": "登入",
     "lostPassword": "忘記密碼？",
@@ -516,6 +517,7 @@
       "profileUpdated": "個人資料已更新。",
       "dsarSubmitted": "已送出刪除申請。",
       "passwordTooShort": "密碼至少需要 8 個字元。",
+      "passwordMismatch": "兩次輸入的密碼不一致。",
       "passwordUpdatedRedirect": "密碼已更新成功，正在前往登入頁…",
       "otpSent": "OTP 已寄至新電子郵件。",
       "emailUpdated": "電子郵件已更新。",
@@ -732,7 +734,12 @@
       "range30d": "30 天",
       "range12m": "12 個月",
       "range90d": "90 天",
-      "noChartData": "尚無資料。"
+      "noChartData": "尚無資料。",
+      "cronJobs": "定時任務",
+      "cronJobsDesc": "排程自動執行任務",
+      "nextRun": "下次執行",
+      "schedule": "排程",
+      "noCronJobs": "目前沒有定時任務。"
     },
     "banners": {
       "title": "橫幅",
@@ -853,9 +860,9 @@
       "invite": "邀請 ADMIN",
       "empty": "此篩選條件無平台員工。",
       "roleHint": "僅可指派 ADMIN（不可在此指派 SUPER_ADMIN）。",
-      "createHint": "Admin 建立 → PENDING 待 Super Admin。Super Admin 建立 → ACTIVE 並產生臨時密碼。",
-      "pendingNotice": "變更已存為 PENDING。需 Super Admin 核准後才能以新角色登入。",
-      "reaffirmHint": "重新送出 ADMIN 角色以雙重審核（Admin → PENDING；Super Admin 立即套用）。"
+      "createHint": "Admin 建立 → 待 Super Admin 核准。Super Admin 建立 → 立即啟用並產生臨時密碼。",
+      "pendingNotice": "變更已儲存，等待核准。需 Super Admin 核准後才能以新角色登入。",
+      "reaffirmHint": "重新送出 Admin 角色以進行雙重審核（Admin → 等待核准；Super Admin 立即套用）。"
     },
     "backups": {
       "title": "備份",
@@ -869,21 +876,21 @@
       "size": "大小",
       "created": "建立時間",
       "download": "下載 ZIP",
-      "maintenanceNote": "dump 進行中時，寫入 API 可能回傳 503（軟維護）。GET 仍可用。"
+      "maintenanceNote": "備份進行中時，寫入操作可能暫時無法使用（軟維護模式）。讀取請求仍正常運作。"
     },
     "dsar": {
       "title": "DSAR 匿名化",
       "description": "核准並執行資料主體刪除申請。Execute 僅 Super Admin。",
       "create": "代使用者建立",
       "empty": "此篩選條件無 DSAR 申請。",
-      "hint": "Approve：SUBMITTED → APPROVED。Execute 會匿名化 PII 並將使用者標記為 DELETED（強制登出）。",
+      "hint": "核准：將申請從已送出移至已核准。執行：匿名化個人資料並將使用者標記為已刪除（強制登出）。",
       "id": "申請",
       "target": "目標使用者",
       "note": "備註",
       "created": "建立時間",
       "targetUserId": "目標使用者 ID",
       "execute": "執行",
-      "executeConfirm": "匿名化此使用者的姓名、電子郵件與頭像，並將帳號標記為 DELETED？"
+      "executeConfirm": "匿名化此使用者的姓名、電子郵件與頭像，並將帳號標記為已刪除？"
     },
     "audit": {
       "title": "稽核日誌",
@@ -1040,11 +1047,12 @@
       "role": "角色",
       "selectShop": "選擇商店",
       "pendingRoles": "待核准角色",
-      "pendingNotice": "變更已存為 PENDING。需 Super Admin 核准後才能以新角色登入。",
-      "createHint": "僅在電子郵件尚未存在時使用。建議對買家候選人指派。Admin 建立後需等 Super Admin 核准。",
+      "pendingNotice": "變更已儲存，等待核准中。需 Super Admin 核准後才能以新角色登入。",
+      "createHint": "輸入現有買家的電子郵件或新郵件。Super Admin 指派 → 立即生效。Admin 指派 → 待 Super Admin 核准。",
       "tempPasswordTitle": "臨時密碼",
       "tempPasswordHint": "請立即複製 — 不會再顯示。帳號：{email}",
       "copy": "複製",
+      "assignedExistingUser": "已為現有使用者指派角色。先前的登入工作階段已撤銷。",
       "candidate": "候選人",
       "buyerCandidates": "買家（候選人）",
       "confirmLockTitle": "鎖定此員工帳號？",
@@ -1107,10 +1115,15 @@
       "create": "建立分類",
       "nameEn": "名稱（EN）",
       "nameVi": "名稱（VI）",
+      "nameTw": "名稱（繁中）",
       "noParent": "無上層",
       "slug": "Slug",
       "parent": "上層分類",
-      "empty": "尚無分類。"
+      "empty": "尚無分類。",
+      "translateFrom": "自動翻譯至其他 2 種語言",
+      "translateHint": "點擊已填欄位旁的翻譯按鈕，自動填入另外 2 種語言。",
+      "translateSuccess": "3 種語言皆已翻譯成功。",
+      "translatePartial": "字典中找不到對應項目，請手動輸入。"
     },
     "auditPage": {
       "filterAction": "例如 admin.shop.approve",
@@ -1505,7 +1518,15 @@
       "replaceLogo": "更換 Logo",
       "replaceBanner": "更換橫幅",
       "mediaHint": "JPEG / PNG / WebP / GIF · ≤5MB。Logo ~512×512，橫幅 ~1600×400（存成 WebP）。",
-      "mediaGate": "商店已核准且正常營運時才能更新 Logo 與橫幅。"
+      "mediaGate": "商店已核准且正常營運時才能更新 Logo 與橫幅。",
+      "bankInfo": "銀行資料",
+      "bankInfoDesc": "用於接收平台撥款。建立撥款前必須填寫。",
+      "bankName": "銀行名稱",
+      "accountNumber": "帳號",
+      "accountName": "戶名",
+      "bankInfoSaved": "已儲存銀行資料。",
+      "bankInfoMissing": "尚未設定銀行資料。",
+      "bankInfoMissingHint": "請更新以便接收撥款。"
     },
     "productsPage": {
       "pendingReview": "待審核",
@@ -2102,6 +2123,8 @@
     "idempotencyKeyRequired": "缺少 Idempotency-Key，請重試。",
     "idempotencyKeyReuseMismatch": "請求內容已變更但重用舊 key，請重試。",
     "idempotencyRequestInProgress": "此請求處理中，請稍候。",
+    "validationError": "資料無效，請檢查欄位後重試。",
+    "payoutShopNoBankInfo": "商店尚未設定銀行資料，請要求賣家先更新後再建立撥款。",
     "mlmRankUpdated": "已更新 MLM 等級",
     "mlmRankUpdateFailed": "更新 MLM 等級失敗",
     "mlmReferrerUpdated": "已更新推薦人",

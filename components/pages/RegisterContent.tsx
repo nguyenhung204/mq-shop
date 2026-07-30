@@ -16,6 +16,7 @@ export function RegisterContent() {
 
   const [regEmail, setRegEmail] = useState("");
   const [regPw, setRegPw] = useState("");
+  const [regPwConfirm, setRegPwConfirm] = useState("");
   const [regName, setRegName] = useState("");
   const [apiError, setApiError] = useState<unknown>(null);
   const [localErrorKey, setLocalErrorKey] = useState<string | null>(null);
@@ -33,6 +34,10 @@ export function RegisterContent() {
     setLocalErrorKey(null);
     if (regPw.length < 8) {
       setLocalErrorKey("account.messages.passwordTooShort");
+      return;
+    }
+    if (regPw !== regPwConfirm) {
+      setLocalErrorKey("account.messages.passwordMismatch");
       return;
     }
     setBusy(true);
@@ -96,6 +101,18 @@ export function RegisterContent() {
             className="mq-input"
             value={regPw}
             onChange={(e) => setRegPw(e.target.value)}
+            required
+            autoComplete="new-password"
+          />
+        </div>
+        <div className="mq-auth-field">
+          <label htmlFor="reg-password-confirm">{t("account.confirmPassword")}</label>
+          <input
+            id="reg-password-confirm"
+            type="password"
+            className="mq-input"
+            value={regPwConfirm}
+            onChange={(e) => setRegPwConfirm(e.target.value)}
             required
             autoComplete="new-password"
           />

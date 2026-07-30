@@ -56,6 +56,22 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "Shop reinstated",
       body: "Your shop is active again.",
     },
+    SHOP_BANK_INFO_SETUP: {
+      title: "Set up your bank account",
+      body: "Your shop was approved. Please add bank info to receive payouts.",
+    },
+    SHOP_BANK_INFO_REMINDER: {
+      title: "Bank info required for payouts",
+      body: "An order was delivered but your shop has no bank info. Update now to receive payouts.",
+    },
+    SELLER_PAYOUT_COMPLETED: {
+      title: "Payout completed",
+      body: "Your payout of {amount} has been transferred to your bank account.",
+    },
+    SELLER_PAYOUT_REJECTED: {
+      title: "Payout rejected",
+      body: "Your payout of {amount} was rejected.{reason}",
+    },
     PRODUCT_APPROVED: {
       title: "Product approved",
       body: "Product {productId} is approved and visible to buyers.",
@@ -286,6 +302,22 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "Shop hoạt động trở lại",
       body: "Shop của bạn đã được mở lại.",
     },
+    SHOP_BANK_INFO_SETUP: {
+      title: "Thiết lập tài khoản ngân hàng",
+      body: "Shop đã được duyệt. Vui lòng thêm thông tin ngân hàng để nhận thanh toán.",
+    },
+    SHOP_BANK_INFO_REMINDER: {
+      title: "Cần thông tin ngân hàng để nhận payout",
+      body: "Đơn hàng đã giao nhưng shop chưa có thông tin ngân hàng. Cập nhật ngay để nhận thanh toán.",
+    },
+    SELLER_PAYOUT_COMPLETED: {
+      title: "Đã chi trả",
+      body: "Khoản chi trả {amount} đã được chuyển vào tài khoản ngân hàng của bạn.",
+    },
+    SELLER_PAYOUT_REJECTED: {
+      title: "Chi trả bị từ chối",
+      body: "Khoản chi trả {amount} đã bị từ chối.{reason}",
+    },
     PRODUCT_APPROVED: {
       title: "Sản phẩm đã duyệt",
       body: "Sản phẩm {productId} đã duyệt và hiển thị với người mua.",
@@ -515,6 +547,22 @@ export const NOTIFICATION_TYPE_COPY: Record<
     SHOP_REINSTATED: {
       title: "商店已恢復",
       body: "您的商店已恢復營運。",
+    },
+    SHOP_BANK_INFO_SETUP: {
+      title: "請設定銀行帳戶",
+      body: "商店已核准。請新增銀行資料以接收撥款。",
+    },
+    SHOP_BANK_INFO_REMINDER: {
+      title: "撥款需要銀行資料",
+      body: "訂單已送達但商店尚無銀行資料。請立即更新以接收撥款。",
+    },
+    SELLER_PAYOUT_COMPLETED: {
+      title: "已完成撥款",
+      body: "您的撥款 {amount} 已轉入您的銀行帳戶。",
+    },
+    SELLER_PAYOUT_REJECTED: {
+      title: "撥款被拒絕",
+      body: "您的撥款 {amount} 已被拒絕。{reason}",
     },
     PRODUCT_APPROVED: {
       title: "商品已核准",

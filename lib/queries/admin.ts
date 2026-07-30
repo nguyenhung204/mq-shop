@@ -46,6 +46,7 @@ export const adminKeys = {
   orderStatus: (range?: string) => [...adminKeys.all, "orderStatus", range] as const,
   topShops: (range?: string, limit?: number) => [...adminKeys.all, "topShops", range, limit] as const,
   newUsersChart: (range?: string) => [...adminKeys.all, "newUsersChart", range] as const,
+  cronJobs: () => [...adminKeys.all, "cronJobs"] as const,
 };
 
 const ADMIN_DASHBOARD_SECTIONS = "queues,snapshot";
@@ -96,6 +97,15 @@ export function useAdminNewUsersChart(range?: AdminChartRange) {
     queryKey: adminKeys.newUsersChart(range),
     queryFn: () => adminDashboardApi.newUsersChart(range),
     staleTime: 5 * 60_000,
+  });
+}
+
+export function useAdminCronJobs() {
+  return useQuery({
+    queryKey: adminKeys.cronJobs(),
+    queryFn: () => adminDashboardApi.cronJobs(),
+    staleTime: 5 * 60_000,
+    refetchInterval: 5 * 60_000,
   });
 }
 

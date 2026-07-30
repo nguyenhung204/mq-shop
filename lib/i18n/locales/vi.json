@@ -409,6 +409,7 @@
     "register": "Đăng ký",
     "username": "Tên đăng nhập hoặc email",
     "password": "Mật khẩu",
+    "confirmPassword": "Nhập lại mật khẩu",
     "rememberMe": "Ghi nhớ đăng nhập",
     "logIn": "Đăng nhập",
     "lostPassword": "Quên mật khẩu?",
@@ -516,6 +517,7 @@
       "profileUpdated": "Đã cập nhật hồ sơ.",
       "dsarSubmitted": "Đã gửi yêu cầu xoá dữ liệu.",
       "passwordTooShort": "Mật khẩu phải có ít nhất 8 ký tự.",
+      "passwordMismatch": "Mật khẩu nhập lại không khớp.",
       "passwordUpdatedRedirect": "Đổi mật khẩu thành công. Đang chuyển về trang đăng nhập…",
       "otpSent": "Đã gửi OTP tới email mới.",
       "emailUpdated": "Đã cập nhật email.",
@@ -732,7 +734,12 @@
       "range30d": "30 ngày",
       "range12m": "12 tháng",
       "range90d": "90 ngày",
-      "noChartData": "Chưa có dữ liệu."
+      "noChartData": "Chưa có dữ liệu.",
+      "cronJobs": "Cron Jobs",
+      "cronJobsDesc": "Tác vụ tự động theo lịch",
+      "nextRun": "Lần chạy tiếp",
+      "schedule": "Lịch",
+      "noCronJobs": "Không có cron job nào."
     },
     "banners": {
       "title": "Banner",
@@ -853,9 +860,9 @@
       "invite": "Mời ADMIN",
       "empty": "Không có nhân sự nền tảng trong bộ lọc này.",
       "roleHint": "Chỉ gán được ADMIN (không gán SUPER_ADMIN tại đây).",
-      "createHint": "Admin tạo → PENDING chờ Super Admin. Super Admin tạo → ACTIVE kèm mật khẩu tạm.",
-      "pendingNotice": "Thay đổi đã lưu PENDING. Super Admin phải duyệt trước khi đăng nhập với vai trò mới.",
-      "reaffirmHint": "Gửi lại vai trò ADMIN để dual-control (Admin → PENDING; Super Admin áp dụng ngay)."
+      "createHint": "Admin tạo → chờ Super Admin duyệt. Super Admin tạo → hoạt động ngay kèm mật khẩu tạm.",
+      "pendingNotice": "Thay đổi đã lưu, đang chờ duyệt. Super Admin phải duyệt trước khi đăng nhập với vai trò mới.",
+      "reaffirmHint": "Gửi lại vai trò Admin để kiểm duyệt kép (Admin → chờ duyệt; Super Admin áp dụng ngay)."
     },
     "backups": {
       "title": "Sao lưu",
@@ -869,21 +876,21 @@
       "size": "Dung lượng",
       "created": "Tạo lúc",
       "download": "Tải ZIP",
-      "maintenanceNote": "Khi dump đang RUNNING, API ghi có thể trả 503 (bảo trì mềm). GET vẫn hoạt động."
+      "maintenanceNote": "Khi đang chạy backup, API ghi có thể tạm ngưng phục vụ (bảo trì mềm). Truy vấn đọc vẫn hoạt động."
     },
     "dsar": {
       "title": "Ẩn danh DSAR",
       "description": "Duyệt và thực thi yêu cầu xoá dữ liệu. Execute chỉ Super Admin.",
       "create": "Tạo hộ user",
       "empty": "Không có yêu cầu DSAR trong bộ lọc này.",
-      "hint": "Approve: SUBMITTED → APPROVED. Execute ẩn danh PII và đánh dấu user DELETED (force logout).",
+      "hint": "Duyệt: chuyển từ đã gửi sang đã duyệt. Thực thi: ẩn danh PII và đánh dấu tài khoản đã xoá (buộc đăng xuất).",
       "id": "Yêu cầu",
       "target": "User đích",
       "note": "Ghi chú",
       "created": "Tạo lúc",
       "targetUserId": "ID user đích",
       "execute": "Thực thi",
-      "executeConfirm": "Ẩn danh tên, email, avatar và đánh dấu tài khoản DELETED?"
+      "executeConfirm": "Ẩn danh tên, email, avatar và đánh dấu tài khoản đã xoá?"
     },
     "audit": {
       "title": "Nhật ký",
@@ -1040,11 +1047,12 @@
       "role": "Vai trò",
       "selectShop": "Chọn shop",
       "pendingRoles": "Vai trò chờ duyệt",
-      "pendingNotice": "Thay đổi đã lưu PENDING. Super Admin phải duyệt trước khi đăng nhập với vai trò mới.",
-      "createHint": "Chỉ khi email chưa tồn tại. Nên Assign trên ứng viên người mua. Admin tạo → chờ Super Admin duyệt.",
+      "pendingNotice": "Thay đổi đã lưu và đang chờ duyệt. Super Admin phải duyệt trước khi đăng nhập với vai trò mới.",
+      "createHint": "Nhập email user đã có (Buyer) hoặc email mới. Super Admin gán → áp dụng ngay. Admin gán → chờ Super Admin duyệt.",
       "tempPasswordTitle": "Mật khẩu tạm",
       "tempPasswordHint": "Copy ngay — sẽ không hiện lại. Tài khoản: {email}",
       "copy": "Copy",
+      "assignedExistingUser": "Đã gán vai trò cho user hiện có. Phiên đăng nhập cũ đã bị huỷ.",
       "candidate": "Ứng viên",
       "buyerCandidates": "Người mua (ứng viên)",
       "confirmLockTitle": "Khoá tài khoản nhân sự?",
@@ -1107,10 +1115,15 @@
       "create": "Tạo danh mục",
       "nameEn": "Tên (EN)",
       "nameVi": "Tên (VI)",
+      "nameTw": "Tên (繁中)",
       "noParent": "Không có cha",
       "slug": "Slug",
       "parent": "Danh mục cha",
-      "empty": "Chưa có danh mục."
+      "empty": "Chưa có danh mục.",
+      "translateFrom": "Tự dịch sang 2 ngôn ngữ còn lại",
+      "translateHint": "Nhấn nút dịch (🌐) bên cạnh trường nào đã nhập để tự điền 2 ngôn ngữ còn lại.",
+      "translateSuccess": "Đã dịch thành công cả 3 ngôn ngữ.",
+      "translatePartial": "Không tìm thấy trong từ điển — vui lòng nhập thủ công."
     },
     "auditPage": {
       "filterAction": "vd. admin.shop.approve",
@@ -1505,7 +1518,15 @@
       "replaceLogo": "Đổi logo",
       "replaceBanner": "Đổi banner",
       "mediaHint": "JPEG / PNG / WebP / GIF · ≤5MB. Logo ~512×512, banner ~1600×400 (lưu WebP).",
-      "mediaGate": "Chỉ có thể cập nhật logo và banner khi shop đã được duyệt và đang hoạt động."
+      "mediaGate": "Chỉ có thể cập nhật logo và banner khi shop đã được duyệt và đang hoạt động.",
+      "bankInfo": "Thông tin ngân hàng",
+      "bankInfoDesc": "Dùng để nhận thanh toán từ sàn. Bắt buộc trước khi tạo payout.",
+      "bankName": "Tên ngân hàng",
+      "accountNumber": "Số tài khoản",
+      "accountName": "Tên chủ tài khoản",
+      "bankInfoSaved": "Đã lưu thông tin ngân hàng.",
+      "bankInfoMissing": "Chưa thiết lập thông tin ngân hàng.",
+      "bankInfoMissingHint": "Vui lòng cập nhật để có thể nhận thanh toán."
     },
     "productsPage": {
       "pendingReview": "Chờ duyệt",
@@ -2102,6 +2123,8 @@
     "idempotencyKeyRequired": "Thiếu Idempotency-Key. Thử lại.",
     "idempotencyKeyReuseMismatch": "Dữ liệu đã đổi nhưng dùng lại key cũ. Thử lại.",
     "idempotencyRequestInProgress": "Yêu cầu đang được xử lý. Đợi một lát.",
+    "validationError": "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại các trường đã nhập.",
+    "payoutShopNoBankInfo": "Shop chưa cập nhật thông tin ngân hàng. Vui lòng yêu cầu seller thiết lập trước khi tạo payout.",
     "mlmRankUpdated": "Đã cập nhật rank MLM",
     "mlmRankUpdateFailed": "Cập nhật rank MLM thất bại",
     "mlmReferrerUpdated": "Đã cập nhật referrer",

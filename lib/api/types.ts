@@ -233,7 +233,9 @@ export type ApiCategory = {
   /** English (default) display name */
   name: string;
   nameVi?: string;
-  /** Traditional Chinese — optional until BE ships the field */
+  /** Traditional Chinese (name_tw column). */
+  nameTw?: string | null;
+  /** @deprecated alias — use `nameTw` */
   nameZhTw?: string | null;
   parentId?: string | null;
 };
@@ -360,8 +362,15 @@ export type ApiShop = {
   violationFlag?: boolean;
   isSuspended?: boolean;
   contactAdminRequired?: boolean;
+  bankInfo?: ShopBankInfo | null;
   createdAt?: string;
   updatedAt?: string;
+};
+
+export type ShopBankInfo = {
+  bankName: string;
+  accountNumber: string;
+  accountName: string;
 };
 
 export type ApiNotification = {
@@ -394,6 +403,10 @@ export type NotificationType =
   | "SHOP_REJECTED"
   | "SHOP_SUSPENDED"
   | "SHOP_REINSTATED"
+  | "SHOP_BANK_INFO_SETUP"
+  | "SHOP_BANK_INFO_REMINDER"
+  | "SELLER_PAYOUT_COMPLETED"
+  | "SELLER_PAYOUT_REJECTED"
   | "PRODUCT_APPROVED"
   | "PRODUCT_REJECTED"
   | "PRODUCT_HIDDEN"
