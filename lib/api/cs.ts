@@ -53,9 +53,10 @@ export interface CsCustomerOrderItem {
 // ---------------------------------------------------------------------------
 
 export const csApi = {
-  /** Search customers by email or name */
+  /** Search customers by email or name, filter by status */
   customers: async (query?: {
     q?: string;
+    status?: string;
     page?: number;
     pageSize?: number;
   }) => {

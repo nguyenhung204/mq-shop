@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search, Users } from "lucide-react";
+import { Search } from "lucide-react";
 import { useCsCustomers } from "@/lib/queries/cs";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
@@ -14,9 +14,10 @@ import { TableSkeleton } from "@/components/ui/Skeleton";
 function CustomersInner() {
   const { t } = useLanguage();
   const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useCsCustomers(search, page);
+  const { data, isLoading } = useCsCustomers(search, status, page);
   const items = data?.items ?? [];
   const meta = data?.meta;
 
@@ -35,7 +36,7 @@ function CustomersInner() {
               className="absolute left-3 top-1/2 -translate-y-1/2 text-mq-text-muted pointer-events-none"
             />
             <input
-              className="mq-input pl-9 w-full"
+              className="mq-input !pl-9 w-full"
               placeholder={t("admin.customersPage.searchHint")}
               value={search}
               onChange={(e) => {
@@ -44,14 +45,22 @@ function CustomersInner() {
               }}
             />
           </div>
+          <select
+            className="mq-input max-w-[11rem]"
+            value={status}
+            aria-label={t("admin.common.filterStatus")}
+            onChange={(e) => {
+              setStatus(e.target.value);
+              setPage(1);
+            }}
+          >
+            <option value="">{t("admin.common.allStatuses")}</option>
+            <option value="ACTIVE">{translateStatus(t, "user", "ACTIVE")}</option>
+            <option value="LOCKED">{translateStatus(t, "user", "LOCKED")}</option>
+          </select>
         </div>
 
-        {!search.trim() ? (
-          <div className="flex flex-col items-center justify-center py-16 text-mq-text-muted">
-            <Users size={40} strokeWidth={1.25} className="mb-3 opacity-40" />
-            <p className="text-sm">{t("admin.customersPage.searchHint")}</p>
-          </div>
-        ) : isLoading ? (
+        {isLoading ? (
           <TableSkeleton rows={5} cols={4} />
         ) : items.length === 0 ? (
           <p className="text-sm text-mq-text-muted">{t("admin.customersPage.empty")}</p>
@@ -101,7 +110,7 @@ function CustomersInner() {
           </div>
         )}
 
-        {search.trim() && items.length > 0 && (
+        {items.length > 0 && (
           <PaginationBar page={page} meta={meta} onPageChange={setPage} />
         )}
       </div>

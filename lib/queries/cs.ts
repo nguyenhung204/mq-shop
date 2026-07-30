@@ -7,20 +7,25 @@ import type { CsCustomerListItem, CsCustomerOrderItem } from "@/lib/api/cs";
 
 export const csKeys = {
   all: ["cs"] as const,
-  customers: (q?: string, page?: number) => [...csKeys.all, "customers", q, page] as const,
+  customers: (q?: string, status?: string, page?: number) =>
+    [...csKeys.all, "customers", q, status, page] as const,
   customer: (id: string) => [...csKeys.all, "customer", id] as const,
   customerOrders: (id: string, page?: number) =>
     [...csKeys.all, "customerOrders", id, page] as const,
 };
 
-export function useCsCustomers(q?: string, page = 1, pageSize = 20) {
+export function useCsCustomers(q?: string, status?: string, page = 1, pageSize = 20) {
   return useQuery({
-    queryKey: csKeys.customers(q, page),
+    queryKey: csKeys.customers(q, status, page),
     queryFn: async () =>
       parsePage<CsCustomerListItem>(
-        await csApi.customers({ q: q || undefined, page, pageSize }),
+        await csApi.customers({
+          q: q || undefined,
+          status: status || undefined,
+          page,
+          pageSize,
+        }),
       ),
-    enabled: Boolean(q?.trim()),
   });
 }
 

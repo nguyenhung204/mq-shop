@@ -117,19 +117,19 @@ export const adminNavItems: AdminNavItem[] = [
     group: "ops",
   },
   {
-    href: "/admin/audit-logs",
-    labelKey: "admin.nav.audit",
-    icon: ClipboardList,
-    permissions: ["VIEW_AUDIT_LOG"],
-    roles: ["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"],
-    group: "ops",
-  },
-  {
     href: "/admin/customers",
     labelKey: "admin.nav.customers",
     icon: Users,
     permissions: ["VIEW_CUST_DATA"],
     roles: ["CS", "ACCOUNTANT", "ADMIN", "SUPER_ADMIN"],
+    group: "ops",
+  },
+  {
+    href: "/admin/audit-logs",
+    labelKey: "admin.nav.audit",
+    icon: ClipboardList,
+    permissions: ["VIEW_AUDIT_LOG"],
+    roles: ["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"],
     group: "ops",
   },
   {
