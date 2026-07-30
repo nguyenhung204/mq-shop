@@ -2112,6 +2112,7 @@
     "idempotencyKeyRequired": "缺少 Idempotency-Key，請重試。",
     "idempotencyKeyReuseMismatch": "請求內容已變更但重用舊 key，請重試。",
     "idempotencyRequestInProgress": "此請求處理中，請稍候。",
+    "validationError": "資料無效，請檢查欄位後重試。",
     "mlmRankUpdated": "已更新 MLM 等級",
     "mlmRankUpdateFailed": "更新 MLM 等級失敗",
     "mlmReferrerUpdated": "已更新推薦人",

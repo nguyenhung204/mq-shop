@@ -2112,6 +2112,7 @@
     "idempotencyKeyRequired": "Missing idempotency key. Please try again.",
     "idempotencyKeyReuseMismatch": "Request data changed with a reused key. Please try again.",
     "idempotencyRequestInProgress": "This request is already in progress. Please wait a moment.",
+    "validationError": "Invalid data. Please check the fields and try again.",
     "mlmRankUpdated": "MLM rank updated",
     "mlmRankUpdateFailed": "Failed to update MLM rank",
     "mlmReferrerUpdated": "Referrer updated",

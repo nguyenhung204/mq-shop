@@ -48,6 +48,7 @@ export const API_ERROR_I18N: Record<string, string> = {
   IDEMPOTENCY_KEY_REQUIRED: "toast.idempotencyKeyRequired",
   IDEMPOTENCY_KEY_REUSE_MISMATCH: "toast.idempotencyKeyReuseMismatch",
   IDEMPOTENCY_REQUEST_IN_PROGRESS: "toast.idempotencyRequestInProgress",
+  VALIDATION_ERROR: "toast.validationError",
 };
 
 const STATUS_TOKENS_BY_DOMAIN: Record<string, string[]> = {

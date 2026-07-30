@@ -2112,6 +2112,7 @@
     "idempotencyKeyRequired": "Thiếu Idempotency-Key. Thử lại.",
     "idempotencyKeyReuseMismatch": "Dữ liệu đã đổi nhưng dùng lại key cũ. Thử lại.",
     "idempotencyRequestInProgress": "Yêu cầu đang được xử lý. Đợi một lát.",
+    "validationError": "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại các trường đã nhập.",
     "mlmRankUpdated": "Đã cập nhật rank MLM",
     "mlmRankUpdateFailed": "Cập nhật rank MLM thất bại",
     "mlmReferrerUpdated": "Đã cập nhật referrer",
