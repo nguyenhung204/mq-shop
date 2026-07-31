@@ -844,7 +844,10 @@
     },
     "inventory": {
       "title": "庫存",
-      "description": "審核跨店庫存單。"
+      "description": "審核跨店庫存單。",
+      "shopPicker": "商店",
+      "myShop": "我的商店",
+      "noShops": "無商店"
     },
     "categories": {
       "title": "分類",

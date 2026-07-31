@@ -9,6 +9,8 @@ export type Warehouse = {
   shopId: string;
   code: string;
   address: string | null;
+  countryCode?: string;
+  warehouseType?: "SHOP" | "PLATFORM";
   createdAt: string;
 };
 
@@ -64,6 +66,7 @@ export type StockLedgerEntry = {
 export type CreateWarehouseRequest = {
   code: string;
   address?: string;
+  shopId?: string;
 };
 
 export type CreateVariantRequest = {
@@ -73,6 +76,7 @@ export type CreateVariantRequest = {
   options?: Record<string, string>;
   costPrice?: number | null;
   isEnrollmentPackage?: boolean;
+  shopId?: string;
 };
 
 export type CreateSlipItemRequest = {
@@ -86,23 +90,27 @@ export type CreateSlipRequest = {
   warehouseCode?: string;
   locationNote?: string;
   items: CreateSlipItemRequest[];
+  shopId?: string;
 };
 
 export type ListVariantsParams = {
   q?: string;
   productId?: string;
+  shopId?: string;
   page?: number;
   pageSize?: number;
 };
 
 export type ListSlipsParams = {
   status?: InventorySlipStatus;
+  shopId?: string;
   page?: number;
   pageSize?: number;
 };
 
 export type ListLedgerParams = {
   sku?: string;
+  shopId?: string;
   from?: string;
   to?: string;
   page?: number;
@@ -132,7 +140,10 @@ type PageEnvelope<T> =
   | Paginated<T>;
 
 export const inventoryApi = {
-  listWarehouses: () => api.get<Warehouse[]>("/inventory/warehouses"),
+  listWarehouses: (shopId?: string) =>
+    api.get<Warehouse[]>("/inventory/warehouses", {
+      query: shopId ? { shopId } : undefined,
+    }),
 
   createWarehouse: (body: CreateWarehouseRequest) =>
     api.post<Warehouse>("/inventory/warehouses", body),

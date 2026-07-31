@@ -844,7 +844,10 @@
     },
     "inventory": {
       "title": "Kho",
-      "description": "Xem xét và duyệt phiếu kho liên shop."
+      "description": "Xem xét và duyệt phiếu kho liên shop.",
+      "shopPicker": "Shop",
+      "myShop": "Shop của tôi",
+      "noShops": "Không có shop"
     },
     "categories": {
       "title": "Danh mục",

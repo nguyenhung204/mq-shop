@@ -844,7 +844,10 @@
     },
     "inventory": {
       "title": "Inventory",
-      "description": "Review and decide stock slips across shops."
+      "description": "Review and decide stock slips across shops.",
+      "shopPicker": "Shop",
+      "myShop": "My shop",
+      "noShops": "No shops"
     },
     "categories": {
       "title": "Categories",
