@@ -528,9 +528,8 @@ function VariantsTab() {
                   <th className="py-2 pr-3 font-medium">{t("seller.productsPage.sku")}</th>
                   <th className="py-2 pr-3 font-medium">{t("admin.common.name")}</th>
                   <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.sellPrice")}</th>
-                  <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.available")}</th>
-                  <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.costPrice")}</th>
-                  <th className="py-2 font-medium">{t("seller.inventoryPage.flags")}</th>
+                  <th className="py-2 pr-3 font-medium">{t("product.stock")}</th>
+                  <th className="py-2 font-medium">{t("seller.inventoryPage.costPrice")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -541,12 +540,9 @@ function VariantsTab() {
                       {productTitle(v.productId)}
                     </td>
                     <td className="py-2.5 pr-3">{formatMoney(v.sellingPrice)}</td>
-                    <td className="py-2.5 pr-3">{v.availableStock}</td>
-                    <td className="py-2.5 pr-3 text-mq-text-secondary">
+                    <td className="py-2.5 pr-3 tabular-nums">{v.availableStock}</td>
+                    <td className="py-2.5 text-mq-text-secondary">
                       {v.costPrice != null ? formatMoney(v.costPrice) : "—"}
-                    </td>
-                    <td className="py-2.5 text-xs text-mq-text-muted">
-                      {v.isEnrollmentPackage ? t("seller.inventoryPage.enrollmentPkgShort") : "—"}
                     </td>
                   </tr>
                 ))}
