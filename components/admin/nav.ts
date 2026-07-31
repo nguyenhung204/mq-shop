@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import {
+  ArrowRightLeft,
   BadgePercent,
   Boxes,
   Calculator,
@@ -94,6 +95,14 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.inventory",
     icon: Boxes,
     permissions: ["VIEW_INVENTORY", "EDIT_INVENTORY"],
+    roles: ["WAREHOUSE", "ADMIN", "SUPER_ADMIN"],
+    group: "ops",
+  },
+  {
+    href: "/admin/transfers",
+    labelKey: "admin.nav.transfers",
+    icon: ArrowRightLeft,
+    permissions: ["SYNC_INVENTORY"],
     roles: ["WAREHOUSE", "ADMIN", "SUPER_ADMIN"],
     group: "ops",
   },
