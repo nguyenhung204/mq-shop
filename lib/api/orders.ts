@@ -62,6 +62,7 @@ export type AdminShippingQuoteRequest = ShippingQuoteRequest & {
 export type OrderItemView = {
   id: string;
   variantId: string;
+  warehouseId?: string;
   productId: string;
   sku: string;
   titleSnapshot: string;

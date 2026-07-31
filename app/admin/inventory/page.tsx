@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Check, X } from "lucide-react";
 import type {
   InventorySlip,
   InventorySlipStatus,
-  InventorySlipType,
   StockLedgerEntry,
+  StockLedgerType,
 } from "@/lib/api/inventory";
 import { formatMoney } from "@/lib/api/utils";
 import {
@@ -15,6 +16,7 @@ import {
   useAdminInventorySlip,
   useAdminInventorySlips,
   useAdminRejectSlip,
+  useWarehouses,
 } from "@/lib/queries/inventory";
 import { useAdminShops } from "@/lib/queries/admin";
 import { AuthGuard } from "@/components/guards/AuthGuard";
@@ -55,7 +57,7 @@ function formatWhen(iso: string | null | undefined): string {
 }
 
 function slipTypeLabel(
-  type: InventorySlipType,
+  type: StockLedgerType,
   t: (key: string, vars?: Record<string, string>) => string,
 ): string {
   return translateStatus(t, "inventorySlipType", type);
@@ -73,11 +75,11 @@ function slipItemsSummary(
   return `${head} ${t("admin.inventoryPage.more", { n: String(lines.length - 1) })}`;
 }
 
-function SlipsTab() {
+function SlipsTab({ initialSlipId }: { initialSlipId?: string | null }) {
   const { t } = useLanguage();
   const [status, setStatus] = useState<InventorySlipStatus | "">("");
   const [page, setPage] = useState(1);
-  const [detailId, setDetailId] = useState<string | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(initialSlipId ?? null);
   const { data, isLoading, isError, error } = useAdminInventorySlips({
     status: status || undefined,
     page,
@@ -109,6 +111,21 @@ function SlipsTab() {
           <option value="REJECTED">{t("admin.common.rejected")}</option>
         </select>
       </div>
+
+      {/* Deep-linked slip that is not on the current page — show it standalone. */}
+      {detailId && !items.some((s) => s.id === detailId) ? (
+        <div className="mq-card p-4">
+          <SlipDetailBody
+            slip={detailQuery.data}
+            loading={detailQuery.isLoading}
+            error={
+              detailQuery.isError
+                ? getErrorMessage(detailQuery.error, t("admin.common.failed"))
+                : null
+            }
+          />
+        </div>
+      ) : null}
 
       {isError && (
         <div className="mq-alert mq-alert-error">
@@ -227,6 +244,17 @@ function LedgerTab() {
   const { data: shopsPage } = useAdminShops("APPROVED", 1, 100);
   const shops = shopsPage?.items ?? [];
 
+  // Resolve ledger `warehouseId` → warehouse code for the selected shop.
+  const { data: warehouses = [] } = useWarehouses({
+    shopId: shopId || undefined,
+    enabled: Boolean(shopId),
+  });
+  const warehouseCodeById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const w of warehouses) map.set(w.id, w.code);
+    return map;
+  }, [warehouses]);
+
   const { data, isLoading, isError, error, isFetching } = useAdminInventoryLedger({
     shopId: shopId || undefined,
     sku: sku || undefined,
@@ -302,7 +330,7 @@ function LedgerTab() {
           {getErrorMessage(error, t("admin.common.failed"))}
         </div>
       ) : isLoading || (isFetching && !data) ? (
-        <TableSkeleton rows={5} cols={6} />
+        <TableSkeleton rows={5} cols={7} />
       ) : items.length === 0 ? (
         <p className="text-sm text-mq-text-muted">{t("admin.inventoryPage.emptyLedger")}</p>
       ) : (
@@ -312,6 +340,7 @@ function LedgerTab() {
               <thead>
                 <tr className="text-left text-mq-text-muted border-b border-mq-border">
                   <th className="py-2 pr-3 font-medium">{t("admin.common.when")}</th>
+                  <th className="py-2 pr-3 font-medium">{t("admin.inventoryPage.warehouse")}</th>
                   <th className="py-2 pr-3 font-medium">SKU</th>
                   <th className="py-2 pr-3 font-medium">{t("admin.inventoryPage.type")}</th>
                   <th className="py-2 pr-3 font-medium">{t("admin.inventoryPage.qty")}</th>
@@ -324,6 +353,11 @@ function LedgerTab() {
                   <tr key={row.id} className="border-b border-mq-border/60">
                     <td className="py-2.5 pr-3 text-xs text-mq-text-muted">
                       {formatWhen(row.recordedAt)}
+                    </td>
+                    <td className="py-2.5 pr-3 text-xs font-medium">
+                      {warehouseCodeById.get(row.warehouseId) ||
+                        row.warehouseId?.slice(0, 8) ||
+                        "—"}
                     </td>
                     <td className="py-2.5 pr-3 font-medium">{row.sku}</td>
                     <td className="py-2.5 pr-3 text-xs">{slipTypeLabel(row.type, t)}</td>
@@ -348,7 +382,12 @@ function LedgerTab() {
 
 function InventoryInner() {
   const { t } = useLanguage();
-  const [tab, setTab] = useState<TabId>("slips");
+  const searchParams = useSearchParams();
+  const slipId = searchParams.get("slipId");
+  const tabParam = searchParams.get("tab");
+  const [tab, setTab] = useState<TabId>(() =>
+    tabParam === "ledger" ? "ledger" : "slips",
+  );
 
   const tabLabel = (id: TabId) =>
     id === "slips" ? t("admin.inventoryPage.slips") : t("admin.inventoryPage.ledger");
@@ -389,7 +428,7 @@ function InventoryInner() {
 
         <div role="tabpanel">
           <div hidden={tab !== "slips"}>
-            <SlipsTab />
+            <SlipsTab initialSlipId={slipId} />
           </div>
           <div hidden={tab !== "ledger"}>
             <LedgerTab />
@@ -403,10 +442,13 @@ function InventoryInner() {
 export default function AdminInventoryPage() {
   return (
     <AuthGuard
-      roles={["ADMIN", "SUPER_ADMIN"]}
+      roles={["ADMIN", "SUPER_ADMIN", "WAREHOUSE"]}
       permissions={["VIEW_INVENTORY", "EDIT_INVENTORY"]}
     >
-      <InventoryInner />
+      {/* useSearchParams (slip deep-link) needs a Suspense boundary. */}
+      <Suspense fallback={<AdminCardListSkeleton count={4} />}>
+        <InventoryInner />
+      </Suspense>
     </AuthGuard>
   );
 }

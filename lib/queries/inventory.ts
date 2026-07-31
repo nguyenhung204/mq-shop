@@ -8,19 +8,26 @@ import { createIdempotencyKeyStore } from "@/lib/api/idempotency";
 import {
   adminInventoryApi,
   inventoryApi,
+  transferApi,
   type AdminListLedgerParams,
   type AdminListSlipsParams,
   type CreateSlipRequest,
+  type CreateTransferRequest,
   type CreateVariantRequest,
   type CreateWarehouseRequest,
   type InventorySlip,
   type InventorySlipStatus,
   type InventoryVariant,
+  type InventoryTransfer,
   type ListLedgerParams,
   type ListSlipsParams,
+  type ListTransfersParams,
   type ListVariantsParams,
+  type ListWarehouseStockParams,
+  type ReceiveTransferRequest,
   type StockLedgerEntry,
   type Warehouse,
+  type WarehouseStockItem,
 } from "@/lib/api/inventory";
 import { asArray, parsePage } from "@/lib/api/utils";
 import { tt } from "@/lib/i18n/tt";
@@ -28,7 +35,8 @@ import { getErrorMessage } from "@/lib/queries/utils";
 
 export const inventoryKeys = {
   all: ["inventory"] as const,
-  warehouses: () => [...inventoryKeys.all, "warehouses"] as const,
+  warehouses: (shopId?: string) =>
+    [...inventoryKeys.all, "warehouses", shopId ?? ""] as const,
   variants: (params: ListVariantsParams) =>
     [
       ...inventoryKeys.all,
@@ -82,39 +90,44 @@ export const inventoryKeys = {
       params.from || "",
       params.to || "",
     ] as const,
+  transfers: (params: ListTransfersParams) =>
+    [
+      ...inventoryKeys.all,
+      "transfers",
+      params.page ?? 1,
+      params.pageSize ?? 20,
+      params.status ?? "",
+      params.fromWarehouseId ?? "",
+      params.toWarehouseId ?? "",
+    ] as const,
+  transfer: (id: string) => [...inventoryKeys.all, "transfer", id] as const,
+  warehouseStock: (warehouseId: string, params: ListWarehouseStockParams) =>
+    [
+      ...inventoryKeys.all,
+      "warehouseStock",
+      warehouseId,
+      params.q?.trim() || "",
+      params.page ?? 1,
+      params.pageSize ?? 20,
+    ] as const,
 };
 
+/**
+ * Inventory-specific wording for codes whose generic copy would be misleading
+ * here. Everything else falls through to the shared code → i18n key map.
+ */
 function inventoryErrorMessage(e: unknown, fallback: string): string {
   if (e instanceof ApiError) {
     switch (e.code) {
-      case "WAREHOUSE_CODE_TAKEN":
-        return "Warehouse code already exists in this shop.";
-      case "VARIANT_SKU_TAKEN":
-        return "SKU already exists in this shop.";
       case "VARIANT_NOT_FOUND":
-        return "SKU not found. Create the variant first.";
+        // Generic copy talks about the cart; here the SKU must be created first.
+        return tt("toast.skuNotFoundCreateFirst");
       case "PRODUCT_NOT_FOUND":
-        return "Product not found in this shop.";
-      case "WAREHOUSE_NOT_FOUND":
-        return "Warehouse code not found.";
-      case "INVENTORY_SLIP_NOT_FOUND":
-        return "Inventory slip not found.";
-      case "INVENTORY_SLIP_ALREADY_PROCESSED":
-        return "This slip was already approved or rejected.";
-      case "INVENTORY_SLIP_DUPLICATE_SKU":
-        return "Duplicate SKU in slip items — each SKU can appear only once.";
+        return tt("toast.productNotFoundInShop");
       case "INSUFFICIENT_STOCK":
         return tt("toast.insufficientStockAdjustment");
       case "SHOP_NOT_ELIGIBLE":
         return tt("toast.shopNotEligible");
-      case "FORBIDDEN":
-        return "You do not have permission for this action.";
-      case "IDEMPOTENCY_KEY_REQUIRED":
-        return "Missing idempotency key. Please try again.";
-      case "IDEMPOTENCY_KEY_REUSE_MISMATCH":
-        return "Request data changed with a reused key. Please try again.";
-      case "IDEMPOTENCY_REQUEST_IN_PROGRESS":
-        return "This request is already in progress. Please wait a moment.";
       default:
         break;
     }
@@ -127,11 +140,37 @@ function useInventoryInvalidate() {
   return () => void queryClient.invalidateQueries({ queryKey: inventoryKeys.all });
 }
 
-export function useWarehouses() {
+/**
+ * Warehouses of the caller's shop, or of `shopId` for WAREHOUSE/ADMIN staff.
+ * Also used to resolve `warehouseId` → code in the ledger and on order lines.
+ */
+export function useWarehouses(
+  options: { enabled?: boolean; shopId?: string } = {},
+) {
+  const shopId = options.shopId?.trim() || undefined;
   return useQuery({
-    queryKey: inventoryKeys.warehouses(),
-    queryFn: async () => asArray<Warehouse>(await inventoryApi.listWarehouses()),
+    queryKey: inventoryKeys.warehouses(shopId),
+    queryFn: async () =>
+      asArray<Warehouse>(await inventoryApi.listWarehouses(shopId)),
+    enabled: options.enabled ?? true,
   });
+}
+
+/**
+ * Warehouse lookup by id. Transfers and stock ledger rows reference warehouses
+ * by id only, so any surface that shows a warehouse name resolves it here.
+ */
+export function useWarehouseLookup(
+  options: { enabled?: boolean; shopId?: string } = {},
+) {
+  const { data, isLoading } = useWarehouses(options);
+  const warehouses = useMemo(() => data ?? [], [data]);
+  const byId = useMemo(() => {
+    const map = new Map<string, Warehouse>();
+    for (const w of warehouses) map.set(w.id, w);
+    return map;
+  }, [warehouses]);
+  return { warehouses, byId, isLoading };
 }
 
 export function useInventoryVariants(params: ListVariantsParams = {}) {
@@ -203,6 +242,8 @@ export function useCreateWarehouse() {
       invalidate();
       toast.success(tt("toast.warehouseCreated"));
     },
+    onError: (e) =>
+      toast.error(inventoryErrorMessage(e, tt("toast.createWarehouseFailed"))),
   });
 }
 
@@ -214,6 +255,8 @@ export function useCreateVariant() {
       invalidate();
       toast.success(tt("toast.skuCreated"));
     },
+    onError: (e) =>
+      toast.error(inventoryErrorMessage(e, tt("toast.createSkuFailed"))),
   });
 }
 
@@ -355,3 +398,86 @@ export function useAdminRejectSlip() {
 }
 
 export type { InventorySlipStatus };
+
+// ---------------------------------------------------------------------------
+// Transfer hooks
+// ---------------------------------------------------------------------------
+
+export function useTransfers(params: ListTransfersParams = {}) {
+  return useQuery({
+    queryKey: inventoryKeys.transfers(params),
+    queryFn: async () =>
+      parsePage<InventoryTransfer>(await transferApi.list(params)),
+  });
+}
+
+export function useTransferDetail(id: string | null) {
+  return useQuery({
+    queryKey: inventoryKeys.transfer(id ?? ""),
+    queryFn: () => transferApi.get(id!),
+    enabled: Boolean(id),
+  });
+}
+
+export function useCreateTransfer() {
+  const invalidate = useInventoryInvalidate();
+  return useMutation({
+    mutationFn: (body: CreateTransferRequest) => transferApi.create(body),
+    onSuccess: () => {
+      invalidate();
+      toast.success(tt("toast.transferCreated"));
+    },
+    onError: (e) => toast.error(inventoryErrorMessage(e, tt("toast.transferFailed"))),
+  });
+}
+
+export function useApproveTransfer() {
+  const invalidate = useInventoryInvalidate();
+  return useMutation({
+    mutationFn: (id: string) => transferApi.approve(id),
+    onSuccess: () => {
+      invalidate();
+      toast.success(tt("toast.transferApproved"));
+    },
+    onError: (e) => toast.error(inventoryErrorMessage(e, tt("toast.transferFailed"))),
+  });
+}
+
+export function useReceiveTransfer() {
+  const invalidate = useInventoryInvalidate();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: ReceiveTransferRequest }) =>
+      transferApi.receive(id, body),
+    onSuccess: () => {
+      invalidate();
+      toast.success(tt("toast.transferReceived"));
+    },
+    onError: (e) => toast.error(inventoryErrorMessage(e, tt("toast.transferFailed"))),
+  });
+}
+
+export function useCancelTransfer() {
+  const invalidate = useInventoryInvalidate();
+  return useMutation({
+    mutationFn: (id: string) => transferApi.cancel(id),
+    onSuccess: () => {
+      invalidate();
+      toast.success(tt("toast.transferCancelled"));
+    },
+    onError: (e) => toast.error(inventoryErrorMessage(e, tt("toast.transferFailed"))),
+  });
+}
+
+export function useWarehouseStock(
+  warehouseId: string | null,
+  params: ListWarehouseStockParams = {},
+) {
+  return useQuery({
+    queryKey: inventoryKeys.warehouseStock(warehouseId ?? "", params),
+    queryFn: async () =>
+      parsePage<WarehouseStockItem>(
+        await inventoryApi.warehouseStock(warehouseId!, params),
+      ),
+    enabled: Boolean(warehouseId),
+  });
+}

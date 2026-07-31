@@ -95,7 +95,7 @@ export function UserMenu() {
   };
 
   const showAdmin =
-    hasRole("ADMIN") || hasRole("SUPER_ADMIN") || hasRole("ACCOUNTANT");
+    hasRole("ADMIN") || hasRole("SUPER_ADMIN") || hasRole("ACCOUNTANT") || hasRole("CS") || hasRole("WAREHOUSE");
   const showAdminRma =
     showAdmin ||
     hasAnyPermission(["PROCESS_RMA", "MANAGE_RMA"]);
@@ -168,16 +168,7 @@ export function UserMenu() {
             {t("seller.brand")}
           </Link>
         ) : null}
-        {hasRole("WAREHOUSE") && !hasRole("SELLER") ? (
-          <Link
-            href="/seller/inventory"
-            role="menuitem"
-            className="mq-user-menu-item"
-            onClick={() => setOpen(false)}
-          >
-            {t("account.menu.inventory")}
-          </Link>
-        ) : null}
+        {hasRole("WAREHOUSE") && !hasRole("SELLER") ? null : null}
         {showAdmin ? (
           <Link
             href="/admin"

@@ -165,6 +165,9 @@ function AdminHome() {
     return false;
   });
 
+  const showDashboard =
+    hasRole("ADMIN") || hasRole("SUPER_ADMIN") || hasRole("ACCOUNTANT");
+
   return (
     <>
       <AdminPageHeader
@@ -172,7 +175,7 @@ function AdminHome() {
         description={t("admin.overview.description")}
       />
 
-      <AdminDashboardOverview />
+      {showDashboard ? <AdminDashboardOverview /> : null}
 
       {visible.length === 0 ? (
         <div className="mq-alert mq-alert-error">
@@ -207,7 +210,7 @@ function AdminHome() {
 
 export default function AdminPage() {
   return (
-    <AuthGuard roles={["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"]}>
+    <AuthGuard roles={["ADMIN", "SUPER_ADMIN", "ACCOUNTANT", "CS", "WAREHOUSE"]}>
       <AdminHome />
     </AuthGuard>
   );

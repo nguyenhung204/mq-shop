@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import {
   ArrowLeftRight,
+  ArrowRightLeft,
   BadgeDollarSign,
   BadgePercent,
   Boxes,
@@ -137,6 +138,9 @@ function titleKeysFromPath(pathname: string): { titleKey: string; descKey?: stri
   }
   if (pathname.startsWith("/seller/reviews")) {
     return { titleKey: "seller.titles.reviews", descKey: "seller.titles.reviewsDesc" };
+  }
+  if (pathname.startsWith("/seller/inventory/transfers")) {
+    return { titleKey: "seller.transfers.title", descKey: "seller.transfers.description" };
   }
   if (pathname.startsWith("/seller/inventory")) {
     return { titleKey: "seller.titles.inventory", descKey: "seller.titles.inventoryDesc" };

@@ -12,7 +12,8 @@ export type CreateStaffRequest = {
   email: string;
   fullName?: string;
   role: StaffRole;
-  shopId: string;
+  /** Staff roles are platform-level; only sent for legacy shop-scoped staff. */
+  shopId?: string;
 };
 
 export type CreateStaffResponse = {

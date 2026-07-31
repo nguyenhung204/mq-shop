@@ -860,6 +860,114 @@ Khi tạo/gán role: **email** `STAFF_ROLE_ASSIGNED` + **in-app notification** (
 
 NV kho login → `/inventory/*` resolve shop qua `user.shopId` (không cần là owner).
 
+### 5.2c Warehouse Staff — ALL-shop access (mới)
+
+> **Thay đổi:** WAREHOUSE staff không còn bị giới hạn 1 shop. Có scope `ALL` — truy cập inventory bất kỳ shop nào bằng query param `?shopId=`.
+
+**Cách hoạt động:**
+- Không truyền `shopId` → fallback về shop mặc định (`user.shopId`)
+- Truyền `?shopId=<uuid>` → truy cập shop bất kỳ (chỉ WAREHOUSE/ADMIN/SUPER_ADMIN)
+- SELLER vẫn bị giới hạn trong shop mình (param `shopId` bị bỏ qua)
+
+**Các endpoint đã hỗ trợ `?shopId`:**
+
+| Endpoint | Param vị trí | Mô tả |
+|----------|:---:|--------|
+| `GET /inventory/variants` | query `?shopId=` | Xem tồn kho shop bất kỳ |
+| `GET /inventory/slips` | query `?shopId=` | Xem phiếu shop bất kỳ |
+| `GET /inventory/warehouses` | query `?shopId=` | Xem kho shop bất kỳ |
+| `GET /inventory/ledger` | query `?shopId=` | Xem sổ cái shop bất kỳ |
+| `POST /inventory/slips` | body `shopId` | Tạo phiếu cho shop bất kỳ |
+| `POST /inventory/variants` | body `shopId` | Tạo variant cho shop bất kỳ |
+| `POST /inventory/warehouses` | body `shopId` | Tạo kho cho shop bất kỳ |
+| `POST /inventory/slips/:id/approve` | — | Approve phiếu bất kỳ shop (không cần shopId) |
+| `POST /inventory/slips/:id/reject` | — | Reject phiếu bất kỳ shop |
+
+**FE implementation:**
+1. Warehouse dashboard nên có **shop picker** (dropdown) ở header
+2. Khi chọn shop → gắn `shopId` vào tất cả API calls
+3. Mặc định chọn shop đầu tiên (hoặc shop được gán `user.shopId`)
+4. Lấy danh sách shops: `GET /admin/shops?status=APPROVED` (cần `APPROVE_SELLER` hoặc `PAYOUT_SELLER` scope)
+
+### 5.2d Cross-warehouse Transfer (mới)
+
+> **Feature mới:** Chuyển hàng giữa các kho khác nhau (có thể khác shop, khác quốc gia).
+
+**Permission:** `SYNC_INVENTORY` (WAREHOUSE=ALL, SELLER=SHOP, ADMIN/SUPER_ADMIN=ALL)
+
+| UI | Method | Path | Mô tả |
+|----|--------|------|--------|
+| Tạo phiếu chuyển | `POST` | `/inventory/transfers` | Tạo mới PENDING |
+| Danh sách | `GET` | `/inventory/transfers?status&fromWarehouseId&toWarehouseId&page&pageSize` | Filter |
+| Chi tiết | `GET` | `/inventory/transfers/:id` | |
+| Duyệt xuất | `POST` | `/inventory/transfers/:id/approve` | Stock giảm kho xuất |
+| Xác nhận nhận | `POST` | `/inventory/transfers/:id/receive` | Stock tăng kho nhận |
+| Hủy | `POST` | `/inventory/transfers/:id/cancel` | Chỉ PENDING |
+
+#### Create transfer
+
+```ts
+POST /inventory/transfers
+{
+  fromWarehouseId: string; // UUID kho xuất
+  toWarehouseId: string;   // UUID kho nhận (khác kho xuất)
+  items: Array<{
+    sku: string;           // phải tồn tại ở shop kho xuất
+    quantity: number;      // ≥ 1, phải đủ stock
+  }>;
+  shippingNote?: string;   // ghi chú vận chuyển (optional)
+}
+```
+
+#### Receive transfer (xác nhận nhận hàng)
+
+```ts
+POST /inventory/transfers/:id/receive
+{
+  items: Array<{
+    sku: string;
+    receivedQuantity: number; // ≥ 0, có thể < shipped (hao hụt)
+  }>;
+  note?: string; // ghi chú nhận hàng
+}
+```
+
+#### Status flow
+
+```
+PENDING ──approve──► IN_TRANSIT ──receive──► RECEIVED
+PENDING ──cancel───► CANCELLED
+```
+
+| Trạng thái | Stock kho xuất | Stock kho nhận | Ledger |
+|------------|:-:|:-:|:-:|
+| PENDING | Không đổi | Không đổi | — |
+| IN_TRANSIT (approve) | Giảm | Không đổi | TRANSFER_OUT |
+| RECEIVED (receive) | — | Tăng (receivedQuantity) | TRANSFER_IN |
+| CANCELLED | Không đổi | Không đổi | — |
+
+#### Error codes
+
+| Code | UI |
+|------|-----|
+| `FORBIDDEN` | Không có quyền `SYNC_INVENTORY` |
+| `WAREHOUSE_NOT_FOUND` | Kho xuất/nhận không tồn tại |
+| `INVENTORY_SLIP_NOT_FOUND` | Transfer hoặc SKU không tìm thấy |
+| `INSUFFICIENT_STOCK` | Tồn kho xuất không đủ |
+| `FORBIDDEN` | Transfer không ở trạng thái đúng (approve non-PENDING, receive non-IN_TRANSIT, cancel non-PENDING) |
+
+#### Warehouse entity mở rộng
+
+```ts
+// Warehouse giờ có thêm:
+{
+  countryCode: string;        // "VN" | "TW" | "US" ... (default "VN")
+  warehouseType: string;      // "SHOP" | "PLATFORM"
+}
+```
+
+FE có thể hiển thị cờ quốc gia bên cạnh tên kho và group theo type.
+
 ### 5.3 Flow nhập hàng điển hình
 
 ```
@@ -1335,8 +1443,6 @@ const users = await api.get('/admin/dashboard/new-users-chart', { params: { rang
 
 Hiển thị danh sách cron jobs đang chạy trong hệ thống + thời gian đếm ngược.
 
-Auth: JWT cookie — role `ADMIN` / `SUPER_ADMIN`.
-
 #### Response
 
 ```json
@@ -1435,7 +1541,7 @@ data.data.jobs.forEach(job => {
 | Job card / row | `name` + `description` + countdown badge |
 | Countdown | Format: `02:15:30` hoặc "in 2h 15m 30s" |
 | Schedule label | Hiện `schedule` (human-readable) |
-| Status indicator | Green khi `nextRunInMs > 30min`; orange < 30min; red+blink < 5min |
+| Status indicator | Green khi `nextRunInMs > 0`; blink khi < 5 min |
 | Re-fetch | Poll mỗi 5 phút để cập nhật `nextRunAt` |
 
 ---
@@ -1789,7 +1895,6 @@ const res = await api.get('/seller/dashboard/top-products', {
 
 - [ ] Users lock/unlock/delete
 - [ ] **Dashboard charts:** GMV chart, orders chart, order status pie, top shops, new users trend
-- [ ] **Cron Jobs:** `GET /admin/dashboard/cron-jobs` — countdown panel with auto-refresh
 - [ ] **Staff shop:** `POST/GET /admin/staff`, `PATCH …/roles`, lock/unlock/delete (`MANAGE_STAFF` / `ASSIGN_ROLES`)
 - [ ] Shops approve/reject/violation-lock
 - [ ] Products queue approve/reject/hide (xem nested variants)

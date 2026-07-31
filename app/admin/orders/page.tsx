@@ -436,7 +436,7 @@ function OrdersInner() {
 
 export default function AdminOrdersPage() {
   return (
-    <AuthGuard roles={["ADMIN", "SUPER_ADMIN"]} permissions={["VIEW_ORDER", "CREATE_ORDER"]}>
+    <AuthGuard roles={["ADMIN", "SUPER_ADMIN", "CS", "WAREHOUSE"]} permissions={["VIEW_ORDER", "CREATE_ORDER"]}>
       <OrdersInner />
     </AuthGuard>
   );

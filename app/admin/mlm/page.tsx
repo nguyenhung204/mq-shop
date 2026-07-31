@@ -2,13 +2,14 @@
 
 import { FormEvent, Fragment, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Pencil } from "lucide-react";
 import { adminApi } from "@/lib/api";
 import type { AuthUser } from "@/lib/api/types";
 import { formatMoney, formatPercent, parsePage } from "@/lib/api/utils";
 import type {
   GlobalFundOverview,
   GlobalFundTierStatus,
+  MlmRankConfig,
   MonthlyCommissionOverviewRow,
   MonthlyCommissionSuggestedAction,
   NetworkNode,
@@ -22,6 +23,7 @@ import {
   useSetMlmRank,
   useSetMlmReferralRate,
   useSetMlmReferrer,
+  useUpdateRankConfig,
 } from "@/lib/queries/wallet";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
@@ -219,6 +221,7 @@ function MlmAdminInner() {
   const setReferralRate = useSetMlmReferralRate();
   const runMonthly = useRunMonthlyCommissions();
   const reconcileRanks = useReconcileMlmRanks();
+  const updateRankConfig = useUpdateRankConfig();
   const {
     data: monthlyOverview,
     isLoading: monthlyLoading,
@@ -277,6 +280,8 @@ function MlmAdminInner() {
   const [expandedMonth, setExpandedMonth] = useState<string | null>(null);
   const [monthlyOk, setMonthlyOk] = useState("");
   const [monthlyError, setMonthlyError] = useState("");
+  const [editingRank, setEditingRank] = useState<MlmRankConfig | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", teamPercent: "", referralPercent: "", globalFundTier: "", isActive: true });
 
   useEffect(() => {
     if (yearMonth || months.length === 0) return;
@@ -562,6 +567,7 @@ function MlmAdminInner() {
                       <th className="px-3 py-2 font-medium text-center w-20">
                         {t("admin.common.status")}
                       </th>
+                      <th className="px-3 py-2 font-medium w-10" />
                     </tr>
                   </thead>
                   <tbody>
@@ -594,10 +600,126 @@ function MlmAdminInner() {
                               : t("admin.mlm.rankInactive")}
                           </span>
                         </td>
+                        <td className="px-3 py-1.5">
+                          <button
+                            type="button"
+                            className="text-mq-text-muted hover:text-mq-text cursor-pointer"
+                            title={t("admin.common.edit")}
+                            onClick={() => {
+                              setEditingRank(r);
+                              setEditForm({
+                                name: r.name,
+                                teamPercent: String(r.teamPercent),
+                                referralPercent: String(r.referralPercent),
+                                globalFundTier: r.globalFundTier != null ? String(r.globalFundTier) : "",
+                                isActive: r.isActive,
+                              });
+                            }}
+                          >
+                            <Pencil size={14} />
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+              </div>
+            ) : null}
+
+            {editingRank ? (
+              <div className="mq-card p-4 border-l-4 border-[#e7ba0a] space-y-3">
+                <h3 className="text-sm font-medium">
+                  {t("admin.common.edit")} Rank {editingRank.rank}: {editingRank.name}
+                </h3>
+                <form
+                  className="grid sm:grid-cols-2 gap-3"
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    const body: Record<string, unknown> = {};
+                    if (editForm.name !== editingRank.name) body.name = editForm.name;
+                    const tp = Number(editForm.teamPercent);
+                    if (Number.isFinite(tp) && String(tp) !== String(editingRank.teamPercent)) body.teamPercent = tp;
+                    const rp = Number(editForm.referralPercent);
+                    if (Number.isFinite(rp) && String(rp) !== String(editingRank.referralPercent)) body.referralPercent = rp;
+                    const gf = editForm.globalFundTier.trim() === "" ? null : Number(editForm.globalFundTier);
+                    if (gf !== editingRank.globalFundTier) body.globalFundTier = gf;
+                    if (editForm.isActive !== editingRank.isActive) body.isActive = editForm.isActive;
+                    if (Object.keys(body).length === 0) { setEditingRank(null); return; }
+                    await updateRankConfig.mutateAsync({ rank: editingRank.rank, body });
+                    setEditingRank(null);
+                  }}
+                >
+                  <label className="block text-xs space-y-1">
+                    <span className="text-mq-text-muted">{t("admin.mlm.rankName")}</span>
+                    <input
+                      className="mq-input"
+                      value={editForm.name}
+                      onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                    />
+                  </label>
+                  <label className="block text-xs space-y-1">
+                    <span className="text-mq-text-muted">{t("admin.mlm.team")} %</span>
+                    <input
+                      className="mq-input"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="100"
+                      value={editForm.teamPercent}
+                      onChange={(e) => setEditForm({ ...editForm, teamPercent: e.target.value })}
+                    />
+                  </label>
+                  <label className="block text-xs space-y-1">
+                    <span className="text-mq-text-muted">{t("admin.mlm.referral")} %</span>
+                    <input
+                      className="mq-input"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="100"
+                      value={editForm.referralPercent}
+                      onChange={(e) => setEditForm({ ...editForm, referralPercent: e.target.value })}
+                    />
+                  </label>
+                  <label className="block text-xs space-y-1">
+                    <span className="text-mq-text-muted">{t("admin.mlm.globalTier")}</span>
+                    <input
+                      className="mq-input"
+                      type="number"
+                      step="1"
+                      min="1"
+                      max="10"
+                      value={editForm.globalFundTier}
+                      onChange={(e) => setEditForm({ ...editForm, globalFundTier: e.target.value })}
+                      placeholder="—"
+                    />
+                  </label>
+                  <label className="flex items-center gap-2 text-xs sm:col-span-2">
+                    <input
+                      type="checkbox"
+                      checked={editForm.isActive}
+                      onChange={(e) => setEditForm({ ...editForm, isActive: e.target.checked })}
+                      className="accent-[#e7ba0a]"
+                    />
+                    <span>{t("admin.mlm.rankActive")}</span>
+                  </label>
+                  <div className="sm:col-span-2 flex gap-2">
+                    <button
+                      type="submit"
+                      className="mq-btn mq-btn-primary text-xs"
+                      disabled={updateRankConfig.isPending}
+                    >
+                      {updateRankConfig.isPending ? t("admin.common.saving") : t("admin.common.save")}
+                    </button>
+                    <button
+                      type="button"
+                      className="mq-btn mq-btn-outline text-xs"
+                      onClick={() => setEditingRank(null)}
+                    >
+                      {t("admin.common.cancel")}
+                    </button>
+                  </div>
+                </form>
               </div>
             ) : null}
           </section>

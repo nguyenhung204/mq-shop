@@ -6,7 +6,6 @@ import { Check, Copy, Lock, Pencil, Plus, Trash2, Unlock, UserPlus, X } from "lu
 import type { AuthUser, StaffPoolRole, StaffRole } from "@/lib/api/types";
 import { hasPendingStaffChange } from "@/lib/api/staff";
 import {
-  useAdminShops,
   useAdminStaffList,
   useCreateStaff,
   useStaffAccountAction,
@@ -58,7 +57,6 @@ function StaffInner() {
   const { t, locale } = useLanguage();
   const { hasRole } = useAuth();
   const isSuperAdmin = hasRole("SUPER_ADMIN");
-  const [shopFilter, setShopFilter] = useState("");
   const [roleFilter, setRoleFilter] = useState<StaffPoolRole | "">("BUYER");
   const [statusFilter, setStatusFilter] = useState("");
   const [search, setSearch] = useState("");
@@ -75,22 +73,11 @@ function StaffInner() {
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState<StaffRole>("WAREHOUSE");
-  const [shopId, setShopId] = useState("");
   const [assignRole, setAssignRole] = useState<StaffRole>("WAREHOUSE");
-  const [assignShopId, setAssignShopId] = useState("");
   const createAlerts = useFormAlerts({ locale, t });
   const assignAlerts = useFormAlerts({ locale, t });
 
-  const { data: shopsPage } = useAdminShops("APPROVED", 1, 100);
-  const shops = shopsPage?.items ?? [];
-  const shopName = useMemo(() => {
-    const map = new Map(shops.map((s) => [s.id, s.name]));
-    return (id: string | null | undefined) =>
-      (id && map.get(id)) || (id ? `${id.slice(0, 8)}…` : "—");
-  }, [shops]);
-
   const { data, isLoading, isError, error } = useAdminStaffList({
-    shopId: shopFilter || undefined,
     role: roleFilter,
     status: statusFilter || undefined,
     q: search.trim() || undefined,
@@ -128,14 +115,12 @@ function StaffInner() {
     setEmail("");
     setFullName("");
     setRole("WAREHOUSE");
-    setShopId("");
     createAlerts.clearAlerts();
   };
 
   const closeAssign = () => {
     setAssignOpen(null);
     setAssignRole("WAREHOUSE");
-    setAssignShopId("");
     assignAlerts.clearAlerts();
   };
 
@@ -155,11 +140,11 @@ function StaffInner() {
     e.preventDefault();
     createAlerts.clearAlerts();
     try {
+      // Staff are no longer shop-scoped — no shopId is sent.
       const res = await createStaff.mutateAsync({
         email: email.trim(),
         fullName: fullName.trim() || undefined,
         role,
-        shopId,
       });
       closeCreate();
       if (res.temporaryPassword) {
@@ -184,24 +169,17 @@ function StaffInner() {
   const openAssign = (u: AuthUser) => {
     setAssignOpen(u);
     setAssignRole(primaryStaffRole(u) || "WAREHOUSE");
-    setAssignShopId(u.shopId || shopFilter || "");
   };
 
   const onAssign = async (e: FormEvent) => {
     e.preventDefault();
     if (!assignOpen) return;
     assignAlerts.clearAlerts();
-    if (!assignShopId) {
-      assignAlerts.setLocalError("admin.staffPage.shopRequired");
-      return;
-    }
     try {
+      // Staff roles are no longer shop-scoped — only the role is sent.
       const user = await updateRoles.mutateAsync({
         userId: assignOpen.id,
-        body: {
-          roles: [assignRole],
-          shopId: assignShopId,
-        },
+        body: { roles: [assignRole] },
       });
       closeAssign();
       if (roleFilter === "BUYER") setRoleFilter(assignRole);
@@ -271,22 +249,6 @@ function StaffInner() {
             }}
           />
           <select
-            className="mq-input max-w-[16rem]"
-            value={shopFilter}
-            aria-label={t("admin.common.shop")}
-            onChange={(e) => {
-              setShopFilter(e.target.value);
-              setPage(1);
-            }}
-          >
-            <option value="">{t("admin.staffPage.allShopsUnassigned")}</option>
-            {shops.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-          <select
             className="mq-input max-w-[11rem]"
             value={roleFilter}
             aria-label={t("admin.staffPage.role")}
@@ -322,7 +284,7 @@ function StaffInner() {
         </div>
 
         {isLoading ? (
-          <TableSkeleton rows={6} cols={6} />
+          <TableSkeleton rows={6} cols={5} />
         ) : items.length === 0 ? (
           <p className="text-sm text-mq-text-muted">{t("admin.staffPage.empty")}</p>
         ) : (
@@ -332,9 +294,7 @@ function StaffInner() {
                 <tr>
                   <th className="p-3">{t("admin.common.email")}</th>
                   <th className="p-3">{t("admin.common.name")}</th>
-                  <th className="p-3">{t("admin.common.shop")}</th>
                   <th className="p-3">{t("admin.common.roles")}</th>
-                  <th className="p-3">{t("admin.staffPage.pendingRoles")}</th>
                   <th className="p-3">{t("admin.common.status")}</th>
                   <th className="p-3" />
                 </tr>
@@ -348,11 +308,6 @@ function StaffInner() {
                     <tr key={u.id} className="border-t border-mq-border">
                       <td className="p-3">{u.email}</td>
                       <td className="p-3">{u.fullName || "—"}</td>
-                      <td className="p-3 text-xs text-mq-text-secondary">
-                        {u.shopId ? shopName(u.shopId) : (
-                          <span className="text-mq-text-muted">{t("admin.staffPage.unassigned")}</span>
-                        )}
-                      </td>
                       <td className="p-3">
                         {translateRoles(t, u.roles)}
                         {candidate ? (
@@ -360,11 +315,6 @@ function StaffInner() {
                             {t("admin.staffPage.candidate")}
                           </span>
                         ) : null}
-                      </td>
-                      <td className="p-3 text-xs text-mq-text-secondary">
-                        {u.pendingRoles?.length
-                          ? translateRoles(t, u.pendingRoles)
-                          : "—"}
                       </td>
                       <td className="p-3">
                         <span className={statusBadgeClass(u.status)}>
@@ -533,24 +483,6 @@ function StaffInner() {
                   ))}
                 </select>
               </div>
-              <div>
-                <label className="block text-xs font-medium text-mq-text-muted mb-1.5">
-                  {t("admin.common.shop")}
-                </label>
-                <select
-                  className="mq-input"
-                  value={shopId}
-                  onChange={(e) => setShopId(e.target.value)}
-                  required
-                >
-                  <option value="">{t("admin.staffPage.selectShop")}</option>
-                  {shops.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
               <div className="mq-admin-modal-actions">
                 <button
                   type="button"
@@ -619,25 +551,6 @@ function StaffInner() {
                   {STAFF_ROLES.map((r) => (
                     <option key={r} value={r}>
                       {translateStatus(t, "role", r)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-mq-text-muted mb-1.5">
-                  {t("admin.common.shop")}
-                  {isBuyerCandidate(assignOpen) ? ` (${t("admin.common.required")})` : ""}
-                </label>
-                <select
-                  className="mq-input"
-                  value={assignShopId}
-                  onChange={(e) => setAssignShopId(e.target.value)}
-                  required
-                >
-                  <option value="">{t("admin.staffPage.selectShop")}</option>
-                  {shops.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
                     </option>
                   ))}
                 </select>

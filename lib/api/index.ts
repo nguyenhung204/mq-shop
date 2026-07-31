@@ -162,6 +162,7 @@ export type {
   CommissionRow,
   ListCommissionsParams,
   MlmRankConfig,
+  UpdateRankConfigBody,
   SetMlmRankBody,
   SetMlmRankResult,
   SetMlmReferrerBody,
@@ -332,7 +333,7 @@ export const sellerApi = {
     api.get("/seller/landing-cost", { query: { product_id: productId, productId } }),
 };
 
-export { inventoryApi, adminInventoryApi } from "./inventory";
+export { inventoryApi, adminInventoryApi, transferApi } from "./inventory";
 export type {
   Warehouse,
   InventoryVariant,
@@ -345,6 +346,12 @@ export type {
   CreateVariantRequest,
   CreateSlipItemRequest,
   CreateSlipRequest,
+  TransferStatus,
+  TransferItem,
+  InventoryTransfer,
+  CreateTransferRequest,
+  ReceiveTransferRequest,
+  ListTransfersParams,
 } from "./inventory";
 
 export {

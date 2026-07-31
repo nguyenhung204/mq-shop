@@ -32,6 +32,17 @@ export function ConfirmDialog({
   const titleId = useId();
   const dismissLabel = cancelLabel ?? t("confirm.dismiss");
 
+  /**
+   * Callers usually `await mutateAsync(...)` here. Swallow the rejection so a
+   * failed action does not become an `unhandledRejection` — the mutation's own
+   * `onError` (or the global mutation cache handler) already toasts it.
+   */
+  const runConfirm = () => {
+    void Promise.resolve()
+      .then(onConfirm)
+      .catch(() => {});
+  };
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -88,7 +99,7 @@ export function ConfirmDialog({
               type="button"
               className={confirmClass}
               disabled={busy}
-              onClick={() => void onConfirm()}
+              onClick={runConfirm}
             >
               {busy ? t("confirm.working") : confirmLabel}
             </button>

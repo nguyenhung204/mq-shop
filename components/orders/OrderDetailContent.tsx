@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { formatMoney } from "@/lib/api/utils";
 import {
@@ -18,6 +18,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useCancelOrder, useOrder, useUpdateOrderStatus } from "@/lib/queries/orders";
 import { useSellerShop } from "@/lib/queries/seller";
+import { useWarehouses } from "@/lib/queries/inventory";
 import { useProductReviews } from "@/lib/queries/reviews";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { ReviewForm } from "@/components/reviews/ReviewForm";
@@ -148,6 +149,13 @@ function OrderDetailInner() {
       roles.includes("CS") ||
       roles.includes("ADMIN") ||
       roles.includes("SUPER_ADMIN"));
+  // Fulfillment staff can see which warehouse ships each line (checklist §5 item 6).
+  const { data: warehouses = [] } = useWarehouses({ enabled: canFulfill });
+  const warehouseCodeById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const w of warehouses) map.set(w.id, w.code);
+    return map;
+  }, [warehouses]);
   const nextStatus = order ? nextFulfillmentStatus(order.status) : null;
   const canCancel =
     Boolean(order && canCancelOrder(order.status) && (isBuyer || isShopOrder));
@@ -259,6 +267,15 @@ function OrderDetailInner() {
                     </Link>
                     <p className="text-xs text-mq-text-muted mt-0.5">
                       {item.sku} × {item.quantity}
+                      {canFulfill && item.warehouseId ? (
+                        <span className="ml-2 text-mq-text-secondary">
+                          {t("orders.detail.shipFromWarehouse", {
+                            warehouse:
+                              warehouseCodeById.get(item.warehouseId) ||
+                              item.warehouseId.slice(0, 8) + "…",
+                          })}
+                        </span>
+                      ) : null}
                     </p>
                     {canReview && item.productId && user?.id ? (
                       <OrderLineReview

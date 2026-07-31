@@ -29,6 +29,7 @@ import {
   type SetMlmRankBody,
   type SetMlmReferralRateBody,
   type SetMlmReferrerBody,
+  type UpdateRankConfigBody,
 } from "@/lib/api/mlm";
 import { ApiError } from "@/lib/api/client";
 import { createIdempotencyKeyStore } from "@/lib/api/idempotency";
@@ -447,6 +448,19 @@ export function useSetMlmRank() {
       void qc.invalidateQueries({ queryKey: ["admin", "users"] });
     },
     onError: (e) => toast.error(walletErrorMessage(e, tt("toast.mlmRankUpdateFailed"))),
+  });
+}
+
+export function useUpdateRankConfig() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ rank, body }: { rank: number; body: UpdateRankConfigBody }) =>
+      adminMlmApi.updateRankConfig(rank, body),
+    onSuccess: () => {
+      toast.success(tt("toast.mlmRankConfigUpdated"));
+      void qc.invalidateQueries({ queryKey: mlmKeys.ranks() });
+    },
+    onError: (e) => toast.error(walletErrorMessage(e, tt("toast.mlmRankConfigUpdateFailed"))),
   });
 }
 

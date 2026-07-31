@@ -252,6 +252,30 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "Referral rate updated",
       body: "Platform referral rates were updated.",
     },
+    INVENTORY_SLIP_PENDING: {
+      title: "New inventory slip",
+      body: "Slip {code} needs approval.",
+    },
+    INVENTORY_SLIP_APPROVED: {
+      title: "Inventory slip approved",
+      body: "Slip {code} was approved.",
+    },
+    INVENTORY_SLIP_REJECTED: {
+      title: "Inventory slip rejected",
+      body: "Slip {code} was rejected.",
+    },
+    INVENTORY_TRANSFER_PENDING: {
+      title: "New warehouse transfer",
+      body: "Transfer {code} needs approval.",
+    },
+    INVENTORY_TRANSFER_APPROVED: {
+      title: "Transfer shipped",
+      body: "Transfer {code} is in transit.",
+    },
+    INVENTORY_TRANSFER_RECEIVED: {
+      title: "Transfer received",
+      body: "Transfer {code} was received at the destination warehouse.",
+    },
   },
   vi: {
     ACCOUNT_LOCKED: {
@@ -498,6 +522,30 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "Cập nhật tỷ lệ giới thiệu",
       body: "Tỷ lệ giới thiệu nền tảng đã được cập nhật.",
     },
+    INVENTORY_SLIP_PENDING: {
+      title: "Phiếu kho mới",
+      body: "Phiếu {code} cần được duyệt.",
+    },
+    INVENTORY_SLIP_APPROVED: {
+      title: "Phiếu kho đã duyệt",
+      body: "Phiếu {code} đã được duyệt.",
+    },
+    INVENTORY_SLIP_REJECTED: {
+      title: "Phiếu kho bị từ chối",
+      body: "Phiếu {code} đã bị từ chối.",
+    },
+    INVENTORY_TRANSFER_PENDING: {
+      title: "Phiếu chuyển kho mới",
+      body: "Phiếu chuyển {code} cần được duyệt.",
+    },
+    INVENTORY_TRANSFER_APPROVED: {
+      title: "Đã xuất kho chuyển hàng",
+      body: "Phiếu chuyển {code} đang trên đường vận chuyển.",
+    },
+    INVENTORY_TRANSFER_RECEIVED: {
+      title: "Đã nhận hàng chuyển kho",
+      body: "Phiếu chuyển {code} đã được kho nhận xác nhận.",
+    },
   },
   "zh-TW": {
     ACCOUNT_LOCKED: {
@@ -743,6 +791,30 @@ export const NOTIFICATION_TYPE_COPY: Record<
     MLM_REFERRAL_RATE_UPDATED: {
       title: "推薦比例已更新",
       body: "平台推薦比例已更新。",
+    },
+    INVENTORY_SLIP_PENDING: {
+      title: "新入庫/調撥單",
+      body: "單據 {code} 待審核。",
+    },
+    INVENTORY_SLIP_APPROVED: {
+      title: "單據已核准",
+      body: "單據 {code} 已核准。",
+    },
+    INVENTORY_SLIP_REJECTED: {
+      title: "單據已拒絕",
+      body: "單據 {code} 已被拒絕。",
+    },
+    INVENTORY_TRANSFER_PENDING: {
+      title: "新調撥單",
+      body: "調撥單 {code} 待審核。",
+    },
+    INVENTORY_TRANSFER_APPROVED: {
+      title: "調撥已出貨",
+      body: "調撥單 {code} 運送中。",
+    },
+    INVENTORY_TRANSFER_RECEIVED: {
+      title: "調撥已收貨",
+      body: "調撥單 {code} 已由目的倉庫確認收貨。",
     },
   },
 };

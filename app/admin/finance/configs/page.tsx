@@ -174,7 +174,10 @@ function FinanceConfigsInner() {
                 </span>
                 {active.gatewayName ? (
                   <span>
-                    {t("admin.financeConfigs.gateway")}: {active.gatewayName}
+                    {t("admin.financeConfigs.gateway")}:{" "}
+                    {active.gatewayName.startsWith("SEED_STUB")
+                      ? t("admin.financeConfigs.gatewayStub")
+                      : active.gatewayName}
                   </span>
                 ) : null}
                 <span className="text-mq-text-muted">

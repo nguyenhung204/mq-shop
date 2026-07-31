@@ -197,6 +197,26 @@ export function resolveNotificationRoute(
     case "MLM_REFERRAL_RATE_UPDATED":
       return "/admin/mlm";
 
+    case "INVENTORY_SLIP_PENDING":
+    case "INVENTORY_SLIP_APPROVED":
+    case "INVENTORY_SLIP_REJECTED": {
+      // Sellers manage slips from /seller/inventory; WAREHOUSE/ADMIN staff from /admin/inventory.
+      // Both pages expand the slip named by `?slipId=` (meta from BE, see feat/023 §4).
+      const base = seller ? "/seller/inventory" : "/admin/inventory";
+      const m = requireMeta(meta, ["slipId"]);
+      return m ? `${base}?tab=slips&slipId=${encodeURIComponent(m.slipId)}` : base;
+    }
+
+    case "INVENTORY_TRANSFER_PENDING":
+    case "INVENTORY_TRANSFER_APPROVED":
+    case "INVENTORY_TRANSFER_RECEIVED": {
+      const m = requireMeta(meta, ["transferId"]);
+      if (seller) {
+        return m ? `/seller/inventory/transfers/${m.transferId}` : "/seller/inventory/transfers";
+      }
+      return m ? `/admin/transfers/${m.transferId}` : "/admin/transfers";
+    }
+
     default:
       return null;
   }
