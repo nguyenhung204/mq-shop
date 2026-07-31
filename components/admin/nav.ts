@@ -71,6 +71,7 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.products",
     icon: Package,
     permissions: ["APPROVE_PRODUCT", "REJECT_PRODUCT", "HIDE_PRODUCT"],
+    roles: ["WAREHOUSE", "ADMIN", "SUPER_ADMIN"],
     group: "ops",
   },
   {
@@ -85,6 +86,7 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.inventory",
     icon: Boxes,
     permissions: ["VIEW_INVENTORY", "EDIT_INVENTORY"],
+    roles: ["WAREHOUSE", "ADMIN", "SUPER_ADMIN"],
     group: "ops",
   },
   {
@@ -137,7 +139,7 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.orders",
     icon: ShoppingBag,
     permissions: ["FORCE_CANCEL_ORDER", "CONFIRM_ORDER"],
-    roles: ["CS", "ACCOUNTANT", "ADMIN", "SUPER_ADMIN"],
+    roles: ["CS", "WAREHOUSE", "ACCOUNTANT", "ADMIN", "SUPER_ADMIN"],
     group: "commerce",
   },
   {
@@ -145,7 +147,7 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.rma",
     icon: RotateCcw,
     permissions: ["PROCESS_RMA", "MANAGE_RMA"],
-    roles: ["CS", "ACCOUNTANT", "ADMIN", "SUPER_ADMIN"],
+    roles: ["CS", "WAREHOUSE", "ACCOUNTANT", "ADMIN", "SUPER_ADMIN"],
     group: "commerce",
   },
   {

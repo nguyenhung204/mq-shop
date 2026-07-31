@@ -403,7 +403,7 @@ function InventoryInner() {
 export default function AdminInventoryPage() {
   return (
     <AuthGuard
-      roles={["ADMIN", "SUPER_ADMIN"]}
+      roles={["ADMIN", "SUPER_ADMIN", "WAREHOUSE"]}
       permissions={["VIEW_INVENTORY", "EDIT_INVENTORY"]}
     >
       <InventoryInner />

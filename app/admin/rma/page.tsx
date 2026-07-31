@@ -170,7 +170,7 @@ function RmaInner() {
 export default function AdminRmaPage() {
   return (
     <AuthGuard
-      roles={["ADMIN", "SUPER_ADMIN", "ACCOUNTANT", "CS"]}
+      roles={["ADMIN", "SUPER_ADMIN", "ACCOUNTANT", "CS", "WAREHOUSE"]}
       permissions={["PROCESS_RMA", "MANAGE_RMA"]}
     >
       <RmaInner />
