@@ -1,7 +1,8 @@
 "use client";
 
-import { FormEvent, Fragment, useMemo, useState } from "react";
+import { FormEvent, Fragment, Suspense, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Check, X } from "lucide-react";
 import type {
   InventorySlip,
@@ -9,6 +10,7 @@ import type {
   InventorySlipType,
   InventoryVariant,
   StockLedgerEntry,
+  StockLedgerType,
   Warehouse,
 } from "@/lib/api/inventory";
 import { formatMoney } from "@/lib/api/utils";
@@ -23,6 +25,7 @@ import {
   useInventoryVariants,
   useRejectSlip,
   useTransfers,
+  useWarehouseLookup,
   useWarehouses,
   useWarehouseStock,
 } from "@/lib/queries/inventory";
@@ -30,6 +33,7 @@ import { useSellerProducts } from "@/lib/queries/seller";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
+import { formatWarehouseLabel } from "@/lib/inventory/warehouse-label";
 import { CountrySelect } from "@/components/ui/CountrySelect";
 import {
   AdminActions,
@@ -76,7 +80,7 @@ function slipStatusBadge(status: InventorySlipStatus): string {
 }
 
 function slipTypeLabel(
-  type: InventorySlipType,
+  type: StockLedgerType,
   t: (key: string, vars?: Record<string, string>) => string,
 ): string {
   return translateStatus(t, "inventorySlipType", type);
@@ -143,13 +147,15 @@ function WarehouseStockPanel({ warehouseId }: { warehouseId: string }) {
                     </p>
                     {item.reservedStock > 0 && (
                       <p className="text-[10px] text-mq-text-muted">
-                        {item.reservedStock} held
+                        {t("seller.inventoryPage.reservedCount", {
+                          count: String(item.reservedStock),
+                        })}
                       </p>
                     )}
                   </div>
-                  <div className="text-right shrink-0 w-16">
+                  <div className="text-right shrink-0 w-20">
                     <p className="text-[10px] text-mq-text-muted mb-0.5">{t("seller.inventoryPage.sellPrice")}</p>
-                    <p className="tabular-nums text-mq-text-muted">{item.sellingPrice}</p>
+                    <p className="tabular-nums text-mq-text-muted">{formatMoney(item.sellingPrice)}</p>
                   </div>
                 </div>
               );
@@ -167,6 +173,8 @@ function WarehouseStockPanel({ warehouseId }: { warehouseId: string }) {
 function TransfersTab() {
   const { t } = useLanguage();
   const [page, setPage] = useState(1);
+  // Transfers reference warehouses by id only — resolve to code for display.
+  const { byId: warehouseById } = useWarehouseLookup();
   const { data, isLoading } = useTransfers({ page, pageSize: 10 });
   const items = data?.items ?? [];
   const meta = data?.meta;
@@ -189,7 +197,7 @@ function TransfersTab() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-mq-text-muted border-b border-mq-border">
-                  <th className="py-2 pr-3 font-medium">ID</th>
+                  <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.code")}</th>
                   <th className="py-2 pr-3 font-medium">{t("seller.transfers.fromWarehouse")}</th>
                   <th className="py-2 pr-3 font-medium">{t("seller.transfers.toWarehouse")}</th>
                   <th className="py-2 pr-3 font-medium">{t("admin.common.status")}</th>
@@ -201,14 +209,24 @@ function TransfersTab() {
                   <tr key={tr.id} className="border-b border-mq-border/60">
                     <td className="py-2.5 pr-3 font-mono text-xs">
                       <Link href={`/seller/inventory/transfers/${tr.id}`} className="underline hover:text-[#e7ba0a]">
-                        {tr.id.slice(0, 8)}…
+                        {tr.code || `${tr.id.slice(0, 8)}…`}
                       </Link>
                     </td>
-                    <td className="py-2.5 pr-3 text-xs">{tr.fromWarehouse?.code || "—"}</td>
-                    <td className="py-2.5 pr-3 text-xs">{tr.toWarehouse?.code || "—"}</td>
+                    <td className="py-2.5 pr-3 text-xs">
+                      {formatWarehouseLabel(
+                        tr.fromWarehouse ?? warehouseById.get(tr.fromWarehouseId),
+                        tr.fromWarehouseId,
+                      )}
+                    </td>
+                    <td className="py-2.5 pr-3 text-xs">
+                      {formatWarehouseLabel(
+                        tr.toWarehouse ?? warehouseById.get(tr.toWarehouseId),
+                        tr.toWarehouseId,
+                      )}
+                    </td>
                     <td className="py-2.5 pr-3">
                       <span className={`mq-badge ${tr.status === "RECEIVED" ? "mq-badge-teal" : tr.status === "IN_TRANSIT" ? "mq-badge-cyan" : tr.status === "CANCELLED" ? "mq-badge-pink" : "mq-badge-muted"}`}>
-                        {t(`seller.transfers.status${tr.status}`)}
+                        {translateStatus(t, "transfer", tr.status)}
                       </span>
                     </td>
                     <td className="py-2.5 text-xs text-mq-text-muted">{new Date(tr.createdAt).toLocaleDateString()}</td>
@@ -242,11 +260,15 @@ function WarehousesTab() {
       return;
     }
     setFormError("");
-    await createWarehouse.mutateAsync({
-      code: trimmed,
-      address: address.trim() || undefined,
-      countryCode,
-    });
+    try {
+      await createWarehouse.mutateAsync({
+        code: trimmed,
+        address: address.trim() || undefined,
+        countryCode,
+      });
+    } catch {
+      return; // toast handled in the mutation; keep the form values for retry
+    }
     setCode("");
     setAddress("");
     setCountryCode("VN");
@@ -397,13 +419,17 @@ function VariantsTab() {
       }
       if (!Object.keys(options).length) options = undefined;
     }
-    await createVariant.mutateAsync({
-      productId,
-      sku: trimmedSku,
-      sellingPrice: sell,
-      options,
-      isEnrollmentPackage,
-    });
+    try {
+      await createVariant.mutateAsync({
+        productId,
+        sku: trimmedSku,
+        sellingPrice: sell,
+        options,
+        isEnrollmentPackage,
+      });
+    } catch {
+      return; // toast handled in the mutation; keep the form values for retry
+    }
     setSku("");
     setSellingPrice("");
     setOptionsText("");
@@ -516,7 +542,7 @@ function VariantsTab() {
         </div>
       )}
       {isLoading ? (
-        <TableSkeleton rows={5} cols={5} />
+        <TableSkeleton rows={5} cols={6} />
       ) : items.length === 0 ? (
         <p className="text-sm text-mq-text-muted">{t("seller.inventoryPage.noSkus")}</p>
       ) : (
@@ -528,7 +554,8 @@ function VariantsTab() {
                   <th className="py-2 pr-3 font-medium">{t("seller.productsPage.sku")}</th>
                   <th className="py-2 pr-3 font-medium">{t("admin.common.name")}</th>
                   <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.sellPrice")}</th>
-                  <th className="py-2 pr-3 font-medium">{t("product.stock")}</th>
+                  <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.available")}</th>
+                  <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.reserved")}</th>
                   <th className="py-2 font-medium">{t("seller.inventoryPage.costPrice")}</th>
                 </tr>
               </thead>
@@ -541,6 +568,9 @@ function VariantsTab() {
                     </td>
                     <td className="py-2.5 pr-3">{formatMoney(v.sellingPrice)}</td>
                     <td className="py-2.5 pr-3 tabular-nums">{v.availableStock}</td>
+                    <td className="py-2.5 pr-3 tabular-nums text-mq-text-muted">
+                      {v.reservedStock ?? 0}
+                    </td>
                     <td className="py-2.5 text-mq-text-secondary">
                       {v.costPrice != null ? formatMoney(v.costPrice) : "—"}
                     </td>
@@ -569,19 +599,27 @@ function emptySlipLine() {
   return { key: crypto.randomUUID(), sku: "", quantity: "1", unitCost: "" };
 }
 
-function SlipsTab() {
+function SlipsTab({
+  onGoToWarehouses,
+  initialSlipId,
+}: {
+  onGoToWarehouses: () => void;
+  /** From `?slipId=` — inventory slip notifications deep-link here. */
+  initialSlipId?: string | null;
+}) {
   const { t } = useLanguage();
   const [status, setStatus] = useState<InventorySlipStatus | "">("");
   const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const [formError, setFormError] = useState("");
-  const [detailId, setDetailId] = useState<string | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(initialSlipId ?? null);
   const [type, setType] = useState<InventorySlipType>("IN");
   const [warehouseCode, setWarehouseCode] = useState("");
   const [locationNote, setLocationNote] = useState("");
   const [lines, setLines] = useState(() => [emptySlipLine()]);
 
-  const { data: warehouses = [] } = useWarehouses();
+  const { data: warehouses = [], isLoading: warehousesLoading } = useWarehouses();
+  const hasNoWarehouses = !warehousesLoading && warehouses.length === 0;
   const { data: variantPage } = useInventoryVariants({ pageSize: 100 });
   const skuOptions = useMemo(
     () => (variantPage?.items ?? []).map((v) => v.sku),
@@ -612,6 +650,11 @@ function SlipsTab() {
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setFormError("");
+    // warehouseCode is mandatory since multi-warehouse (feat/023) — BE rejects 400 without it.
+    if (!warehouseCode.trim()) {
+      setFormError(t("seller.inventoryPage.warehouseRequiredError"));
+      return;
+    }
     const skus = lines.map((l) => l.sku.trim()).filter(Boolean);
     if (!skus.length) {
       setFormError(t("seller.inventoryPage.addSkuLineError"));
@@ -665,6 +708,47 @@ function SlipsTab() {
     <div className="space-y-4">
       <p className="text-sm text-mq-text-muted">{t("seller.inventoryPage.slipsDesc")}</p>
 
+      {/* Deep-linked slip that is not on the current page — show it standalone. */}
+      {detailId && !items.some((s) => s.id === detailId) ? (
+        <div className="mq-card p-3 space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-semibold text-mq-text">
+              {t("seller.inventoryPage.slips")}
+            </p>
+            <button
+              type="button"
+              className="mq-icon-btn text-mq-text-muted"
+              aria-label={t("seller.common.cancel")}
+              onClick={() => setDetailId(null)}
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <SlipDetailBody
+            slip={detailQuery.data}
+            loading={detailQuery.isLoading}
+            error={
+              detailQuery.isError
+                ? getErrorMessage(detailQuery.error, t("admin.common.failed"))
+                : null
+            }
+          />
+        </div>
+      ) : null}
+
+      {hasNoWarehouses ? (
+        <div className="mq-alert flex flex-wrap items-center justify-between gap-3">
+          <span>{t("seller.inventoryPage.needWarehouseFirst")}</span>
+          <button
+            type="button"
+            className="mq-btn mq-btn-outline text-xs shrink-0"
+            onClick={onGoToWarehouses}
+          >
+            {t("seller.inventoryPage.goToWarehouses")}
+          </button>
+        </div>
+      ) : null}
+
       <div className="flex flex-wrap items-center gap-3">
         <select
           className="mq-input max-w-[11rem]"
@@ -683,6 +767,8 @@ function SlipsTab() {
         <button
           type="button"
           className="mq-btn mq-btn-primary ml-auto"
+          disabled={hasNoWarehouses}
+          title={hasNoWarehouses ? t("seller.inventoryPage.needWarehouseFirst") : undefined}
           onClick={() => setShowForm((v) => !v)}
         >
           {showForm ? t("seller.common.cancel") : t("seller.inventoryPage.newSlip")}
@@ -703,16 +789,17 @@ function SlipsTab() {
             </select>
             <select
               className="mq-input"
+              aria-label={t("seller.transfers.selectWarehouse")}
               value={warehouseCode}
               onChange={(e) => setWarehouseCode(e.target.value)}
               required
             >
               <option value="">
-                {t("seller.inventoryPage.warehouses")}
+                {t("seller.transfers.selectWarehouse")}
               </option>
               {warehouses.map((w) => (
                 <option key={w.id} value={w.code}>
-                  {w.code}
+                  {w.countryCode ? `[${w.countryCode}] ${w.code}` : w.code}
                 </option>
               ))}
             </select>
@@ -1061,9 +1148,20 @@ function LedgerTab() {
   );
 }
 
+function isTabId(value: string | null): value is TabId {
+  return TABS.some((tab) => tab.id === value);
+}
+
 function InventoryInner() {
   const { t } = useLanguage();
-  const [tab, setTab] = useState<TabId>("slips");
+  const searchParams = useSearchParams();
+  const slipId = searchParams.get("slipId");
+  const tabParam = searchParams.get("tab");
+  // Default to the first tab (Warehouses) so the "Inventory" nav item lands on
+  // warehouses, not slips. Notifications override this via `?tab=`.
+  const [tab, setTab] = useState<TabId>(() =>
+    isTabId(tabParam) ? tabParam : slipId ? "slips" : "warehouses",
+  );
 
   return (
     <div className="space-y-5">
@@ -1104,7 +1202,10 @@ function InventoryInner() {
           <VariantsTab />
         </div>
         <div hidden={tab !== "slips"}>
-          <SlipsTab />
+          <SlipsTab
+            onGoToWarehouses={() => setTab("warehouses")}
+            initialSlipId={slipId}
+          />
         </div>
         <div hidden={tab !== "ledger"}>
           <LedgerTab />
@@ -1117,7 +1218,10 @@ function InventoryInner() {
 export default function SellerInventoryPage() {
   return (
     <AuthGuard roles={["SELLER", "WAREHOUSE"]}>
-      <InventoryInner />
+      {/* useSearchParams (slip deep-link) needs a Suspense boundary. */}
+      <Suspense fallback={<TableSkeleton rows={5} cols={6} />}>
+        <InventoryInner />
+      </Suspense>
     </AuthGuard>
   );
 }

@@ -58,6 +58,8 @@ SSE payload is the notification view object (same fields as list items), not the
 | `MLM_RANK_UPGRADED` / `MLM_RANK_UPDATED` | `mlmRank`, `previousRank`? | `/mlm/rank` |
 | `MLM_REFERRER_UPDATED` / `MLM_DOWNLINE_ASSIGNED` | related user ids | `/mlm/network` |
 | `MLM_REFERRAL_RATE_UPDATED` | — | `/admin/mlm` |
+| `INVENTORY_SLIP_PENDING` / `INVENTORY_SLIP_APPROVED` / `INVENTORY_SLIP_REJECTED` | `slipId`, `code` | `/seller/inventory` (seller) or `/admin/inventory` (staff) |
+| `INVENTORY_TRANSFER_PENDING` / `INVENTORY_TRANSFER_APPROVED` / `INVENTORY_TRANSFER_RECEIVED` | `transferId`, `code` | `/seller/inventory/transfers/:transferId` (seller) or `/admin/transfers/:transferId` (staff) |
 
 Exact paths are FE-owned; see `lib/notifications/routes.ts` for the live map (adjusted to this app’s router).
 

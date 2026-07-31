@@ -1,18 +1,20 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRightLeft, Plus, X } from "lucide-react";
-import type { TransferStatus, Warehouse } from "@/lib/api/inventory";
+import { Plus, X } from "lucide-react";
+import type { TransferStatus } from "@/lib/api/inventory";
 import {
   useCreateTransfer,
   useTransfers,
-  useInventoryVariants,
-  useWarehouses,
+  useWarehouseLookup,
+  useWarehouseStock,
 } from "@/lib/queries/inventory";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
+import { formatWarehouseLabel } from "@/lib/inventory/warehouse-label";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 
@@ -29,13 +31,6 @@ function statusBadgeClass(status: string): string {
   if (status === "IN_TRANSIT") return "mq-badge mq-badge-cyan";
   if (status === "CANCELLED") return "mq-badge mq-badge-pink";
   return "mq-badge mq-badge-muted";
-}
-
-function warehouseLabel(w?: Warehouse): string {
-  if (!w) return "—";
-  const flag = w.countryCode ? `[${w.countryCode}]` : "";
-  const type = w.warehouseType === "PLATFORM" ? " (Platform)" : "";
-  return `${flag} ${w.code}${type}`.trim();
 }
 
 type FormLine = { sku: string; quantity: string };
@@ -55,16 +50,34 @@ function TransfersInner() {
   const items = data?.items ?? [];
   const meta = data?.meta;
 
-  // ALL warehouses across all shops/countries
-  const { data: warehouses = [] } = useWarehouses();
-  const { data: variantsPage } = useInventoryVariants({ pageSize: 200 });
-  const skuOptions = (variantsPage?.items ?? []).map((v) => v.sku);
+  // Warehouses visible to the caller's inventory scope.
+  const { warehouses, byId: warehouseById } = useWarehouseLookup();
   const createTransfer = useCreateTransfer();
 
   const [fromId, setFromId] = useState("");
   const [toId, setToId] = useState("");
   const [note, setNote] = useState("");
   const [lines, setLines] = useState<FormLine[]>([{ sku: "", quantity: "1" }]);
+
+  // Only SKUs that actually have stock in the source warehouse can be moved.
+  const { data: sourceStock, isLoading: stockLoading } = useWarehouseStock(
+    fromId || null,
+    { pageSize: 200 },
+  );
+  const skuOptions = (sourceStock?.items ?? []).filter(
+    (item) => item.availableStock > 0,
+  );
+  const stockBySku = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const item of skuOptions) map.set(item.sku, item.availableStock);
+    return map;
+  }, [skuOptions]);
+
+  /** Switching source warehouse invalidates every picked SKU. */
+  const onChangeFrom = (value: string) => {
+    setFromId(value);
+    setLines([{ sku: "", quantity: "1" }]);
+  };
 
   const addLine = () => setLines([...lines, { sku: "", quantity: "1" }]);
   const removeLine = (i: number) => setLines(lines.filter((_, idx) => idx !== i));
@@ -88,12 +101,16 @@ function TransfersInner() {
       .filter((l) => l.sku.trim() && Number(l.quantity) > 0)
       .map((l) => ({ sku: l.sku.trim(), quantity: Number(l.quantity) }));
     if (!validItems.length) return;
-    await createTransfer.mutateAsync({
-      fromWarehouseId: fromId,
-      toWarehouseId: toId,
-      items: validItems,
-      shippingNote: note.trim() || undefined,
-    });
+    try {
+      await createTransfer.mutateAsync({
+        fromWarehouseId: fromId,
+        toWarehouseId: toId,
+        items: validItems,
+        shippingNote: note.trim() || undefined,
+      });
+    } catch {
+      return; // toast handled in the mutation; keep the form values for retry
+    }
     resetForm();
   };
 
@@ -125,10 +142,13 @@ function TransfersInner() {
             <div className="grid sm:grid-cols-2 gap-3">
               <label className="block text-xs space-y-1">
                 <span className="text-mq-text-muted">{t("seller.transfers.fromWarehouse")}</span>
-                <select className="mq-input" value={fromId} onChange={(e) => setFromId(e.target.value)} required>
+                <select className="mq-input" value={fromId} onChange={(e) => onChangeFrom(e.target.value)} required>
                   <option value="">{t("seller.transfers.selectWarehouse")}</option>
                   {warehouses.map((w) => (
-                    <option key={w.id} value={w.id}>{warehouseLabel(w)} — {w.address || w.shopId?.slice(0, 8)}</option>
+                    <option key={w.id} value={w.id}>
+                      {formatWarehouseLabel(w)}
+                      {w.address ? ` — ${w.address}` : ""}
+                    </option>
                   ))}
                 </select>
               </label>
@@ -137,7 +157,10 @@ function TransfersInner() {
                 <select className="mq-input" value={toId} onChange={(e) => setToId(e.target.value)} required>
                   <option value="">{t("seller.transfers.selectWarehouse")}</option>
                   {warehouses.filter((w) => w.id !== fromId).map((w) => (
-                    <option key={w.id} value={w.id}>{warehouseLabel(w)} — {w.address || w.shopId?.slice(0, 8)}</option>
+                    <option key={w.id} value={w.id}>
+                      {formatWarehouseLabel(w)}
+                      {w.address ? ` — ${w.address}` : ""}
+                    </option>
                   ))}
                 </select>
               </label>
@@ -145,36 +168,76 @@ function TransfersInner() {
 
             <div className="space-y-2">
               <p className="text-xs text-mq-text-muted font-medium">SKU</p>
-              {lines.map((line, i) => (
-                <div key={i} className="flex gap-2 items-center">
+              {!fromId ? (
+                <p className="text-xs text-mq-text-muted">
+                  {t("seller.transfers.selectSourceFirst")}
+                </p>
+              ) : stockLoading ? (
+                <p className="text-xs text-mq-text-muted">{t("admin.common.loading")}</p>
+              ) : skuOptions.length === 0 ? (
+                <p className="text-xs text-mq-text-muted">
+                  {t("seller.transfers.sourceEmpty")}
+                </p>
+              ) : null}
+              {lines.map((line, i) => {
+                const maxQty = stockBySku.get(line.sku);
+                return (
+                <div
+                  key={i}
+                  className="grid grid-cols-[minmax(0,1fr)_5.5rem_2rem] gap-2 items-center"
+                >
                   <select
-                    className="mq-input flex-1"
+                    className="mq-input w-full"
                     value={line.sku}
+                    aria-label="SKU"
+                    disabled={!fromId || skuOptions.length === 0}
                     onChange={(e) => updateLine(i, "sku", e.target.value)}
                     required
                   >
                     <option value="">SKU</option>
-                    {skuOptions.map((sku) => (
-                      <option key={sku} value={sku}>{sku}</option>
+                    {skuOptions.map((item) => (
+                      <option key={item.sku} value={item.sku}>
+                        {item.sku} — {item.productTitle} ({item.availableStock})
+                      </option>
                     ))}
                   </select>
                   <input
-                    className="mq-input w-20"
+                    className="mq-input w-full"
                     type="number"
                     min="1"
-                    placeholder="Qty"
+                    max={maxQty}
+                    aria-label={t("seller.inventoryPage.quantity")}
+                    title={
+                      maxQty != null
+                        ? t("seller.transfers.maxAvailable", { count: String(maxQty) })
+                        : undefined
+                    }
+                    placeholder={t("seller.inventoryPage.qty")}
                     value={line.quantity}
                     onChange={(e) => updateLine(i, "quantity", e.target.value)}
                     required
                   />
-                  {lines.length > 1 && (
-                    <button type="button" className="text-mq-text-muted hover:text-red-500" onClick={() => removeLine(i)}>
+                  {lines.length > 1 ? (
+                    <button
+                      type="button"
+                      className="mq-icon-btn text-mq-text-muted hover:text-red-500 justify-self-center"
+                      aria-label={t("seller.inventoryPage.removeLine")}
+                      onClick={() => removeLine(i)}
+                    >
                       <X size={16} />
                     </button>
+                  ) : (
+                    <span />
                   )}
                 </div>
-              ))}
-              <button type="button" className="text-xs text-[#e7ba0a] hover:underline" onClick={addLine}>
+                );
+              })}
+              <button
+                type="button"
+                className="text-xs text-[#e7ba0a] hover:underline disabled:opacity-50"
+                disabled={!fromId || skuOptions.length === 0}
+                onClick={addLine}
+              >
                 + {t("seller.transfers.addItem")}
               </button>
             </div>
@@ -204,7 +267,7 @@ function TransfersInner() {
           >
             <option value="">{t("admin.common.allStatuses")}</option>
             {STATUS_FILTERS.filter(Boolean).map((s) => (
-              <option key={s} value={s}>{t(`seller.transfers.status${s}`)}</option>
+              <option key={s} value={s}>{translateStatus(t, "transfer", s)}</option>
             ))}
           </select>
         </div>
@@ -219,7 +282,7 @@ function TransfersInner() {
             <table className="w-full text-sm">
               <thead className="bg-mq-surface-subtle text-left">
                 <tr>
-                  <th className="p-3">ID</th>
+                  <th className="p-3">{t("seller.inventoryPage.code")}</th>
                   <th className="p-3">{t("seller.transfers.fromWarehouse")}</th>
                   <th className="p-3">{t("seller.transfers.toWarehouse")}</th>
                   <th className="p-3">{t("admin.common.status")}</th>
@@ -230,12 +293,24 @@ function TransfersInner() {
               <tbody>
                 {items.map((tr) => (
                   <tr key={tr.id} className="border-t border-mq-border">
-                    <td className="p-3 font-mono text-xs">{tr.id.slice(0, 8)}…</td>
-                    <td className="p-3 text-xs">{warehouseLabel(tr.fromWarehouse)}</td>
-                    <td className="p-3 text-xs">{warehouseLabel(tr.toWarehouse)}</td>
+                    <td className="p-3 font-mono text-xs">
+                      {tr.code || `${tr.id.slice(0, 8)}…`}
+                    </td>
+                    <td className="p-3 text-xs">
+                      {formatWarehouseLabel(
+                        tr.fromWarehouse ?? warehouseById.get(tr.fromWarehouseId),
+                        tr.fromWarehouseId,
+                      )}
+                    </td>
+                    <td className="p-3 text-xs">
+                      {formatWarehouseLabel(
+                        tr.toWarehouse ?? warehouseById.get(tr.toWarehouseId),
+                        tr.toWarehouseId,
+                      )}
+                    </td>
                     <td className="p-3">
                       <span className={statusBadgeClass(tr.status)}>
-                        {t(`seller.transfers.status${tr.status}`)}
+                        {translateStatus(t, "transfer", tr.status)}
                       </span>
                     </td>
                     <td className="p-3 text-xs text-mq-text-muted">
