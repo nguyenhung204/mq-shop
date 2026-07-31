@@ -6,7 +6,7 @@ export function postAuthPath(user: AuthUser | null | undefined): string {
   if (roles.includes("SUPER_ADMIN") || roles.includes("ADMIN")) return "/admin";
   if (roles.includes("ACCOUNTANT")) return "/admin/rma";
   if (roles.includes("CS")) return "/admin/customers";
-  if (roles.includes("WAREHOUSE")) return "/seller/inventory";
+  if (roles.includes("WAREHOUSE")) return "/admin/inventory";
   if (roles.includes("SELLER")) return "/seller";
   return "/account";
 }

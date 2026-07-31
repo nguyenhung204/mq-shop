@@ -31,6 +31,10 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
     if (hasRole("CS") && i.roles?.includes("CS")) {
       return true;
     }
+    // WAREHOUSE sees items explicitly listing WAREHOUSE in roles[]
+    if (hasRole("WAREHOUSE") && i.roles?.includes("WAREHOUSE")) {
+      return true;
+    }
     return false;
   });
 
