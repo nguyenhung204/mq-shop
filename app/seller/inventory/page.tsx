@@ -942,6 +942,13 @@ function LedgerTab() {
   const [to, setTo] = useState("");
   const [page, setPage] = useState(1);
 
+  const { data: warehouses = [] } = useWarehouses();
+  const warehouseMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const w of warehouses) map.set(w.id, w.code);
+    return map;
+  }, [warehouses]);
+
   const { data, isLoading, isError, error } = useInventoryLedger({
     sku: sku || undefined,
     from: from ? new Date(from).toISOString() : undefined,
@@ -1008,6 +1015,7 @@ function LedgerTab() {
               <thead>
                 <tr className="text-left text-mq-text-muted border-b border-mq-border">
                   <th className="py-2 pr-3 font-medium">{t("admin.common.when")}</th>
+                  <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.warehouseName")}</th>
                   <th className="py-2 pr-3 font-medium">{t("seller.productsPage.sku")}</th>
                   <th className="py-2 pr-3 font-medium">{t("seller.promotions.type")}</th>
                   <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.qty")}</th>
@@ -1020,6 +1028,9 @@ function LedgerTab() {
                   <tr key={row.id} className="border-b border-mq-border/60">
                     <td className="py-2.5 pr-3 text-xs text-mq-text-muted">
                       {formatDate(row.recordedAt)}
+                    </td>
+                    <td className="py-2.5 pr-3 text-xs font-medium">
+                      {warehouseMap.get(row.warehouseId) || row.warehouseId?.slice(0, 8) || "—"}
                     </td>
                     <td className="py-2.5 pr-3 font-medium">{row.sku}</td>
                     <td className="py-2.5 pr-3 text-xs">{slipTypeLabel(row.type, t)}</td>
