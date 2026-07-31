@@ -210,3 +210,73 @@ export const adminInventoryApi = {
   rejectSlip: (slipId: string) =>
     api.post<InventorySlip>(`/admin/inventory/slips/${slipId}/reject`, {}),
 };
+
+// ---------------------------------------------------------------------------
+// Cross-warehouse Transfer (Section 5.2d)
+// ---------------------------------------------------------------------------
+
+export type TransferStatus = "PENDING" | "IN_TRANSIT" | "RECEIVED" | "CANCELLED";
+
+export type TransferItem = {
+  sku: string;
+  quantity: number;
+  receivedQuantity?: number | null;
+};
+
+export type InventoryTransfer = {
+  id: string;
+  fromWarehouseId: string;
+  toWarehouseId: string;
+  fromWarehouse?: Warehouse;
+  toWarehouse?: Warehouse;
+  status: TransferStatus;
+  shippingNote: string | null;
+  receiveNote?: string | null;
+  items: TransferItem[];
+  createdByUserId: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CreateTransferRequest = {
+  fromWarehouseId: string;
+  toWarehouseId: string;
+  items: Array<{ sku: string; quantity: number }>;
+  shippingNote?: string;
+};
+
+export type ReceiveTransferRequest = {
+  items: Array<{ sku: string; receivedQuantity: number }>;
+  note?: string;
+};
+
+export type ListTransfersParams = {
+  status?: TransferStatus;
+  fromWarehouseId?: string;
+  toWarehouseId?: string;
+  page?: number;
+  pageSize?: number;
+};
+
+export const transferApi = {
+  list: (query?: ListTransfersParams) =>
+    api.get<PageEnvelope<InventoryTransfer>>("/inventory/transfers", {
+      query,
+      withMeta: true,
+    }),
+
+  get: (id: string) =>
+    api.get<InventoryTransfer>(`/inventory/transfers/${id}`),
+
+  create: (body: CreateTransferRequest) =>
+    api.post<InventoryTransfer>("/inventory/transfers", body),
+
+  approve: (id: string) =>
+    api.post<InventoryTransfer>(`/inventory/transfers/${id}/approve`, {}),
+
+  receive: (id: string, body: ReceiveTransferRequest) =>
+    api.post<InventoryTransfer>(`/inventory/transfers/${id}/receive`, body),
+
+  cancel: (id: string) =>
+    api.post<InventoryTransfer>(`/inventory/transfers/${id}/cancel`, {}),
+};

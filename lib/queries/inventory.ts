@@ -8,17 +8,22 @@ import { createIdempotencyKeyStore } from "@/lib/api/idempotency";
 import {
   adminInventoryApi,
   inventoryApi,
+  transferApi,
   type AdminListLedgerParams,
   type AdminListSlipsParams,
   type CreateSlipRequest,
+  type CreateTransferRequest,
   type CreateVariantRequest,
   type CreateWarehouseRequest,
   type InventorySlip,
   type InventorySlipStatus,
   type InventoryVariant,
+  type InventoryTransfer,
   type ListLedgerParams,
   type ListSlipsParams,
+  type ListTransfersParams,
   type ListVariantsParams,
+  type ReceiveTransferRequest,
   type StockLedgerEntry,
   type Warehouse,
 } from "@/lib/api/inventory";
@@ -82,6 +87,17 @@ export const inventoryKeys = {
       params.from || "",
       params.to || "",
     ] as const,
+  transfers: (params: ListTransfersParams) =>
+    [
+      ...inventoryKeys.all,
+      "transfers",
+      params.page ?? 1,
+      params.pageSize ?? 20,
+      params.status ?? "",
+      params.fromWarehouseId ?? "",
+      params.toWarehouseId ?? "",
+    ] as const,
+  transfer: (id: string) => [...inventoryKeys.all, "transfer", id] as const,
 };
 
 function inventoryErrorMessage(e: unknown, fallback: string): string {
@@ -355,3 +371,72 @@ export function useAdminRejectSlip() {
 }
 
 export type { InventorySlipStatus };
+
+// ---------------------------------------------------------------------------
+// Transfer hooks
+// ---------------------------------------------------------------------------
+
+export function useTransfers(params: ListTransfersParams = {}) {
+  return useQuery({
+    queryKey: inventoryKeys.transfers(params),
+    queryFn: async () =>
+      parsePage<InventoryTransfer>(await transferApi.list(params)),
+  });
+}
+
+export function useTransferDetail(id: string | null) {
+  return useQuery({
+    queryKey: inventoryKeys.transfer(id ?? ""),
+    queryFn: () => transferApi.get(id!),
+    enabled: Boolean(id),
+  });
+}
+
+export function useCreateTransfer() {
+  const invalidate = useInventoryInvalidate();
+  return useMutation({
+    mutationFn: (body: CreateTransferRequest) => transferApi.create(body),
+    onSuccess: () => {
+      invalidate();
+      toast.success(tt("toast.transferCreated"));
+    },
+    onError: (e) => toast.error(inventoryErrorMessage(e, tt("toast.transferFailed"))),
+  });
+}
+
+export function useApproveTransfer() {
+  const invalidate = useInventoryInvalidate();
+  return useMutation({
+    mutationFn: (id: string) => transferApi.approve(id),
+    onSuccess: () => {
+      invalidate();
+      toast.success(tt("toast.transferApproved"));
+    },
+    onError: (e) => toast.error(inventoryErrorMessage(e, tt("toast.transferFailed"))),
+  });
+}
+
+export function useReceiveTransfer() {
+  const invalidate = useInventoryInvalidate();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: ReceiveTransferRequest }) =>
+      transferApi.receive(id, body),
+    onSuccess: () => {
+      invalidate();
+      toast.success(tt("toast.transferReceived"));
+    },
+    onError: (e) => toast.error(inventoryErrorMessage(e, tt("toast.transferFailed"))),
+  });
+}
+
+export function useCancelTransfer() {
+  const invalidate = useInventoryInvalidate();
+  return useMutation({
+    mutationFn: (id: string) => transferApi.cancel(id),
+    onSuccess: () => {
+      invalidate();
+      toast.success(tt("toast.transferCancelled"));
+    },
+    onError: (e) => toast.error(inventoryErrorMessage(e, tt("toast.transferFailed"))),
+  });
+}
