@@ -88,44 +88,73 @@ function WarehouseStockPanel({ warehouseId }: { warehouseId: string }) {
   const { data, isLoading } = useWarehouseStock(warehouseId, { q: q || undefined, page, pageSize: 10 });
   const items = data?.items ?? [];
   const meta = data?.meta;
+  const total = meta?.total ?? 0;
 
   return (
-    <div className="space-y-3 pl-2">
-      <div className="flex items-center gap-2">
-        <input
-          className="mq-input max-w-[14rem] text-xs"
-          placeholder={t("seller.inventoryPage.searchSku")}
-          value={q}
-          onChange={(e) => { setQ(e.target.value); setPage(1); }}
-        />
+    <div className="rounded-lg border border-mq-border/60 bg-mq-surface-subtle/40 p-4 space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs font-semibold text-mq-text">
+          {t("seller.inventoryPage.variants")} {total > 0 ? `(${total})` : ""}
+        </p>
+        <div className="relative">
+          <input
+            className="mq-input !pl-8 !py-1.5 text-xs w-48"
+            placeholder={t("seller.inventoryPage.searchSku")}
+            value={q}
+            onChange={(e) => { setQ(e.target.value); setPage(1); }}
+          />
+          <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-mq-text-muted pointer-events-none" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        </div>
       </div>
+
       {isLoading ? (
-        <p className="text-xs text-mq-text-muted">{t("admin.common.loading")}</p>
+        <div className="flex items-center gap-2 py-4 text-xs text-mq-text-muted">
+          <span className="inline-block w-3 h-3 border-2 border-mq-text-muted border-t-transparent rounded-full animate-spin" />
+          {t("admin.common.loading")}
+        </div>
       ) : items.length === 0 ? (
-        <p className="text-xs text-mq-text-muted">{t("seller.inventoryPage.noSkus")}</p>
+        <p className="text-xs text-mq-text-muted py-3">{t("seller.inventoryPage.noSkus")}</p>
       ) : (
         <>
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="text-left text-mq-text-muted border-b border-mq-border">
-                <th className="py-1.5 pr-2 font-medium">SKU</th>
-                <th className="py-1.5 pr-2 font-medium">{t("admin.common.name")}</th>
-                <th className="py-1.5 pr-2 font-medium text-right">{t("seller.inventoryPage.available")}</th>
-                <th className="py-1.5 font-medium text-right">{t("seller.inventoryPage.sellPrice")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item) => (
-                <tr key={item.warehouseInventoryId} className="border-b border-mq-border/40">
-                  <td className="py-1.5 pr-2 font-mono">{item.sku}</td>
-                  <td className="py-1.5 pr-2 text-mq-text-secondary truncate max-w-[160px]">{item.productTitle}</td>
-                  <td className="py-1.5 pr-2 text-right tabular-nums">{item.availableStock}</td>
-                  <td className="py-1.5 text-right tabular-nums">{item.sellingPrice}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <PaginationBar page={page} meta={meta} onPageChange={setPage} />
+          <div className="grid gap-2">
+            {items.map((item) => {
+              const lowStock = item.availableStock <= 5;
+              const outOfStock = item.availableStock === 0;
+              return (
+                <div
+                  key={item.warehouseInventoryId}
+                  className={`flex items-center gap-3 rounded-md border px-3 py-2 text-xs ${
+                    outOfStock
+                      ? "border-red-200 bg-red-50/50"
+                      : lowStock
+                        ? "border-orange-200 bg-orange-50/30"
+                        : "border-mq-border/40 bg-white"
+                  }`}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-mq-text truncate">{item.productTitle}</p>
+                    <p className="text-mq-text-muted font-mono mt-0.5">{item.sku}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className={`font-semibold tabular-nums ${outOfStock ? "text-red-500" : lowStock ? "text-orange-500" : "text-mq-text"}`}>
+                      {item.availableStock}
+                    </p>
+                    {item.reservedStock > 0 && (
+                      <p className="text-[10px] text-mq-text-muted">
+                        {item.reservedStock} held
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-right shrink-0 w-16">
+                    <p className="tabular-nums text-mq-text-muted">{item.sellingPrice}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {(meta?.totalPages ?? 0) > 1 && (
+            <PaginationBar page={page} meta={meta} onPageChange={setPage} />
+          )}
         </>
       )}
     </div>
@@ -274,16 +303,17 @@ function WarehousesTab() {
             <tbody>
               {warehouses.map((w: Warehouse) => (
                 <Fragment key={w.id}>
-                <tr className="border-b border-mq-border/60">
+                <tr
+                  className={`border-b border-mq-border/60 cursor-pointer transition-colors ${expandedId === w.id ? "bg-mq-surface-subtle" : "hover:bg-mq-surface-subtle/40"}`}
+                  onClick={() => setExpandedId((id) => (id === w.id ? null : w.id))}
+                >
                   <td className="py-2.5 pr-3 font-medium">
-                    <button
-                      type="button"
-                      className="underline-offset-2 hover:underline text-left"
-                      onClick={() => setExpandedId((id) => (id === w.id ? null : w.id))}
-                    >
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className={`inline-block w-4 h-4 text-mq-text-muted transition-transform ${expandedId === w.id ? "rotate-90" : ""}`}>▸</span>
                       {w.code}
-                    </button>
-                    {w.countryCode ? <span className="ml-1 text-xs text-mq-text-muted">[{w.countryCode}]</span> : null}
+                    </span>
+                    {w.countryCode ? <span className="ml-1.5 text-[10px] mq-badge mq-badge-muted !py-0">{w.countryCode}</span> : null}
+                    {w.warehouseType === "PLATFORM" ? <span className="ml-1 text-[10px] mq-badge mq-badge-cyan !py-0">Platform</span> : null}
                   </td>
                   <td className="py-2.5 pr-3 text-mq-text-secondary">{w.address || "—"}</td>
                   <td className="py-2.5 text-mq-text-muted text-xs">
@@ -292,7 +322,7 @@ function WarehousesTab() {
                 </tr>
                 {expandedId === w.id ? (
                   <tr className="border-b border-mq-border/60">
-                    <td colSpan={3} className="py-3">
+                    <td colSpan={3} className="py-3 px-2">
                       <WarehouseStockPanel warehouseId={w.id} />
                     </td>
                   </tr>
