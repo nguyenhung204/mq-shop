@@ -846,6 +846,7 @@
       "title": "Kho",
       "description": "Xem xét và duyệt phiếu kho liên shop.",
       "shopPicker": "Shop",
+      "allShops": "Tất cả shop",
       "myShop": "Shop của tôi",
       "noShops": "Không có shop"
     },

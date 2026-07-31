@@ -34,21 +34,12 @@ export function InventoryShopPicker({
         value={value}
         onChange={(e) => onChange(e.target.value)}
       >
-        {user?.shopId && (
-          <option value={user.shopId}>
-            {t("admin.inventory.myShop")}
+        <option value="">{t("admin.inventory.allShops")}</option>
+        {shops.map((s) => (
+          <option key={s.id} value={s.id}>
+            {s.name}
           </option>
-        )}
-        {shops
-          .filter((s) => s.id !== user?.shopId)
-          .map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        {!user?.shopId && shops.length === 0 && (
-          <option value="">{t("admin.inventory.noShops")}</option>
-        )}
+        ))}
       </select>
     </div>
   );

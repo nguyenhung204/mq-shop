@@ -846,6 +846,7 @@
       "title": "Inventory",
       "description": "Review and decide stock slips across shops.",
       "shopPicker": "Shop",
+      "allShops": "All shops",
       "myShop": "My shop",
       "noShops": "No shops"
     },
