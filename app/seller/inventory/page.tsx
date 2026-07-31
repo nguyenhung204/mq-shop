@@ -30,6 +30,7 @@ import { useSellerProducts } from "@/lib/queries/seller";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
+import { CountrySelect } from "@/components/ui/CountrySelect";
 import {
   AdminActions,
   AdminIconButton,
@@ -230,7 +231,6 @@ function WarehousesTab() {
   const [code, setCode] = useState("");
   const [address, setAddress] = useState("");
   const [countryCode, setCountryCode] = useState("VN");
-  const [whType, setWhType] = useState<"SHOP" | "PLATFORM">("SHOP");
   const [formError, setFormError] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -246,12 +246,10 @@ function WarehousesTab() {
       code: trimmed,
       address: address.trim() || undefined,
       countryCode,
-      warehouseType: whType,
     });
     setCode("");
     setAddress("");
     setCountryCode("VN");
-    setWhType("SHOP");
   };
 
   return (
@@ -278,28 +276,12 @@ function WarehousesTab() {
           maxLength={200}
           onChange={(e) => setAddress(e.target.value)}
         />
-        <select
-          className="mq-input w-24"
+        <CountrySelect
+          className="mq-input w-36"
           value={countryCode}
-          onChange={(e) => setCountryCode(e.target.value)}
+          onValueChange={setCountryCode}
           aria-label={t("seller.transfers.countryCode")}
-        >
-          <option value="VN">VN</option>
-          <option value="TW">TW</option>
-          <option value="US">US</option>
-          <option value="JP">JP</option>
-          <option value="SG">SG</option>
-          <option value="TH">TH</option>
-        </select>
-        <select
-          className="mq-input w-28"
-          value={whType}
-          onChange={(e) => setWhType(e.target.value as "SHOP" | "PLATFORM")}
-          aria-label={t("seller.transfers.warehouseType")}
-        >
-          <option value="SHOP">{t("seller.transfers.typeShop")}</option>
-          <option value="PLATFORM">{t("seller.transfers.typePlatform")}</option>
-        </select>
+        />
         <button
           className="mq-btn mq-btn-primary shrink-0 self-center"
           disabled={createWarehouse.isPending}
@@ -326,6 +308,7 @@ function WarehousesTab() {
             <thead>
               <tr className="text-left text-mq-text-muted border-b border-mq-border">
                 <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.code")}</th>
+                <th className="py-2 pr-3 font-medium">{t("seller.transfers.countryCode")}</th>
                 <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.address")}</th>
                 <th className="py-2 font-medium">{t("seller.inventoryPage.created")}</th>
               </tr>
@@ -342,9 +325,8 @@ function WarehousesTab() {
                       <span className={`inline-block w-4 h-4 text-mq-text-muted transition-transform ${expandedId === w.id ? "rotate-90" : ""}`}>▸</span>
                       {w.code}
                     </span>
-                    {w.countryCode ? <span className="ml-1.5 text-[10px] mq-badge mq-badge-muted !py-0">{w.countryCode}</span> : null}
-                    {w.warehouseType === "PLATFORM" ? <span className="ml-1 text-[10px] mq-badge mq-badge-cyan !py-0">Platform</span> : null}
                   </td>
+                  <td className="py-2.5 pr-3 text-xs">{w.countryCode || "—"}</td>
                   <td className="py-2.5 pr-3 text-mq-text-secondary">{w.address || "—"}</td>
                   <td className="py-2.5 text-mq-text-muted text-xs">
                     {formatDate(w.createdAt)}
@@ -352,7 +334,7 @@ function WarehousesTab() {
                 </tr>
                 {expandedId === w.id ? (
                   <tr className="border-b border-mq-border/60">
-                    <td colSpan={3} className="py-3 px-2">
+                    <td colSpan={4} className="py-3 px-2">
                       <WarehouseStockPanel warehouseId={w.id} />
                     </td>
                   </tr>
