@@ -95,7 +95,6 @@ const links: NavEntry[] = [
   { href: "/seller/products", labelKey: "seller.nav.products", icon: Package, sellerOnly: true },
   { href: "/seller/reviews", labelKey: "seller.nav.reviews", icon: MessageSquare, sellerOnly: true },
   { href: "/seller/inventory", labelKey: "seller.nav.inventory", icon: Boxes, sellerOnly: false },
-  { href: "/seller/inventory/transfers", labelKey: "seller.nav.transfers", icon: ArrowRightLeft, sellerOnly: false },
   { href: "/seller/orders", labelKey: "seller.nav.orders", icon: ShoppingBag, sellerOnly: true },
   {
     href: "/seller/settlements",
