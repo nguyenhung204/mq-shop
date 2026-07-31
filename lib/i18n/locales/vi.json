@@ -687,6 +687,11 @@
       "title": "Quản trị",
       "description": "Công cụ vận hành, thương mại và hệ thống theo quyền của bạn.",
       "queuesTitle": "Cần xử lý",
+      "inventory": {
+        "title": "Việc kho cần xử lý",
+        "slipsPending": "Phiếu kho chờ duyệt",
+        "transfersInTransit": "Chuyển kho đang vận chuyển"
+      },
       "snapshotTitle": "Tổng quan nền tảng",
       "modulesTitle": "Chức năng",
       "loading": "Đang tải tổng quan…",

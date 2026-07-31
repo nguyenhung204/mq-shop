@@ -24,7 +24,10 @@ import {
 import type { Role } from "@/lib/api/types";
 import { ACCOUNTANT_COMMERCE_PERMS } from "@/components/admin/nav";
 import { AuthGuard } from "@/components/guards/AuthGuard";
-import { AdminDashboardOverview } from "@/components/admin/AdminDashboardOverview";
+import {
+  AdminDashboardOverview,
+  type AdminDashboardScope,
+} from "@/components/admin/AdminDashboardOverview";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -165,8 +168,17 @@ function AdminHome() {
     return false;
   });
 
-  const showDashboard =
-    hasRole("ADMIN") || hasRole("SUPER_ADMIN") || hasRole("ACCOUNTANT");
+  // Staff roles get a narrowed dashboard rather than nothing. WAREHOUSE takes
+  // precedence over CS when a user holds both, since it renders a superset.
+  const dashboardScope: AdminDashboardScope | null = hasRole("ADMIN")
+    || hasRole("SUPER_ADMIN")
+    || hasRole("ACCOUNTANT")
+    ? "full"
+    : hasRole("WAREHOUSE")
+      ? "warehouse"
+      : hasRole("CS")
+        ? "cs"
+        : null;
 
   return (
     <>
@@ -175,7 +187,7 @@ function AdminHome() {
         description={t("admin.overview.description")}
       />
 
-      {showDashboard ? <AdminDashboardOverview /> : null}
+      {dashboardScope ? <AdminDashboardOverview scope={dashboardScope} /> : null}
 
       {visible.length === 0 ? (
         <div className="mq-alert mq-alert-error">

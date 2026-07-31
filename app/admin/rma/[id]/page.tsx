@@ -258,7 +258,9 @@ export default function AdminRmaDetailPage({
   const { id } = use(params);
   return (
     <AuthGuard
-      roles={["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"]}
+      // Must match the /admin/rma list, which links here — otherwise CS and
+      // WAREHOUSE staff get bounced to "/" when opening a row.
+      roles={["ADMIN", "SUPER_ADMIN", "ACCOUNTANT", "CS", "WAREHOUSE"]}
       permissions={["PROCESS_RMA", "MANAGE_RMA"]}
     >
       <RmaDetailInner id={id} />

@@ -15,21 +15,24 @@ export function AdminChartRangeSelector({
 }) {
   const { t } = useLanguage();
   return (
-    <div className="flex rounded-lg border border-mq-border overflow-hidden text-xs">
-      {options.map((opt) => (
-        <button
-          key={opt.value}
-          type="button"
-          className={`px-2.5 py-1 transition-colors ${
-            opt.value === value
-              ? "bg-mq-primary text-white font-medium"
-              : "text-mq-text-muted hover:bg-mq-surface"
-          }`}
-          onClick={() => onChange(opt.value)}
-        >
-          {t(opt.labelKey)}
-        </button>
-      ))}
+    <div className="mq-seg" role="group">
+      {options.map((opt) => {
+        const label = t(opt.labelKey);
+        const active = opt.value === value;
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            // Mirrors the label so ::after can reserve the bold width.
+            data-label={label}
+            aria-pressed={active}
+            className={`mq-seg-item${active ? " is-active" : ""}`}
+            onClick={() => onChange(opt.value)}
+          >
+            {label}
+          </button>
+        );
+      })}
     </div>
   );
 }

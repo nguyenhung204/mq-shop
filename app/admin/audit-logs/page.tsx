@@ -596,7 +596,7 @@ function AuditInner() {
 export default function AdminAuditLogsPage() {
   return (
     <AuthGuard
-      roles={["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"]}
+      roles={["ADMIN", "SUPER_ADMIN"]}
       permissions={["VIEW_AUDIT_LOG"]}
     >
       <AuditInner />

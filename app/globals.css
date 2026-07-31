@@ -2902,3 +2902,53 @@ body.mq-mobile-nav-open {
     height: 4.5rem;
   }
 }
+
+/* Segmented range selector (admin dashboard charts).
+   `--mq-gold` is bright in both themes, so the active item pairs it with a
+   fixed dark label rather than the theme text colour. */
+.mq-seg {
+  display: inline-flex;
+  overflow: hidden;
+  border: 1px solid var(--mq-border);
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1.25;
+}
+
+.mq-seg-item {
+  padding: 0.25rem 0.625rem;
+  color: var(--mq-text-muted);
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+/* Reserve the bold width up front so toggling weight never reflows the row. */
+.mq-seg-item::after {
+  content: attr(data-label);
+  display: block;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.mq-seg-item:hover {
+  background: var(--mq-surface-subtle);
+  color: var(--mq-text);
+  font-weight: 700;
+}
+
+.mq-seg-item.is-active {
+  background: var(--mq-gold);
+  color: #111111;
+  font-weight: 700;
+}
+
+.mq-seg-item:focus-visible {
+  outline: 2px solid var(--mq-gold);
+  outline-offset: -2px;
+}

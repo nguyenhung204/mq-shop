@@ -60,11 +60,14 @@ export function useAdminDashboard(sections = ADMIN_DASHBOARD_SECTIONS) {
   });
 }
 
+// Charts keep the previous range's data while the new one loads, so switching
+// range does not blank the card.
 export function useAdminGmvChart(range?: AdminChartRange) {
   return useQuery({
     queryKey: adminKeys.gmvChart(range),
     queryFn: () => adminDashboardApi.gmvChart(range),
     staleTime: 5 * 60_000,
+    placeholderData: (prev) => prev,
   });
 }
 
@@ -73,6 +76,7 @@ export function useAdminOrdersChart(range?: AdminChartRange) {
     queryKey: adminKeys.ordersChart(range),
     queryFn: () => adminDashboardApi.ordersChart(range),
     staleTime: 5 * 60_000,
+    placeholderData: (prev) => prev,
   });
 }
 
@@ -81,6 +85,7 @@ export function useAdminOrderStatus(range?: AdminChartRange) {
     queryKey: adminKeys.orderStatus(range),
     queryFn: () => adminDashboardApi.orderStatus(range),
     staleTime: 5 * 60_000,
+    placeholderData: (prev) => prev,
   });
 }
 
@@ -89,6 +94,7 @@ export function useAdminTopShops(range?: TopShopsRange, limit = 10) {
     queryKey: adminKeys.topShops(range, limit),
     queryFn: () => adminDashboardApi.topShops({ range, limit }),
     staleTime: 5 * 60_000,
+    placeholderData: (prev) => prev,
   });
 }
 
@@ -97,6 +103,7 @@ export function useAdminNewUsersChart(range?: AdminChartRange) {
     queryKey: adminKeys.newUsersChart(range),
     queryFn: () => adminDashboardApi.newUsersChart(range),
     staleTime: 5 * 60_000,
+    placeholderData: (prev) => prev,
   });
 }
 
