@@ -536,7 +536,7 @@ function SlipsTab() {
     try {
       await createSlip.mutateAsync({
         type,
-        warehouseCode: warehouseCode || undefined,
+        warehouseCode,
         locationNote: locationNote.trim() || undefined,
         items: payloadItems,
       });
@@ -596,9 +596,10 @@ function SlipsTab() {
               className="mq-input"
               value={warehouseCode}
               onChange={(e) => setWarehouseCode(e.target.value)}
+              required
             >
               <option value="">
-                {t("seller.inventoryPage.warehouses")} ({t("admin.common.optional")})
+                {t("seller.inventoryPage.warehouses")}
               </option>
               {warehouses.map((w) => (
                 <option key={w.id} value={w.code}>

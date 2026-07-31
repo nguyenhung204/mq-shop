@@ -1,7 +1,7 @@
 import { api } from "./client";
 import type { PageMeta, Paginated } from "./types";
 
-export type InventorySlipType = "IN" | "ADJUST_IN" | "ADJUST_OUT";
+export type InventorySlipType = "IN" | "ADJUST_IN" | "ADJUST_OUT" | "TRANSFER_OUT" | "TRANSFER_IN";
 export type InventorySlipStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 export type Warehouse = {
@@ -60,6 +60,7 @@ export type StockLedgerEntry = {
   quantity: number;
   quantityBefore: number;
   quantityAfter: number;
+  warehouseId: string;
   recordedAt: string;
 };
 
@@ -87,7 +88,7 @@ export type CreateSlipItemRequest = {
 
 export type CreateSlipRequest = {
   type: InventorySlipType;
-  warehouseCode?: string;
+  warehouseCode: string;
   locationNote?: string;
   items: CreateSlipItemRequest[];
   shopId?: string;
