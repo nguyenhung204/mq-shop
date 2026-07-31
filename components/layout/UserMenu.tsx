@@ -95,7 +95,7 @@ export function UserMenu() {
   };
 
   const showAdmin =
-    hasRole("ADMIN") || hasRole("SUPER_ADMIN") || hasRole("ACCOUNTANT");
+    hasRole("ADMIN") || hasRole("SUPER_ADMIN") || hasRole("ACCOUNTANT") || hasRole("CS");
   const showAdminRma =
     showAdmin ||
     hasAnyPermission(["PROCESS_RMA", "MANAGE_RMA"]);
