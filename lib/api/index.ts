@@ -162,6 +162,7 @@ export type {
   CommissionRow,
   ListCommissionsParams,
   MlmRankConfig,
+  UpdateRankConfigBody,
   SetMlmRankBody,
   SetMlmRankResult,
   SetMlmReferrerBody,

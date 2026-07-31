@@ -83,6 +83,14 @@ export type MlmRankConfig = {
   isActive: boolean;
 };
 
+export type UpdateRankConfigBody = {
+  name?: string;
+  teamPercent?: number;
+  referralPercent?: number;
+  globalFundTier?: number | null;
+  isActive?: boolean;
+};
+
 export type SetMlmRankBody = { rank: number };
 
 export type SetMlmRankResult = {
@@ -207,6 +215,8 @@ export const mlmApi = {
 /** Admin MLM config — `CONFIG_MLM`. */
 export const adminMlmApi = {
   ranks: () => api.get<MlmRankConfig[]>("/admin/mlm/ranks"),
+  updateRankConfig: (rank: number, body: UpdateRankConfigBody) =>
+    api.patch<MlmRankConfig>(`/admin/mlm/ranks/${rank}`, body),
   setUserRank: (userId: string, body: SetMlmRankBody) =>
     api.patch<SetMlmRankResult>(`/admin/mlm/users/${userId}/rank`, body),
   setUserReferrer: (userId: string, body: SetMlmReferrerBody) =>

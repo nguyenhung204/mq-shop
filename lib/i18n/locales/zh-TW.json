@@ -2148,6 +2148,8 @@
     "payoutShopNoBankInfo": "商店尚未設定銀行資料，請要求賣家先更新後再建立撥款。",
     "mlmRankUpdated": "已更新 MLM 等級",
     "mlmRankUpdateFailed": "更新 MLM 等級失敗",
+    "mlmRankConfigUpdated": "已更新等級配置。",
+    "mlmRankConfigUpdateFailed": "更新等級配置失敗。",
     "mlmReferrerUpdated": "已更新推薦人",
     "mlmReferrerUpdateFailed": "更新推薦人失敗",
     "mlmReferralRateUpdated": "已更新推薦比率覆寫",

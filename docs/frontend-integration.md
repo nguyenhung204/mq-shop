@@ -1088,6 +1088,7 @@ Register: optional `referrerCode` trên `POST /auth/register`.
 | GET | `/mlm/commissions?type=` | `VIEW_MLM_COMSN` |
 | GET | `/admin/mlm/ranks` | `CONFIG_MLM` |
 | PATCH | `/admin/mlm/users/:userId/rank` | `CONFIG_MLM` body `{ rank }` |
+| PATCH | `/admin/mlm/ranks/:rank` | `CONFIG_MLM` body `{ name?, teamPercent?, referralPercent?, globalFundTier?, isActive? }` |
 
 ### 8.5 Notifications & audit (wallet / commission)
 

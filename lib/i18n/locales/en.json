@@ -2148,6 +2148,8 @@
     "payoutShopNoBankInfo": "Shop has not set up bank info. Please ask the seller to update before creating a payout.",
     "mlmRankUpdated": "MLM rank updated",
     "mlmRankUpdateFailed": "Failed to update MLM rank",
+    "mlmRankConfigUpdated": "Rank configuration updated.",
+    "mlmRankConfigUpdateFailed": "Failed to update rank configuration.",
     "mlmReferrerUpdated": "Referrer updated",
     "mlmReferrerUpdateFailed": "Failed to update referrer",
     "mlmReferralRateUpdated": "Referral rate override updated",

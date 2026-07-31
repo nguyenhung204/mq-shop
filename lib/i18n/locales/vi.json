@@ -2149,6 +2149,8 @@
     "payoutShopNoBankInfo": "Shop chưa cập nhật thông tin ngân hàng. Vui lòng yêu cầu seller thiết lập trước khi tạo payout.",
     "mlmRankUpdated": "Đã cập nhật rank MLM",
     "mlmRankUpdateFailed": "Cập nhật rank MLM thất bại",
+    "mlmRankConfigUpdated": "Đã cập nhật cấu hình rank.",
+    "mlmRankConfigUpdateFailed": "Cập nhật cấu hình rank thất bại.",
     "mlmReferrerUpdated": "Đã cập nhật referrer",
     "mlmReferrerUpdateFailed": "Cập nhật referrer thất bại",
     "mlmReferralRateUpdated": "Đã cập nhật override tỷ lệ referral",
