@@ -67,6 +67,8 @@ export type StockLedgerEntry = {
 export type CreateWarehouseRequest = {
   code: string;
   address?: string;
+  countryCode?: string;
+  warehouseType?: "SHOP" | "PLATFORM";
   shopId?: string;
 };
 

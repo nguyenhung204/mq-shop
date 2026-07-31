@@ -229,6 +229,8 @@ function WarehousesTab() {
   const createWarehouse = useCreateWarehouse();
   const [code, setCode] = useState("");
   const [address, setAddress] = useState("");
+  const [countryCode, setCountryCode] = useState("VN");
+  const [whType, setWhType] = useState<"SHOP" | "PLATFORM">("SHOP");
   const [formError, setFormError] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -243,9 +245,13 @@ function WarehousesTab() {
     await createWarehouse.mutateAsync({
       code: trimmed,
       address: address.trim() || undefined,
+      countryCode,
+      warehouseType: whType,
     });
     setCode("");
     setAddress("");
+    setCountryCode("VN");
+    setWhType("SHOP");
   };
 
   return (
@@ -272,6 +278,28 @@ function WarehousesTab() {
           maxLength={200}
           onChange={(e) => setAddress(e.target.value)}
         />
+        <select
+          className="mq-input w-24"
+          value={countryCode}
+          onChange={(e) => setCountryCode(e.target.value)}
+          aria-label={t("seller.transfers.countryCode")}
+        >
+          <option value="VN">VN</option>
+          <option value="TW">TW</option>
+          <option value="US">US</option>
+          <option value="JP">JP</option>
+          <option value="SG">SG</option>
+          <option value="TH">TH</option>
+        </select>
+        <select
+          className="mq-input w-28"
+          value={whType}
+          onChange={(e) => setWhType(e.target.value as "SHOP" | "PLATFORM")}
+          aria-label={t("seller.transfers.warehouseType")}
+        >
+          <option value="SHOP">{t("seller.transfers.typeShop")}</option>
+          <option value="PLATFORM">{t("seller.transfers.typePlatform")}</option>
+        </select>
         <button
           className="mq-btn mq-btn-primary shrink-0 self-center"
           disabled={createWarehouse.isPending}
