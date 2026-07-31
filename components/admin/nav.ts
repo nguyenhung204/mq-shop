@@ -137,6 +137,7 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.orders",
     icon: ShoppingBag,
     permissions: ["FORCE_CANCEL_ORDER", "CONFIRM_ORDER"],
+    roles: ["CS", "ACCOUNTANT", "ADMIN", "SUPER_ADMIN"],
     group: "commerce",
   },
   {
@@ -144,6 +145,7 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.rma",
     icon: RotateCcw,
     permissions: ["PROCESS_RMA", "MANAGE_RMA"],
+    roles: ["CS", "ACCOUNTANT", "ADMIN", "SUPER_ADMIN"],
     group: "commerce",
   },
   {

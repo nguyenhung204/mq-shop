@@ -27,6 +27,10 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
         (ACCOUNTANT_COMMERCE_PERMS as readonly string[]).includes(p),
       );
     }
+    // CS sees items explicitly listing CS in roles[]
+    if (hasRole("CS") && i.roles?.includes("CS")) {
+      return true;
+    }
     return false;
   });
 
