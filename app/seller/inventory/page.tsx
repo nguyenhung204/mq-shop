@@ -22,6 +22,7 @@ import {
   useInventorySlips,
   useInventoryVariants,
   useRejectSlip,
+  useTransfers,
   useWarehouses,
 } from "@/lib/queries/inventory";
 import { useSellerProducts } from "@/lib/queries/seller";
@@ -38,10 +39,11 @@ import { TableSkeleton } from "@/components/ui/Skeleton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { getErrorMessage } from "@/lib/queries/utils";
 
-type TabId = "warehouses" | "variants" | "slips" | "ledger";
+type TabId = "warehouses" | "transfers" | "variants" | "slips" | "ledger";
 
 const TABS: { id: TabId; labelKey: string }[] = [
   { id: "warehouses", labelKey: "seller.inventoryPage.warehouses" },
+  { id: "transfers", labelKey: "seller.transfers.title" },
   { id: "variants", labelKey: "seller.inventoryPage.variants" },
   { id: "slips", labelKey: "seller.inventoryPage.slips" },
   { id: "ledger", labelKey: "seller.inventoryPage.ledger" },
@@ -76,6 +78,66 @@ function slipTypeLabel(
   t: (key: string, vars?: Record<string, string>) => string,
 ): string {
   return translateStatus(t, "inventorySlipType", type);
+}
+
+function TransfersTab() {
+  const { t } = useLanguage();
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useTransfers({ page, pageSize: 10 });
+  const items = data?.items ?? [];
+  const meta = data?.meta;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-mq-text-muted">{t("seller.transfers.description")}</p>
+        <Link href="/seller/inventory/transfers" className="mq-btn mq-btn-primary text-xs">
+          {t("seller.transfers.title")}
+        </Link>
+      </div>
+      {isLoading ? (
+        <TableSkeleton rows={3} cols={4} />
+      ) : items.length === 0 ? (
+        <p className="text-sm text-mq-text-muted">{t("seller.transfers.empty")}</p>
+      ) : (
+        <>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-mq-text-muted border-b border-mq-border">
+                  <th className="py-2 pr-3 font-medium">ID</th>
+                  <th className="py-2 pr-3 font-medium">{t("seller.transfers.fromWarehouse")}</th>
+                  <th className="py-2 pr-3 font-medium">{t("seller.transfers.toWarehouse")}</th>
+                  <th className="py-2 pr-3 font-medium">{t("admin.common.status")}</th>
+                  <th className="py-2 font-medium">{t("seller.inventoryPage.created")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((tr) => (
+                  <tr key={tr.id} className="border-b border-mq-border/60">
+                    <td className="py-2.5 pr-3 font-mono text-xs">
+                      <Link href={`/seller/inventory/transfers/${tr.id}`} className="underline hover:text-[#e7ba0a]">
+                        {tr.id.slice(0, 8)}…
+                      </Link>
+                    </td>
+                    <td className="py-2.5 pr-3 text-xs">{tr.fromWarehouse?.code || "—"}</td>
+                    <td className="py-2.5 pr-3 text-xs">{tr.toWarehouse?.code || "—"}</td>
+                    <td className="py-2.5 pr-3">
+                      <span className={`mq-badge ${tr.status === "RECEIVED" ? "mq-badge-teal" : tr.status === "IN_TRANSIT" ? "mq-badge-cyan" : tr.status === "CANCELLED" ? "mq-badge-pink" : "mq-badge-muted"}`}>
+                        {t(`seller.transfers.status${tr.status}`)}
+                      </span>
+                    </td>
+                    <td className="py-2.5 text-xs text-mq-text-muted">{new Date(tr.createdAt).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <PaginationBar page={page} meta={meta} onPageChange={setPage} />
+        </>
+      )}
+    </div>
+  );
 }
 
 function WarehousesTab() {
@@ -913,6 +975,9 @@ function InventoryInner() {
       <div role="tabpanel">
         <div hidden={tab !== "warehouses"}>
           <WarehousesTab />
+        </div>
+        <div hidden={tab !== "transfers"}>
+          <TransfersTab />
         </div>
         <div hidden={tab !== "variants"}>
           <VariantsTab />
