@@ -71,7 +71,15 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.products",
     icon: Package,
     permissions: ["APPROVE_PRODUCT", "REJECT_PRODUCT", "HIDE_PRODUCT"],
-    roles: ["WAREHOUSE", "ADMIN", "SUPER_ADMIN"],
+    roles: ["ADMIN", "SUPER_ADMIN"],
+    group: "ops",
+  },
+  {
+    href: "/admin/products-view",
+    labelKey: "admin.nav.products",
+    icon: Package,
+    permissions: ["VIEW_PROD_BKG"],
+    roles: ["WAREHOUSE"],
     group: "ops",
   },
   {

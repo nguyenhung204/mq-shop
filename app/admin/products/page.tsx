@@ -250,7 +250,7 @@ function ProductsInner() {
 
 export default function AdminProductsPage() {
   return (
-    <AuthGuard roles={["ADMIN", "SUPER_ADMIN", "WAREHOUSE"]} permissions={["APPROVE_PRODUCT"]}>
+    <AuthGuard roles={["ADMIN", "SUPER_ADMIN"]} permissions={["APPROVE_PRODUCT"]}>
       <ProductsInner />
     </AuthGuard>
   );
