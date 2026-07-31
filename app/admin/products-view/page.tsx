@@ -18,7 +18,7 @@ function ProductsViewInner() {
   const { t } = useLanguage();
   const { user } = useAuth();
   const [page, setPage] = useState(1);
-  const [shopId, setShopId] = useState(user?.shopId || "");
+  const [shopId, setShopId] = useState("");
 
   const { data, isLoading } = useQuery({
     queryKey: ["products-manage", shopId, page],
