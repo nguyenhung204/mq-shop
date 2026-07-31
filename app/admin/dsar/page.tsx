@@ -13,6 +13,7 @@ import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButto
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
@@ -36,6 +37,8 @@ function DsarInner() {
   const [createOpen, setCreateOpen] = useState(false);
   const [targetUserId, setTargetUserId] = useState("");
   const [note, setNote] = useState("");
+  /** Request id awaiting erasure confirmation — irreversible, so gate it. */
+  const [executeId, setExecuteId] = useState<string | null>(null);
 
   const { data, isLoading, isError, error } = useAdminDsarList({
     status: statusFilter || undefined,
@@ -177,15 +180,7 @@ function DsarInner() {
                             icon={Play}
                             tone="warn"
                             disabled={action.isPending}
-                            onClick={() => {
-                              if (
-                                typeof window !== "undefined" &&
-                                !window.confirm(t("admin.dsar.executeConfirm"))
-                              ) {
-                                return;
-                              }
-                              void action.mutateAsync({ id: r.id, kind: "execute" });
-                            }}
+                            onClick={() => setExecuteId(r.id)}
                           />
                         ) : null}
                       </AdminActions>
@@ -271,6 +266,24 @@ function DsarInner() {
           </div>
         </div>
       ) : null}
+
+      <ConfirmDialog
+        open={Boolean(executeId)}
+        title={t("confirm.dsarExecuteTitle")}
+        description={t("confirm.dsarExecuteDesc")}
+        confirmLabel={t("confirm.dsarExecuteBtn")}
+        tone="danger"
+        busy={action.isPending}
+        onClose={() => setExecuteId(null)}
+        onConfirm={async () => {
+          if (!executeId) return;
+          try {
+            await action.mutateAsync({ id: executeId, kind: "execute" });
+          } finally {
+            setExecuteId(null);
+          }
+        }}
+      />
     </>
   );
 }
