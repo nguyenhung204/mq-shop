@@ -20,7 +20,7 @@ function ProductsViewInner() {
     queryKey: ["products-manage", page],
     queryFn: async () =>
       parsePage<ApiProduct>(
-        await api.get<ApiProduct[]>("/products/manage", {
+        await api.get<ApiProduct[]>("/products", {
           query: { page, pageSize: 20 },
           withMeta: true,
         }),
