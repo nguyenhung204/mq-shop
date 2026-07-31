@@ -7,6 +7,7 @@ import type { TransferStatus, Warehouse } from "@/lib/api/inventory";
 import {
   useCreateTransfer,
   useTransfers,
+  useInventoryVariants,
   useWarehouses,
 } from "@/lib/queries/inventory";
 import { AuthGuard } from "@/components/guards/AuthGuard";
@@ -52,7 +53,10 @@ function TransfersInner() {
   const items = data?.items ?? [];
   const meta = data?.meta;
 
+  // ALL warehouses across all shops/countries
   const { data: warehouses = [] } = useWarehouses();
+  const { data: variantsPage } = useInventoryVariants({ pageSize: 200 });
+  const skuOptions = (variantsPage?.items ?? []).map((v) => v.sku);
   const createTransfer = useCreateTransfer();
 
   const [fromId, setFromId] = useState("");
@@ -142,13 +146,17 @@ function TransfersInner() {
             <p className="text-xs text-mq-text-muted font-medium">SKU</p>
             {lines.map((line, i) => (
               <div key={i} className="flex gap-2 items-center">
-                <input
+                <select
                   className="mq-input flex-1"
-                  placeholder="SKU"
                   value={line.sku}
                   onChange={(e) => updateLine(i, "sku", e.target.value)}
                   required
-                />
+                >
+                  <option value="">SKU</option>
+                  {skuOptions.map((sku) => (
+                    <option key={sku} value={sku}>{sku}</option>
+                  ))}
+                </select>
                 <input
                   className="mq-input w-20"
                   type="number"
