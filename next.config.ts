@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Produces a minimal .next/standalone output with only the files needed
+  // to run `node server.js`, making the Docker runtime image much smaller.
+  output: "standalone",
   async redirects() {
     return [
       {

@@ -1,0 +1,15 @@
+node_modules
+.next
+.git
+.env
+.env.*
+!.env.example
+docs
+.cursor
+.agents
+.code-review-graph
+rules
+templates
+*.md
+npm-debug.log*
+.DS_Store
