@@ -207,7 +207,7 @@ function AdminHome() {
 
 export default function AdminPage() {
   return (
-    <AuthGuard roles={["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"]}>
+    <AuthGuard roles={["ADMIN", "SUPER_ADMIN", "ACCOUNTANT", "CS"]}>
       <AdminHome />
     </AuthGuard>
   );
