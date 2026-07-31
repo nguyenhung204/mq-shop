@@ -6,7 +6,7 @@ import { AuthGuard } from "@/components/guards/AuthGuard";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
-    <AuthGuard roles={["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"]}>
+    <AuthGuard roles={["ADMIN", "SUPER_ADMIN", "ACCOUNTANT", "CS"]}>
       <AdminShell>{children}</AdminShell>
     </AuthGuard>
   );
