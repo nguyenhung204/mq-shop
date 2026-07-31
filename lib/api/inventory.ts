@@ -140,11 +140,37 @@ type PageEnvelope<T> =
   | { data: T[]; meta?: PageMeta }
   | Paginated<T>;
 
+export type WarehouseStockItem = {
+  warehouseInventoryId: string;
+  variantId: string;
+  sku: string;
+  productId: string;
+  productTitle: string;
+  options: Record<string, string> | null;
+  sellingPrice: string;
+  availableStock: number;
+  reservedStock: number;
+  updatedAt: string;
+};
+
+export type ListWarehouseStockParams = {
+  q?: string;
+  shopId?: string;
+  page?: number;
+  pageSize?: number;
+};
+
 export const inventoryApi = {
   listWarehouses: (shopId?: string) =>
     api.get<Warehouse[]>("/inventory/warehouses", {
       query: shopId ? { shopId } : undefined,
     }),
+
+  warehouseStock: (warehouseId: string, query?: ListWarehouseStockParams) =>
+    api.get<PageEnvelope<WarehouseStockItem>>(
+      `/inventory/warehouses/${warehouseId}/stock`,
+      { query, withMeta: true },
+    ),
 
   createWarehouse: (body: CreateWarehouseRequest) =>
     api.post<Warehouse>("/inventory/warehouses", body),

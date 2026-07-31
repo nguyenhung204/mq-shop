@@ -23,9 +23,11 @@ import {
   type ListSlipsParams,
   type ListTransfersParams,
   type ListVariantsParams,
+  type ListWarehouseStockParams,
   type ReceiveTransferRequest,
   type StockLedgerEntry,
   type Warehouse,
+  type WarehouseStockItem,
 } from "@/lib/api/inventory";
 import { asArray, parsePage } from "@/lib/api/utils";
 import { tt } from "@/lib/i18n/tt";
@@ -98,6 +100,15 @@ export const inventoryKeys = {
       params.toWarehouseId ?? "",
     ] as const,
   transfer: (id: string) => [...inventoryKeys.all, "transfer", id] as const,
+  warehouseStock: (warehouseId: string, params: ListWarehouseStockParams) =>
+    [
+      ...inventoryKeys.all,
+      "warehouseStock",
+      warehouseId,
+      params.q?.trim() || "",
+      params.page ?? 1,
+      params.pageSize ?? 20,
+    ] as const,
 };
 
 function inventoryErrorMessage(e: unknown, fallback: string): string {
@@ -438,5 +449,19 @@ export function useCancelTransfer() {
       toast.success(tt("toast.transferCancelled"));
     },
     onError: (e) => toast.error(inventoryErrorMessage(e, tt("toast.transferFailed"))),
+  });
+}
+
+export function useWarehouseStock(
+  warehouseId: string | null,
+  params: ListWarehouseStockParams = {},
+) {
+  return useQuery({
+    queryKey: inventoryKeys.warehouseStock(warehouseId ?? "", params),
+    queryFn: async () =>
+      parsePage<WarehouseStockItem>(
+        await inventoryApi.warehouseStock(warehouseId!, params),
+      ),
+    enabled: Boolean(warehouseId),
   });
 }

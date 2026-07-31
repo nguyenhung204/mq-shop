@@ -24,6 +24,7 @@ import {
   useRejectSlip,
   useTransfers,
   useWarehouses,
+  useWarehouseStock,
 } from "@/lib/queries/inventory";
 import { useSellerProducts } from "@/lib/queries/seller";
 import { AuthGuard } from "@/components/guards/AuthGuard";
@@ -78,6 +79,57 @@ function slipTypeLabel(
   t: (key: string, vars?: Record<string, string>) => string,
 ): string {
   return translateStatus(t, "inventorySlipType", type);
+}
+
+function WarehouseStockPanel({ warehouseId }: { warehouseId: string }) {
+  const { t } = useLanguage();
+  const [q, setQ] = useState("");
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useWarehouseStock(warehouseId, { q: q || undefined, page, pageSize: 10 });
+  const items = data?.items ?? [];
+  const meta = data?.meta;
+
+  return (
+    <div className="space-y-3 pl-2">
+      <div className="flex items-center gap-2">
+        <input
+          className="mq-input max-w-[14rem] text-xs"
+          placeholder={t("seller.inventoryPage.searchSku")}
+          value={q}
+          onChange={(e) => { setQ(e.target.value); setPage(1); }}
+        />
+      </div>
+      {isLoading ? (
+        <p className="text-xs text-mq-text-muted">{t("admin.common.loading")}</p>
+      ) : items.length === 0 ? (
+        <p className="text-xs text-mq-text-muted">{t("seller.inventoryPage.noSkus")}</p>
+      ) : (
+        <>
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="text-left text-mq-text-muted border-b border-mq-border">
+                <th className="py-1.5 pr-2 font-medium">SKU</th>
+                <th className="py-1.5 pr-2 font-medium">{t("admin.common.name")}</th>
+                <th className="py-1.5 pr-2 font-medium text-right">{t("seller.inventoryPage.available")}</th>
+                <th className="py-1.5 font-medium text-right">{t("seller.inventoryPage.sellPrice")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item) => (
+                <tr key={item.warehouseInventoryId} className="border-b border-mq-border/40">
+                  <td className="py-1.5 pr-2 font-mono">{item.sku}</td>
+                  <td className="py-1.5 pr-2 text-mq-text-secondary truncate max-w-[160px]">{item.productTitle}</td>
+                  <td className="py-1.5 pr-2 text-right tabular-nums">{item.availableStock}</td>
+                  <td className="py-1.5 text-right tabular-nums">{item.sellingPrice}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <PaginationBar page={page} meta={meta} onPageChange={setPage} />
+        </>
+      )}
+    </div>
+  );
 }
 
 function TransfersTab() {
@@ -147,6 +199,7 @@ function WarehousesTab() {
   const [code, setCode] = useState("");
   const [address, setAddress] = useState("");
   const [formError, setFormError] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -220,13 +273,31 @@ function WarehousesTab() {
             </thead>
             <tbody>
               {warehouses.map((w: Warehouse) => (
-                <tr key={w.id} className="border-b border-mq-border/60">
-                  <td className="py-2.5 pr-3 font-medium">{w.code}</td>
+                <Fragment key={w.id}>
+                <tr className="border-b border-mq-border/60">
+                  <td className="py-2.5 pr-3 font-medium">
+                    <button
+                      type="button"
+                      className="underline-offset-2 hover:underline text-left"
+                      onClick={() => setExpandedId((id) => (id === w.id ? null : w.id))}
+                    >
+                      {w.code}
+                    </button>
+                    {w.countryCode ? <span className="ml-1 text-xs text-mq-text-muted">[{w.countryCode}]</span> : null}
+                  </td>
                   <td className="py-2.5 pr-3 text-mq-text-secondary">{w.address || "—"}</td>
                   <td className="py-2.5 text-mq-text-muted text-xs">
                     {formatDate(w.createdAt)}
                   </td>
                 </tr>
+                {expandedId === w.id ? (
+                  <tr className="border-b border-mq-border/60">
+                    <td colSpan={3} className="py-3">
+                      <WarehouseStockPanel warehouseId={w.id} />
+                    </td>
+                  </tr>
+                ) : null}
+                </Fragment>
               ))}
             </tbody>
           </table>
