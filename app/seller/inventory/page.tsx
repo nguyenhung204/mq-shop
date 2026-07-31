@@ -136,6 +136,7 @@ function WarehouseStockPanel({ warehouseId }: { warehouseId: string }) {
                     <p className="text-mq-text-muted font-mono mt-0.5">{item.sku}</p>
                   </div>
                   <div className="text-right shrink-0">
+                    <p className="text-[10px] text-mq-text-muted mb-0.5">{t("seller.inventoryPage.available")}</p>
                     <p className={`font-semibold tabular-nums ${outOfStock ? "text-red-500" : lowStock ? "text-orange-500" : "text-mq-text"}`}>
                       {item.availableStock}
                     </p>
@@ -146,6 +147,7 @@ function WarehouseStockPanel({ warehouseId }: { warehouseId: string }) {
                     )}
                   </div>
                   <div className="text-right shrink-0 w-16">
+                    <p className="text-[10px] text-mq-text-muted mb-0.5">{t("seller.inventoryPage.sellPrice")}</p>
                     <p className="tabular-nums text-mq-text-muted">{item.sellingPrice}</p>
                   </div>
                 </div>
