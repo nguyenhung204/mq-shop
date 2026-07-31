@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import {
   ArrowLeftRight,
+  ArrowRightLeft,
   BadgeDollarSign,
   BadgePercent,
   Boxes,
@@ -94,6 +95,7 @@ const links: NavEntry[] = [
   { href: "/seller/products", labelKey: "seller.nav.products", icon: Package, sellerOnly: true },
   { href: "/seller/reviews", labelKey: "seller.nav.reviews", icon: MessageSquare, sellerOnly: true },
   { href: "/seller/inventory", labelKey: "seller.nav.inventory", icon: Boxes, sellerOnly: false },
+  { href: "/seller/inventory/transfers", labelKey: "seller.nav.transfers", icon: ArrowRightLeft, sellerOnly: false },
   { href: "/seller/orders", labelKey: "seller.nav.orders", icon: ShoppingBag, sellerOnly: true },
   {
     href: "/seller/settlements",
@@ -137,6 +139,9 @@ function titleKeysFromPath(pathname: string): { titleKey: string; descKey?: stri
   }
   if (pathname.startsWith("/seller/reviews")) {
     return { titleKey: "seller.titles.reviews", descKey: "seller.titles.reviewsDesc" };
+  }
+  if (pathname.startsWith("/seller/inventory/transfers")) {
+    return { titleKey: "seller.transfers.title", descKey: "seller.transfers.description" };
   }
   if (pathname.startsWith("/seller/inventory")) {
     return { titleKey: "seller.titles.inventory", descKey: "seller.titles.inventoryDesc" };

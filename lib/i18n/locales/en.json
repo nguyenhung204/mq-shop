@@ -1345,6 +1345,7 @@
       "shop": "Shop",
       "products": "Products",
       "inventory": "Inventory",
+      "transfers": "Transfers",
       "orders": "Orders",
       "settlements": "Settlements",
       "transactions": "Transactions",

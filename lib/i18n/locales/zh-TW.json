@@ -1345,6 +1345,7 @@
       "shop": "商店",
       "products": "商品",
       "inventory": "庫存",
+      "transfers": "調撥",
       "orders": "訂單",
       "settlements": "結算",
       "transactions": "交易",
