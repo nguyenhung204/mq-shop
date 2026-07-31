@@ -346,7 +346,7 @@ export function useCreateStaff() {
       email: string;
       fullName?: string;
       role: StaffRole;
-      shopId: string;
+      shopId?: string;
     }) => adminStaffApi.create(body),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: adminKeys.staff() });
