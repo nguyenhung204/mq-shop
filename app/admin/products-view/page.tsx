@@ -7,6 +7,8 @@ import type { ApiProduct, PageMeta } from "@/lib/api/types";
 import { parsePage } from "@/lib/api/utils";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
+import { InventoryShopPicker } from "@/components/admin/InventoryShopPicker";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
@@ -14,14 +16,16 @@ import { TableSkeleton } from "@/components/ui/Skeleton";
 
 function ProductsViewInner() {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [page, setPage] = useState(1);
+  const [shopId, setShopId] = useState(user?.shopId || "");
 
   const { data, isLoading } = useQuery({
-    queryKey: ["products-manage", page],
+    queryKey: ["products-manage", shopId, page],
     queryFn: async () =>
       parsePage<ApiProduct>(
         await api.get<ApiProduct[]>("/products", {
-          query: { page, pageSize: 20 },
+          query: { page, pageSize: 20, shopId: shopId || undefined },
           withMeta: true,
         }),
       ),
@@ -38,6 +42,7 @@ function ProductsViewInner() {
       />
 
       <div className="space-y-6">
+        <InventoryShopPicker value={shopId} onChange={(v) => { setShopId(v); setPage(1); }} />
         {isLoading ? (
           <TableSkeleton rows={6} cols={5} />
         ) : items.length === 0 ? (
