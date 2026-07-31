@@ -7,7 +7,7 @@ import { formatMoneyLocale } from "@/lib/i18n/locale-format";
 import { useAdminTopShops } from "@/lib/queries/admin";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { AdminChartRangeSelector } from "./AdminChartRangeSelector";
+import { AdminChartCard } from "./AdminChartCard";
 
 const RANGE_OPTIONS = [
   { value: "7d", labelKey: "admin.overview.range7d" },
@@ -18,56 +18,35 @@ const RANGE_OPTIONS = [
 export function AdminTopShops() {
   const { t, locale } = useLanguage();
   const [range, setRange] = useState<TopShopsRange>("30d");
-  const { data, isLoading } = useAdminTopShops(range, 10);
+  const { data, isLoading, isError, error } = useAdminTopShops(range, 10);
 
-  if (isLoading) {
-    return (
-      <div className="mq-card p-4">
-        <Skeleton className="h-4 w-32 mb-4" />
+  const items = data?.items ?? [];
+  const maxRevenue = items.length
+    ? Math.max(...items.map((i) => parseFloat(i.revenue)))
+    : 0;
+
+  return (
+    <AdminChartCard
+      title={t("admin.overview.topShops")}
+      description={t("admin.overview.topShopsDesc")}
+      icon={Store}
+      rangeOptions={RANGE_OPTIONS}
+      range={range}
+      onRangeChange={(v) => setRange(v as TopShopsRange)}
+      isLoading={isLoading}
+      isError={isError}
+      error={error}
+      isEmpty={items.length === 0}
+      skeleton={
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} className="h-8 rounded-lg" />
           ))}
         </div>
-      </div>
-    );
-  }
-
-  if (!data || data.items.length === 0) {
-    return (
-      <div className="mq-card p-4">
-        <h3 className="text-sm font-semibold text-mq-text flex items-center gap-2">
-          <Store size={15} strokeWidth={1.75} aria-hidden />
-          {t("admin.overview.topShops")}
-        </h3>
-        <p className="text-xs text-mq-text-muted mt-2">{t("admin.overview.noChartData")}</p>
-      </div>
-    );
-  }
-
-  const maxRevenue = Math.max(...data.items.map((i) => parseFloat(i.revenue)));
-
-  return (
-    <div className="mq-card">
-      <div className="flex flex-wrap items-center justify-between gap-2 px-4 pt-4 pb-2">
-        <div>
-          <h3 className="text-sm font-semibold text-mq-text flex items-center gap-2">
-            <Store size={15} strokeWidth={1.75} aria-hidden />
-            {t("admin.overview.topShops")}
-          </h3>
-          <p className="text-xs text-mq-text-muted mt-0.5">
-            {t("admin.overview.topShopsDesc")}
-          </p>
-        </div>
-        <AdminChartRangeSelector
-          options={RANGE_OPTIONS}
-          value={range}
-          onChange={(v) => setRange(v as TopShopsRange)}
-        />
-      </div>
-
+      }
+    >
       <div className="px-4 pb-4 space-y-2">
-        {data.items.map((item, idx) => {
+        {items.map((item, idx) => {
           const pct = maxRevenue > 0 ? (parseFloat(item.revenue) / maxRevenue) * 100 : 0;
           return (
             <div key={item.shopId} className="flex items-center gap-3 text-xs">
@@ -92,6 +71,6 @@ export function AdminTopShops() {
           );
         })}
       </div>
-    </div>
+    </AdminChartCard>
   );
 }

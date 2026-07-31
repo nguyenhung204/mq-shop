@@ -84,6 +84,8 @@ export function resolveNotificationRoute(
     case "SHOP_REJECTED":
     case "SHOP_SUSPENDED":
     case "SHOP_REINSTATED":
+    case "SHOP_BANK_INFO_SETUP":
+    case "SHOP_BANK_INFO_REMINDER":
       return seller ? "/seller/shop" : "/account";
 
     case "PRODUCT_APPROVED":

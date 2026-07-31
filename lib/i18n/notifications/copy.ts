@@ -331,7 +331,7 @@ export const NOTIFICATION_TYPE_COPY: Record<
       body: "Shop đã được duyệt. Vui lòng thêm thông tin ngân hàng để nhận thanh toán.",
     },
     SHOP_BANK_INFO_REMINDER: {
-      title: "Cần thông tin ngân hàng để nhận payout",
+      title: "Cần cập nhật thông tin ngân hàng để nhận chi trả",
       body: "Đơn hàng đã giao nhưng shop chưa có thông tin ngân hàng. Cập nhật ngay để nhận thanh toán.",
     },
     SELLER_PAYOUT_COMPLETED: {

@@ -14,8 +14,7 @@ import { Users } from "lucide-react";
 import type { AdminChartRange } from "@/lib/api/admin-dashboard";
 import { useAdminNewUsersChart } from "@/lib/queries/admin";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-import { Skeleton } from "@/components/ui/Skeleton";
-import { AdminChartRangeSelector } from "./AdminChartRangeSelector";
+import { AdminChartCard } from "./AdminChartCard";
 
 const RANGE_OPTIONS = [
   { value: "7d", labelKey: "admin.overview.range7d" },
@@ -32,47 +31,26 @@ function formatXLabel(iso: string, groupBy: string): string {
 export function AdminNewUsersChart() {
   const { t } = useLanguage();
   const [range, setRange] = useState<AdminChartRange>("30d");
-  const { data, isLoading } = useAdminNewUsersChart(range);
+  const { data, isLoading, isError, error } = useAdminNewUsersChart(range);
 
-  if (isLoading) {
-    return (
-      <div className="mq-card p-4">
-        <Skeleton className="h-4 w-32 mb-4" />
-        <Skeleton className="h-[180px] rounded-lg" />
-      </div>
-    );
-  }
-
-  if (!data || data.current.length === 0) {
-    return (
-      <div className="mq-card p-4">
-        <h3 className="text-sm font-semibold text-mq-text flex items-center gap-2">
-          <Users size={15} strokeWidth={1.75} aria-hidden />
-          {t("admin.overview.newUsersChart")}
-        </h3>
-        <p className="text-xs text-mq-text-muted mt-2">{t("admin.overview.noChartData")}</p>
-      </div>
-    );
-  }
-
-  const chartData = data.current.map((p) => ({
-    label: formatXLabel(p.date, data.groupBy),
+  const points = data?.current ?? [];
+  const chartData = points.map((p) => ({
+    label: formatXLabel(p.date, data?.groupBy ?? "day"),
     count: p.count,
   }));
 
   return (
-    <div className="mq-card">
-      <div className="flex flex-wrap items-center justify-between gap-2 px-4 pt-4 pb-2">
-        <h3 className="text-sm font-semibold text-mq-text flex items-center gap-2">
-          <Users size={15} strokeWidth={1.75} aria-hidden />
-          {t("admin.overview.newUsersChart")}
-        </h3>
-        <AdminChartRangeSelector
-          options={RANGE_OPTIONS}
-          value={range}
-          onChange={(v) => setRange(v as AdminChartRange)}
-        />
-      </div>
+    <AdminChartCard
+      title={t("admin.overview.newUsersChart")}
+      icon={Users}
+      rangeOptions={RANGE_OPTIONS}
+      range={range}
+      onRangeChange={(v) => setRange(v as AdminChartRange)}
+      isLoading={isLoading}
+      isError={isError}
+      error={error}
+      isEmpty={points.length === 0}
+    >
       <div className="px-2 pb-4" style={{ height: 200 }}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
@@ -100,6 +78,6 @@ export function AdminNewUsersChart() {
           </AreaChart>
         </ResponsiveContainer>
       </div>
-    </div>
+    </AdminChartCard>
   );
 }

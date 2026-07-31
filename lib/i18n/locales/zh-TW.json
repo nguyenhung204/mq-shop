@@ -687,6 +687,11 @@
       "title": "管理後台",
       "description": "依角色提供營運、商務與系統工具。",
       "queuesTitle": "待處理",
+      "inventory": {
+        "title": "庫存待辦",
+        "slipsPending": "待核准單據",
+        "transfersInTransit": "運送中的調撥"
+      },
       "snapshotTitle": "平台概況",
       "modulesTitle": "模組",
       "loading": "載入概況中…",

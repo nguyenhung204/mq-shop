@@ -687,6 +687,11 @@
       "title": "Admin",
       "description": "Operations, commerce, and system tools for your role.",
       "queuesTitle": "Action required",
+      "inventory": {
+        "title": "Inventory queues",
+        "slipsPending": "Slips awaiting approval",
+        "transfersInTransit": "Transfers in transit"
+      },
       "snapshotTitle": "Platform snapshot",
       "modulesTitle": "Modules",
       "loading": "Loading dashboard…",

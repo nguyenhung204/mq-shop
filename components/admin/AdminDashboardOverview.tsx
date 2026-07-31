@@ -40,6 +40,7 @@ import { AdminOrderStatusChart } from "./AdminOrderStatusChart";
 import { AdminTopShops } from "./AdminTopShops";
 import { AdminNewUsersChart } from "./AdminNewUsersChart";
 import { AdminCronJobs } from "./AdminCronJobs";
+import { AdminInventoryQueues } from "./AdminInventoryQueues";
 
 const QUEUE_ICONS: Record<keyof AdminDashboardQueues, LucideIcon> = {
   shopsPending: Store,
@@ -112,10 +113,31 @@ function DashboardSkeleton({ label }: { label: string }) {
   );
 }
 
-export function AdminDashboardOverview() {
+/**
+ * `full` — platform roles see every queue, KPI and chart.
+ * `warehouse` — inventory queues plus the order status breakdown.
+ * `cs` — order status breakdown; the RMA queue arrives via the queue tiles.
+ *
+ * Queue tiles are already permission-filtered by the backend, which omits any
+ * field the actor cannot see. The scope only narrows what we render on top.
+ */
+export type AdminDashboardScope = "full" | "warehouse" | "cs";
+
+/** Order-related KPIs are the only snapshot entries scoped roles should see. */
+const SCOPED_SNAPSHOT_KEYS: (keyof AdminDashboardSnapshot)[] = [
+  "ordersToday",
+  "ordersThisWeek",
+];
+
+export function AdminDashboardOverview({
+  scope = "full",
+}: {
+  scope?: AdminDashboardScope;
+}) {
   const router = useRouter();
   const { t, locale } = useLanguage();
   const { data, isLoading, isError, error, dataUpdatedAt } = useAdminDashboard();
+  const isFull = scope === "full";
 
   if (isLoading) {
     return <DashboardSkeleton label={t("admin.overview.loading")} />;
@@ -130,8 +152,13 @@ export function AdminDashboardOverview() {
     return [{ key, tile }];
   });
 
+  const snapshotKeys = isFull
+    ? ADMIN_DASHBOARD_SNAPSHOT_ORDER
+    : ADMIN_DASHBOARD_SNAPSHOT_ORDER.filter((key) =>
+        SCOPED_SNAPSHOT_KEYS.includes(key),
+      );
   const visibleSnapshot = snapshot
-    ? ADMIN_DASHBOARD_SNAPSHOT_ORDER.flatMap((key) => {
+    ? snapshotKeys.flatMap((key) => {
         const value = snapshot[key];
         if (value === undefined) return [];
         return [{ key, value }];
@@ -141,7 +168,10 @@ export function AdminDashboardOverview() {
   const hasQueues = visibleQueues.length > 0;
   const hasSnapshot = visibleSnapshot.length > 0;
 
-  if (!isError && !hasQueues && !hasSnapshot) {
+  // Scoped roles always have something to render (their chart, and for
+  // warehouse the inventory queues), so an empty platform payload must not
+  // blank the whole section.
+  if (!isError && !hasQueues && !hasSnapshot && isFull) {
     return null;
   }
 
@@ -206,17 +236,25 @@ export function AdminDashboardOverview() {
         </div>
       ) : null}
 
+      {scope === "warehouse" ? <AdminInventoryQueues /> : null}
+
       <div>
         <h2 className="text-sm font-semibold text-mq-text mb-3">
           {t("admin.overview.chartsTitle")}
         </h2>
         <div className="grid gap-4 lg:grid-cols-2">
-          <AdminGmvChart />
-          <AdminOrdersChart />
-          <AdminOrderStatusChart />
-          <AdminTopShops />
-          <AdminNewUsersChart />
-          <AdminCronJobs />
+          {isFull ? (
+            <>
+              <AdminGmvChart />
+              <AdminOrdersChart />
+              <AdminOrderStatusChart />
+              <AdminTopShops />
+              <AdminNewUsersChart />
+              <AdminCronJobs />
+            </>
+          ) : (
+            <AdminOrderStatusChart />
+          )}
         </div>
       </div>
     </section>

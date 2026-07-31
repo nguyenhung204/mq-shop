@@ -6,8 +6,9 @@ import { PieChartIcon } from "lucide-react";
 import type { AdminChartRange } from "@/lib/api/admin-dashboard";
 import { useAdminOrderStatus } from "@/lib/queries/admin";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { translateStatus } from "@/lib/i18n/status";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { AdminChartRangeSelector } from "./AdminChartRangeSelector";
+import { AdminChartCard } from "./AdminChartCard";
 
 const RANGE_OPTIONS = [
   { value: "7d", labelKey: "admin.overview.range7d" },
@@ -33,50 +34,30 @@ function getColor(status: string, idx: number): string {
 export function AdminOrderStatusChart() {
   const { t } = useLanguage();
   const [range, setRange] = useState<AdminChartRange>("30d");
-  const { data, isLoading } = useAdminOrderStatus(range);
+  const { data, isLoading, isError, error } = useAdminOrderStatus(range);
 
-  if (isLoading) {
-    return (
-      <div className="mq-card p-4">
-        <Skeleton className="h-4 w-40 mb-4" />
-        <Skeleton className="h-[180px] rounded-lg" />
-      </div>
-    );
-  }
-
-  if (!data || data.distribution.length === 0) {
-    return (
-      <div className="mq-card p-4">
-        <h3 className="text-sm font-semibold text-mq-text flex items-center gap-2">
-          <PieChartIcon size={15} strokeWidth={1.75} aria-hidden />
-          {t("admin.overview.orderStatus")}
-        </h3>
-        <p className="text-xs text-mq-text-muted mt-2">{t("admin.overview.noChartData")}</p>
-      </div>
-    );
-  }
-
-  const total = data.distribution.reduce((s, d) => s + d.count, 0);
+  const distribution = data?.distribution ?? [];
+  const total = distribution.reduce((sum, d) => sum + d.count, 0);
 
   return (
-    <div className="mq-card">
-      <div className="flex flex-wrap items-center justify-between gap-2 px-4 pt-4 pb-2">
-        <h3 className="text-sm font-semibold text-mq-text flex items-center gap-2">
-          <PieChartIcon size={15} strokeWidth={1.75} aria-hidden />
-          {t("admin.overview.orderStatus")}
-        </h3>
-        <AdminChartRangeSelector
-          options={RANGE_OPTIONS}
-          value={range}
-          onChange={(v) => setRange(v as AdminChartRange)}
-        />
-      </div>
+    <AdminChartCard
+      title={t("admin.overview.orderStatus")}
+      icon={PieChartIcon}
+      rangeOptions={RANGE_OPTIONS}
+      range={range}
+      onRangeChange={(v) => setRange(v as AdminChartRange)}
+      isLoading={isLoading}
+      isError={isError}
+      error={error}
+      isEmpty={distribution.length === 0}
+      skeleton={<Skeleton className="h-[160px] rounded-lg" />}
+    >
       <div className="flex items-center gap-4 px-4 pb-4">
         <div style={{ width: 160, height: 160 }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={data.distribution}
+                data={distribution}
                 dataKey="count"
                 nameKey="status"
                 cx="50%"
@@ -85,7 +66,7 @@ export function AdminOrderStatusChart() {
                 outerRadius={70}
                 strokeWidth={1}
               >
-                {data.distribution.map((entry, idx) => (
+                {distribution.map((entry, idx) => (
                   <Cell key={entry.status} fill={getColor(entry.status, idx)} />
                 ))}
               </Pie>
@@ -93,10 +74,16 @@ export function AdminOrderStatusChart() {
                 content={({ active, payload }) => {
                   if (!active || !payload?.length) return null;
                   const item = payload[0];
+                  const count = Number(item?.value);
+                  const pct = total > 0 ? ((count / total) * 100).toFixed(1) : "0.0";
                   return (
                     <div className="rounded-lg border border-mq-border bg-mq-surface p-2 shadow-sm text-xs">
-                      <p className="font-medium">{String(item?.name)}</p>
-                      <p className="tabular-nums">{String(item?.value)} ({((Number(item?.value) / total) * 100).toFixed(1)}%)</p>
+                      <p className="font-medium">
+                        {translateStatus(t, "order", String(item?.name))}
+                      </p>
+                      <p className="tabular-nums">
+                        {count} ({pct}%)
+                      </p>
                     </div>
                   );
                 }}
@@ -105,18 +92,20 @@ export function AdminOrderStatusChart() {
           </ResponsiveContainer>
         </div>
         <div className="flex-1 space-y-1.5">
-          {data.distribution.map((item, idx) => (
+          {distribution.map((item, idx) => (
             <div key={item.status} className="flex items-center gap-2 text-xs">
               <span
                 className="inline-block w-2.5 h-2.5 rounded-full"
                 style={{ background: getColor(item.status, idx) }}
               />
-              <span className="flex-1 text-mq-text-muted">{item.status}</span>
+              <span className="flex-1 text-mq-text-muted">
+                {translateStatus(t, "order", item.status)}
+              </span>
               <span className="tabular-nums font-medium">{item.count}</span>
             </div>
           ))}
         </div>
       </div>
-    </div>
+    </AdminChartCard>
   );
 }
