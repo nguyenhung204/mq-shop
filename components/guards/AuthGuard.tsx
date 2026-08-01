@@ -3,6 +3,7 @@
 import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import type { Role } from "@/lib/api/types";
 
 export function AuthGuard({
@@ -17,6 +18,7 @@ export function AuthGuard({
   fallback?: string;
 }) {
   const { user, loading, isAuthenticated, hasRole, hasAnyPermission } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
 
   const roleOk = !roles || roles.some((r) => hasRole(r));
@@ -44,7 +46,7 @@ export function AuthGuard({
   if (loading || !user || !allowed) {
     return (
       <div className="mq-container py-20 text-center text-mq-text-muted text-sm">
-        Loading…
+        {t("admin.common.loading")}
       </div>
     );
   }

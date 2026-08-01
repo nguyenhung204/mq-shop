@@ -510,7 +510,7 @@
       "avatar": "Avatar",
       "avatarHint": "JPEG, PNG, WebP or GIF · max 5MB",
       "currentPassword": "Current password",
-      "newPassword": "New password (min 8)",
+      "newPassword": "New password (min 8 characters)",
       "newEmail": "New email",
       "otp": "OTP code",
       "dsarNote": "Note (optional)",
@@ -2468,6 +2468,9 @@
       "admin.category.create": "Category created",
       "admin.category.update": "Category updated",
       "shop.apply": "Shop application submitted",
+      "user.profile.update": "Profile updated",
+      "user.avatar.update": "Avatar updated",
+      "user.email.change": "Email changed",
       "user.password.change": "Password changed",
       "auth.logout": "Signed out"
     }

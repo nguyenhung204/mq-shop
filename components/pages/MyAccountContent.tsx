@@ -79,7 +79,7 @@ export function MyAccountContent() {
         <PageHero title={t("nav.account")} breadcrumb={[{ label: t("nav.account") }]} />
         <Container className="py-12 md:py-16 max-w-2xl mx-auto">
           <div className="mq-card p-6 md:p-8 space-y-4">
-            <h2 className="text-xl text-mq-text">Welcome, {user.fullName || user.email}</h2>
+            <h2 className="text-xl text-mq-text break-words">Welcome, {user.fullName || user.email}</h2>
             <p className="text-sm text-mq-text-secondary">
               Roles: {user.roles?.join(", ") || "BUYER"}
             </p>

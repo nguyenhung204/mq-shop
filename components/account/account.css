@@ -68,6 +68,7 @@
 
 .mq-account-name {
   margin: 0;
+  max-width: 200px;
   font-family: var(--font-figtree), system-ui, sans-serif;
   font-size: 1.15rem;
   font-weight: 600;

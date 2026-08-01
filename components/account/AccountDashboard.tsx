@@ -31,6 +31,8 @@ import "./account.css";
 type AccountSection = "profile" | "password" | "email" | "privacy" | "links";
 
 const PASSWORD_REDIRECT_DELAY_MS = 1500;
+const MAX_AVATAR_BYTES = 5 * 1024 * 1024; // 5MB, matches account.fields.avatarHint copy
+const ALLOWED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 function userInitials(user: AuthUser | null | undefined): string {
   const name = user?.fullName?.trim();
@@ -192,6 +194,10 @@ function AccountInner() {
                 className="mq-account-form"
                 onSubmit={(e: FormEvent) => {
                   e.preventDefault();
+                  if (avatarFile && avatarFile.size > MAX_AVATAR_BYTES) {
+                    setLocalErrorKey("toast.imageTooLarge");
+                    return;
+                  }
                   void run(async () => {
                     await authApi.updateProfile({ fullName: fullName || undefined });
                     if (avatarFile) await authApi.uploadAvatar(avatarFile);
@@ -210,7 +216,23 @@ function AccountInner() {
                       className="mq-input"
                       type="file"
                       accept="image/jpeg,image/png,image/webp,image/gif"
-                      onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] || null;
+                        clearAlerts();
+                        if (file && !ALLOWED_AVATAR_TYPES.includes(file.type)) {
+                          setLocalErrorKey("toast.invalidImageType");
+                          setAvatarFile(null);
+                          e.target.value = "";
+                          return;
+                        }
+                        if (file && file.size > MAX_AVATAR_BYTES) {
+                          setLocalErrorKey("toast.imageTooLarge");
+                          setAvatarFile(null);
+                          e.target.value = "";
+                          return;
+                        }
+                        setAvatarFile(file);
+                      }}
                     />
                     <p className="mq-account-hint">{t("account.fields.avatarHint")}</p>
                   </div>
@@ -223,6 +245,7 @@ function AccountInner() {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     autoComplete="name"
+                    maxLength={200}
                   />
                 </div>
                 <div className="mq-account-field">

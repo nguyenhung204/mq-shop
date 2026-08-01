@@ -112,7 +112,10 @@ export function ProductCard({
           {product.salePercent ? <SaleCountdown seed={product.id} /> : null}
         </div>
 
-        <h3 className="text-[16px] leading-snug text-mq-text font-medium line-clamp-2 min-h-[2.75rem]">
+        <h3
+          className="text-[16px] leading-snug text-mq-text font-medium truncate"
+          title={product.name}
+        >
           {product.name}
         </h3>
         <div className="mt-1.5">
@@ -166,7 +169,10 @@ export function ProductCardMini({
         />
       </div>
       <div className="min-w-0">
-        <p className="text-xs text-mq-text leading-snug line-clamp-2 group-hover:text-mq-gold transition-colors">
+        <p
+          className="text-xs text-mq-text leading-snug truncate group-hover:text-mq-gold transition-colors"
+          title={product.name}
+        >
           {product.name}
         </p>
         <p className="text-xs font-semibold text-mq-text mt-0.5">

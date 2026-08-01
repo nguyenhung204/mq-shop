@@ -1319,6 +1319,7 @@ select.mq-input,
   right: 0;
   z-index: 60;
   min-width: 11.5rem;
+  max-width: 16rem;
   padding: 0.4rem;
   border: 1px solid var(--mq-border);
   border-radius: 14px;
