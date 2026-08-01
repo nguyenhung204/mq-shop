@@ -21,7 +21,16 @@ import type { ApiNotification, PageMeta, Role } from "@/lib/api/types";
 import { normalizeNotification } from "@/lib/notifications/normalize";
 import { localizeNotification } from "@/lib/notifications/localize";
 import { resolveNotificationRoute } from "@/lib/notifications/routes";
-import { mlmKeys, walletKeys } from "@/lib/queries/wallet";
+import { adminWalletKeys, mlmKeys, walletKeys } from "@/lib/queries/wallet";
+import { financeKeys } from "@/lib/queries/finance";
+import { sellerKeys } from "@/lib/queries/seller";
+import { orderKeys } from "@/lib/queries/orders";
+import { reviewKeys } from "@/lib/queries/reviews";
+import { promotionKeys } from "@/lib/queries/promotions";
+import { inventoryKeys } from "@/lib/queries/inventory";
+import { settlementKeys } from "@/lib/queries/settlements";
+import { adminKeys } from "@/lib/queries/admin";
+import { complianceKeys } from "@/lib/queries/compliance";
 import { useAuth } from "./AuthProvider";
 import { useLanguage } from "./LanguageProvider";
 
@@ -75,6 +84,80 @@ function isRankNotify(n: ApiNotification): boolean {
     title.includes("rank upgraded")
   );
 }
+
+/**
+ * Push notifications arrive across sessions (e.g. admin approves a seller's
+ * shop while the seller has the page open elsewhere) — React Query has no
+ * way to know the underlying data changed unless we invalidate on receipt.
+ * Without this, the affected page stays stale until a manual reload.
+ *
+ * Maps each notification type to the query key(s) whose cached data it can
+ * make stale. `["queryKeyPrefix"]` invalidates everything under that prefix.
+ */
+const NOTIFY_INVALIDATION_MAP: Partial<Record<string, readonly (readonly unknown[])[]>> = {
+  SHOP_APPROVED: [sellerKeys.all],
+  SHOP_REJECTED: [sellerKeys.all],
+  SHOP_SUSPENDED: [sellerKeys.all],
+  SHOP_REINSTATED: [sellerKeys.all],
+  SHOP_BANK_INFO_SETUP: [sellerKeys.all],
+  SHOP_BANK_INFO_REMINDER: [sellerKeys.all],
+  PRODUCT_APPROVED: [sellerKeys.all],
+  PRODUCT_REJECTED: [sellerKeys.all],
+  PRODUCT_HIDDEN: [sellerKeys.all],
+  ORDER_NEW: [orderKeys.all],
+  ORDER_STATUS_UPDATED: [orderKeys.all],
+  ORDER_CANCELLED: [orderKeys.all],
+  ORDER_CREATED_BY_ADMIN: [orderKeys.all],
+  ORDER_CREATED_PAYMENT_NEEDED: [orderKeys.all],
+  RMA_NEW: [orderKeys.all],
+  RMA_APPROVED: [orderKeys.all],
+  RMA_REJECTED: [orderKeys.all],
+  RMA_REFUND_COMPLETED: [orderKeys.all],
+  RMA_APPROVED_EXTERNAL_REFUND: [orderKeys.all],
+  REVIEW_NEW: [reviewKeys.all],
+  REVIEW_SELLER_REPLIED: [reviewKeys.all],
+  REVIEW_HIDDEN: [reviewKeys.all],
+  REVIEW_UNHIDDEN: [reviewKeys.all],
+  PROMOTION_APPROVED: [promotionKeys.all],
+  PROMOTION_REJECTED: [promotionKeys.all],
+  INVENTORY_SLIP_PENDING: [inventoryKeys.all],
+  INVENTORY_SLIP_APPROVED: [inventoryKeys.all],
+  INVENTORY_SLIP_REJECTED: [inventoryKeys.all],
+  INVENTORY_TRANSFER_PENDING: [inventoryKeys.all],
+  INVENTORY_TRANSFER_APPROVED: [inventoryKeys.all],
+  INVENTORY_TRANSFER_RECEIVED: [inventoryKeys.all],
+  // SELLER_PAYOUT_* — seller's own settlement view + accountant's payout queue.
+  SELLER_PAYOUT_COMPLETED: [walletKeys.all, settlementKeys.all, financeKeys.all],
+  SELLER_PAYOUT_REJECTED: [walletKeys.all, settlementKeys.all, financeKeys.all],
+  WALLET_PIN_UPDATED: [walletKeys.all],
+  WALLET_TRANSFER_SENT: [walletKeys.all],
+  WALLET_TRANSFER_RECEIVED: [walletKeys.all],
+  WALLET_ADJUSTED: [walletKeys.all],
+  WALLET_WITHDRAW_REQUESTED: [walletKeys.all],
+  WALLET_WITHDRAW_APPROVED: [walletKeys.all],
+  WALLET_WITHDRAW_REJECTED: [walletKeys.all],
+  WALLET_WITHDRAW_COMPLETED: [walletKeys.all],
+  WALLET_WITHDRAW_PAY_FAILED: [walletKeys.all],
+  // Sent to the ACCOUNTANT approving the withdrawal — needs the admin queue, not
+  // the requester's own wallet.
+  WALLET_WITHDRAW_NEW: [adminWalletKeys.all],
+  WALLET_WITHDRAW_STAFF_APPROVED: [adminWalletKeys.all],
+  WALLET_WITHDRAW_STAFF_REJECTED: [adminWalletKeys.all],
+  WALLET_WITHDRAW_STAFF_PROCESSED: [adminWalletKeys.all],
+  WALLET_WITHDRAW_STAFF_PAY_FAILED: [adminWalletKeys.all],
+  MLM_REFERRER_UPDATED: [mlmKeys.all],
+  MLM_DOWNLINE_ASSIGNED: [mlmKeys.all],
+  MLM_REFERRAL_RATE_UPDATED: [mlmKeys.all],
+  STAFF_ROLE_ASSIGNED: [adminKeys.staff(), sellerKeys.all],
+  PLATFORM_ADMIN_ACCOUNT: [adminKeys.platformStaff()],
+  DSAR_REQUEST_NEW: [complianceKeys.dsar()],
+  REFERRAL_DOWNLINE_JOINED: [mlmKeys.all],
+  SHOP_APPLICATION_NEW: [["admin", "shops"]],
+  ACCOUNT_LOCKED: [["admin", "users"]],
+  ACCOUNT_UNLOCKED: [["admin", "users"]],
+  ACCOUNT_DELETED: [["admin", "users"]],
+  COMMISSION_JOB_FAILED: [["admin", "dashboard"]],
+};
 
 function applyIncoming(
   incoming: ApiNotification,
@@ -141,6 +224,12 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         void refreshUser();
         void queryClient.invalidateQueries({ queryKey: mlmKeys.rankProgress() });
         void queryClient.invalidateQueries({ queryKey: mlmKeys.all });
+      }
+      const invalidateKeys = NOTIFY_INVALIDATION_MAP[(incoming.type || "").toUpperCase()];
+      if (invalidateKeys) {
+        for (const key of invalidateKeys) {
+          void queryClient.invalidateQueries({ queryKey: key });
+        }
       }
 
       const href = resolveNotificationRoute(incoming, {

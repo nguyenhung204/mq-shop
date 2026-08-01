@@ -2468,6 +2468,9 @@
       "admin.category.create": "已建立分類",
       "admin.category.update": "已更新分類",
       "shop.apply": "已提交商店申請",
+      "user.profile.update": "已更新個人資料",
+      "user.avatar.update": "已更新頭像",
+      "user.email.change": "已變更電子郵件",
       "user.password.change": "已變更密碼",
       "auth.logout": "已登出"
     }

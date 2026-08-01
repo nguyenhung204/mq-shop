@@ -510,7 +510,7 @@
       "avatar": "Ảnh đại diện",
       "avatarHint": "JPEG, PNG, WebP hoặc GIF · tối đa 5MB",
       "currentPassword": "Mật khẩu hiện tại",
-      "newPassword": "Mật khẩu mới (tối thiểu 8)",
+      "newPassword": "Mật khẩu mới (tối thiểu 8 ký tự)",
       "newEmail": "Email mới",
       "otp": "Mã OTP",
       "dsarNote": "Ghi chú (tuỳ chọn)",
@@ -2469,6 +2469,9 @@
       "admin.category.create": "Đã tạo danh mục",
       "admin.category.update": "Đã cập nhật danh mục",
       "shop.apply": "Đã nộp đơn mở shop",
+      "user.profile.update": "Đã cập nhật hồ sơ",
+      "user.avatar.update": "Đã cập nhật ảnh đại diện",
+      "user.email.change": "Đã đổi email",
       "user.password.change": "Đã đổi mật khẩu",
       "auth.logout": "Đã đăng xuất"
     }

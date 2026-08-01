@@ -139,6 +139,10 @@ export function getErrorMessage(
 ): string {
   const lang = resolveLocale(locale);
   if (e instanceof ApiError) {
+    // Some backends (or a reverse proxy in front of them) return a generic
+    // 413 "Payload Too Large" with no machine-readable code — map it to the
+    // same translated copy as our client-side avatar size check.
+    if (e.status === 413) return translateKey(API_ERROR_I18N.AVATAR_TOO_LARGE!, lang);
     return sanitizeText(e.message, e.code, fallback, lang);
   }
   if (e instanceof Error) {
