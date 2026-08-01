@@ -285,12 +285,7 @@ export function ShopDashboard({ initialSection }: Props) {
         </section>
       ) : null}
 
-      {section === "details" && shop && shop.status === "APPROVED" ? (
-        <ShopBankInfoForm
-          bankInfo={shop.bankInfo}
-          canEdit={!shop.isSuspended}
-        />
-      ) : null}
+      {/* Bank info form removed — payouts now credit directly to the shop owner's wallet */}
 
       {section === "branding" && shop ? (
         <section className="mq-shop-panel">

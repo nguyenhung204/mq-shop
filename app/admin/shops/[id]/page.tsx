@@ -89,7 +89,12 @@ function ShopDetailInner({ id }: { id: string }) {
               </div>
               <div>
                 <dt className="text-xs text-mq-text-muted">{t("admin.shops.owner")}</dt>
-                <dd className="font-mono text-xs">{shop.ownerId || "—"}</dd>
+                <dd>
+                  {shop.ownerName || shop.ownerEmail
+                    ? <span>{shop.ownerName ?? "—"}{shop.ownerEmail ? <span className="text-mq-text-muted ml-1">({shop.ownerEmail})</span> : null}</span>
+                    : <span className="font-mono text-xs">{shop.ownerId || "—"}</span>
+                  }
+                </dd>
               </div>
               <div>
                 <dt className="text-xs text-mq-text-muted">{t("admin.shops.flags")}</dt>

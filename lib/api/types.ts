@@ -348,6 +348,8 @@ export type ShopStatus = "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED";
 export type ApiShop = {
   id: string;
   ownerId?: string;
+  ownerName?: string | null;
+  ownerEmail?: string | null;
   name: string;
   taxId?: string;
   taxCode?: string;
@@ -445,7 +447,7 @@ export type NotificationType =
   | "COMMISSION_GLOBAL_CREDITED"
   | "COMMISSION_LOYALTY_CREDITED"
   | "COMMISSION_REFERRAL_TRIGGERED"
-  | "COMMISSION_REFERRAL_SKIPPED_NOT_SELLER"
+  | "COMMISSION_REFERRAL_SKIPPED_NOT_BUYER"
   | "COMMISSION_JOB_FAILED"
   | "MLM_RANK_UPDATED"
   | "MLM_RANK_UPGRADED"

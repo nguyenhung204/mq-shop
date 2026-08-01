@@ -110,7 +110,10 @@ export type OrderView = {
   id: string;
   code: string;
   buyerId: string;
+  buyerName?: string | null;
+  buyerEmail?: string | null;
   shopId: string;
+  shopName?: string | null;
   status: OrderStatus;
   subtotal: number;
   shippingFee: number;

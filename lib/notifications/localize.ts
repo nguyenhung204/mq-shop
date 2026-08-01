@@ -27,7 +27,6 @@ const STATUS_DOMAIN_BY_TYPE: Record<string, string> = {
   SHOP_SUSPENDED: "shop",
   SHOP_REINSTATED: "shop",
   SHOP_BANK_INFO_SETUP: "shop",
-  SHOP_BANK_INFO_REMINDER: "shop",
   SELLER_PAYOUT_COMPLETED: "shop",
   SELLER_PAYOUT_REJECTED: "shop",
   PRODUCT_APPROVED: "product",

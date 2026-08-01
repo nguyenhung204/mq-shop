@@ -411,11 +411,6 @@ function PayoutsInner() {
                     {t("admin.payouts.shipping")} {formatMoney(payout.shippingFee)}
                   </span>
                 </p>
-                {payout.gatewayRef ? (
-                  <p className="text-xs text-mq-text-muted font-mono">
-                    {t("admin.payouts.gatewayRef")}: {payout.gatewayRef}
-                  </p>
-                ) : null}
                 {payout.status === "REJECTED" && payout.rejectionReason ? (
                   <p className="text-xs text-mq-text-muted">
                     {t("admin.payouts.rejectionReason", {

@@ -390,7 +390,7 @@ function OrdersInner() {
               </Link>
               <span className="mq-badge mq-badge-cyan ml-2">{translateStatus(t, "order", o.status)}</span>
               <p className="text-xs text-mq-text-muted mt-1">
-                Shop {o.shopId.slice(0, 8)}… · Buyer {o.buyerId.slice(0, 8)}… ·{" "}
+                {o.shopName ?? `Shop ${o.shopId.slice(0, 8)}…`} · {o.buyerName ?? `Buyer ${o.buyerId.slice(0, 8)}…`} ·{" "}
                 {formatMoney(o.total)} {o.currency}
               </p>
             </div>

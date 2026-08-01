@@ -100,7 +100,6 @@ const NOTIFY_INVALIDATION_MAP: Partial<Record<string, readonly (readonly unknown
   SHOP_SUSPENDED: [sellerKeys.all],
   SHOP_REINSTATED: [sellerKeys.all],
   SHOP_BANK_INFO_SETUP: [sellerKeys.all],
-  SHOP_BANK_INFO_REMINDER: [sellerKeys.all],
   PRODUCT_APPROVED: [sellerKeys.all],
   PRODUCT_REJECTED: [sellerKeys.all],
   PRODUCT_HIDDEN: [sellerKeys.all],

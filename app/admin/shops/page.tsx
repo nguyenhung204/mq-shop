@@ -88,6 +88,12 @@ function ShopsInner() {
                 {s.taxId || s.taxCode} · {s.countryCode} · {translateStatus(t, "shop", s.status)}
                 {s.isSuspended ? ` · ${t("admin.shops.suspended")}` : ""}
               </p>
+              {(s.ownerName || s.ownerEmail) && (
+                <p className="text-mq-text-muted text-xs mt-0.5">
+                  {s.ownerName ?? s.ownerEmail}
+                  {s.ownerName && s.ownerEmail ? ` · ${s.ownerEmail}` : ""}
+                </p>
+              )}
             </div>
             <AdminActions>
               <AdminIconLink

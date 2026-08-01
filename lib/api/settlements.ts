@@ -13,8 +13,7 @@ export type SettlementView = {
   orderId: string;
   orderCode: string | null;
   amount: number;
-  currency: "USD";
-  status: SettlementStatus;
+  currency: "TWD";
   createdAt: string;
 };
 
@@ -22,13 +21,13 @@ export type SettlementView = {
 export type SettlementPageMeta = PageMeta & {
   pendingTotal?: number;
   status?: SettlementStatus;
-  currency?: "USD";
+  currency?: "TWD";
 };
 
 export type SettlementSummary = {
   status?: SettlementStatus;
   pendingTotal: number;
-  currency?: "USD";
+  currency?: "TWD";
 };
 
 export type SettlementListResult = {
@@ -107,20 +106,20 @@ function summaryFrom(
     return {
       pendingTotal: meta.pendingTotal,
       status: meta.status ?? summary?.status,
-      currency: meta.currency ?? summary?.currency ?? "USD",
+      currency: meta.currency ?? summary?.currency ?? "TWD",
     };
   }
   if (typeof summary?.pendingTotal === "number") {
     return {
       pendingTotal: summary.pendingTotal,
       status: summary.status,
-      currency: summary.currency ?? "USD",
+      currency: summary.currency ?? "TWD",
     };
   }
   // Last resort: sum current page only (incomplete if multi-page)
   return {
     pendingTotal: items.reduce((s, row) => s + Number(row.amount || 0), 0),
-    currency: "USD",
+    currency: "TWD",
   };
 }
 

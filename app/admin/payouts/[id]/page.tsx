@@ -130,11 +130,6 @@ function PayoutDetailInner({ payoutId }: { payoutId: string }) {
                 </p>
               </div>
 
-              {payout.gatewayRef ? (
-                <p className="font-mono text-xs">
-                  {t("admin.payouts.gatewayRef")}: {payout.gatewayRef}
-                </p>
-              ) : null}
               {payout.completedAt ? (
                 <p className="text-xs text-mq-text-muted">
                   {t("admin.payouts.completedAt", {

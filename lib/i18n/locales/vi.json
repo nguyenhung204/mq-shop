@@ -14,8 +14,8 @@
     "copyright": "© 2024 MQ Shop. Bảo lưu mọi quyền."
   },
   "topBar": {
-    "promo": "Miễn phí vận chuyển đơn từ $75 — Khám phá Bộ sưu tập MQ",
-    "promoShort": "Freeship từ $75"
+    "promo": "Miễn phí vận chuyển đơn từ NT$75 — Khám phá Bộ sưu tập MQ",
+    "promoShort": "Freeship từ NT$75"
   },
   "nav": {
     "aboutUs": "Về chúng tôi",
@@ -163,7 +163,7 @@
     "officialShop": "Gian hàng chính thức",
     "shipsFrom": "Giao từ",
     "searchPlaceholder": "Tìm trong gian hàng…",
-    "priceRange": "Khoảng giá (USD)",
+    "priceRange": "Khoảng giá (TWD)",
     "minPrice": "Từ",
     "maxPrice": "Đến",
     "applyPrice": "Áp dụng giá",
@@ -304,7 +304,7 @@
     "paymentMethod": "Thanh toán",
     "paymentMock": "MOCK (PAID ngay — dev)",
     "paymentCod": "COD (PENDING đến khi trả)",
-    "paymentHint": "Tiền tệ USD. Phí ship từ API shipping-quote (stub).",
+    "paymentHint": "Tiền tệ TWD. Phí ship từ API shipping-quote (stub).",
     "paymentStubNote": "Thanh toán stub (COD → PENDING, MOCK → PAID). Không redirect PSP.",
     "note": "Ghi chú (tuỳ chọn)",
     "notePlaceholder": "Ghi chú giao hàng cho seller…",
@@ -323,7 +323,7 @@
     "compare": "So sánh",
     "askUs": "Hỏi chúng tôi",
     "deliveryEstimate": "Giao hàng dự kiến: 3–5 ngày làm việc",
-    "freeShippingNote": "Freeship cho đơn từ $75",
+    "freeShippingNote": "Freeship cho đơn từ NT$75",
     "secureCheckout": "Thanh toán an toàn và bảo mật",
     "tabDescription": "Mô tả",
     "tabAdditional": "Thông tin thêm",
@@ -1228,13 +1228,13 @@
       "user": "User",
       "userPh": "Tìm theo tên hoặc email…",
       "userRequired": "Chọn một user.",
-      "amount": "Số tiền (USD)",
+      "amount": "Số tiền (TWD)",
       "amountPh": "vd. 25 hoặc -10",
       "amountInvalid": "Nhập số tiền khác 0.",
       "note": "Ghi chú (tuỳ chọn)",
       "notePh": "Lý do điều chỉnh",
       "submit": "Áp dụng",
-      "success": "Đã điều chỉnh {email} {amount} USD"
+      "success": "Đã điều chỉnh {email} {amount} TWD"
     },
     "mlm": {
       "title": "Rank MLM",
@@ -1837,7 +1837,7 @@
     "p2pRecipientRequired": "Nhập email người nhận hoặc chọn từ downline.",
     "p2pLookup": "Tra người nhận",
     "p2pTo": "Đến",
-    "p2pAmount": "Số tiền (USD)",
+    "p2pAmount": "Số tiền (TWD)",
     "p2pAmountSuggestions": "Gợi ý số tiền",
     "p2pAmountAll": "Tất cả",
     "p2pAmountInvalid": "Nhập số tiền hợp lệ lớn hơn 0.",
@@ -1891,9 +1891,9 @@
     },
     "txReason": "Lý do",
     "txReasonAll": "Tất cả lý do",
-    "pillarReferral": "Giới thiệu — khi người bạn mời hoàn tất đơn ≥ $2.000, bạn nhận % nếu đã mở cửa hàng. Trần 10% từ cấp Tổng tài (cấp 6) trở lên.",
+    "pillarReferral": "Giới thiệu — khi người bạn mời hoàn tất đơn ≥ NT$2.000, bạn nhận %. Trần 10% từ cấp Tổng tài (cấp 6) trở lên.",
     "pillarTeam": "Đội nhóm — thưởng chênh lệch cuối tháng trên doanh số mạng (không tính mua của chính bạn).",
-    "pillarLoyalty": "Trung thành — mua cá nhân hoàn tất ≥ $2.000/tháng trong 12 tháng → thưởng $28.000.",
+    "pillarLoyalty": "Trung thành — mua cá nhân hoàn tất ≥ NT$2.000/tháng trong 12 tháng → thưởng NT$28.000.",
     "pillarGlobal": "Toàn cầu — 2% doanh số sàn chia theo các cấp cao; cấp trống công ty giữ.",
     "rankSeller": "Đối tác cửa hàng",
     "rankLabel": "Cấp {rank} · {name}",
@@ -1915,14 +1915,14 @@
     "rankProgressDone": "Đã đủ điều kiện — chờ hệ thống nâng cấp.",
     "bonusGuide": {
       "title": "Cách nhận thưởng",
-      "intro": "Có bốn loại thưởng. Giới thiệu được cộng khi đơn đạt chuẩn đã hoàn tất (cần mở cửa hàng mới nhận thưởng giới thiệu). Đội nhóm, trung thành và toàn cầu chốt cuối tháng. Lộ trình thăng cấp (Nhà phân phối trở lên) chỉ dành cho đối tác đã mở cửa hàng.",
+      "intro": "Có bốn loại thưởng. Giới thiệu được cộng khi đơn đạt chuẩn đã hoàn tất. Đội nhóm, trung thành và toàn cầu chốt cuối tháng. Lộ trình thăng cấp (Nhà phân phối trở lên) chỉ dành cho đối tác đã mở cửa hàng.",
       "timingRealtime": "Nhận ngay",
       "timingMonthEnd": "Chốt cuối tháng",
-      "referralBody": "Khi người bạn mời hoàn tất đơn từ $2.000 trở lên, bạn có thể nhận % giới thiệu — nhưng chỉ khi bạn đã mở cửa hàng. Nếu chỉ mua hàng (chưa mở shop), thưởng giới thiệu = $0.",
+      "referralBody": "Khi người bạn mời hoàn tất đơn từ NT$2.000 trở lên, bạn nhận % giới thiệu — miễn là bạn có tài khoản buyer. Bất kỳ buyer nào cũng có thể nhận thưởng giới thiệu.",
       "referralRatesTitle": "% giới thiệu theo cấp của bạn",
       "referralNote": "Từ cấp Tổng tài (cấp 6) trở lên, % giới thiệu tối đa 10%.",
       "teamBody": "Cuối tháng bạn nhận phần chênh lệch giữa % đội nhóm của bạn và % của người trực tiếp dưới bạn, dựa trên doanh số mạng. Đơn mua của chính bạn không tính.",
-      "loyaltyBody": "Nếu mỗi tháng bạn tự mua hoàn tất từ $2.000 trở lên, liên tục đủ 12 tháng, bạn nhận thưởng trung thành $28.000.",
+      "loyaltyBody": "Nếu mỗi tháng bạn tự mua hoàn tất từ NT$2.000 trở lên, liên tục đủ 12 tháng, bạn nhận thưởng trung thành NT$28.000.",
       "globalBody": "Mỗi tháng, 2% doanh số toàn sàn vào quỹ chung. Quỹ được chia cho thành viên đạt các cấp bên dưới. Cấp nào không có ai đạt thì phần đó công ty giữ.",
       "globalTiersTitle": "Ai được chia quỹ",
       "globalNote": "Cấp cao hơn có thể đủ điều kiện ở nhiều mức chia. Mức trống do công ty giữ.",
@@ -1947,8 +1947,8 @@
         "10": "Hoàng quan 3 sao (cấp 10)"
       }
     },
-    "rankProgressBuyerGate": "Người mua chưa nằm trong lộ trình thăng cấp.",
-    "rankProgressBuyerGateHint": "Hãy mở cửa hàng và trở thành đối tác bán hàng trước. Sau đó bạn mới tham gia lộ trình từ Nhà phân phối trở lên.",
+    "rankProgressBuyerGate": "Tài khoản này chưa nằm trong lộ trình thăng cấp.",
+    "rankProgressBuyerGateHint": "Tài khoản này không có role buyer và không thể tham gia lộ trình MLM.",
     "rankProgressOpenShop": "Mở cửa hàng",
     "rankProgressPreDistributor": "chưa phải Nhà phân phối"
   },
@@ -2530,7 +2530,7 @@
     "q1": "Chính sách đổi trả như thế nào?",
     "a1": "Chúng tôi hỗ trợ đổi trả miễn phí trong 14 ngày kể từ ngày giao hàng. Sản phẩm phải chưa qua sử dụng và còn nguyên bao bì. Liên hệ đội hỗ trợ để bắt đầu quy trình đổi trả.",
     "q2": "Thời gian vận chuyển mất bao lâu?",
-    "a2": "Vận chuyển tiêu chuẩn mất 3–5 ngày làm việc. Giao hàng nhanh (1–2 ngày) có tại trang thanh toán. Miễn phí vận chuyển cho đơn từ $75.",
+    "a2": "Vận chuyển tiêu chuẩn mất 3–5 ngày làm việc. Giao hàng nhanh (1–2 ngày) có tại trang thanh toán. Miễn phí vận chuyển cho đơn từ NT$75.",
     "q3": "Có giao hàng quốc tế không?",
     "a3": "Có, chúng tôi giao đến hơn 40 quốc gia. Phí vận chuyển quốc tế và thời gian giao hàng khác nhau tuỳ theo điểm đến.",
     "q4": "Làm sao để theo dõi đơn hàng?",
@@ -2595,7 +2595,7 @@
   "iconBoxPage": {
     "title": "Icon Box",
     "freeShipping": "Miễn phí vận chuyển",
-    "freeShippingDesc": "Miễn phí vận chuyển cho đơn từ $75. Giao hàng nhanh chóng và đáng tin cậy.",
+    "freeShippingDesc": "Miễn phí vận chuyển cho đơn từ NT$75. Giao hàng nhanh chóng và đáng tin cậy.",
     "securePayment": "Thanh toán an toàn",
     "securePaymentDesc": "Thông tin thanh toán được mã hoá và xử lý qua các cổng thanh toán uy tín.",
     "easyReturns": "Đổi trả dễ dàng",
@@ -2614,7 +2614,7 @@
     "detailsLabel": "Chi tiết",
     "detailsContent": "Chất liệu: Cao cấp. Nguồn gốc: Thu mua có đạo đức. Bảo hành: 1 năm từ nhà sản xuất cho sản phẩm công nghệ. Bảo quản: Xem trang sản phẩm.",
     "shippingLabel": "Vận chuyển",
-    "shippingContent": "Tiêu chuẩn: 3–5 ngày ($5.99). Nhanh: 1–2 ngày ($12.99). Miễn phí vận chuyển đơn từ $75. Phí quốc tế khác nhau.",
+    "shippingContent": "Tiêu chuẩn: 3–5 ngày (NT$5.99). Nhanh: 1–2 ngày (NT$12.99). Miễn phí vận chuyển đơn từ NT$75. Phí quốc tế khác nhau.",
     "reviewsLabel": "Đánh giá",
     "reviewsContent": "Khách hàng yêu thích MQ. Đánh giá trung bình: 4.8/5 sao trên hơn 2,000 đánh giá. \"Trải nghiệm mua sắm online tuyệt vời nhất.\" — Người mua đã xác minh"
   },
