@@ -23,6 +23,7 @@ import {
 import {
   adminMlmApi,
   mlmApi,
+  type CommissionReport,
   type CommissionRow,
   type ListCommissionsParams,
   type ListNetworkTreeParams,
@@ -91,6 +92,8 @@ export const mlmKeys = {
   rankProgress: () => [...mlmKeys.all, "rank-progress"] as const,
   monthlyOverview: (monthsBack = 12) =>
     [...mlmKeys.all, "monthly-overview", monthsBack] as const,
+  commissionReport: (yearMonth?: string) =>
+    [...mlmKeys.all, "commission-report", yearMonth ?? ""] as const,
 };
 
 export const adminWalletKeys = {
@@ -552,5 +555,12 @@ export function useSetMlmReferralRate() {
     },
     onError: (e) =>
       toast.error(walletErrorMessage(e, tt("toast.mlmReferralRateUpdateFailed"))),
+  });
+}
+
+export function useCommissionReport(yearMonth?: string) {
+  return useQuery<CommissionReport>({
+    queryKey: mlmKeys.commissionReport(yearMonth),
+    queryFn: () => adminMlmApi.commissionReport(yearMonth ? { yearMonth } : {}),
   });
 }
