@@ -339,6 +339,7 @@
     "badgeOriginal": "Chính hãng 100%",
     "badgeBestPrice": "Giá tốt nhất",
     "badgeFreeShipping": "Freeship",
+    "wishlisted": "Đã yêu thích",
     "buyNow": "Mua ngay",
     "soldBy": "Bán bởi",
     "visitShop": "Xem gian hàng & thêm sản phẩm",
@@ -414,7 +415,8 @@
   "wishlist": {
     "emptyTitle": "Danh sách yêu thích trống",
     "emptyDesc": "Lưu sản phẩm yêu thích để xem lại sau.",
-    "browse": "Xem sản phẩm"
+    "browse": "Xem sản phẩm",
+    "clearAll": "Xoá tất cả"
   },
   "account": {
     "login": "Đăng nhập",

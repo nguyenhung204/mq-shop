@@ -339,6 +339,7 @@
     "badgeOriginal": "100% Original",
     "badgeBestPrice": "Best Price",
     "badgeFreeShipping": "Free Shipping",
+    "wishlisted": "Wishlisted",
     "buyNow": "Buy now",
     "soldBy": "Sold by",
     "visitShop": "View shop & more products",
@@ -414,7 +415,8 @@
   "wishlist": {
     "emptyTitle": "Your wishlist is empty",
     "emptyDesc": "Save your favorite items here for later.",
-    "browse": "Browse products"
+    "browse": "Browse products",
+    "clearAll": "Clear all"
   },
   "account": {
     "login": "Login",

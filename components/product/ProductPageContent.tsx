@@ -2,10 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { Check } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Check, ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import { Product, formatPrice } from "@/lib/data/products";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useWishlist } from "@/components/providers/WishlistProvider";
+import { useFlyToCart } from "@/components/cart/FlyToCartProvider";
 import { ProductActions } from "@/components/cart/ProductActions";
 import { ProductShopCard } from "@/components/product/ProductShopCard";
 import { ReviewList } from "@/components/reviews/ReviewList";
@@ -70,6 +72,9 @@ export function ProductPageContent({
   related: Product[];
 }) {
   const { t } = useLanguage();
+  const { toggleItem, isInWishlist } = useWishlist();
+  const { flyToWishlist } = useFlyToCart();
+  const wished = isInWishlist(product.id);
   const variants = product.variants ?? [];
   const [selectedId, setSelectedId] = useState(
     product.selectedVariantId || variants[0]?.id || "",
@@ -81,10 +86,33 @@ export function ProductPageContent({
     [variants, selectedId],
   );
 
-  const displayImage =
-    (selected?.images?.length ? selected.images[0] : null) ||
-    product.images?.[0] ||
-    product.image;
+  const galleryImages = useMemo(() => {
+    const imgs =
+      selected?.images && selected.images.length > 0
+        ? selected.images
+        : product.images && product.images.length > 0
+          ? product.images
+          : [product.image];
+    return imgs.filter(Boolean);
+  }, [selected, product.images, product.image]);
+
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  // Reset to the first image whenever the selected variant's image set changes.
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [selected?.id]);
+
+  const safeIndex = activeIndex >= galleryImages.length ? 0 : activeIndex;
+  const displayImage = galleryImages[safeIndex] || product.image;
+
+  const goToImage = (dir: -1 | 1) => {
+    if (galleryImages.length <= 1) return;
+    setActiveIndex((prev) => {
+      const current = prev >= galleryImages.length ? 0 : prev;
+      return (current + dir + galleryImages.length) % galleryImages.length;
+    });
+  };
 
   const displayPrice = selected?.price ?? product.price;
   const displayStock = selected?.availableStock ?? product.inStock;
@@ -115,31 +143,78 @@ export function ProductPageContent({
         ]}
       />
       <Container className="py-10 md:py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
-          <div
-            data-mq-fly-source
-            data-mq-product-gallery
-            className="relative aspect-[4/5] mq-product-image-bg mq-product-media"
-          >
-            <Image
-              key={displayImage}
-              src={displayImage}
-              alt={product.name}
-              fill
-              className="mq-product-media-img"
-              sizes="(max-width:1024px) 100vw, 50vw"
-              quality={88}
-              priority
-            />
-            {product.salePercent && (
-              <span className="absolute top-4 left-4 mq-sale-badge z-10 shadow-sm">
-                -{product.salePercent}%
-              </span>
-            )}
-            {outOfStock && product.displayMode === "OUT_OF_STOCK_WATERMARK" ? (
-              <span className="absolute inset-0 z-10 flex items-center justify-center bg-black/35 text-white text-sm font-medium tracking-wide uppercase">
-                {t("product.outOfStock") || "Out of stock"}
-              </span>
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,520px)_1fr] gap-10 lg:gap-16">
+          <div className="mx-auto w-full max-w-[520px] lg:mx-0">
+            <div
+              data-mq-fly-source
+              data-mq-product-gallery
+              className="relative aspect-square mq-product-image-bg mq-product-media"
+            >
+              <Image
+                key={displayImage}
+                src={displayImage}
+                alt={product.name}
+                fill
+                className="mq-product-media-img"
+                sizes="(max-width:1024px) 90vw, 520px"
+                quality={88}
+                priority
+              />
+              {product.salePercent && (
+                <span className="absolute top-4 left-4 mq-sale-badge z-10 shadow-sm">
+                  -{product.salePercent}%
+                </span>
+              )}
+              {outOfStock && product.displayMode === "OUT_OF_STOCK_WATERMARK" ? (
+                <span className="absolute inset-0 z-10 flex items-center justify-center bg-black/35 text-white text-sm font-medium tracking-wide uppercase">
+                  {t("product.outOfStock") || "Out of stock"}
+                </span>
+              ) : null}
+              {galleryImages.length > 1 ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => goToImage(-1)}
+                    className="mq-carousel-btn mq-icon-btn absolute left-3 top-1/2 -translate-y-1/2 z-10"
+                    aria-label={t("product.prevImage") || "Previous image"}
+                  >
+                    <ChevronLeft size={20} strokeWidth={1.5} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => goToImage(1)}
+                    className="mq-carousel-btn mq-icon-btn absolute right-3 top-1/2 -translate-y-1/2 z-10"
+                    aria-label={t("product.nextImage") || "Next image"}
+                  >
+                    <ChevronRight size={20} strokeWidth={1.5} />
+                  </button>
+                </>
+              ) : null}
+            </div>
+            {galleryImages.length > 1 ? (
+              <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
+                {galleryImages.map((img, i) => (
+                  <button
+                    key={img + i}
+                    type="button"
+                    onClick={() => setActiveIndex(i)}
+                    className={`relative shrink-0 w-16 h-16 rounded-[var(--mq-radius-sm)] overflow-hidden border transition-colors ${
+                      i === safeIndex
+                        ? "border-mq-text"
+                        : "border-mq-border hover:border-mq-text-muted"
+                    }`}
+                    aria-label={`${t("product.thumbnail") || "Image"} ${i + 1}`}
+                  >
+                    <Image
+                      src={img}
+                      alt={`${product.name} ${i + 1}`}
+                      fill
+                      className="object-cover"
+                      sizes="64px"
+                    />
+                  </button>
+                ))}
+              </div>
             ) : null}
           </div>
 
@@ -257,9 +332,21 @@ export function ProductPageContent({
               <button type="button" className="hover:text-mq-text">
                 {t("product.compare")}
               </button>
-              <Link href="/wishlist" className="hover:text-mq-text">
-                {t("nav.wishlist")}
-              </Link>
+              <button
+                type="button"
+                className={`flex items-center gap-1.5 transition-colors ${
+                  wished ? "text-mq-gold" : "hover:text-mq-text"
+                }`}
+                onClick={(e) => {
+                  const willAdd = !wished;
+                  toggleItem(cartProduct);
+                  if (willAdd) flyToWishlist(displayImage, e.currentTarget);
+                }}
+                aria-pressed={wished}
+              >
+                <Heart className="w-4 h-4" strokeWidth={1.5} fill={wished ? "currentColor" : "none"} />
+                {wished ? t("product.wishlisted") || t("nav.wishlist") : t("nav.wishlist")}
+              </button>
               <button type="button" className="hover:text-mq-text">
                 {t("product.askUs")}
               </button>

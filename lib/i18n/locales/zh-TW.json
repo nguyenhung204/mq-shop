@@ -339,6 +339,7 @@
     "badgeOriginal": "100% 正品",
     "badgeBestPrice": "最優價格",
     "badgeFreeShipping": "免運費",
+    "wishlisted": "已加入願望清單",
     "buyNow": "立即購買",
     "soldBy": "賣家",
     "visitShop": "查看商店與更多商品",
@@ -414,7 +415,8 @@
   "wishlist": {
     "emptyTitle": "願望清單是空的",
     "emptyDesc": "將喜愛的商品儲存於此，方便日後選購。",
-    "browse": "瀏覽商品"
+    "browse": "瀏覽商品",
+    "clearAll": "清除全部"
   },
   "account": {
     "login": "登入",
