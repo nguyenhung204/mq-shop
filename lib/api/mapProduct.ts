@@ -62,6 +62,9 @@ export function mapListingCard(p: BeListing, categorySlug = "all"): Product {
     displayMode: p.displayMode,
     watermarkText: p.watermarkText,
     shopId: p.shopId,
+    shop: p.shopName
+      ? { id: p.shopId ?? "", name: p.shopName, logoUrl: null }
+      : undefined,
     createdAt: p.createdAt,
   };
 }

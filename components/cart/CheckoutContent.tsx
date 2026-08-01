@@ -28,7 +28,7 @@ import { FormAlerts } from "@/lib/ui/form-feedback";
 export function CheckoutContent() {
   const { t, locale } = useLanguage();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
-  const { items, itemCount, subtotal, clearCart, checkoutItems, updateQuantity } = useCart();
+  const { items, itemCount, subtotal, clearCart, checkoutItems, updateQuantity, shopIds } = useCart();
   const [cartReady, setCartReady] = useState(() =>
     typeof window === "undefined" ? false : useCartStore.persist.hasHydrated(),
   );
@@ -253,6 +253,19 @@ export function CheckoutContent() {
         >
           <div className="space-y-6 min-w-0">
             <FormAlerts error={submitErrorText} />
+            {shopIds.length > 1 && (
+              <div className="mq-alert mq-alert-warn flex items-start gap-3">
+                <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+                <div>
+                  <p className="text-sm">{t("cart.multiShopWarning")}</p>
+                  <a href="/cart" className="text-xs font-medium underline mt-1 inline-block opacity-80 hover:opacity-100">
+                    {t("nav.cart")} →
+                  </a>
+                </div>
+              </div>
+            )}
             <section className="border border-mq-border bg-mq-surface p-6 rounded-[var(--mq-radius-lg)] shadow-[var(--mq-shadow-sm)]">
               <h2 className="text-lg font-semibold text-mq-text mb-1">
                 {t("checkout.customerDetails")}

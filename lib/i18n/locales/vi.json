@@ -202,7 +202,15 @@
     "multiShop": "Giỏ hàng chỉ được chứa sản phẩm từ một shop. Hãy xóa giỏ hoặc hoàn tất thanh toán trước.",
     "noShop": "Không xác định được shop của sản phẩm này.",
     "noSku": "Sản phẩm không có biến thể khả dụng để thêm vào giỏ.",
-    "addFailed": "Không thể thêm sản phẩm vào giỏ hàng."
+    "addFailed": "Không thể thêm sản phẩm vào giỏ hàng.",
+    "viewShop": "Xem Shop",
+    "selectAll": "Chọn tất cả",
+    "selectedCount": "Đã chọn {count} sản phẩm",
+    "multiShopWarning": "Giỏ hàng có sản phẩm từ nhiều shop. Vui lòng chỉ giữ lại sản phẩm từ một shop trước khi thanh toán.",
+    "lowStock": "Sắp hết hàng",
+    "outOfStock": "Hết hàng",
+    "priceChanged": "Giá đã thay đổi",
+    "checkout": "Mua hàng"
   },
   "confirm": {
     "dismiss": "Huỷ",
@@ -1893,9 +1901,9 @@
     "pillarLoyalty": "Trung thành — mua cá nhân hoàn tất ≥ NT$2.000/tháng trong 12 tháng → thưởng NT$28.000.",
     "pillarGlobal": "Toàn cầu — 2% doanh số sàn chia theo các cấp cao; cấp trống công ty giữ.",
     "rankSeller": "Đối tác cửa hàng",
-    "rankLabel": "Cấp {rank} · {name}",
+    "rankLabel": "{name}",
     "rankProgressTitle": "Lộ trình thăng cấp",
-    "rankProgressNext": "Bước kế: cấp {rank} ({name})",
+    "rankProgressNext": "Bước kế: {name}",
     "rankProgressMax": "Bạn đã ở cấp cao nhất. Không còn bước thăng cấp nào nữa.",
     "rankProgressNeedSeller": "Để thăng cấp, bạn cần mở cửa hàng và trở thành đối tác bán hàng trước.",
     "rankProgressModeOrders": "Người trực tiếp có ≥1 đơn hoàn tất",

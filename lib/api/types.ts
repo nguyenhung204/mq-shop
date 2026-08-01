@@ -80,6 +80,8 @@ export type Paginated<T> = {
 export type ListingCard = {
   id: string;
   shopId?: string;
+  /** Display name of the shop — present when BE listing includes it. */
+  shopName?: string | null;
   title: string;
   /** Derived min variant price (backward-friendly). */
   price: number;

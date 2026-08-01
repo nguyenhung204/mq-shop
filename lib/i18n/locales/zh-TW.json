@@ -202,7 +202,15 @@
     "multiShop": "購物車僅限單一商店的商品。請先清空購物車或完成結帳。",
     "noShop": "無法確定此商品所屬商店。",
     "noSku": "此商品沒有可加入購物車的規格。",
-    "addFailed": "無法將此商品加入購物車。"
+    "addFailed": "無法將此商品加入購物車。",
+    "viewShop": "查看店鋪",
+    "selectAll": "全選",
+    "selectedCount": "已選 {count} 件商品",
+    "multiShopWarning": "購物車包含多家商店的商品，請在結帳前僅保留同一商店的商品。",
+    "lowStock": "即將售罄",
+    "outOfStock": "缺貨",
+    "priceChanged": "價格已變更",
+    "checkout": "立即購買"
   },
   "confirm": {
     "dismiss": "取消",
@@ -1893,9 +1901,9 @@
     "pillarLoyalty": "忠誠 — 個人完成消費 ≥ NT$2,000/月連續 12 個月 → NT$28,000 獎金。",
     "pillarGlobal": "全球 — 平台業績 2% 依較高等級分配；空缺由公司保留。",
     "rankSeller": "開店夥伴",
-    "rankLabel": "等級 {rank} · {name}",
+    "rankLabel": "{name}",
     "rankProgressTitle": "升級路徑",
-    "rankProgressNext": "下一階：等級 {rank}（{name}）",
+    "rankProgressNext": "下一階：{name}",
     "rankProgressMax": "您已達最高等級，沒有更多升級步驟。",
     "rankProgressNeedSeller": "要參與升級，請先開店並成為銷售夥伴。",
     "rankProgressModeOrders": "直屬下線有 ≥1 筆完成訂單",

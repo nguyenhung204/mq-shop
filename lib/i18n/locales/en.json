@@ -202,7 +202,15 @@
     "multiShop": "Cart is limited to one shop. Clear the cart or finish checkout first.",
     "noShop": "Could not resolve shop for this product.",
     "noSku": "This product has no available variant to add to cart.",
-    "addFailed": "Could not add this product to cart."
+    "addFailed": "Could not add this product to cart.",
+    "viewShop": "View Shop",
+    "selectAll": "Select all",
+    "selectedCount": "{count} item(s) selected",
+    "multiShopWarning": "Your cart contains items from multiple shops. Please remove items from other shops before checkout.",
+    "lowStock": "Almost sold out",
+    "outOfStock": "Out of stock",
+    "priceChanged": "Price has changed",
+    "checkout": "Buy Now"
   },
   "confirm": {
     "dismiss": "Cancel",
@@ -1893,9 +1901,9 @@
     "pillarLoyalty": "Loyalty — personal completed spend of NT$2,000+/month for 12 months → NT$28,000 bonus.",
     "pillarGlobal": "Global — 2% of platform sales shared across higher ranks; empty tiers stay with the company.",
     "rankSeller": "Shop partner",
-    "rankLabel": "Level {rank} · {name}",
+    "rankLabel": "{name}",
     "rankProgressTitle": "Your promotion path",
-    "rankProgressNext": "Next: level {rank} ({name})",
+    "rankProgressNext": "Next: {name}",
     "rankProgressMax": "You already reached the top level. No further steps.",
     "rankProgressNeedSeller": "To join promotions, open a shop and become a selling partner first.",
     "rankProgressModeOrders": "Direct recruits with ≥1 completed order",

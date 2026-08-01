@@ -88,17 +88,6 @@ export function WalletRankProgress({ className = "" }: { className?: string }) {
           </p>
           <p className="text-base font-medium text-mq-text mt-1">
             {currentName}
-            {(data.mlmRank ?? 0) >= 1 ? (
-              <span className="text-mq-text-muted font-normal text-sm">
-                {" "}
-                ({t("wallet.rank")} {data.mlmRank})
-              </span>
-            ) : (
-              <span className="text-mq-text-muted font-normal text-sm">
-                {" "}
-                — {t("wallet.rankProgressPreDistributor")}
-              </span>
-            )}
           </p>
         </div>
         <div className="rounded-[var(--mq-radius-sm)] bg-mq-surface-subtle px-3.5 py-3">
@@ -112,10 +101,6 @@ export function WalletRankProgress({ className = "" }: { className?: string }) {
           ) : (
             <p className="text-base font-medium text-mq-text mt-1">
               {nextName}
-              <span className="text-mq-text-muted font-normal text-sm">
-                {" "}
-                ({t("wallet.rank")} {data.nextRank})
-              </span>
             </p>
           )}
         </div>
