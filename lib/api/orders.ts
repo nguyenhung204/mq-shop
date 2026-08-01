@@ -87,6 +87,8 @@ export type CreateRmaRequest = {
 export type RmaView = {
   id: string;
   orderId: string;
+  /** Human-readable order name (e.g. "ORD-20260801-E249"). Use for display instead of orderId. */
+  orderName?: string | null;
   buyerId?: string;
   shopId?: string;
   status: RmaStatus;
@@ -103,7 +105,10 @@ export type RmaView = {
 /** GET /admin/rma/:rmaId — PROCESS_RMA review scope. */
 export type AdminRmaDetailView = RmaView & {
   orderCode: string | null;
+  orderName?: string | null;
   orderStatus: OrderStatus | null;
+  buyerName?: string | null;
+  shopName?: string | null;
 };
 
 export type OrderView = {
