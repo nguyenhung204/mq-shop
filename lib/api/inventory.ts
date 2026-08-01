@@ -32,7 +32,6 @@ export type InventoryVariant = {
   reservedStock: number;
   options?: Record<string, string> | null;
   images?: string[];
-  costPrice: number | null;
   isEnrollmentPackage: boolean;
   createdAt: string;
   updatedAt: string;
@@ -42,7 +41,6 @@ export type InventorySlipItem = {
   id: string;
   sku: string;
   quantity: number;
-  unitCost: number | null;
 };
 
 export type InventorySlip = {
@@ -64,6 +62,8 @@ export type StockLedgerEntry = {
   id: string;
   /** Slip or transfer id, depending on `type`. */
   slipId: string;
+  /** Human-readable slip code (e.g. "SLP-20260801-A1B2") — present when BE includes it. */
+  slipCode?: string | null;
   slipItemId: string;
   shopId?: string;
   sku: string;
@@ -88,7 +88,6 @@ export type CreateVariantRequest = {
   sku: string;
   sellingPrice: number;
   options?: Record<string, string>;
-  costPrice?: number | null;
   isEnrollmentPackage?: boolean;
   shopId?: string;
 };
@@ -96,7 +95,6 @@ export type CreateVariantRequest = {
 export type CreateSlipItemRequest = {
   sku: string;
   quantity: number;
-  unitCost?: number | null;
 };
 
 export type CreateSlipRequest = {

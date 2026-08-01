@@ -107,13 +107,12 @@ export type ProductVariant = {
   availableStock: number;
   options?: Record<string, string> | null;
   images?: string[];
-  costPrice?: number | null;
   isEnrollmentPackage?: boolean;
   createdAt?: string;
   updatedAt?: string;
 };
 
-/** Public PDP variant — omits costPrice / shop-only fields. */
+/** Public PDP variant — omits shop-only fields. */
 export type PublicProductVariant = {
   id: string;
   productId: string;

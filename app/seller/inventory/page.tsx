@@ -555,8 +555,7 @@ function VariantsTab() {
                   <th className="py-2 pr-3 font-medium">{t("admin.common.name")}</th>
                   <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.sellPrice")}</th>
                   <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.available")}</th>
-                  <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.reserved")}</th>
-                  <th className="py-2 font-medium">{t("seller.inventoryPage.costPrice")}</th>
+                  <th className="py-2 font-medium">{t("seller.inventoryPage.reserved")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -570,9 +569,6 @@ function VariantsTab() {
                     <td className="py-2.5 pr-3 tabular-nums">{v.availableStock}</td>
                     <td className="py-2.5 pr-3 tabular-nums text-mq-text-muted">
                       {v.reservedStock ?? 0}
-                    </td>
-                    <td className="py-2.5 text-mq-text-secondary">
-                      {v.costPrice != null ? formatMoney(v.costPrice) : "—"}
                     </td>
                   </tr>
                 ))}
@@ -596,7 +592,7 @@ function slipItemsSummary(s: InventorySlip): string {
 }
 
 function emptySlipLine() {
-  return { key: crypto.randomUUID(), sku: "", quantity: "1", unitCost: "" };
+  return { key: crypto.randomUUID(), sku: "", quantity: "1" };
 }
 
 function SlipsTab({
@@ -642,7 +638,7 @@ function SlipsTab({
 
   const updateLine = (
     key: string,
-    patch: Partial<{ sku: string; quantity: string; unitCost: string }>,
+    patch: Partial<{ sku: string; quantity: string }>,
   ) => {
     setLines((prev) => prev.map((l) => (l.key === key ? { ...l, ...patch } : l)));
   };
@@ -673,16 +669,9 @@ function SlipsTab({
         setFormError(t("seller.inventoryPage.invalidQuantityError", { sku }));
         return;
       }
-      const costRaw = line.unitCost.trim();
-      const unitCost = costRaw === "" ? undefined : Number(costRaw);
-      if (unitCost != null && (!Number.isFinite(unitCost) || unitCost < 0)) {
-        setFormError(t("seller.inventoryPage.invalidUnitCostError", { sku }));
-        return;
-      }
       payloadItems.push({
         sku,
         quantity,
-        unitCost,
       });
     }
     try {
@@ -826,7 +815,7 @@ function SlipsTab({
             {lines.map((line) => (
               <div
                 key={line.key}
-                className="grid sm:grid-cols-[1fr_5rem_7rem_auto] gap-2 items-center"
+                className="grid sm:grid-cols-[1fr_5rem_auto] gap-2 items-center"
               >
                 <select
                   className="mq-input"
@@ -850,16 +839,6 @@ function SlipsTab({
                   value={line.quantity}
                   onChange={(e) => updateLine(line.key, { quantity: e.target.value })}
                   required
-                />
-                <input
-                  className="mq-input"
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  placeholder={t("seller.inventoryPage.unitCost")}
-                  aria-label={t("seller.inventoryPage.unitCost")}
-                  value={line.unitCost}
-                  onChange={(e) => updateLine(line.key, { unitCost: e.target.value })}
                 />
                 {lines.length > 1 ? (
                   <button
@@ -935,14 +914,9 @@ function SlipsTab({
                           {s.items.map((it) => (
                             <li key={it.id}>
                               {it.sku} ×{it.quantity}
-                              {it.unitCost != null ? ` @ ${formatMoney(it.unitCost)}` : ""}
                             </li>
                           ))}
                         </ul>
-                      ) : s.items?.[0]?.unitCost != null ? (
-                        <span className="block text-xs text-mq-text-muted mt-0.5">
-                          @ {formatMoney(s.items[0].unitCost)}
-                        </span>
                       ) : null}
                     </td>
                     <td className="py-2.5 pr-3">
@@ -1114,8 +1088,7 @@ function LedgerTab() {
                   <th className="py-2 pr-3 font-medium">{t("seller.productsPage.sku")}</th>
                   <th className="py-2 pr-3 font-medium">{t("seller.promotions.type")}</th>
                   <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.qty")}</th>
-                  <th className="py-2 pr-3 font-medium">{t("seller.inventoryPage.beforeAfter")}</th>
-                  <th className="py-2 font-medium">{t("seller.inventoryPage.slips")}</th>
+                  <th className="py-2 font-medium">{t("seller.inventoryPage.beforeAfter")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -1132,9 +1105,6 @@ function LedgerTab() {
                     <td className="py-2.5 pr-3">{row.quantity}</td>
                     <td className="py-2.5 pr-3">
                       {row.quantityBefore} → {row.quantityAfter}
-                    </td>
-                    <td className="py-2.5 text-xs text-mq-text-muted font-mono">
-                      {row.slipId.slice(0, 8)}…
                     </td>
                   </tr>
                 ))}

@@ -1626,7 +1626,6 @@
       "reserved": "Đang giữ",
       "reservedCount": "Đang giữ {count}",
       "warehouseRequiredError": "Vui lòng chọn kho cho phiếu này.",
-      "costPrice": "Giá vốn",
       "flags": "Cờ",
       "slips": "Phiếu",
       "newSlip": "Phiếu mới",
@@ -1654,7 +1653,6 @@
       "locationNote": "Ghi chú vị trí (không bắt buộc)",
       "addLine": "Thêm dòng",
       "quantity": "Số lượng",
-      "unitCost": "Đơn giá",
       "removeLine": "Xóa dòng",
       "processed": "Đã xử lý {date}",
       "ledgerDescBefore": "Lịch sử không thể thay đổi. Mỗi phiếu được duyệt sẽ ghi một dòng sổ cái cho từng mục. Dùng",
@@ -1664,7 +1662,6 @@
       "addSkuLineError": "Thêm ít nhất một dòng SKU.",
       "duplicateSkuError": "SKU trùng trong phiếu — mỗi SKU chỉ được xuất hiện một lần.",
       "invalidQuantityError": "Số lượng không hợp lệ cho SKU “{sku}”.",
-      "invalidUnitCostError": "Đơn giá không hợp lệ cho SKU “{sku}”.",
       "needWarehouseFirst": "Bạn cần có ít nhất một kho trước khi tạo phiếu.",
       "goToWarehouses": "Tạo kho"
     },

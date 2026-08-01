@@ -1626,7 +1626,6 @@
       "reserved": "Reserved",
       "reservedCount": "{count} reserved",
       "warehouseRequiredError": "Select a warehouse for this slip.",
-      "costPrice": "Cost price",
       "flags": "Flags",
       "slips": "Slips",
       "newSlip": "New slip",
@@ -1654,7 +1653,6 @@
       "locationNote": "Location note (optional)",
       "addLine": "Add line",
       "quantity": "Quantity",
-      "unitCost": "Unit cost",
       "removeLine": "Remove line",
       "processed": "Processed {date}",
       "ledgerDescBefore": "Immutable history. Each approved slip writes one ledger row per item. Use",
@@ -1664,7 +1662,6 @@
       "addSkuLineError": "Add at least one SKU line.",
       "duplicateSkuError": "Duplicate SKU in slip items — each SKU can appear only once.",
       "invalidQuantityError": "Invalid quantity for SKU \u201c{sku}\u201d.",
-      "invalidUnitCostError": "Invalid unit cost for SKU \u201c{sku}\u201d.",
       "needWarehouseFirst": "You need at least one warehouse before creating a slip.",
       "goToWarehouses": "Create warehouse"
     },

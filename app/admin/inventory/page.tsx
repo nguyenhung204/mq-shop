@@ -162,7 +162,6 @@ function SlipsTab({ initialSlipId }: { initialSlipId?: string | null }) {
                     {s.items.map((it) => (
                       <li key={it.id}>
                         {it.sku} ×{it.quantity}
-                        {it.unitCost != null ? ` @ ${formatMoney(it.unitCost)}` : ""}
                       </li>
                     ))}
                   </ul>
@@ -345,7 +344,6 @@ function LedgerTab() {
                   <th className="py-2 pr-3 font-medium">{t("admin.inventoryPage.type")}</th>
                   <th className="py-2 pr-3 font-medium">{t("admin.inventoryPage.qty")}</th>
                   <th className="py-2 pr-3 font-medium">{t("admin.inventoryPage.beforeAfter")}</th>
-                  <th className="py-2 font-medium">{t("admin.inventoryPage.slip")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -364,9 +362,6 @@ function LedgerTab() {
                     <td className="py-2.5 pr-3">{row.quantity}</td>
                     <td className="py-2.5 pr-3">
                       {row.quantityBefore} → {row.quantityAfter}
-                    </td>
-                    <td className="py-2.5 text-xs text-mq-text-muted font-mono">
-                      {row.slipId.slice(0, 8)}…
                     </td>
                   </tr>
                 ))}
