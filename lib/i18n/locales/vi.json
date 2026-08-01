@@ -535,6 +535,23 @@
       "history": "Yêu cầu của bạn",
       "empty": "Chưa có yêu cầu xoá dữ liệu."
     },
+    "sellerClosure": {
+      "title": "Đóng tài khoản seller",
+      "desc": "Yêu cầu ẩn danh hoá tài khoản seller. Thao tác này không thể hoàn tác — gian hàng, sản phẩm và dữ liệu cá nhân sẽ bị xoá vĩnh viễn sau khi admin duyệt.",
+      "submit": "Yêu cầu đóng tài khoản",
+      "submitted": "Đã gửi yêu cầu đóng tài khoản. Bạn sẽ được thông báo khi admin xem xét.",
+      "blockedTitle": "Bạn cần giải quyết những vấn đề sau trước khi đóng tài khoản:",
+      "blocked": {
+        "activeOrders": "{count} đơn hàng đang xử lý",
+        "openRmas": "{count} yêu cầu hoàn trả đang mở",
+        "pendingPayouts": "{count} yêu cầu rút tiền chờ duyệt",
+        "walletBalance": "Số dư ví {amount} cần được rút hết trước",
+        "goOrders": "Quản lý đơn hàng",
+        "goRma": "Quản lý đổi trả",
+        "goWallet": "Đến ví",
+        "dismiss": "Bỏ qua"
+      }
+    },
     "messages": {
       "profileUpdated": "Đã cập nhật hồ sơ.",
       "dsarSubmitted": "Đã gửi yêu cầu xoá dữ liệu.",

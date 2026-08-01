@@ -535,6 +535,23 @@
       "history": "您的申請",
       "empty": "尚無刪除申請。"
     },
+    "sellerClosure": {
+      "title": "關閉賣家帳號",
+      "desc": "申請匿名化您的賣家帳號。此操作不可逆 — 商店、商品及個人資料將在管理員審核後永久移除。",
+      "submit": "申請關閉帳號",
+      "submitted": "關閉帳號申請已送出，管理員審核後將通知您。",
+      "blockedTitle": "關閉帳號前請先解決以下問題：",
+      "blocked": {
+        "activeOrders": "{count} 筆訂單仍在處理中",
+        "openRmas": "{count} 筆退換貨申請尚未結案",
+        "pendingPayouts": "{count} 筆提領申請待審核",
+        "walletBalance": "錢包餘額 {amount} 須先提領完畢",
+        "goOrders": "管理訂單",
+        "goRma": "管理退換貨",
+        "goWallet": "前往錢包",
+        "dismiss": "關閉"
+      }
+    },
     "messages": {
       "profileUpdated": "個人資料已更新。",
       "dsarSubmitted": "已送出刪除申請。",

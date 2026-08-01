@@ -24,7 +24,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
 import { useSellerShop } from "@/lib/queries/seller";
-import { useCreateMyDsar, useMyDsarRequests } from "@/lib/queries/compliance";
+import { useCreateMyDsar, useCreateMySellerDsar, useMyDsarRequests } from "@/lib/queries/compliance";
 import { Container } from "@/components/ui/shared";
 import "./account.css";
 
@@ -63,7 +63,8 @@ function AccountAvatar({ user, size = "lg" }: { user: AuthUser | null; size?: "s
 
 function AccountInner() {
   const { t, locale } = useLanguage();
-  const { user, logout, refreshUser } = useAuth();
+  const { user, logout, refreshUser, hasRole } = useAuth();
+  const isSeller = hasRole("SELLER");
   const router = useRouter();
   const { data: shop } = useSellerShop();
   const hasShop = Boolean(shop);
@@ -81,6 +82,13 @@ function AccountInner() {
   const [dsarNote, setDsarNote] = useState("");
   const { data: dsarPage, isLoading: dsarLoading } = useMyDsarRequests();
   const createDsar = useCreateMyDsar();
+  const {
+    mutateAsync: createSellerDsar,
+    isPending: sellerDsarPending,
+    blockedDetails,
+    clearBlockedDetails,
+  } = useCreateMySellerDsar();
+  const [sellerDsarNote, setSellerDsarNote] = useState("");
   const dsarItems = dsarPage?.items ?? [];
 
   const err = useMemo(() => {
@@ -385,65 +393,188 @@ function AccountInner() {
 
           {section === "privacy" ? (
             <section className="mq-account-panel">
-              <header className="mq-account-panel-head">
-                <h2>{t("account.sections.privacyTitle")}</h2>
-                <p>{t("account.sections.privacyDesc")}</p>
-              </header>
-              <form
-                className="mq-account-form"
-                onSubmit={(e: FormEvent) => {
-                  e.preventDefault();
-                  void run(async () => {
-                    await createDsar.mutateAsync(dsarNote || undefined);
-                    setDsarNote("");
-                    setMsgKey("account.messages.dsarSubmitted");
-                  });
-                }}
-              >
-                <div className="mq-account-field">
-                  <label htmlFor="account-dsar-note">{t("account.fields.dsarNote")}</label>
-                  <textarea
-                    id="account-dsar-note"
-                    className="mq-input min-h-[5rem]"
-                    value={dsarNote}
-                    onChange={(e) => setDsarNote(e.target.value)}
-                    maxLength={500}
-                    placeholder={t("account.fields.dsarNotePh")}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="mq-btn mq-btn-primary"
-                  disabled={busy || createDsar.isPending}
-                >
-                  {t("account.actions.submitDsar")}
-                </button>
-              </form>
-              <div className="mt-6 space-y-2">
-                <h3 className="text-sm font-medium text-mq-text">{t("account.dsar.history")}</h3>
-                {dsarLoading ? (
-                  <p className="text-sm text-mq-text-muted">{t("admin.common.loading")}</p>
-                ) : dsarItems.length === 0 ? (
-                  <p className="text-sm text-mq-text-muted">{t("account.dsar.empty")}</p>
-                ) : (
-                  <ul className="space-y-2">
-                    {dsarItems.map((r) => (
-                      <li
-                        key={r.id}
-                        className="rounded-lg border border-mq-border bg-mq-surface-subtle px-3 py-2 text-sm flex flex-wrap gap-2 justify-between"
+              {/* ── Seller account closure (SELLER role only) ───────────────── */}
+              {isSeller ? (
+                <>
+                  <header className="mq-account-panel-head">
+                    <h2>{t("account.sellerClosure.title")}</h2>
+                    <p>{t("account.sellerClosure.desc")}</p>
+                  </header>
+
+                  {/* Blocked checklist — shown when BE returns 409 SELLER_CLOSURE_BLOCKED */}
+                  {blockedDetails ? (
+                    <div className="mq-alert mq-alert-error mb-4 space-y-3">
+                      <p className="font-medium text-sm">{t("account.sellerClosure.blockedTitle")}</p>
+                      <ul className="space-y-2 text-sm">
+                        {blockedDetails.activeOrders > 0 && (
+                          <li className="flex items-center justify-between gap-3">
+                            <span>
+                              {t("account.sellerClosure.blocked.activeOrders", {
+                                count: String(blockedDetails.activeOrders),
+                              })}
+                            </span>
+                            <Link
+                              href="/seller/orders"
+                              className="mq-btn mq-btn-outline mq-btn-xs shrink-0"
+                            >
+                              {t("account.sellerClosure.blocked.goOrders")}
+                            </Link>
+                          </li>
+                        )}
+                        {blockedDetails.openRmas > 0 && (
+                          <li className="flex items-center justify-between gap-3">
+                            <span>
+                              {t("account.sellerClosure.blocked.openRmas", {
+                                count: String(blockedDetails.openRmas),
+                              })}
+                            </span>
+                            <Link
+                              href="/seller/rma"
+                              className="mq-btn mq-btn-outline mq-btn-xs shrink-0"
+                            >
+                              {t("account.sellerClosure.blocked.goRma")}
+                            </Link>
+                          </li>
+                        )}
+                        {blockedDetails.pendingPayouts > 0 && (
+                          <li className="flex items-center justify-between gap-3">
+                            <span>
+                              {t("account.sellerClosure.blocked.pendingPayouts", {
+                                count: String(blockedDetails.pendingPayouts),
+                              })}
+                            </span>
+                            <Link
+                              href="/wallet"
+                              className="mq-btn mq-btn-outline mq-btn-xs shrink-0"
+                            >
+                              {t("account.sellerClosure.blocked.goWallet")}
+                            </Link>
+                          </li>
+                        )}
+                        {parseFloat(blockedDetails.walletBalance) > 0 && (
+                          <li className="flex items-center justify-between gap-3">
+                            <span>
+                              {t("account.sellerClosure.blocked.walletBalance", {
+                                amount: blockedDetails.walletBalance,
+                              })}
+                            </span>
+                            <Link
+                              href="/wallet"
+                              className="mq-btn mq-btn-outline mq-btn-xs shrink-0"
+                            >
+                              {t("account.sellerClosure.blocked.goWallet")}
+                            </Link>
+                          </li>
+                        )}
+                      </ul>
+                      <button
+                        type="button"
+                        className="mq-btn mq-btn-ghost mq-btn-xs mt-1"
+                        onClick={clearBlockedDetails}
                       >
-                        <span className="font-mono text-xs text-mq-text-muted">
-                          {r.id.slice(0, 8)}…
-                        </span>
-                        <span className="mq-badge mq-badge-muted">{translateStatus(t, "dsar", r.status)}</span>
-                        <span className="text-xs text-mq-text-muted w-full sm:w-auto">
-                          {r.createdAt ? new Date(r.createdAt).toLocaleString() : "—"}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+                        {t("account.sellerClosure.blocked.dismiss")}
+                      </button>
+                    </div>
+                  ) : null}
+
+                  <form
+                    className="mq-account-form"
+                    onSubmit={(e: FormEvent) => {
+                      e.preventDefault();
+                      clearBlockedDetails();
+                      void run(async () => {
+                        await createSellerDsar(sellerDsarNote || undefined);
+                        setSellerDsarNote("");
+                        setMsgKey("account.sellerClosure.submitted");
+                      });
+                    }}
+                  >
+                    <div className="mq-account-field">
+                      <label htmlFor="account-seller-dsar-note">
+                        {t("account.fields.dsarNote")}
+                      </label>
+                      <textarea
+                        id="account-seller-dsar-note"
+                        className="mq-input min-h-[5rem]"
+                        value={sellerDsarNote}
+                        onChange={(e) => setSellerDsarNote(e.target.value)}
+                        maxLength={500}
+                        placeholder={t("account.fields.dsarNotePh")}
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="mq-btn mq-btn-outline"
+                      disabled={busy || sellerDsarPending}
+                    >
+                      {t("account.sellerClosure.submit")}
+                    </button>
+                  </form>
+                </>
+              ) : (
+                /* ── Buyer DSAR (non-seller only) ─────────────────────────── */
+                <>
+                  <header className="mq-account-panel-head">
+                    <h2>{t("account.sections.privacyTitle")}</h2>
+                    <p>{t("account.sections.privacyDesc")}</p>
+                  </header>
+                  <form
+                    className="mq-account-form"
+                    onSubmit={(e: FormEvent) => {
+                      e.preventDefault();
+                      void run(async () => {
+                        await createDsar.mutateAsync(dsarNote || undefined);
+                        setDsarNote("");
+                        setMsgKey("account.messages.dsarSubmitted");
+                      });
+                    }}
+                  >
+                    <div className="mq-account-field">
+                      <label htmlFor="account-dsar-note">{t("account.fields.dsarNote")}</label>
+                      <textarea
+                        id="account-dsar-note"
+                        className="mq-input min-h-[5rem]"
+                        value={dsarNote}
+                        onChange={(e) => setDsarNote(e.target.value)}
+                        maxLength={500}
+                        placeholder={t("account.fields.dsarNotePh")}
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="mq-btn mq-btn-primary"
+                      disabled={busy || createDsar.isPending}
+                    >
+                      {t("account.actions.submitDsar")}
+                    </button>
+                  </form>
+                  <div className="mt-6 space-y-2">
+                    <h3 className="text-sm font-medium text-mq-text">{t("account.dsar.history")}</h3>
+                    {dsarLoading ? (
+                      <p className="text-sm text-mq-text-muted">{t("admin.common.loading")}</p>
+                    ) : dsarItems.length === 0 ? (
+                      <p className="text-sm text-mq-text-muted">{t("account.dsar.empty")}</p>
+                    ) : (
+                      <ul className="space-y-2">
+                        {dsarItems.map((r) => (
+                          <li
+                            key={r.id}
+                            className="rounded-lg border border-mq-border bg-mq-surface-subtle px-3 py-2 text-sm flex flex-wrap gap-2 justify-between"
+                          >
+                            <span className="font-mono text-xs text-mq-text-muted">
+                              {r.id.slice(0, 8)}…
+                            </span>
+                            <span className="mq-badge mq-badge-muted">{translateStatus(t, "dsar", r.status)}</span>
+                            <span className="text-xs text-mq-text-muted w-full sm:w-auto">
+                              {r.createdAt ? new Date(r.createdAt).toLocaleString() : "—"}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </>
+              )}
             </section>
           ) : null}
 

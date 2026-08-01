@@ -34,10 +34,21 @@ export type DsarStatus =
   | "DELETED"
   | string;
 
+export type DsarSource =
+  | "BUYER_SELF"
+  | "SELLER_SELF"
+  | "ADMIN"
+  | string;
+
 export type ApiDsarRequest = {
   id: string;
   targetUserId?: string;
   status: DsarStatus;
+  /** Originating actor — SELLER_SELF when created via the seller closure endpoint. */
+  source?: DsarSource | null;
+  createdBy?: string | null;
+  approvedBy?: string | null;
+  executedBy?: string | null;
   note?: string | null;
   createdAt?: string;
   updatedAt?: string;
@@ -46,6 +57,17 @@ export type ApiDsarRequest = {
   rejectedAt?: string | null;
   targetEmail?: string | null;
   targetName?: string | null;
+};
+
+/**
+ * Returned in 409 SELLER_CLOSURE_BLOCKED error details.
+ * Any field > 0 (or walletBalance > "0.00") is a blocking condition.
+ */
+export type SellerClosureBlockedDetails = {
+  activeOrders: number;
+  openRmas: number;
+  pendingPayouts: number;
+  walletBalance: string;
 };
 
 export type ListDsarParams = {
@@ -84,6 +106,15 @@ export const dsarApi = {
 
   myCreate: (body?: { note?: string }) =>
     api.post<ApiDsarRequest>("/users/me/dsar", body ?? {}),
+
+  /**
+   * Seller account closure — POST /users/me/dsar/seller.
+   * Requires SELLER role + ACTIVE account.
+   * Throws ApiError 409 with code SELLER_CLOSURE_BLOCKED when there are
+   * active orders / open RMAs / pending payouts / non-zero wallet balance.
+   */
+  sellerCreate: (body?: { note?: string }) =>
+    api.post<ApiDsarRequest>("/users/me/dsar/seller", body ?? {}),
 };
 
 export const adminDsarApi = {

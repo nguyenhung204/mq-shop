@@ -535,6 +535,23 @@
       "history": "Your requests",
       "empty": "No erasure requests yet."
     },
+    "sellerClosure": {
+      "title": "Close seller account",
+      "desc": "Request anonymization of your seller account. This is irreversible — your shop, listings, and personal data will be permanently removed after admin review.",
+      "submit": "Request account closure",
+      "submitted": "Closure request submitted. You will be notified when an admin reviews it.",
+      "blockedTitle": "You must resolve the following before your account can be closed:",
+      "blocked": {
+        "activeOrders": "{count} active order(s) still in progress",
+        "openRmas": "{count} open RMA request(s)",
+        "pendingPayouts": "{count} payout request(s) pending approval",
+        "walletBalance": "Wallet balance of {amount} must be withdrawn first",
+        "goOrders": "Manage orders",
+        "goRma": "Manage RMAs",
+        "goWallet": "Go to wallet",
+        "dismiss": "Dismiss"
+      }
+    },
     "messages": {
       "profileUpdated": "Profile updated.",
       "dsarSubmitted": "Erasure request submitted.",

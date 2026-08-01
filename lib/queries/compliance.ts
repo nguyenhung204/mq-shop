@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -10,6 +10,7 @@ import {
   isBackupInProgress,
   type ApiBackup,
   type ApiDsarRequest,
+  type SellerClosureBlockedDetails,
 } from "@/lib/api/compliance";
 import { ApiError } from "@/lib/api/client";
 import { createIdempotencyKeyStore } from "@/lib/api/idempotency";
@@ -119,6 +120,47 @@ export function useCreateMyDsar() {
       toast.error(getErrorMessage(e, tt("toast.dsarFailed")));
     },
   });
+}
+
+/**
+ * Seller account closure — POST /users/me/dsar/seller.
+ *
+ * On success the DSAR request is returned normally.
+ * On 409 SELLER_CLOSURE_BLOCKED the hook exposes the blocking details via
+ * the `blockedDetails` ref that callers can read to render the checklist.
+ * On 409 DSAR_ALREADY_OPEN a toast is shown (same as the buyer flow).
+ */
+export function useCreateMySellerDsar() {
+  const queryClient = useQueryClient();
+  const [blockedDetails, setBlockedDetails] =
+    useState<SellerClosureBlockedDetails | null>(null);
+
+  const mutation = useMutation({
+    mutationFn: (note?: string) =>
+      dsarApi.sellerCreate(note?.trim() ? { note: note.trim() } : {}),
+    onSuccess: () => {
+      setBlockedDetails(null);
+      void queryClient.invalidateQueries({ queryKey: complianceKeys.myDsar() });
+      toast.success(tt("toast.dsarSubmitted"));
+    },
+    onError: (e) => {
+      if (e instanceof ApiError && e.status === 409) {
+        // SELLER_CLOSURE_BLOCKED — extract blocking details for the UI checklist
+        if (e.code === "SELLER_CLOSURE_BLOCKED") {
+          const raw = (e.body as { error?: { details?: SellerClosureBlockedDetails } } | null)
+            ?.error?.details;
+          setBlockedDetails(raw ?? null);
+          return;
+        }
+        // DSAR_ALREADY_OPEN or generic 409
+        toast.error(tt("toast.dsarOpenExists"));
+        return;
+      }
+      toast.error(getErrorMessage(e, tt("toast.dsarFailed")));
+    },
+  });
+
+  return { ...mutation, blockedDetails, clearBlockedDetails: () => setBlockedDetails(null) };
 }
 
 export function useAdminDsarList(params: {
