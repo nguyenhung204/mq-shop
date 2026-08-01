@@ -385,6 +385,12 @@ export type ApiNotification = {
   body: string;
   /** String map of ids / status / amounts for routing. */
   meta?: Record<string, string> | null;
+  /**
+   * Human-readable names resolved by BE for IDs in `meta`.
+   * Keys: orderCode, shopName, userName.
+   * Use these for display instead of slicing raw UUIDs.
+   */
+  metaNames?: Record<string, string> | null;
   /** @deprecated Prefer `meta` — kept for older payloads. */
   payload?: Record<string, unknown>;
   readAt?: string | null;

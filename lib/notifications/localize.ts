@@ -58,6 +58,7 @@ function buildVars(
   type: string,
   meta: Record<string, string> | null | undefined,
   locale: Locale | null,
+  metaNames?: Record<string, string> | null,
 ): Record<string, string> {
   const vars: Record<string, string> = { ...(meta ?? {}) };
   const domain = STATUS_DOMAIN_BY_TYPE[type];
@@ -98,6 +99,16 @@ function buildVars(
     vars.reason = "";
   }
 
+  // Prefer resolved names from metaNames over raw UUIDs.
+  // Templates use {orderId}, {shopId}, etc. directly — overwrite them with the
+  // human-readable value so the placeholder shows a name, not a UUID.
+  if (metaNames) {
+    if (metaNames.orderCode) vars.orderId = metaNames.orderCode;
+    if (metaNames.shopName) vars.shopId = metaNames.shopName;
+    if (metaNames.userName) vars.userId = metaNames.userName;
+  }
+
+  // For any remaining UUID-shaped values not covered by metaNames, shorten them.
   for (const idKey of [
     "orderId",
     "shopId",
@@ -107,8 +118,8 @@ function buildVars(
     "promotionId",
   ] as const) {
     const raw = vars[idKey];
-    if (raw && raw.length > 8) {
-      vars[`${idKey}Short`] = `${raw.slice(0, 8)}…`;
+    if (raw && /^[0-9a-f]{8}-[0-9a-f]{4}-/.test(raw)) {
+      vars[idKey] = `${raw.slice(0, 8)}…`;
     }
   }
 
@@ -117,7 +128,7 @@ function buildVars(
 
 /** Localized title/body for inbox + toast. Falls back to BE copy only when type is unknown. */
 export function localizeNotification(
-  n: Pick<ApiNotification, "type" | "title" | "body" | "meta">,
+  n: Pick<ApiNotification, "type" | "title" | "body" | "meta" | "metaNames">,
   locale: Locale | null,
 ): { title: string; body: string } {
   const type = (n.type || "GENERIC").toUpperCase();
@@ -131,7 +142,7 @@ export function localizeNotification(
     };
   }
 
-  const vars = buildVars(type, n.meta, locale);
+  const vars = buildVars(type, n.meta, locale, n.metaNames);
   return {
     title: interpolate(copy.title, vars),
     body: interpolate(copy.body, vars),
