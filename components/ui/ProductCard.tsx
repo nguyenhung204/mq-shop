@@ -8,6 +8,8 @@ import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { SaleCountdown } from "@/components/ui/SaleCountdown";
 import { Product, formatPrice } from "@/lib/data/products";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useWishlist } from "@/components/providers/WishlistProvider";
+import { useFlyToCart } from "@/components/cart/FlyToCartProvider";
 import { Stars } from "./shared";
 
 export function ProductCard({
@@ -20,7 +22,10 @@ export function ProductCard({
   priority?: boolean;
 }) {
   const [hovered, setHovered] = useState(false);
-  const { locale } = useLanguage();
+  const { locale, t } = useLanguage();
+  const { toggleItem, isInWishlist } = useWishlist();
+  const { flyToWishlist } = useFlyToCart();
+  const wished = isInWishlist(product.id);
   const watermark =
     locale?.startsWith("vi")
       ? product.watermarkText?.vi
@@ -70,11 +75,21 @@ export function ProductCard({
           >
             <button
               type="button"
-              className="w-8 h-8 flex items-center justify-center rounded-full text-mq-text dark:text-white hover:text-mq-gold transition-colors"
-              aria-label="Wishlist"
-              onClick={(e) => e.preventDefault()}
+              className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
+                wished
+                  ? "text-mq-gold"
+                  : "text-mq-text dark:text-white hover:text-mq-gold"
+              }`}
+              aria-label={t("nav.wishlist")}
+              aria-pressed={wished}
+              onClick={(e) => {
+                e.preventDefault();
+                const willAdd = !wished;
+                toggleItem(product);
+                if (willAdd) flyToWishlist(product.image, e.currentTarget);
+              }}
             >
-              <Heart {...iconProps} />
+              <Heart {...iconProps} fill={wished ? "currentColor" : "none"} />
             </button>
             <button
               type="button"

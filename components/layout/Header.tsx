@@ -19,6 +19,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import { CartMenu } from "@/components/layout/CartMenu";
+import { useWishlist } from "@/components/providers/WishlistProvider";
 import { RoleSwitcher } from "@/components/layout/RoleSwitcher";
 import { TopBar } from "@/components/layout/TopBar";
 import { UserMenu } from "@/components/layout/UserMenu";
@@ -50,6 +51,7 @@ export function Header() {
   const { dark, toggle } = useTheme();
   const { t, locale } = useLanguage();
   const router = useRouter();
+  const { itemCount: wishlistCount } = useWishlist();
 
   const { data: apiCategories = [] } = useCatalogCategories();
   const roots = useMemo(() => rootCategories(apiCategories), [apiCategories]);
@@ -338,6 +340,7 @@ export function Header() {
               <UserMenu />
               <CartMenu onNavigate={closeMega} />
               <Link
+                id="mq-wishlist-target"
                 href="/wishlist"
                 className="hidden sm:inline-flex mq-icon-btn relative text-mq-text hover:text-mq-gold transition-colors"
                 aria-label={t("nav.wishlist")}
@@ -346,6 +349,7 @@ export function Header() {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
+                {wishlistCount > 0 ? <span className="mq-count-badge">{wishlistCount}</span> : null}
               </Link>
 
               <span className="hidden lg:block w-px h-5 bg-mq-border mx-1.5" aria-hidden />
@@ -601,14 +605,16 @@ export function Header() {
                   )}
                 </button>
                 <Link
+                  id="mq-wishlist-target"
                   href="/wishlist"
-                  className="mq-icon-btn text-mq-text hover:text-mq-gold transition-colors"
+                  className="mq-icon-btn relative text-mq-text hover:text-mq-gold transition-colors"
                   aria-label={t("nav.wishlist")}
                   onClick={() => setMobileOpen(false)}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
+                  {wishlistCount > 0 ? <span className="mq-count-badge">{wishlistCount}</span> : null}
                 </Link>
               </div>
             </div>

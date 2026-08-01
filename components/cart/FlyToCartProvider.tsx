@@ -13,6 +13,7 @@ import {
 import { createPortal } from "react-dom";
 
 export const CART_TARGET_ID = "mq-cart-target";
+export const WISHLIST_TARGET_ID = "mq-wishlist-target";
 
 type Rect = { x: number; y: number; w: number; h: number };
 
@@ -21,10 +22,12 @@ type Flyer = {
   image: string;
   from: Rect;
   to: Rect;
+  targetId: string;
 };
 
 type FlyToCartContextValue = {
   flyToCart: (image: string, source?: Element | null) => void;
+  flyToWishlist: (image: string, source?: Element | null) => void;
 };
 
 const FlyToCartContext = createContext<FlyToCartContextValue | null>(null);
@@ -33,11 +36,19 @@ function toRect(r: DOMRect): Rect {
   return { x: r.left, y: r.top, w: Math.max(r.width, 1), h: Math.max(r.height, 1) };
 }
 
-function getCartRect(): Rect | null {
-  const el = document.getElementById(CART_TARGET_ID);
+/** Multiple elements may share a target id (e.g. desktop + mobile nav); pick the visible one. */
+function getTargetRect(targetId: string): Rect | null {
+  const candidates = document.querySelectorAll(`[id="${targetId}"]`);
+  let el: Element | null = null;
+  for (const candidate of candidates) {
+    const r = candidate.getBoundingClientRect();
+    if (r.width > 0 && r.height > 0) {
+      el = candidate;
+      break;
+    }
+  }
   if (!el) return null;
   const r = el.getBoundingClientRect();
-  if (r.width === 0 && r.height === 0) return null;
   const size = 32;
   return {
     x: r.left + r.width / 2 - size / 2,
@@ -78,13 +89,14 @@ function resolveSourceRect(source?: Element | null): Rect {
   };
 }
 
-function bumpCartTarget() {
-  const el = document.getElementById(CART_TARGET_ID);
-  if (!el) return;
-  el.classList.remove("mq-cart-bump");
-  void el.offsetWidth;
-  el.classList.add("mq-cart-bump");
-  window.setTimeout(() => el.classList.remove("mq-cart-bump"), 420);
+function bumpTarget(targetId: string) {
+  const elements = document.querySelectorAll(`[id="${targetId}"]`);
+  elements.forEach((el) => {
+    el.classList.remove("mq-cart-bump");
+    void (el as HTMLElement).offsetWidth;
+    el.classList.add("mq-cart-bump");
+    window.setTimeout(() => el.classList.remove("mq-cart-bump"), 420);
+  });
 }
 
 /** Shrink source rect to a calm thumbnail centered on the product image. */
@@ -158,7 +170,7 @@ function FlyerItem({
     );
 
     animation.onfinish = () => {
-      bumpCartTarget();
+      bumpTarget(flyer.targetId);
       onDone(flyer.id);
     };
 
@@ -187,27 +199,40 @@ export function FlyToCartProvider({ children }: { children: ReactNode }) {
     setFlyers((prev) => prev.filter((f) => f.id !== id));
   }, []);
 
-  const flyToCart = useCallback((image: string, source?: Element | null) => {
-    if (typeof window === "undefined") return;
+  const flyTo = useCallback(
+    (targetId: string, image: string, source?: Element | null) => {
+      if (typeof window === "undefined") return;
 
-    const to = getCartRect();
-    if (!to) {
-      bumpCartTarget();
-      return;
-    }
+      const to = getTargetRect(targetId);
+      if (!to) {
+        bumpTarget(targetId);
+        return;
+      }
 
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) {
-      bumpCartTarget();
-      return;
-    }
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reduce) {
+        bumpTarget(targetId);
+        return;
+      }
 
-    const from = resolveSourceRect(source);
-    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-    setFlyers((prev) => [...prev, { id, image, from, to }]);
-  }, []);
+      const from = resolveSourceRect(source);
+      const id = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      setFlyers((prev) => [...prev, { id, image, from, to, targetId }]);
+    },
+    [],
+  );
 
-  const value = useMemo(() => ({ flyToCart }), [flyToCart]);
+  const flyToCart = useCallback(
+    (image: string, source?: Element | null) => flyTo(CART_TARGET_ID, image, source),
+    [flyTo],
+  );
+
+  const flyToWishlist = useCallback(
+    (image: string, source?: Element | null) => flyTo(WISHLIST_TARGET_ID, image, source),
+    [flyTo],
+  );
+
+  const value = useMemo(() => ({ flyToCart, flyToWishlist }), [flyToCart, flyToWishlist]);
 
   return (
     <FlyToCartContext.Provider value={value}>
