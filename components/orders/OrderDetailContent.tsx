@@ -194,7 +194,7 @@ function OrderDetailInner() {
         {order && (
           <div className="mq-card p-6 space-y-4">
             <div className="flex flex-wrap gap-2 items-center">
-              <span className="font-mono text-sm font-medium">{order.code}</span>
+              <span className="text-sm font-medium">{order.displayName}</span>
               <span className="mq-badge mq-badge-cyan">{translateStatus(t, "order", order.status)}</span>
               <span className="mq-badge mq-badge-teal">{translateStatus(t, "paymentMethod", order.paymentMethod)}</span>
               {order.rma ? (

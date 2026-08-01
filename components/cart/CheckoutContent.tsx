@@ -32,7 +32,7 @@ export function CheckoutContent() {
   const [cartReady, setCartReady] = useState(() =>
     typeof window === "undefined" ? false : useCartStore.persist.hasHydrated(),
   );
-  const [placed, setPlaced] = useState<{ id: string; code: string; total: number } | null>(
+  const [placed, setPlaced] = useState<{ id: string; code: string; displayName: string; total: number } | null>(
     null,
   );
   const [shippingFee, setShippingFee] = useState<number | null>(null);
@@ -187,7 +187,7 @@ export function CheckoutContent() {
         <Container className="py-16 text-center max-w-lg mx-auto">
           <h2 className="text-2xl text-mq-text mb-3">{t("checkout.thankYou")}</h2>
           <p className="text-mq-text-secondary mb-2">
-            {t("checkout.orderLabel")} <strong>{placed.code}</strong> · {formatPrice(placed.total)}{" "}
+            {t("checkout.orderLabel")} <strong>{placed.displayName}</strong> · {formatPrice(placed.total)}{" "}
             USD
           </p>
           <p className="text-sm text-mq-text-muted mb-8">{t("checkout.paymentStubNote")}</p>
@@ -224,9 +224,9 @@ export function CheckoutContent() {
         note: values.note || undefined,
       });
       clearCart();
-      setPlaced({ id: order.id, code: order.code, total: order.total });
+      setPlaced({ id: order.id, code: order.code, displayName: order.displayName, total: order.total });
       toast.success(t("checkout.orderPlaced"), {
-        description: order.code,
+        description: order.displayName,
       });
     } catch (err) {
       setSubmitError(err);

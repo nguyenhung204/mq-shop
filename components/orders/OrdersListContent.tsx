@@ -80,7 +80,7 @@ function OrdersInner() {
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-medium font-mono">{o.code}</p>
+                  <p className="text-sm font-medium">{o.displayName}</p>
                   <p className="text-xs text-mq-text-muted mt-1">
                     {new Date(o.createdAt).toLocaleString()}
                   </p>

@@ -109,6 +109,13 @@ export type AdminRmaDetailView = RmaView & {
 export type OrderView = {
   id: string;
   code: string;
+  /**
+   * Human-readable display name derived from order items.
+   * "Nike Air Force 1" for single-item orders,
+   * "Nike Air Force 1 và N sản phẩm khác" for multi-item orders.
+   * Prefer this over `code` for user-facing labels.
+   */
+  displayName: string;
   buyerId: string;
   buyerName?: string | null;
   buyerEmail?: string | null;
