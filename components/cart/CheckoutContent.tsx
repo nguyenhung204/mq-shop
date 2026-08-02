@@ -28,7 +28,18 @@ import { FormAlerts } from "@/lib/ui/form-feedback";
 export function CheckoutContent() {
   const { t, locale } = useLanguage();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
-  const { items, itemCount, subtotal, clearCart, checkoutItems, updateQuantity, shopIds } = useCart();
+  const {
+    items,
+    selectedItems,
+    itemCount,
+    selectedItemCount,
+    subtotal,
+    selectedSubtotal,
+    clearCart,
+    checkoutSelectedItems,
+    updateQuantity,
+    selectedShopIds,
+  } = useCart();
   const [cartReady, setCartReady] = useState(() =>
     typeof window === "undefined" ? false : useCartStore.persist.hasHydrated(),
   );
@@ -99,7 +110,7 @@ export function CheckoutContent() {
   }, [user, profileSeeded, reset]);
 
   const address = watch("shippingAddress");
-  const lineItems = useMemo(() => checkoutItems(), [items]);
+  const lineItems = useMemo(() => checkoutSelectedItems(), [selectedItems]);
 
   const syncPhone = (nextDialCountry: string, nextNational: string) => {
     setNationalPhone(nextNational);
@@ -204,7 +215,7 @@ export function CheckoutContent() {
     );
   }
 
-  const previewTotal = subtotal + (shippingFee ?? 0);
+  const previewTotal = selectedSubtotal + (shippingFee ?? 0);
 
   const onSubmit = async (values: CheckoutFormValues) => {
     setSubmitError(null);
@@ -214,7 +225,7 @@ export function CheckoutContent() {
         nationalPhone || values.shippingAddress.phone,
       );
       const order = await checkout.mutateAsync({
-        items: checkoutItems(),
+        items: checkoutSelectedItems(),
         shippingAddress: {
           ...values.shippingAddress,
           phone,
@@ -253,7 +264,7 @@ export function CheckoutContent() {
         >
           <div className="space-y-6 min-w-0">
             <FormAlerts error={submitErrorText} />
-            {shopIds.length > 1 && (
+            {selectedShopIds.length > 1 && (
               <div className="mq-alert mq-alert-warn flex items-start gap-3">
                 <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
@@ -454,7 +465,7 @@ export function CheckoutContent() {
           <aside className="border border-mq-border p-6 h-fit bg-mq-surface-subtle rounded-[var(--mq-radius-lg)] shadow-[var(--mq-shadow-sm)] lg:sticky lg:top-24">
             <h2 className="text-lg mb-4">{t("checkout.yourOrder")}</h2>
             <ul className="space-y-4 mb-4 max-h-72 overflow-y-auto">
-              {items.map((item) => (
+              {selectedItems.map((item) => (
                 <li key={item.variantId} className="flex gap-3 text-sm">
                   <Link
                     href={`/product/${item.productId}`}
@@ -496,12 +507,12 @@ export function CheckoutContent() {
             <div className="space-y-2 text-sm border-t border-mq-border pt-4">
               <div className="flex justify-between">
                 <span>{t("cart.subtotal")}</span>
-                <span>{formatPrice(subtotal)}</span>
+                <span>{formatPrice(selectedSubtotal)}</span>
               </div>
               <div className="flex justify-between text-mq-text-muted text-xs">
                 <span>{t("cart.quantity")}</span>
                 <span className="tabular-nums">
-                  {itemCount} {itemCount === 1 ? t("cart.item") : t("cart.items")}
+                  {selectedItemCount} {selectedItemCount === 1 ? t("cart.item") : t("cart.items")}
                 </span>
               </div>
               <div className="flex justify-between">

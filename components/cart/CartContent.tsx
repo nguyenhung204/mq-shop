@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ShoppingBag, Trash2, Store } from "lucide-react";
 import { toast } from "sonner";
 import { formatPrice } from "@/lib/data/products";
@@ -95,7 +96,8 @@ function PriceDisplay({
 
 export function CartContent() {
   const { t } = useLanguage();
-  const { items, itemCount, updateQuantity, removeItem, clearCart } = useCart();
+  const router = useRouter();
+  const { items, itemCount, updateQuantity, removeItem, clearCart, setSelectedVariantIds } = useCart();
 
   // Selection state: Set of variantIds that are checked.
   const [selected, setSelected] = useState<Set<string>>(() => new Set(items.map((i) => i.variantId)));
@@ -103,22 +105,6 @@ export function CartContent() {
 
   // Derived groups
   const groups = useMemo(() => groupByShop(items), [items]);
-
-  // Keep selected in sync when items change (e.g. after remove).
-  // New items added are auto-selected.
-  const syncSelected = useCallback(
-    (prev: Set<string>): Set<string> => {
-      const validIds = new Set(items.map((i) => i.variantId));
-      const next = new Set<string>();
-      for (const id of validIds) {
-        // auto-select newly added items
-        if (!prev.has(id)) next.add(id);
-        else if (prev.has(id)) next.add(id);
-      }
-      return next;
-    },
-    [items],
-  );
 
   // Computed selection totals
   const selectedItems = useMemo(
@@ -409,15 +395,26 @@ export function CartContent() {
           </div>
 
           {/* checkout CTA */}
-          <Link
-            href="/checkout"
+          <button
+            type="button"
+            disabled={selectedCount === 0}
+            onClick={() => {
+              // Persist the current selection into the store so CheckoutContent
+              // can filter to only these lines.
+              setSelectedVariantIds(
+                selectedCount === itemCount
+                  ? null  // all selected → no filter needed
+                  : [...selected],
+              );
+              router.push("/checkout");
+            }}
             className={`mq-btn mq-btn-primary shrink-0 ${
-              selectedCount === 0 ? "opacity-50 pointer-events-none" : ""
+              selectedCount === 0 ? "opacity-50 cursor-not-allowed" : ""
             }`}
             aria-disabled={selectedCount === 0}
           >
             {t("cart.checkout")} ({selectedCount})
-          </Link>
+          </button>
         </div>
       </div>
 

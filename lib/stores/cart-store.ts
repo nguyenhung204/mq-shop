@@ -35,10 +35,18 @@ type CartActions = {
   removeItem: (variantId: string) => void;
   updateQuantity: (variantId: string, quantity: number) => void;
   clearCart: () => void;
+  /**
+   * Persist the user's line-item selection across the cart → checkout navigation.
+   * Pass `null` to clear (fall back to all items at checkout).
+   * Not persisted to localStorage — session only.
+   */
+  setSelectedVariantIds: (ids: string[] | null) => void;
 };
 
 type CartState = {
   items: CartLine[];
+  /** Transient: variantIds the user checked on the cart page. null = "all". */
+  selectedVariantIds: string[] | null;
 } & CartActions;
 
 function resolveLine(product: Product, quantity: number): CartLine | null {
@@ -83,6 +91,9 @@ export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
+      selectedVariantIds: null,
+
+      setSelectedVariantIds: (ids) => set({ selectedVariantIds: ids }),
 
       addItem: (product, quantity = 1) => {
         const line = resolveLine(product, quantity);
@@ -131,7 +142,7 @@ export const useCartStore = create<CartState>()(
         }));
       },
 
-      clearCart: () => set({ items: [] }),
+      clearCart: () => set({ items: [], selectedVariantIds: null }),
     }),
     {
       name: "mq-cart-v2",
@@ -143,10 +154,12 @@ export const useCartStore = create<CartState>()(
 
 export function useCart() {
   const items = useCartStore((s) => s.items);
+  const selectedVariantIds = useCartStore((s) => s.selectedVariantIds);
   const addItem = useCartStore((s) => s.addItem);
   const removeItem = useCartStore((s) => s.removeItem);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const clearCart = useCartStore((s) => s.clearCart);
+  const setSelectedVariantIds = useCartStore((s) => s.setSelectedVariantIds);
 
   const itemCount = useMemo(
     () => items.reduce((sum, i) => sum + i.quantity, 0),
@@ -158,21 +171,53 @@ export function useCart() {
     [items],
   );
 
+  /** Items the user selected on the cart page (falls back to all items). */
+  const selectedItems = useMemo(() => {
+    if (!selectedVariantIds) return items;
+    const idSet = new Set(selectedVariantIds);
+    const filtered = items.filter((i) => idSet.has(i.variantId));
+    return filtered.length > 0 ? filtered : items;
+  }, [items, selectedVariantIds]);
+
+  const selectedSubtotal = useMemo(
+    () => selectedItems.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0),
+    [selectedItems],
+  );
+
+  const selectedItemCount = useMemo(
+    () => selectedItems.reduce((sum, i) => sum + i.quantity, 0),
+    [selectedItems],
+  );
+
   const shopId = items[0]?.shopId ?? null;
   const shopIds = useMemo(() => [...new Set(items.map((i) => i.shopId))], [items]);
 
+  /** Distinct shop IDs among the *selected* lines (used for multi-shop guard at checkout). */
+  const selectedShopIds = useMemo(
+    () => [...new Set(selectedItems.map((i) => i.shopId))],
+    [selectedItems],
+  );
+
   return {
     items,
+    selectedItems,
     addItem,
     removeItem,
     updateQuantity,
     clearCart,
+    setSelectedVariantIds,
     itemCount,
+    selectedItemCount,
     subtotal,
+    selectedSubtotal,
     shopId,
     shopIds,
+    selectedShopIds,
     formatSubtotal: () => formatPrice(subtotal),
     checkoutItems: () =>
       items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
+    /** Returns only the selected lines mapped to checkout payload shape. */
+    checkoutSelectedItems: () =>
+      selectedItems.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
   };
 }

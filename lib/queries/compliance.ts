@@ -147,8 +147,8 @@ export function useCreateMySellerDsar() {
       if (e instanceof ApiError && e.status === 409) {
         // SELLER_CLOSURE_BLOCKED — extract blocking details for the UI checklist
         if (e.code === "SELLER_CLOSURE_BLOCKED") {
-          const raw = (e.body as { error?: { details?: SellerClosureBlockedDetails } } | null)
-            ?.error?.details;
+          const raw = (e.body?.data as { details?: SellerClosureBlockedDetails } | undefined)
+            ?.details;
           setBlockedDetails(raw ?? null);
           return;
         }
