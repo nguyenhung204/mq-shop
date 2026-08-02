@@ -185,7 +185,7 @@ function OrderTable({
         <tbody>
           {orders.map((o) => (
             <tr key={o.id} className="border-b border-mq-border last:border-0">
-              <td className="px-4 py-2 text-xs">{o.displayName}</td>
+              <td className="px-4 py-2 text-xs">{o.code}</td>
               <td className="px-4 py-2">
                 <span className="mq-badge mq-badge-muted text-[10px]">
                   {translateStatus(t, "order", o.status)}
