@@ -248,6 +248,61 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: var(--mq-focus-ring);
 }
 
+/* Checkbox — brand-styled */
+.mq-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1rem;
+  height: 1rem;
+  border: 1.5px solid var(--mq-border);
+  border-radius: 3px;
+  background: var(--mq-surface);
+  cursor: pointer;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.mq-checkbox:hover {
+  border-color: var(--mq-gold);
+}
+
+.mq-checkbox:checked {
+  background: var(--mq-gold);
+  border-color: var(--mq-gold);
+}
+
+.mq-checkbox:checked::after {
+  content: "";
+  display: block;
+  width: 0.3rem;
+  height: 0.55rem;
+  border: 2px solid var(--mq-btn-text);
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg) translate(-1px, -1px);
+}
+
+.mq-checkbox:indeterminate {
+  background: var(--mq-gold);
+  border-color: var(--mq-gold);
+}
+
+.mq-checkbox:indeterminate::after {
+  content: "";
+  display: block;
+  width: 0.5rem;
+  height: 2px;
+  background: var(--mq-btn-text);
+  border-radius: 1px;
+}
+
+.mq-checkbox:focus-visible {
+  outline: none;
+  box-shadow: var(--mq-focus-ring);
+}
+
 .mq-phone-field {
   display: flex;
   align-items: stretch;
@@ -1667,6 +1722,12 @@ body.mq-mobile-nav-open {
   border-color: rgba(25, 149, 136, 0.35);
   background: rgba(25, 149, 136, 0.08);
   color: var(--mq-accent-teal);
+}
+
+.mq-alert-warn {
+  border-color: rgba(252, 89, 52, 0.35);
+  background: rgba(252, 89, 52, 0.07);
+  color: var(--mq-accent-orange);
 }
 
 .mq-table-wrap {

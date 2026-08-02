@@ -142,7 +142,7 @@ export type MonthlyCommissionSuggestedAction =
   | "RE_RUN_IDEMPOTENT"
   | "NO_VOLUME";
 
-export type GlobalFundTierStatus = "PAID" | "COMPANY_KEPT" | "PENDING";
+export type GlobalFundTierStatus = "PAID" | "COMPANY_KEPT" | "PENDING" | "NOT_RUN" | string;
 
 export type GlobalFundBeneficiary = {
   userId: string;
@@ -246,4 +246,114 @@ export const adminMlmApi = {
       "/admin/mlm/ranks/reconcile",
       body ?? {},
     ),
+
+  /** Monthly commission audit report. Defaults to previous UTC month. */
+  commissionReport: (query?: { yearMonth?: string }) =>
+    api.get<CommissionReport>("/admin/mlm/commissions/report", { query }),
+};
+
+// ─── Commission Report types (mirrors monthly-commission.job.ts on BE) ────────
+
+export type CommissionReportBatchStatus =
+  | "COMPLETED"
+  | "NOT_RUN"
+  | "NO_VOLUME"
+  | "FAILED"
+  | "RUNNING";
+
+export type CommissionReportKpi = {
+  commissionToGmvPercent: string;
+  totalEntries: number;
+  totalRecipients: number;
+  companyKeptTotal: string;
+  batchStatus: CommissionReportBatchStatus;
+  generatedAt: string | Date | null;
+};
+
+// ── Entry types ──────────────────────────────────────────────────────────────
+
+export type ReferralCommissionEntry = {
+  orderCode: string;
+  orderTotal: string;
+  buyerEmail: string;
+  ratePercent?: string;
+  commissionAmount?: string;
+  deliveredAt: string | null;
+};
+
+export type TeamChainNode = {
+  userId: string;
+  email: string;
+  fullName: string | null;
+  mlmRank: number;
+  rankName: string;
+  percent: string;
+};
+
+export type TeamCommissionEntry = {
+  orderCode: string;
+  orderTotal: string;
+  buyerEmail: string;
+  teamPercent: string;
+  maxBelow: string;
+  paidPercent: string;
+  commissionAmount?: string;
+  /** Audit chain from buyer up to this recipient. */
+  chainNodes?: TeamChainNode[];
+};
+
+export type GenericCommissionEntry = {
+  orderCode?: string;
+  orderTotal?: string;
+  commissionAmount?: string;
+  meta?: Record<string, unknown>;
+};
+
+// ── Shared row / summary types ────────────────────────────────────────────────
+
+export type CommissionUserRow<E> = {
+  userId: string;
+  email: string;
+  fullName: string | null;
+  mlmRank: number;
+  rankName: string;
+  totalPayout: string;
+  entries: E[];
+};
+
+export type CommissionTypeSummary<E> = {
+  type: string;
+  recipientCount: number;
+  totalPayout: string;
+  users: CommissionUserRow<E>[];
+};
+
+// ── Global tier ───────────────────────────────────────────────────────────────
+
+export type GlobalFundTierReport = {
+  tier: number;
+  poolAmount: string;
+  status: GlobalFundTierStatus;
+  eligibleCount: number;
+  paidTotal: string;
+  companyKept: string;
+  users: CommissionUserRow<GenericCommissionEntry>[];
+};
+
+// ── Top-level report ──────────────────────────────────────────────────────────
+
+export type CommissionReport = {
+  yearMonth: string;
+  gmv: string;
+  deliveredOrderCount: number;
+  globalFundPercent: number;
+  globalPoolPerTier: string;
+  grandTotalPayout: string;
+  kpi: CommissionReportKpi;
+  referral: CommissionTypeSummary<ReferralCommissionEntry>;
+  team: CommissionTypeSummary<TeamCommissionEntry>;
+  global: CommissionTypeSummary<GenericCommissionEntry> & {
+    tiers: GlobalFundTierReport[];
+  };
+  loyalty: CommissionTypeSummary<GenericCommissionEntry>;
 };

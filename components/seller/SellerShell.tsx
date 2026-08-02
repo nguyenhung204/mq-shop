@@ -221,9 +221,15 @@ export function SellerNav({ onNavigate }: { onNavigate?: () => void }) {
   const { hasRole } = useAuth();
   const { t } = useLanguage();
   const warehouseOnly = hasRole("WAREHOUSE") && !hasRole("SELLER");
-  const visible = warehouseOnly
-    ? links.filter((l) => !l.sellerOnly)
-    : links;
+  // Buyer (no SELLER / WAREHOUSE role) landing on /seller/shop to apply —
+  // only show the Shop nav item so the sidebar isn't confusing.
+  const buyerApplying =
+    !hasRole("SELLER") && !hasRole("WAREHOUSE") && pathname.startsWith("/seller/shop");
+  const visible = buyerApplying
+    ? links.filter((l) => !isGroup(l) && l.href === "/seller/shop")
+    : warehouseOnly
+      ? links.filter((l) => !l.sellerOnly)
+      : links;
 
   const walletOpenByRoute = pathname.startsWith("/seller/wallet");
   const [walletOpen, setWalletOpen] = useState(walletOpenByRoute);
@@ -308,6 +314,8 @@ export function SellerShell({ children }: { children: ReactNode }) {
   const { t } = useLanguage();
   const { titleKey, descKey } = titleKeysFromPath(pathname);
   const warehouseOnly = hasRole("WAREHOUSE") && !hasRole("SELLER");
+  const buyerApplying =
+    !hasRole("SELLER") && !hasRole("WAREHOUSE") && pathname.startsWith("/seller/shop");
 
   return (
     <section className="mq-seller-page">
@@ -319,10 +327,18 @@ export function SellerShell({ children }: { children: ReactNode }) {
             </span>
             <div className="mq-seller-identity-text">
               <p className="mq-seller-kicker">
-                {warehouseOnly ? t("seller.warehouseKicker") : t("seller.kicker")}
+                {warehouseOnly
+                  ? t("seller.warehouseKicker")
+                  : buyerApplying
+                    ? t("seller.applyKicker")
+                    : t("seller.kicker")}
               </p>
               <h2 className="mq-seller-title">
-                {warehouseOnly ? t("seller.warehouseBrand") : t("seller.brand")}
+                {warehouseOnly
+                  ? t("seller.warehouseBrand")
+                  : buyerApplying
+                    ? t("seller.applyBrand")
+                    : t("seller.brand")}
               </h2>
               <p className="mq-seller-sub">{user?.fullName || user?.email || "—"}</p>
             </div>

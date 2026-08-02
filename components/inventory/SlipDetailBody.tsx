@@ -49,7 +49,6 @@ export function SlipDetailBody({
             <span className="font-medium font-mono">{it.sku}</span>
             <span className="text-mq-text-muted">
               ×{it.quantity}
-              {it.unitCost != null ? ` · unitCost ${formatMoney(it.unitCost)}` : ""}
             </span>
           </li>
         ))}

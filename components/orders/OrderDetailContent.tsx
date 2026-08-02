@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { FormEvent, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { formatMoney } from "@/lib/api/utils";
 import {
@@ -23,7 +23,7 @@ import { useProductReviews } from "@/lib/queries/reviews";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { ReviewForm } from "@/components/reviews/ReviewForm";
 import { Container, PageHero } from "@/components/ui/shared";
-import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
 import { OrderDetailSkeleton } from "@/components/ui/Skeleton";
 
 import { PRODUCT_FALLBACK_IMAGE } from "@/lib/images";
@@ -135,8 +135,9 @@ function OrderDetailInner() {
   const { data: shop } = useSellerShop();
   const cancelOrder = useCancelOrder(id);
   const updateStatus = useUpdateOrderStatus();
-  const [reason, setReason] = useState("");
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
+  const [pendingReason, setPendingReason] = useState("");
 
   const roles = user?.roles ?? [];
   const myShopId = user?.shopId || shop?.id || null;
@@ -163,15 +164,9 @@ function OrderDetailInner() {
   const rmaInfo = order ? resolveRmaInfo(order) : null;
   const canReview = Boolean(order && isBuyer && order.status === "DELIVERED" && user?.id);
 
-  const onCancel = (e: FormEvent) => {
-    e.preventDefault();
-    if (!reason.trim()) return;
-    setCancelConfirmOpen(true);
-  };
-
-  const confirmCancel = async () => {
-    await cancelOrder.mutateAsync(reason.trim());
-    setReason("");
+  const confirmCancel = async (reason: string) => {
+    await cancelOrder.mutateAsync(reason);
+    setCancelModalOpen(false);
     setCancelConfirmOpen(false);
   };
 
@@ -194,7 +189,8 @@ function OrderDetailInner() {
         {order && (
           <div className="mq-card p-6 space-y-4">
             <div className="flex flex-wrap gap-2 items-center">
-              <span className="font-mono text-sm font-medium">{order.code}</span>
+              <h1 className="text-xl font-bold text-mq-text">{order.displayName}</h1>
+              <span className="font-mono text-sm text-mq-text-muted">{order.code}</span>
               <span className="mq-badge mq-badge-cyan">{translateStatus(t, "order", order.status)}</span>
               <span className="mq-badge mq-badge-teal">{translateStatus(t, "paymentMethod", order.paymentMethod)}</span>
               {order.rma ? (
@@ -313,28 +309,15 @@ function OrderDetailInner() {
             ) : null}
 
             {canCancel && (
-              <form
-                onSubmit={(e) => void onCancel(e)}
-                className="space-y-3 pt-4 border-t border-mq-border"
-              >
-                <h3 className="text-sm font-medium">{t("orders.detail.cancelOrderTitle")}</h3>
-                <input
-                  className="mq-input"
-                  placeholder={t("orders.detail.reasonPlaceholder")}
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  required
-                />
+              <div className="pt-4 border-t border-mq-border">
                 <button
-                  type="submit"
+                  type="button"
                   className="mq-btn mq-btn-outline"
-                  disabled={cancelOrder.isPending}
+                  onClick={() => setCancelModalOpen(true)}
                 >
-                  {cancelOrder.isPending
-                    ? t("orders.detail.cancelling")
-                    : t("orders.detail.cancelOrderBtn")}
+                  {t("orders.detail.cancelOrderBtn")}
                 </button>
-              </form>
+              </div>
             )}
             {showRma ? (
               <Link href={`/orders/${id}/rma`} className="mq-btn mq-btn-primary inline-flex">
@@ -344,15 +327,15 @@ function OrderDetailInner() {
           </div>
         )}
       </Container>
-      <ConfirmDialog
-        open={cancelConfirmOpen}
-        title={t("confirm.orderCancelTitle")}
+      <AdminReasonModal
+        open={cancelModalOpen}
+        title={t("orders.detail.cancelOrderTitle")}
         description={t("confirm.orderCancelDesc")}
         confirmLabel={t("confirm.orderCancelBtn")}
-        tone="danger"
+        maxLength={300}
         busy={cancelOrder.isPending}
-        onClose={() => setCancelConfirmOpen(false)}
-        onConfirm={confirmCancel}
+        onClose={() => setCancelModalOpen(false)}
+        onConfirm={(reason) => void confirmCancel(reason)}
       />
     </>
   );

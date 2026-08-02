@@ -80,6 +80,8 @@ export type Paginated<T> = {
 export type ListingCard = {
   id: string;
   shopId?: string;
+  /** Display name of the shop — present when BE listing includes it. */
+  shopName?: string | null;
   title: string;
   /** Derived min variant price (backward-friendly). */
   price: number;
@@ -107,13 +109,12 @@ export type ProductVariant = {
   availableStock: number;
   options?: Record<string, string> | null;
   images?: string[];
-  costPrice?: number | null;
   isEnrollmentPackage?: boolean;
   createdAt?: string;
   updatedAt?: string;
 };
 
-/** Public PDP variant — omits costPrice / shop-only fields. */
+/** Public PDP variant — omits shop-only fields. */
 export type PublicProductVariant = {
   id: string;
   productId: string;
@@ -348,6 +349,8 @@ export type ShopStatus = "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED";
 export type ApiShop = {
   id: string;
   ownerId?: string;
+  ownerName?: string | null;
+  ownerEmail?: string | null;
   name: string;
   taxId?: string;
   taxCode?: string;
@@ -382,6 +385,12 @@ export type ApiNotification = {
   body: string;
   /** String map of ids / status / amounts for routing. */
   meta?: Record<string, string> | null;
+  /**
+   * Human-readable names resolved by BE for IDs in `meta`.
+   * Keys: orderCode, shopName, userName.
+   * Use these for display instead of slicing raw UUIDs.
+   */
+  metaNames?: Record<string, string> | null;
   /** @deprecated Prefer `meta` — kept for older payloads. */
   payload?: Record<string, unknown>;
   readAt?: string | null;
@@ -445,7 +454,7 @@ export type NotificationType =
   | "COMMISSION_GLOBAL_CREDITED"
   | "COMMISSION_LOYALTY_CREDITED"
   | "COMMISSION_REFERRAL_TRIGGERED"
-  | "COMMISSION_REFERRAL_SKIPPED_NOT_SELLER"
+  | "COMMISSION_REFERRAL_SKIPPED_NOT_BUYER"
   | "COMMISSION_JOB_FAILED"
   | "MLM_RANK_UPDATED"
   | "MLM_RANK_UPGRADED"

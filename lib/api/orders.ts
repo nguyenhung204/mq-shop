@@ -87,6 +87,8 @@ export type CreateRmaRequest = {
 export type RmaView = {
   id: string;
   orderId: string;
+  /** Human-readable order name (e.g. "ORD-20260801-E249"). Use for display instead of orderId. */
+  orderName?: string | null;
   buyerId?: string;
   shopId?: string;
   status: RmaStatus;
@@ -103,14 +105,27 @@ export type RmaView = {
 /** GET /admin/rma/:rmaId — PROCESS_RMA review scope. */
 export type AdminRmaDetailView = RmaView & {
   orderCode: string | null;
+  orderName?: string | null;
   orderStatus: OrderStatus | null;
+  buyerName?: string | null;
+  shopName?: string | null;
 };
 
 export type OrderView = {
   id: string;
   code: string;
+  /**
+   * Human-readable display name derived from order items.
+   * "Nike Air Force 1" for single-item orders,
+   * "Nike Air Force 1 và N sản phẩm khác" for multi-item orders.
+   * Prefer this over `code` for user-facing labels.
+   */
+  displayName: string;
   buyerId: string;
+  buyerName?: string | null;
+  buyerEmail?: string | null;
   shopId: string;
+  shopName?: string | null;
   status: OrderStatus;
   subtotal: number;
   shippingFee: number;

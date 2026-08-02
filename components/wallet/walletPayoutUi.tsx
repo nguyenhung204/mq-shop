@@ -105,12 +105,6 @@ export function WalletPayoutDetailFields({
             <dd className="mt-0.5">{payout.rejectionReason}</dd>
           </div>
         ) : null}
-        {payout.gatewayRef && labels.gatewayRef ? (
-          <div className="sm:col-span-2">
-            <dt className="text-xs text-mq-text-muted">{labels.gatewayRef}</dt>
-            <dd className="mt-0.5 font-mono break-all">{payout.gatewayRef}</dd>
-          </div>
-        ) : null}
       </dl>
 
       {actions ? (

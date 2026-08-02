@@ -6,6 +6,7 @@ import {
   Calculator,
   ClipboardList,
   Coins,
+  FileBarChart2,
   FolderOpen,
   FolderTree,
   HandCoins,
@@ -209,6 +210,13 @@ export const adminNavItems: AdminNavItem[] = [
     icon: Network,
     permissions: ["CONFIG_MLM", "VIEW_MLM_TREE"],
     roles: ["SUPER_ADMIN", "ACCOUNTANT", "ADMIN"],
+    group: "commerce",
+  },
+  {
+    href: "/admin/mlm/commissions/report",
+    labelKey: "admin.nav.commissionReport",
+    icon: FileBarChart2,
+    roles: ["SUPER_ADMIN"],
     group: "commerce",
   },
   {

@@ -42,6 +42,7 @@ export function normalizeNotification(raw: unknown): ApiNotification | null {
     title: typeof n.title === "string" ? n.title : "",
     body: typeof n.body === "string" ? n.body : "",
     meta,
+    metaNames: normalizeNotificationMeta(n.metaNames) ?? null,
     readAt: toIso(n.readAt),
     createdAt: toIso(n.createdAt) || new Date().toISOString(),
   };

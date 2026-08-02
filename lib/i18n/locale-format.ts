@@ -14,7 +14,7 @@ export function formatMoneyLocale(
   const safe = Number.isNaN(n) ? 0 : n;
   return new Intl.NumberFormat(toIntlLocale(locale), {
     style: "currency",
-    currency: "USD",
+    currency: "TWD",
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(safe);

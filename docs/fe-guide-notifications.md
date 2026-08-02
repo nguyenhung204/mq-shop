@@ -53,7 +53,7 @@ SSE payload is the notification view object (same fields as list items), not the
 | `WALLET_ADJUSTED` | `userId`, `amount`? | `/wallet` |
 | `WALLET_WITHDRAW_*` | `payoutId`, `userId` | `/wallet/payouts/:payoutId` (user) or `/admin/payouts/:payoutId` (staff) |
 | `COMMISSION_*_CREDITED` / `COMMISSION_REFERRAL_TRIGGERED` | `ledgerId`, `amount`? | `/wallet/commissions/:ledgerId` |
-| `COMMISSION_REFERRAL_SKIPPED_NOT_SELLER` | — | `/mlm` or `/shop/apply` |
+| `COMMISSION_REFERRAL_SKIPPED_NOT_BUYER` | — | `/wallet/commissions` |
 | `COMMISSION_JOB_FAILED` | `orderId`? | `/admin/commission` |
 | `MLM_RANK_UPGRADED` / `MLM_RANK_UPDATED` | `mlmRank`, `previousRank`? | `/mlm/rank` |
 | `MLM_REFERRER_UPDATED` / `MLM_DOWNLINE_ASSIGNED` | related user ids | `/mlm/network` |

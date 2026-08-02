@@ -2,15 +2,12 @@
 
 import Link from "next/link";
 import { useRankProgress } from "@/lib/queries/wallet";
-import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { mlmRankLabel } from "@/lib/i18n/mlm-rank";
 
 export function WalletRankProgress({ className = "" }: { className?: string }) {
   const { t } = useLanguage();
-  const { hasRole } = useAuth();
   const { data, isLoading, isError } = useRankProgress();
-  const isSeller = hasRole("SELLER");
 
   if (isLoading) {
     return (
@@ -22,12 +19,12 @@ export function WalletRankProgress({ className = "" }: { className?: string }) {
 
   if (isError || !data) return null;
 
-  // Buyers are not on the MLM ladder yet — must open a shop (become seller) first.
-  const buyerOnly =
-    !isSeller ||
-    (data.eligibleAsSeller === false && (data.mlmRank ?? 0) === 0);
+  // Admin-only accounts without the BUYER role cannot participate in the MLM
+  // ladder (edge case). The API signals this via eligibleAsSeller=false at rank 0.
+  const notEligible =
+    data.eligibleAsSeller === false && (data.mlmRank ?? 0) === 0;
 
-  if (buyerOnly) {
+  if (notEligible) {
     return (
       <section
         className={`rounded-[var(--mq-radius-md)] border border-mq-border bg-mq-surface p-4 md:p-6 space-y-4 ${className}`}
@@ -43,9 +40,6 @@ export function WalletRankProgress({ className = "" }: { className?: string }) {
         <p className="text-sm text-mq-text-secondary leading-relaxed">
           {t("wallet.rankProgressBuyerGateHint")}
         </p>
-        <Link href="/seller/shop" className="mq-btn mq-btn-primary text-sm inline-flex">
-          {t("wallet.rankProgressOpenShop")}
-        </Link>
       </section>
     );
   }
@@ -94,17 +88,6 @@ export function WalletRankProgress({ className = "" }: { className?: string }) {
           </p>
           <p className="text-base font-medium text-mq-text mt-1">
             {currentName}
-            {(data.mlmRank ?? 0) >= 1 ? (
-              <span className="text-mq-text-muted font-normal text-sm">
-                {" "}
-                ({t("wallet.rank")} {data.mlmRank})
-              </span>
-            ) : (
-              <span className="text-mq-text-muted font-normal text-sm">
-                {" "}
-                — {t("wallet.rankProgressPreDistributor")}
-              </span>
-            )}
           </p>
         </div>
         <div className="rounded-[var(--mq-radius-sm)] bg-mq-surface-subtle px-3.5 py-3">
@@ -118,10 +101,6 @@ export function WalletRankProgress({ className = "" }: { className?: string }) {
           ) : (
             <p className="text-base font-medium text-mq-text mt-1">
               {nextName}
-              <span className="text-mq-text-muted font-normal text-sm">
-                {" "}
-                ({t("wallet.rank")} {data.nextRank})
-              </span>
             </p>
           )}
         </div>

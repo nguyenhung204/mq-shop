@@ -169,9 +169,6 @@ function WalletPayoutsInner() {
                   {t("admin.common.reason")}: {row.rejectionReason}
                 </p>
               ) : null}
-              {row.gatewayRef ? (
-                <p className="text-xs text-mq-text-muted">ref: {row.gatewayRef}</p>
-              ) : null}
               <p className="text-xs text-mq-accent mt-1">{t("admin.walletPayouts.viewDetail")}</p>
             </Link>
             <AdminActions>

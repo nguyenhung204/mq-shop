@@ -11,12 +11,19 @@ export type CartLine = {
   variantId: string;
   productId: string;
   shopId: string;
+  shopName?: string;
   sku: string;
   name: string;
   unitPrice: number;
+  /** Original price before discount, if any. */
+  originalPrice?: number;
   image: string;
   quantity: number;
   slug?: string;
+  /** Variant option labels, e.g. { Màu: "Đỏ", Size: "M" } */
+  variantOptions?: Record<string, string>;
+  /** Available stock for low-stock / OOS display. */
+  inStock?: number;
 };
 
 /** @deprecated Use CartLine */
@@ -47,12 +54,16 @@ function resolveLine(product: Product, quantity: number): CartLine | null {
     variantId,
     productId: product.id,
     shopId,
+    shopName: product.shop?.name,
     sku: variant?.sku || product.id.slice(0, 8),
     name: product.name,
     unitPrice: variant?.price ?? product.price,
+    originalPrice: product.originalPrice,
     image: variant?.images?.[0] || product.image,
     quantity,
     slug: product.slug,
+    variantOptions: variant?.options ?? undefined,
+    inStock: variant?.availableStock ?? product.inStock,
   };
 }
 
@@ -85,10 +96,6 @@ export const useCartStore = create<CartState>()(
           return false;
         }
         const { items } = get();
-        if (items.length > 0 && items[0].shopId !== line.shopId) {
-          toast.error(tt("cart.multiShop"));
-          return false;
-        }
         const existing = items.find((i) => i.variantId === line.variantId);
         if (existing) {
           set({
@@ -152,6 +159,7 @@ export function useCart() {
   );
 
   const shopId = items[0]?.shopId ?? null;
+  const shopIds = useMemo(() => [...new Set(items.map((i) => i.shopId))], [items]);
 
   return {
     items,
@@ -162,6 +170,7 @@ export function useCart() {
     itemCount,
     subtotal,
     shopId,
+    shopIds,
     formatSubtotal: () => formatPrice(subtotal),
     checkoutItems: () =>
       items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),

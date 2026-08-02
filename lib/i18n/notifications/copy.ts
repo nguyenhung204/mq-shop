@@ -66,7 +66,7 @@ export const NOTIFICATION_TYPE_COPY: Record<
     },
     SELLER_PAYOUT_COMPLETED: {
       title: "Payout completed",
-      body: "Your payout of {amount} has been transferred to your bank account.",
+      body: "Your payout of {amount} has been credited to your wallet.",
     },
     SELLER_PAYOUT_REJECTED: {
       title: "Payout rejected",
@@ -224,9 +224,9 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "Referral commission triggered",
       body: "A referral commission was triggered for order {orderId}.",
     },
-    COMMISSION_REFERRAL_SKIPPED_NOT_SELLER: {
+    COMMISSION_REFERRAL_SKIPPED_NOT_BUYER: {
       title: "Commission not credited",
-      body: "Referral commission was skipped — seller shop required.",
+      body: "Referral commission was skipped — referrer does not have a buyer account.",
     },
     COMMISSION_JOB_FAILED: {
       title: "Commission job failed",
@@ -336,7 +336,7 @@ export const NOTIFICATION_TYPE_COPY: Record<
     },
     SELLER_PAYOUT_COMPLETED: {
       title: "Đã chi trả",
-      body: "Khoản chi trả {amount} đã được chuyển vào tài khoản ngân hàng của bạn.",
+      body: "Khoản chi trả {amount} đã được ghi có vào ví của bạn.",
     },
     SELLER_PAYOUT_REJECTED: {
       title: "Chi trả bị từ chối",
@@ -494,9 +494,9 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "Kích hoạt hoa hồng",
       body: "Hoa hồng giới thiệu được kích hoạt cho đơn {orderId}.",
     },
-    COMMISSION_REFERRAL_SKIPPED_NOT_SELLER: {
+    COMMISSION_REFERRAL_SKIPPED_NOT_BUYER: {
       title: "Không cộng hoa hồng",
-      body: "Bỏ qua hoa hồng — cần shop seller.",
+      body: "Bỏ qua hoa hồng — người giới thiệu không có tài khoản buyer.",
     },
     COMMISSION_JOB_FAILED: {
       title: "Xử lý hoa hồng lỗi",
@@ -764,9 +764,9 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "推薦佣金已觸發",
       body: "訂單 {orderId} 的推薦佣金已觸發。",
     },
-    COMMISSION_REFERRAL_SKIPPED_NOT_SELLER: {
+    COMMISSION_REFERRAL_SKIPPED_NOT_BUYER: {
       title: "未發放佣金",
-      body: "未發放推薦佣金 — 需要賣家商店。",
+      body: "未發放推薦佣金 — 推薦人不具有買家帳號。",
     },
     COMMISSION_JOB_FAILED: {
       title: "佣金處理失敗",

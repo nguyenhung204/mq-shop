@@ -122,7 +122,7 @@ function OrdersInner() {
     pageSize: 20,
   });
   const cancelOrder = useAdminCancelOrder();
-  const [cancelTarget, setCancelTarget] = useState<{ id: string; code: string } | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<{ id: string; code: string; displayName: string } | null>(null);
   const items = data?.items ?? [];
   const meta = data?.meta;
 
@@ -385,12 +385,12 @@ function OrdersInner() {
             className="mq-card p-4 flex flex-wrap justify-between gap-3 text-sm"
           >
             <div>
-              <Link href={`/orders/${o.id}`} className="font-mono font-medium hover:underline">
-                {o.code}
+              <Link href={`/orders/${o.id}`} className="font-medium hover:underline">
+                {o.displayName}
               </Link>
               <span className="mq-badge mq-badge-cyan ml-2">{translateStatus(t, "order", o.status)}</span>
               <p className="text-xs text-mq-text-muted mt-1">
-                Shop {o.shopId.slice(0, 8)}… · Buyer {o.buyerId.slice(0, 8)}… ·{" "}
+                {o.shopName ?? `Shop ${o.shopId.slice(0, 8)}…`} · {o.buyerName ?? `Buyer ${o.buyerId.slice(0, 8)}…`} ·{" "}
                 {formatMoney(o.total)} {o.currency}
               </p>
             </div>
@@ -401,7 +401,7 @@ function OrdersInner() {
                   icon={Ban}
                   tone="danger"
                   disabled={cancelOrder.isPending}
-                  onClick={() => setCancelTarget({ id: o.id, code: o.code })}
+                  onClick={() => setCancelTarget({ id: o.id, code: o.code, displayName: o.displayName })}
                 />
               </AdminActions>
             ) : null}
@@ -414,7 +414,7 @@ function OrdersInner() {
         title={t("confirm.orderAdminCancelTitle")}
         description={
           cancelTarget
-            ? t("confirm.orderAdminCancelDesc", { code: cancelTarget.code })
+            ? t("confirm.orderAdminCancelDesc", { code: cancelTarget.displayName })
             : undefined
         }
         confirmLabel={t("confirm.orderAdminCancelBtn")}

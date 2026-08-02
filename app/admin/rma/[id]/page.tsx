@@ -32,7 +32,7 @@ function RmaDetailInner({ id }: { id: string }) {
   return (
     <>
       <AdminPageHeader
-        title={rma?.orderCode ? `RMA · ${rma.orderCode}` : t("admin.rmaPage.detailTitle")}
+        title={rma?.orderName ?? rma?.orderCode ? `RMA · ${rma.orderName ?? rma.orderCode}` : t("admin.rmaPage.detailTitle")}
         description={t("admin.rmaPage.detailDesc")}
       />
       <div className="space-y-6 max-w-3xl">
@@ -51,7 +51,6 @@ function RmaDetailInner({ id }: { id: string }) {
           <div className="mq-card p-6 space-y-5 text-sm">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="space-y-1">
-                <p className="text-xs text-mq-text-muted font-mono">{rma.id}</p>
                 <div className="flex flex-wrap gap-2 items-center">
                   <span className="mq-badge mq-badge-pink">{translateStatus(t, "rma", rma.status)}</span>
                   {rma.orderStatus ? (
@@ -107,9 +106,9 @@ function RmaDetailInner({ id }: { id: string }) {
                   {rma.orderId ? (
                     <Link
                       href={`/orders/${rma.orderId}`}
-                      className="font-mono hover:text-mq-gold transition-colors"
+                      className="hover:text-mq-gold transition-colors"
                     >
-                      {rma.orderCode || rma.orderId.slice(0, 8)}
+                      {rma.orderName ?? rma.orderCode ?? rma.orderId.slice(0, 8)}
                     </Link>
                   ) : (
                     "—"
@@ -123,13 +122,13 @@ function RmaDetailInner({ id }: { id: string }) {
               {rma.buyerId ? (
                 <div>
                   <dt className="text-xs text-mq-text-muted">{t("admin.rmaPage.buyer")}</dt>
-                  <dd className="font-mono text-xs">{rma.buyerId}</dd>
+                  <dd>{rma.buyerName ?? <span className="font-mono text-xs">{rma.buyerId.slice(0, 8)}…</span>}</dd>
                 </div>
               ) : null}
               {rma.shopId ? (
                 <div>
                   <dt className="text-xs text-mq-text-muted">{t("admin.rmaPage.shop")}</dt>
-                  <dd className="font-mono text-xs">{rma.shopId}</dd>
+                  <dd>{rma.shopName ?? <span className="font-mono text-xs">{rma.shopId.slice(0, 8)}…</span>}</dd>
                 </div>
               ) : null}
               {rma.decidedAt ? (

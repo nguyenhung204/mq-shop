@@ -32,8 +32,8 @@ function SellerRmaInner() {
       {refunded.map((o) => (
         <div key={o.id} className="mq-card p-4 flex flex-wrap justify-between gap-3 text-sm">
           <div>
-            <Link href={`/orders/${o.id}`} className="font-mono font-medium hover:underline">
-              {o.code}
+            <Link href={`/orders/${o.id}`} className="font-medium hover:underline">
+              {o.displayName}
             </Link>
             <span className="mq-badge mq-badge-pink ml-2">{translateStatus(t, "order", o.status)}</span>
             <p className="text-xs text-mq-text-muted mt-1">

@@ -80,7 +80,7 @@ function SellerOrdersInner() {
             className="mq-card p-4 flex flex-wrap items-center justify-between gap-3 text-sm"
           >
             <Link href={`/orders/${o.id}`} className="hover:underline min-w-0">
-              <span className="font-mono font-medium">{o.code}</span>
+              <span className="font-medium">{o.displayName}</span>
               <span className="mq-badge mq-badge-cyan ml-2">{translateStatus(t, "order", o.status)}</span>
               <span className="block text-xs text-mq-text-muted mt-1">
                 {new Date(o.createdAt).toLocaleString()}
