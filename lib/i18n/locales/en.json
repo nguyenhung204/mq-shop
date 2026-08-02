@@ -789,7 +789,25 @@
       "cronJobsDesc": "Scheduled automated tasks",
       "nextRun": "Next run",
       "schedule": "Schedule",
-      "noCronJobs": "No cron jobs found."
+      "noCronJobs": "No cron jobs found.",
+      "jobs": {
+        "order-expiry": {
+          "name": "Order Expiry",
+          "description": "Auto-cancel PENDING orders unpaid for 30+ days. Processes up to 100 orders per run."
+        },
+        "promotion-expiry": {
+          "name": "Promotion Expiry",
+          "description": "Mark ACTIVE promotions past their endDate as EXPIRED."
+        },
+        "monthly-commission": {
+          "name": "Monthly Commission",
+          "description": "Compute TEAM, LOYALTY, and GLOBAL fund commissions for the previous calendar month."
+        },
+        "rank-reconcile": {
+          "name": "Rank Reconcile",
+          "description": "Scan all active users and promote eligible MLM ranks missed by realtime events."
+        }
+      }
     },
     "banners": {
       "title": "Banners",

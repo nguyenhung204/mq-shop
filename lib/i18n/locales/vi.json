@@ -789,7 +789,25 @@
       "cronJobsDesc": "Tác vụ tự động theo lịch",
       "nextRun": "Lần chạy tiếp",
       "schedule": "Lịch",
-      "noCronJobs": "Không có cron job nào."
+      "noCronJobs": "Không có cron job nào.",
+      "jobs": {
+        "order-expiry": {
+          "name": "Hết hạn đơn hàng",
+          "description": "Tự động huỷ đơn hàng PENDING chưa thanh toán sau 30 ngày. Xử lý tối đa 100 đơn mỗi lần chạy."
+        },
+        "promotion-expiry": {
+          "name": "Hết hạn khuyến mãi",
+          "description": "Chuyển trạng thái các khuyến mãi ACTIVE đã qua ngày kết thúc sang EXPIRED."
+        },
+        "monthly-commission": {
+          "name": "Hoa hồng tháng",
+          "description": "Tính hoa hồng TEAM, LOYALTY và quỹ GLOBAL cho tháng trước."
+        },
+        "rank-reconcile": {
+          "name": "Đối soát xếp hạng",
+          "description": "Quét tất cả người dùng đang hoạt động và thăng hạng MLM bị bỏ sót bởi sự kiện thời gian thực."
+        }
+      }
     },
     "banners": {
       "title": "Banner",

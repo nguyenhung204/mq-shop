@@ -789,7 +789,25 @@
       "cronJobsDesc": "排程自動執行任務",
       "nextRun": "下次執行",
       "schedule": "排程",
-      "noCronJobs": "目前沒有定時任務。"
+      "noCronJobs": "目前沒有定時任務。",
+      "jobs": {
+        "order-expiry": {
+          "name": "訂單到期",
+          "description": "自動取消超過 30 天未付款的 PENDING 訂單，每次最多處理 100 筆。"
+        },
+        "promotion-expiry": {
+          "name": "促銷到期",
+          "description": "將已超過結束日期的 ACTIVE 促銷標記為 EXPIRED。"
+        },
+        "monthly-commission": {
+          "name": "月度佣金",
+          "description": "計算上個月的 TEAM、LOYALTY 及 GLOBAL 基金佣金。"
+        },
+        "rank-reconcile": {
+          "name": "等級校正",
+          "description": "掃描所有活躍使用者，補升被即時事件遺漏的 MLM 等級。"
+        }
+      }
     },
     "banners": {
       "title": "橫幅",

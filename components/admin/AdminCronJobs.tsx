@@ -128,6 +128,10 @@ function CronJobList({
     <div className="px-4 pb-4 space-y-2">
       {jobs.map((job) => {
         const ms = remaining[job.id] ?? job.nextRunInMs;
+        const nameKey = `admin.overview.jobs.${job.id}.name`;
+        const descKey = `admin.overview.jobs.${job.id}.description`;
+        const name = t(nameKey) !== nameKey ? t(nameKey) : job.name;
+        const description = t(descKey) !== descKey ? t(descKey) : job.description;
         return (
           <div
             key={job.id}
@@ -139,7 +143,7 @@ function CronJobList({
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-sm font-medium text-mq-text truncate">
-                  {job.name}
+                  {name}
                 </span>
                 <span
                   className={`text-xs font-mono tabular-nums font-medium ${getUrgencyClass(ms)}`}
@@ -148,7 +152,7 @@ function CronJobList({
                 </span>
               </div>
               <p className="text-xs text-mq-text-muted mt-0.5 line-clamp-2">
-                {job.description}
+                {description}
               </p>
               <p className="text-[11px] text-mq-text-muted mt-1">
                 {t("admin.overview.schedule")}: {job.schedule}
