@@ -432,6 +432,8 @@
     "username": "Username or email",
     "password": "Password",
     "confirmPassword": "Confirm password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "rememberMe": "Remember me",
     "logIn": "Log in",
     "lostPassword": "Lost your password?",
@@ -1343,7 +1345,8 @@
       "tierStatus": {
         "PAID": "Paid",
         "COMPANY_KEPT": "Company kept",
-        "PENDING": "Pending"
+        "PENDING": "Pending",
+        "NOT_RUN": "Not run"
       },
       "rankActive": "Active",
       "rankInactive": "Inactive",
@@ -1452,8 +1455,10 @@
   "seller": {
     "brand": "Seller Center",
     "warehouseBrand": "Warehouse",
+    "applyBrand": "Open a Shop",
     "kicker": "Seller",
     "warehouseKicker": "Warehouse",
+    "applyKicker": "Apply",
     "nav": {
       "overview": "Overview",
       "shop": "Shop",

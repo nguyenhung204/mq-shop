@@ -33,6 +33,7 @@ function batchBadge(status: CommissionReportBatchStatus): string {
 function tierStatusBadge(status: GlobalFundTierStatus): string {
   if (status === "PAID") return "mq-badge mq-badge-teal";
   if (status === "COMPANY_KEPT") return "mq-badge mq-badge-orange";
+  if (status === "NOT_RUN") return "mq-badge mq-badge-muted";
   return "mq-badge mq-badge-muted";
 }
 

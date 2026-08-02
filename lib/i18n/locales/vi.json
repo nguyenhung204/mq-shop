@@ -432,6 +432,8 @@
     "username": "Tên đăng nhập hoặc email",
     "password": "Mật khẩu",
     "confirmPassword": "Nhập lại mật khẩu",
+    "showPassword": "Hiện mật khẩu",
+    "hidePassword": "Ẩn mật khẩu",
     "rememberMe": "Ghi nhớ đăng nhập",
     "logIn": "Đăng nhập",
     "lostPassword": "Quên mật khẩu?",
@@ -1343,7 +1345,8 @@
       "tierStatus": {
         "PAID": "Đã trả",
         "COMPANY_KEPT": "Công ty giữ",
-        "PENDING": "Chưa chạy"
+        "PENDING": "Chờ xử lý",
+        "NOT_RUN": "Chưa chạy"
       },
       "rankActive": "Đang dùng",
       "rankInactive": "Ngưng",
@@ -1452,8 +1455,10 @@
   "seller": {
     "brand": "Kênh Seller",
     "warehouseBrand": "Kho",
+    "applyBrand": "Mở gian hàng",
     "kicker": "Seller",
     "warehouseKicker": "Kho",
+    "applyKicker": "Đăng ký",
     "nav": {
       "overview": "Tổng quan",
       "shop": "Cửa hàng",

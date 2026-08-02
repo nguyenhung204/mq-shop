@@ -142,7 +142,7 @@ export type MonthlyCommissionSuggestedAction =
   | "RE_RUN_IDEMPOTENT"
   | "NO_VOLUME";
 
-export type GlobalFundTierStatus = "PAID" | "COMPANY_KEPT" | "PENDING";
+export type GlobalFundTierStatus = "PAID" | "COMPANY_KEPT" | "PENDING" | "NOT_RUN" | string;
 
 export type GlobalFundBeneficiary = {
   userId: string;

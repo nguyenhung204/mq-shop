@@ -432,6 +432,8 @@
     "username": "使用者名稱或電子郵件",
     "password": "密碼",
     "confirmPassword": "確認密碼",
+    "showPassword": "顯示密碼",
+    "hidePassword": "隱藏密碼",
     "rememberMe": "記住我",
     "logIn": "登入",
     "lostPassword": "忘記密碼？",
@@ -1343,7 +1345,8 @@
       "tierStatus": {
         "PAID": "已付",
         "COMPANY_KEPT": "公司保留",
-        "PENDING": "待執行"
+        "PENDING": "待處理",
+        "NOT_RUN": "未執行"
       },
       "rankActive": "啟用中",
       "rankInactive": "未啟用",
@@ -1452,8 +1455,10 @@
   "seller": {
     "brand": "賣家中心",
     "warehouseBrand": "倉庫",
+    "applyBrand": "開設商店",
     "kicker": "賣家",
     "warehouseKicker": "倉庫",
+    "applyKicker": "申請",
     "nav": {
       "overview": "總覽",
       "shop": "商店",

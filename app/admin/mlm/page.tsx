@@ -51,6 +51,7 @@ function suggestedBadge(action: MonthlyCommissionSuggestedAction): string {
 function tierStatusBadge(status: GlobalFundTierStatus): string {
   if (status === "PAID") return "mq-badge mq-badge-teal";
   if (status === "PENDING") return "mq-badge mq-badge-muted";
+  if (status === "NOT_RUN") return "mq-badge mq-badge-muted";
   return "mq-badge mq-badge-orange";
 }
 
