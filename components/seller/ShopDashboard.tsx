@@ -3,7 +3,6 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { FileText, ImageIcon, LayoutDashboard, Store } from "lucide-react";
 import { useApplyShop, useSellerShop } from "@/lib/queries/seller";
-import { ShopBankInfoForm } from "@/components/seller/ShopBankInfoForm";
 import { ShopBrandingUpload } from "@/components/seller/ShopBrandingUpload";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";

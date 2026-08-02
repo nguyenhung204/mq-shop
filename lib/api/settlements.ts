@@ -14,6 +14,7 @@ export type SettlementView = {
   orderCode: string | null;
   amount: number;
   currency: "TWD";
+  status: SettlementStatus;
   createdAt: string;
 };
 
