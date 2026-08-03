@@ -10,7 +10,6 @@ import {
   type ReactNode,
 } from "react";
 import { authApi } from "@/lib/api/auth";
-import { clearTokens, getAccessToken } from "@/lib/api/client";
 import type { AuthUser, Role } from "@/lib/api/types";
 
 type AuthContextValue = {
@@ -60,12 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const me = await authApi.me();
       setUser(me);
     } catch {
-      // Cookie session may still exist without local token after Phase 3
-      if (!getAccessToken()) setUser(null);
-      else {
-        clearTokens();
-        setUser(null);
-      }
+      setUser(null);
     }
   }, [setUser]);
 
@@ -78,21 +72,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const me = await authApi.me();
         if (!cancelled) setUser(me);
       } catch {
-        // Not signed in (no cookie / no bearer)
-        if (!cancelled) {
-          if (!getAccessToken()) setUser(null);
-          else {
-            clearTokens();
-            setUser(null);
-          }
-        }
+        // Not signed in (no cookie)
+        if (!cancelled) setUser(null);
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
 
     const onLogout = () => {
-      clearTokens();
       setUser(null);
     };
     window.addEventListener("mq:auth-logout", onLogout);
@@ -115,7 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await authApi.logout();
     } catch {
-      clearTokens();
+      // Cookie cleared by BE; nothing to do locally
     }
     setUser(null);
   }, [setUser]);

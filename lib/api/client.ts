@@ -1,34 +1,11 @@
 import type { ApiErrorBody, PageMeta } from "./types";
 
-const TOKEN_KEY = "mq_access_token";
-const REFRESH_KEY = "mq_refresh_token";
-
 export function getApiHost(): string {
   return (process.env.NEXT_PUBLIC_API_HOST || "http://localhost:3000").replace(/\/$/, "");
 }
 
 export function getApiBase(): string {
   return `${getApiHost()}/api/v1`;
-}
-
-export function getAccessToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(TOKEN_KEY);
-}
-
-export function getRefreshToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(REFRESH_KEY);
-}
-
-export function setTokens(accessToken: string, refreshToken?: string) {
-  localStorage.setItem(TOKEN_KEY, accessToken);
-  if (refreshToken) localStorage.setItem(REFRESH_KEY, refreshToken);
-}
-
-export function clearTokens() {
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(REFRESH_KEY);
 }
 
 export class ApiError extends Error {
@@ -68,7 +45,6 @@ type RequestOptions = {
   method?: string;
   body?: unknown;
   formData?: FormData;
-  auth?: boolean;
   headers?: Record<string, string>;
   query?: Record<string, string | number | boolean | undefined | null>;
   /** Skip refresh retry (used by refresh itself) */
@@ -79,51 +55,29 @@ type RequestOptions = {
 
 let refreshPromise: Promise<boolean> | null = null;
 
-async function refreshAccessToken(): Promise<boolean> {
-  const refreshToken = getRefreshToken();
-  if (!refreshToken) {
-    clearTokens();
-    return false;
-  }
-
+/**
+ * Attempt to refresh the session via httpOnly cookie.
+ * BE reads refresh_token from the cookie automatically.
+ */
+async function refreshSession(): Promise<boolean> {
   try {
-    const res = await fetch(`${getApiBase()}/auth/refresh-token`, {
+    const res = await fetch(`${getApiBase()}/auth/refresh`, {
       method: "POST",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken }),
     });
-    if (!res.ok) {
-      clearTokens();
-      return false;
-    }
-    const json = (await res.json()) as {
-      data?: { accessToken: string; refreshToken: string };
-      accessToken?: string;
-      refreshToken?: string;
-    };
-    const access = json.data?.accessToken || json.accessToken;
-    const refresh = json.data?.refreshToken || json.refreshToken;
-    if (!access) {
-      clearTokens();
-      return false;
-    }
-    setTokens(access, refresh);
-    return true;
+    return res.ok;
   } catch {
-    clearTokens();
     return false;
   }
 }
 
 /**
- * Used by authenticated SSE (EventSource cannot send Bearer).
- * Shares the same singleton refreshPromise as apiRequest so concurrent
- * 401s from SSE + REST do not trigger two separate refresh calls.
+ * Shared refresh promise so concurrent 401s from SSE + REST
+ * do not trigger multiple refresh calls.
  */
-export function refreshAccessTokenForSse(): Promise<boolean> {
+export function refreshSessionShared(): Promise<boolean> {
   if (!refreshPromise) {
-    refreshPromise = refreshAccessToken().finally(() => {
+    refreshPromise = refreshSession().finally(() => {
       refreshPromise = null;
     });
   }
@@ -161,7 +115,6 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     method = "GET",
     body,
     formData,
-    auth = true,
     headers = {},
     query,
     _retried,
@@ -171,11 +124,6 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 
   if (body !== undefined && !formData) {
     reqHeaders["Content-Type"] = "application/json";
-  }
-
-  if (auth) {
-    const token = getAccessToken();
-    if (token) reqHeaders.Authorization = `Bearer ${token}`;
   }
 
   const res = await fetch(buildUrl(path, query), {
@@ -189,9 +137,9 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
         : undefined,
   });
 
-  if (res.status === 401 && auth && !_retried) {
+  if (res.status === 401 && !_retried) {
     if (!refreshPromise) {
-      refreshPromise = refreshAccessToken().finally(() => {
+      refreshPromise = refreshSession().finally(() => {
         refreshPromise = null;
       });
     }
@@ -240,13 +188,8 @@ export async function apiGetBlob(
   path: string,
   options: Omit<RequestOptions, "method" | "body" | "formData" | "withMeta"> = {},
 ): Promise<Blob> {
-  const { auth = true, headers = {}, query, _retried } = options;
+  const { headers = {}, query, _retried } = options;
   const reqHeaders: Record<string, string> = { ...headers };
-
-  if (auth) {
-    const token = getAccessToken();
-    if (token) reqHeaders.Authorization = `Bearer ${token}`;
-  }
 
   const res = await fetch(buildUrl(path, query), {
     method: "GET",
@@ -254,9 +197,9 @@ export async function apiGetBlob(
     credentials: "include",
   });
 
-  if (res.status === 401 && auth && !_retried) {
+  if (res.status === 401 && !_retried) {
     if (!refreshPromise) {
-      refreshPromise = refreshAccessToken().finally(() => {
+      refreshPromise = refreshSession().finally(() => {
         refreshPromise = null;
       });
     }

@@ -1,4 +1,4 @@
-import { api, clearTokens, setTokens } from "./client";
+import { api } from "./client";
 import type { AuthUser, LoginResponse } from "./types";
 
 export const authApi = {
@@ -13,53 +13,38 @@ export const authApi = {
     api.post<{ id?: string; email?: string; status?: string; message?: string }>(
       "/auth/register",
       body,
-      { auth: false },
     ),
 
   verifyOtp: (body: { email: string; otp: string }) =>
-    api.post<LoginResponse>("/auth/register/verify-otp", body, { auth: false }),
+    api.post<LoginResponse>("/auth/register/verify-otp", body),
 
   /** Legacy path fallback */
   verifyOtpLegacy: (body: { email: string; code: string }) =>
-    api.post("/auth/verify-otp", body, { auth: false }),
+    api.post("/auth/verify-otp", body),
 
   resendOtp: (body: { email: string }) =>
-    api.post("/auth/register/resend-otp", body, { auth: false }),
+    api.post("/auth/register/resend-otp", body),
 
   login: async (body: { email: string; password: string } | { identifier: string; password: string }) => {
     const payload =
       "email" in body
         ? { email: body.email, password: body.password }
         : { email: body.identifier, password: body.password };
-    const data = await api.post<LoginResponse>("/auth/login", payload, { auth: false });
-    if (data.accessToken) {
-      setTokens(data.accessToken, data.refreshToken);
-    }
-    return data;
+    return api.post<LoginResponse>("/auth/login", payload);
   },
 
-  logout: async () => {
-    try {
-      await api.post("/auth/logout", {});
-    } finally {
-      clearTokens();
-    }
-  },
+  logout: () => api.post("/auth/logout", {}),
 
   /** Always succeeds for valid body (anti-enumeration). Mail only if ACTIVE user exists. */
   forgotPassword: (body: { email: string }) =>
-    api.post("/auth/forgot-password/request-otp", body, { auth: false }),
+    api.post("/auth/forgot-password/request-otp", body),
 
   /** Missing / inactive user → same INVALID_OTP as wrong code. Clears session cookies on BE. */
-  resetPassword: async (body: { email: string; code: string; newPassword: string }) => {
-    const res = await api.post(
+  resetPassword: (body: { email: string; code: string; newPassword: string }) =>
+    api.post(
       "/auth/forgot-password/reset",
       { email: body.email, code: body.code, newPassword: body.newPassword },
-      { auth: false },
-    );
-    clearTokens();
-    return res;
-  },
+    ),
 
   me: () => api.get<AuthUser>("/users/me"),
 
@@ -72,11 +57,8 @@ export const authApi = {
     return api.postForm<AuthUser>("/users/me/avatar", fd);
   },
 
-  changePassword: async (body: { currentPassword: string; newPassword: string }) => {
-    const res = await api.patch("/users/me/password", body);
-    clearTokens();
-    return res;
-  },
+  changePassword: (body: { currentPassword: string; newPassword: string }) =>
+    api.patch("/users/me/password", body),
 
   requestEmailOtp: (body: { newEmail: string }) =>
     api.post("/users/me/email/request-otp", body),

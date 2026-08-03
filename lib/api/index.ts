@@ -191,9 +191,7 @@ export type {
 
 export const catalogApi = {
   categories: async () => {
-    const data = await api.get<ApiCategory[] | { items: ApiCategory[] }>("/categories", {
-      auth: false,
-    });
+    const data = await api.get<ApiCategory[] | { items: ApiCategory[] }>("/categories");
     return asArray<ApiCategory>(data);
   },
   listing: async (query: {
@@ -208,7 +206,6 @@ export const catalogApi = {
     const res = await api.get<{ data: ListingCard[]; meta?: PageMeta } | ListingCard[]>(
       "/products/listing",
       {
-        auth: false,
         query: {
           q: query.q,
           categoryId: query.categoryId,
@@ -225,11 +222,11 @@ export const catalogApi = {
   },
   /** Public PDP — ACTIVE products of approved shops only. */
   productDetail: (productId: string) =>
-    api.get<PublicProductDetail>(`/products/listing/${productId}`, { auth: false }),
+    api.get<PublicProductDetail>(`/products/listing/${productId}`),
 
   /** Public shop profile — APPROVED + not suspended. */
   shopStorefront: (shopId: string) =>
-    api.get<ShopStorefront>(`/shops/${shopId}/storefront`, { auth: false }),
+    api.get<ShopStorefront>(`/shops/${shopId}/storefront`),
 
   /** @deprecated prefer listing() */
   searchProducts: async (query: {
@@ -249,7 +246,6 @@ export const catalogApi = {
       });
     } catch {
       const legacy = await api.get<Paginated<ApiProduct> | ApiProduct[]>("/products/search", {
-        auth: false,
         query: {
           q: query.q,
           categoryId: query.categoryId,
@@ -262,7 +258,7 @@ export const catalogApi = {
     }
   },
   /** @deprecated prefer productDetail() for storefront PDP */
-  product: (id: string) => api.get<ApiProduct>(`/products/${id}`, { auth: false }),
+  product: (id: string) => api.get<ApiProduct>(`/products/${id}`),
 };
 
 export const shopApi = {

@@ -1,4 +1,4 @@
-import { getAccessToken, getApiHost, refreshAccessTokenForSse } from "@/lib/api/client";
+import { getApiHost, refreshSessionShared } from "@/lib/api/client";
 
 export type SseHandlers = {
   onOpen?: () => void;
@@ -10,8 +10,7 @@ export type SseHandlers = {
 
 /**
  * Authenticated SSE via fetch + ReadableStream.
- * Native EventSource cannot set Authorization; our FE auth is Bearer (localStorage)
- * + optional cookies, so EventSource often stays offline across origins.
+ * Auth is handled via httpOnly cookies (credentials: "include").
  */
 export function openAuthenticatedSse(
   path: string,
@@ -39,14 +38,11 @@ async function connectLoop(
   while (!signal.aborted) {
     try {
       await readOnce(path, handlers, signal);
-      // readOnce never resolves normally — it always throws. This branch is
-      // here for safety only.
       attempt = 0;
     } catch (err) {
       if (signal.aborted) return;
       if (err instanceof SseStreamEndedError) {
         // Server closed the keep-alive stream — normal SSE behaviour.
-        // Reconnect without advertising an error to the caller.
         attempt = 0;
         handlers.onReconnecting?.();
       } else {
@@ -65,37 +61,21 @@ async function readOnce(
   handlers: SseHandlers,
   signal: AbortSignal,
 ): Promise<void> {
-  let token = getAccessToken();
-  if (!token) {
-    const refreshed = await refreshAccessTokenForSse();
-    if (!refreshed) throw new Error("SSE unauthorized");
-    token = getAccessToken();
-  }
-  if (!token) throw new Error("SSE unauthorized");
-
   const url = `${getApiHost()}/api/v1${path.startsWith("/") ? path : `/${path}`}`;
   let res = await fetch(url, {
     method: "GET",
-    headers: {
-      Accept: "text/event-stream",
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { Accept: "text/event-stream" },
     credentials: "include",
     signal,
     cache: "no-store",
   });
 
   if (res.status === 401) {
-    const ok = await refreshAccessTokenForSse();
+    const ok = await refreshSessionShared();
     if (!ok) throw new Error("SSE unauthorized");
-    token = getAccessToken();
-    if (!token) throw new Error("SSE unauthorized");
     res = await fetch(url, {
       method: "GET",
-      headers: {
-        Accept: "text/event-stream",
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Accept: "text/event-stream" },
       credentials: "include",
       signal,
       cache: "no-store",
