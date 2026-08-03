@@ -38,6 +38,10 @@ function isSeller(roles: Role[]): boolean {
   return roles.includes("SELLER");
 }
 
+function isBuyerOnly(roles: Role[]): boolean {
+  return roles.length === 1 && roles.includes("BUYER");
+}
+
 /**
  * Resolve in-app notification → app route.
  * Unknown type / missing required meta → `null` (toast/detail only, no navigate).
@@ -50,6 +54,7 @@ export function resolveNotificationRoute(
   const meta = n.meta ?? null;
   const admin = isAdminish(ctx.roles);
   const seller = isSeller(ctx.roles);
+  const buyerOnly = isBuyerOnly(ctx.roles);
 
   switch (type) {
     case "GENERIC":
@@ -67,13 +72,13 @@ export function resolveNotificationRoute(
     }
 
     case "PLATFORM_ADMIN_ACCOUNT":
-      return "/admin";
+      return admin ? "/admin" : null;
 
     case "DSAR_REQUEST_NEW":
-      return "/admin/dsar";
+      return admin ? "/admin/dsar" : null;
 
     case "REFERRAL_DOWNLINE_JOINED":
-      return "/mlm/network";
+      return buyerOnly ? null : "/mlm/network";
 
     case "SHOP_APPLICATION_NEW": {
       const m = requireMeta(meta, ["shopId"]);
@@ -90,7 +95,7 @@ export function resolveNotificationRoute(
     case "PRODUCT_APPROVED":
     case "PRODUCT_REJECTED":
     case "PRODUCT_HIDDEN":
-      return "/seller/products";
+      return seller ? "/seller/products" : null;
 
     case "ORDER_NEW": {
       const m = requireMeta(meta, ["orderId"]);
@@ -126,7 +131,7 @@ export function resolveNotificationRoute(
     }
 
     case "REVIEW_NEW":
-      return "/seller/reviews";
+      return seller ? "/seller/reviews" : null;
 
     case "REVIEW_SELLER_REPLIED":
     case "REVIEW_HIDDEN":
@@ -141,7 +146,7 @@ export function resolveNotificationRoute(
 
     case "PROMOTION_APPROVED":
     case "PROMOTION_REJECTED":
-      return "/seller/promotions";
+      return seller ? "/seller/promotions" : null;
 
     case "WALLET_PIN_UPDATED":
       return "/wallet";
@@ -179,30 +184,29 @@ export function resolveNotificationRoute(
     case "COMMISSION_GLOBAL_CREDITED":
     case "COMMISSION_LOYALTY_CREDITED":
     case "COMMISSION_REFERRAL_TRIGGERED":
-      return "/wallet/commissions";
+      return buyerOnly ? null : "/wallet/commissions";
 
     case "COMMISSION_REFERRAL_SKIPPED_NOT_BUYER":
-      return "/wallet/commissions";
+      return buyerOnly ? null : "/wallet/commissions";
 
     case "COMMISSION_JOB_FAILED":
-      return "/admin/mlm";
+      return admin ? "/admin/mlm" : null;
 
     case "MLM_RANK_UPGRADED":
     case "MLM_RANK_UPDATED":
-      return "/wallet";
+      return buyerOnly ? null : "/wallet";
 
     case "MLM_REFERRER_UPDATED":
     case "MLM_DOWNLINE_ASSIGNED":
-      return "/mlm/network";
+      return buyerOnly ? null : "/mlm/network";
 
     case "MLM_REFERRAL_RATE_UPDATED":
-      return "/admin/mlm";
+      return admin ? "/admin/mlm" : null;
 
     case "INVENTORY_SLIP_PENDING":
     case "INVENTORY_SLIP_APPROVED":
     case "INVENTORY_SLIP_REJECTED": {
-      // Sellers manage slips from /seller/inventory; WAREHOUSE/ADMIN staff from /admin/inventory.
-      // Both pages expand the slip named by `?slipId=` (meta from BE, see feat/023 §4).
+      if (buyerOnly) return null;
       const base = seller ? "/seller/inventory" : "/admin/inventory";
       const m = requireMeta(meta, ["slipId"]);
       return m ? `${base}?tab=slips&slipId=${encodeURIComponent(m.slipId)}` : base;
@@ -211,6 +215,7 @@ export function resolveNotificationRoute(
     case "INVENTORY_TRANSFER_PENDING":
     case "INVENTORY_TRANSFER_APPROVED":
     case "INVENTORY_TRANSFER_RECEIVED": {
+      if (buyerOnly) return null;
       const m = requireMeta(meta, ["transferId"]);
       if (seller) {
         return m ? `/seller/inventory/transfers/${m.transferId}` : "/seller/inventory/transfers";

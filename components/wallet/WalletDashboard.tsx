@@ -361,18 +361,28 @@ function WalletInner({ embedded = false }: { embedded?: boolean }) {
             </div>
           </div>
 
-          <div className="mq-card p-5 space-y-3">
-            <h2 className="text-lg">{t("wallet.referralTitle")}</h2>
-            <p className="text-sm break-all text-mq-text-secondary">{link || "—"}</p>
-            <button
-              type="button"
-              className="mq-btn mq-btn-outline text-xs"
-              disabled={!link}
-              onClick={() => void copyLink()}
-            >
-              {copied ? t("wallet.copied") : t("wallet.copyLink")}
-            </button>
-          </div>
+          {hasRole("SELLER") ? (
+            <div className="mq-card p-5 space-y-3">
+              <h2 className="text-lg">{t("wallet.referralTitle")}</h2>
+              <p className="text-sm break-all text-mq-text-secondary">{link || "—"}</p>
+              <button
+                type="button"
+                className="mq-btn mq-btn-outline text-xs"
+                disabled={!link}
+                onClick={() => void copyLink()}
+              >
+                {copied ? t("wallet.copied") : t("wallet.copyLink")}
+              </button>
+            </div>
+          ) : (
+            <div className="mq-card p-5 space-y-3">
+              <h2 className="text-lg">{t("wallet.referralBuyerGate")}</h2>
+              <p className="text-sm text-mq-text-secondary">{t("wallet.referralBuyerGateHint")}</p>
+              <Link href="/seller/shop" className="mq-btn mq-btn-primary text-xs inline-block">
+                {t("wallet.referralBuyerGateCta")}
+              </Link>
+            </div>
+          )}
 
           <div className="flex flex-wrap gap-3">
             <Link

@@ -130,7 +130,10 @@ export function CartMenu({ onNavigate }: { onNavigate?: () => void }) {
               </p>
             ) : null}
             <div className="mq-cart-menu-actions">
-              <Link href="/cart" className="mq-btn mq-btn-primary w-full text-xs" onClick={close}>
+              <Link href="/checkout" className="mq-btn mq-btn-primary w-full text-xs" onClick={close}>
+                {t("cart.proceedCheckout")}
+              </Link>
+              <Link href="/cart" className="block text-center text-xs text-mq-text-muted hover:text-mq-text transition-colors mt-2" onClick={close}>
                 {t("cart.viewAll")}
               </Link>
             </div>
