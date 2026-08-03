@@ -84,7 +84,6 @@ export const productReviewsApi = {
     api.get<PageEnvelope<ProductReview>>(`/products/${productId}/reviews`, {
       query,
       withMeta: true,
-      auth: false,
     }),
 
   featured: (query?: FeaturedReviewsParams) =>
@@ -93,13 +92,10 @@ export const productReviewsApi = {
         minRating: query?.minRating ?? 4,
         limit: query?.limit ?? 12,
       },
-      auth: false,
     }),
 
   summary: (productId: string) =>
-    api.get<ReviewSummary>(`/products/${productId}/reviews/summary`, {
-      auth: false,
-    }),
+    api.get<ReviewSummary>(`/products/${productId}/reviews/summary`),
 
   create: (productId: string, body: CreateReviewBody) =>
     api.post<ProductReview>(`/products/${productId}/reviews`, body),

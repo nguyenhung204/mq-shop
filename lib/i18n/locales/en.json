@@ -1301,6 +1301,8 @@
       "description": "Personal withdraw queue — approve, reject, or process stub bank payouts.",
       "hint": "Not the same as Seller payouts under Finance. These freeze/release the user wallet.",
       "userId": "User ID",
+      "search": "Search",
+      "searchPlaceholder": "Search by name or email…",
       "empty": "No wallet payouts in this filter.",
       "process": "Process (stub transfer)",
       "processHint": "Marks the payout as paid and releases frozen balance (stub bank — no real transfer).",

@@ -6,7 +6,6 @@ import { FormEvent, useMemo, useState } from "react";
 import { AuthPanel } from "@/components/auth/AuthPanel";
 import { OtpCountdown } from "@/components/auth/OtpCountdown";
 import { authApi } from "@/lib/api/auth";
-import { setTokens } from "@/lib/api/client";
 import { postAuthPath } from "@/lib/auth/routes";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -46,7 +45,6 @@ export function VerifyOtpContent() {
     setBusy(true);
     try {
       const data = await authApi.verifyOtp({ email, otp: code });
-      if (data?.accessToken) setTokens(data.accessToken, data.refreshToken);
       setRedirecting(true);
       if (data?.user) setUser(data.user);
       router.replace(postAuthPath(data?.user));

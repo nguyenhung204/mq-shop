@@ -63,13 +63,13 @@ function WalletPayoutsInner() {
     hasRole("SUPER_ADMIN");
 
   const [status, setStatus] = useState<PayoutRequestStatus | "">("");
-  const [userId, setUserId] = useState("");
+  const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [rejectId, setRejectId] = useState<string | null>(null);
 
   const { data, isLoading, isError, error, isFetching } = useAdminWalletPayouts({
     status: status || undefined,
-    userId: userId.trim() || undefined,
+    q: search.trim() || undefined,
     page,
     pageSize: 20,
   });
@@ -110,13 +110,13 @@ function WalletPayoutsInner() {
             </select>
           </label>
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-mq-text-muted text-xs">{t("admin.walletPayouts.userId")}</span>
+            <span className="text-mq-text-muted text-xs">{t("admin.walletPayouts.search")}</span>
             <input
               className="mq-input min-w-[14rem]"
-              value={userId}
-              placeholder="uuid"
+              value={search}
+              placeholder={t("admin.walletPayouts.searchPlaceholder")}
               onChange={(e) => {
-                setUserId(e.target.value);
+                setSearch(e.target.value);
                 setPage(1);
               }}
             />

@@ -149,7 +149,7 @@ export const adminPromotionApi = {
 export const bannerApi = {
   /** Public homepage list — no auth. Locale banners + global ALL (sorted). */
   publicList: (lang: PublicBannerLang = "VI") =>
-    api.get<Banner[]>("/banners", { auth: false, query: { lang } }),
+    api.get<Banner[]>("/banners", { query: { lang } }),
   adminList: (query?: ListBannersParams) =>
     api.get<BannerListRes>("/admin/banners", { query, withMeta: true }),
   adminGet: (bannerId: string) => api.get<Banner>(`/admin/banners/${bannerId}`),

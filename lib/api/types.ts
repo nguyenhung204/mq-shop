@@ -63,8 +63,6 @@ export type AuthUser = {
 
 export type LoginResponse = {
   user: AuthUser;
-  accessToken?: string;
-  refreshToken?: string;
 };
 
 export type Paginated<T> = {

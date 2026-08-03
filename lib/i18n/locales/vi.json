@@ -1301,6 +1301,8 @@
       "description": "Hàng đợi rút ví — duyệt, từ chối hoặc process stub bank.",
       "hint": "Khác Seller payouts. Các yêu cầu này đóng băng/giải phóng ví user.",
       "userId": "User ID",
+      "search": "Tìm kiếm",
+      "searchPlaceholder": "Tìm theo tên hoặc email…",
       "empty": "Không có yêu cầu rút ví trong bộ lọc này.",
       "process": "Process (chuyển stub)",
       "processHint": "Đánh dấu đã chi và giải phóng số dư đóng băng (stub bank — không chuyển tiền thật).",
