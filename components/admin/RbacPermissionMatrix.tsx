@@ -12,6 +12,13 @@ import {
   type RbacRole,
 } from "@/lib/api/rbac";
 import {
+  businessGroupOptions,
+  permissionMatchesGroupFilter,
+  RBAC_PERMISSION_GROUPS,
+  type RbacGroupFilter,
+  type RbacPermissionGroupId,
+} from "@/lib/api/rbac-groups";
+import {
   usePutRbacOverrides,
   useRbacMatrix,
   useRbacOverrides,
@@ -61,6 +68,8 @@ export function RbacPermissionMatrix() {
   const [draft, setDraft] = useState<Record<string, PermissionScope>>({});
   const [onlyOverrides, setOnlyOverrides] = useState(false);
   const [roleFilter, setRoleFilter] = useState<RbacRole | "">("");
+  /** Default: business ops only — hide CONFIG_SYS / BACKUP / CONFIG_SECURE. */
+  const [groupFilter, setGroupFilter] = useState<RbacGroupFilter>("business");
   const [search, setSearch] = useState("");
   const [resetOpen, setResetOpen] = useState(false);
 
@@ -88,10 +97,11 @@ export function RbacPermissionMatrix() {
 
   const scopes = matrix?.scopes?.length ? matrix.scopes : FALLBACK_SCOPES;
 
-  const permissions = useMemo(() => {
+  const permissionRows = useMemo(() => {
     const list = matrix?.permissions ?? [];
     const q = search.trim().toLowerCase();
-    return list.filter((permission) => {
+    const filtered = list.filter((permission) => {
+      if (!permissionMatchesGroupFilter(permission, groupFilter)) return false;
       if (onlyOverrides) {
         const hasOverride = roles.some((role) => {
           const cell = cellByKey.get(rbacCellKey(role, permission));
@@ -109,7 +119,47 @@ export function RbacPermissionMatrix() {
         desc.toLowerCase().includes(q)
       );
     });
-  }, [matrix?.permissions, onlyOverrides, roles, cellByKey, draft, search, t]);
+
+    const showHeaders = groupFilter === "business" || groupFilter === "all";
+    if (!showHeaders) {
+      return filtered.map((permission) => ({ type: "perm" as const, permission }));
+    }
+
+    const remaining = new Set(filtered);
+    const rows: Array<
+      | { type: "header"; groupId: RbacPermissionGroupId }
+      | { type: "perm"; permission: RbacPermission }
+    > = [];
+
+    for (const group of RBAC_PERMISSION_GROUPS) {
+      if (groupFilter === "business" && group.id === "system") continue;
+      const inGroup = group.permissions.filter((p) => remaining.has(p));
+      if (!inGroup.length) continue;
+      rows.push({ type: "header", groupId: group.id });
+      for (const permission of inGroup) {
+        rows.push({ type: "perm", permission });
+        remaining.delete(permission);
+      }
+    }
+    // Any API permission not listed in groups (future codes)
+    if (remaining.size) {
+      for (const permission of filtered) {
+        if (remaining.has(permission)) {
+          rows.push({ type: "perm", permission });
+        }
+      }
+    }
+    return rows;
+  }, [
+    matrix?.permissions,
+    groupFilter,
+    onlyOverrides,
+    roles,
+    cellByKey,
+    draft,
+    search,
+    t,
+  ]);
 
   const dirtyCells = useMemo(
     () => (matrix?.cells ? buildDiff(matrix.cells, draft) : []),
@@ -218,6 +268,23 @@ export function RbacPermissionMatrix() {
               ))}
             </select>
           </label>
+          <label className="flex flex-col gap-1 text-xs text-mq-text-muted min-w-[12rem]">
+            {t("admin.rbac.filterGroup")}
+            <select
+              className="mq-input mq-select"
+              value={groupFilter}
+              onChange={(e) => setGroupFilter(e.target.value as RbacGroupFilter)}
+            >
+              <option value="business">{t("admin.rbac.groups.business")}</option>
+              {businessGroupOptions().map((id) => (
+                <option key={id} value={id}>
+                  {t(`admin.rbac.groups.${id}`)}
+                </option>
+              ))}
+              <option value="system">{t("admin.rbac.groups.system")}</option>
+              <option value="all">{t("admin.rbac.groups.all")}</option>
+            </select>
+          </label>
           <label className="flex items-center gap-2 text-xs text-mq-text pb-2 cursor-pointer select-none">
             <input
               type="checkbox"
@@ -258,7 +325,7 @@ export function RbacPermissionMatrix() {
                 </tr>
               </thead>
               <tbody>
-                {permissions.length === 0 ? (
+                {permissionRows.length === 0 ? (
                   <tr>
                     <td
                       colSpan={Math.max(1, roles.length) + 1}
@@ -268,7 +335,21 @@ export function RbacPermissionMatrix() {
                     </td>
                   </tr>
                 ) : (
-                  permissions.map((permission) => {
+                  permissionRows.map((row) => {
+                    if (row.type === "header") {
+                      return (
+                        <tr key={`g-${row.groupId}`} className="mq-rbac-group-row">
+                          <th
+                            className="mq-rbac-sticky-col mq-rbac-group-head"
+                            scope="colgroup"
+                            colSpan={Math.max(1, roles.length) + 1}
+                          >
+                            {t(`admin.rbac.groups.${row.groupId}`)}
+                          </th>
+                        </tr>
+                      );
+                    }
+                    const permission = row.permission;
                     const sample = roles
                       .map((role) => cellByKey.get(rbacCellKey(role, permission)))
                       .find(Boolean);

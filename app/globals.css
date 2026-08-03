@@ -3066,6 +3066,18 @@ body.mq-mobile-nav-open {
   background: var(--mq-surface-subtle);
 }
 
+.mq-rbac-group-head {
+  padding: 0.4rem 0.65rem;
+  text-align: left !important;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--mq-text-muted);
+  background: color-mix(in srgb, var(--mq-surface-subtle) 85%, var(--mq-accent, #c9a227) 15%);
+  border-bottom: 1px solid var(--mq-border);
+}
+
 .mq-rbac-perm-code {
   display: block;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
