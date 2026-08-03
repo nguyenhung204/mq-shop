@@ -187,6 +187,14 @@ export function Header() {
 
   return (
     <>
+      {activeMega && (
+        <button
+          type="button"
+          className="fixed inset-0 z-40 cursor-default bg-black/20"
+          aria-label={t("nav.closeMenu")}
+          onClick={closeMega}
+        />
+      )}
       <div
         ref={menuRef}
         className="sticky top-0 z-50 relative"
@@ -200,15 +208,6 @@ export function Header() {
           }
         }}
       >
-        {activeMega && (
-          <button
-            type="button"
-            className="fixed inset-0 z-40 cursor-default bg-black/20"
-            aria-label={t("nav.closeMenu")}
-            onClick={closeMega}
-          />
-        )}
-
         <TopBar />
 
         <header className="relative z-50 overflow-visible bg-mq-surface border-b border-mq-border">

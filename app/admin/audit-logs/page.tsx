@@ -168,20 +168,9 @@ function AuditCard({
           </div>
 
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-mq-text-muted">
-            {log.actor?.id ? (
-              <span className="font-mono truncate max-w-[12rem]" title={log.actor.id}>
-                {log.actor.id.slice(0, 8)}…
-              </span>
-            ) : null}
             {log.resource?.type ? (
               <span>
                 {resourceLabel(t, log.resource.type)}
-                {log.resource.id ? (
-                  <span className="font-mono">
-                    {" "}
-                    / {log.resource.id.slice(0, 8)}…
-                  </span>
-                ) : null}
               </span>
             ) : null}
             {hasDiff ? (
@@ -208,11 +197,6 @@ function AuditCard({
             <div>
               <dt className="text-mq-text-muted">{t("admin.auditPage.actorEmail")}</dt>
               <dd className="break-all font-medium">{actorEmail || "—"}</dd>
-              {log.actor?.id ? (
-                <dd className="font-mono text-[10px] text-mq-text-muted mt-0.5">
-                  {log.actor.id}
-                </dd>
-              ) : null}
             </div>
             {targetEmail && targetEmail !== actorEmail ? (
               <div>
@@ -235,12 +219,6 @@ function AuditCard({
                 <dt className="text-mq-text-muted">{t("admin.auditPage.resource")}</dt>
                 <dd>
                   {resourceLabel(t, log.resource.type)}
-                  {log.resource.id ? (
-                    <span className="font-mono text-mq-text-muted">
-                      {" "}
-                      / {log.resource.id}
-                    </span>
-                  ) : null}
                 </dd>
               </div>
             ) : null}

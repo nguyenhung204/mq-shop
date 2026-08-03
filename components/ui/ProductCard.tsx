@@ -91,22 +91,6 @@ export function ProductCard({
             >
               <Heart {...iconProps} fill={wished ? "currentColor" : "none"} />
             </button>
-            <button
-              type="button"
-              className="w-8 h-8 flex items-center justify-center rounded-full text-mq-text dark:text-white hover:text-mq-gold transition-colors"
-              aria-label="Compare"
-              onClick={(e) => e.preventDefault()}
-            >
-              <BarChart2 {...iconProps} />
-            </button>
-            <button
-              type="button"
-              className="w-8 h-8 flex items-center justify-center rounded-full text-mq-text dark:text-white hover:text-mq-gold transition-colors"
-              aria-label="Quick view"
-              onClick={(e) => e.preventDefault()}
-            >
-              <Eye {...iconProps} />
-            </button>
           </div>
 
           {product.salePercent ? <SaleCountdown seed={product.id} /> : null}

@@ -249,7 +249,7 @@ export function ProductPageContent({
 
             {variants.length > 0 ? (
               <div className="mb-6 space-y-2">
-                <p className="text-sm font-medium text-mq-text">Options</p>
+                <p className="text-sm font-medium text-mq-text">{t("product.options")}</p>
                 <div className="flex flex-wrap gap-2">
                   {variants.map((v) => {
                     const active = v.id === selected?.id;
@@ -262,21 +262,18 @@ export function ProductPageContent({
                         onClick={() => setSelectedId(v.id)}
                         className={`px-3 py-1.5 text-xs border rounded-[var(--mq-radius-sm)] transition-colors ${
                           active
-                            ? "border-mq-text bg-mq-text text-white"
+                            ? "border-mq-text bg-mq-text text-mq-surface dark:text-mq-surface"
                             : "border-mq-border text-mq-text hover:border-mq-text"
                         } ${disabled ? "opacity-50" : ""}`}
                       >
                         {variantLabel(v)}
-                        <span className="ml-1.5 text-[10px] opacity-80">
-                          {formatPrice(v.price)}
-                        </span>
                       </button>
                     );
                   })}
                 </div>
                 {selected ? (
                   <p className="text-xs text-mq-text-muted">
-                    SKU {selected.sku}
+                    {selected.sku}
                     {" · "}
                     {selected.availableStock > 0
                       ? t("product.stockLeft", { count: String(selected.availableStock) })
@@ -382,7 +379,7 @@ export function ProductPageContent({
               <p>{product.description}</p>
               <p className="mt-4">
                 {t("product.stock")}: {displayStock} {t("product.unitsAvailable")}
-                {selected ? ` · SKU ${selected.sku}` : null}
+                {selected ? ` · ${selected.sku}` : null}
               </p>
             </div>
           ) : null}
