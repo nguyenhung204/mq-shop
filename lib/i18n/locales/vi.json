@@ -980,7 +980,7 @@
       "resetConfirmDesc": "Thao tác này xóa mọi chỉnh sửa và đưa phân quyền về mặc định sẵn có. Không hoàn tác được từ màn hình này.",
       "resetConfirmAction": "Khôi phục mặc định",
       "groups": {
-        "business": "Nghiệp vụ (ẩn hệ thống)",
+        "business": "Nghiệp vụ",
         "all": "Tất cả quyền",
         "account": "Tài khoản",
         "shop": "Shop / Seller",
@@ -2371,7 +2371,6 @@
     "walletTransferSelf": "Không thể chuyển cho chính mình.",
     "walletRecipientNotFound": "Không tìm thấy người nhận.",
     "walletRecipientUseEmail": "Người nhận không nằm trong mạng lưới của bạn. Vui lòng nhập email thay vì mã người dùng.",
-    "walletRecipientUseEmail": "User này ngoài downline — hãy chuyển bằng email.",
     "mlmTreeTooLarge": "Cây mạng lưới quá lớn để tải.",
     "mlmUserPayoutNotFound": "Không tìm thấy yêu cầu rút ví.",
     "mlmUserPayoutInvalidStatus": "Không thể cập nhật payout ở trạng thái hiện tại.",

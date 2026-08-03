@@ -19,6 +19,32 @@ export type RbacPermissionGroupId =
   | "compliance"
   | "system";
 
+/**
+ * Permissions hidden from the matrix UI:
+ * - unimplemented: in BE matrix but no enforcing HTTP API yet
+ * - intentional public: storefront/auth — not role-gated via JWT
+ */
+export const MATRIX_UI_HIDDEN_PERMISSIONS = new Set<RbacPermission>([
+  // Unimplemented (matrix-only / reserved)
+  "DELETE_PRODUCT",
+  "DELETE_ORDER",
+  "MANAGE_BANNED",
+  "VIEW_LEADERBD",
+  "CONFIG_PAYMENT",
+  "CONFIG_SECURE",
+  // Intentional public
+  "REGISTER_BUYER",
+  "VIEW_SHOP",
+  "VIEW_PROD_PUB",
+  "VIEW_REVIEW",
+  // Session bootstrap — always required for authenticated UX; not useful to toggle in UI
+  "VIEW_PROFILE",
+]);
+
+export function isMatrixUiPermission(permission: RbacPermission): boolean {
+  return !MATRIX_UI_HIDDEN_PERMISSIONS.has(permission);
+}
+
 export const RBAC_PERMISSION_GROUPS: ReadonlyArray<{
   id: RbacPermissionGroupId;
   permissions: ReadonlyArray<RbacPermission>;
@@ -26,9 +52,7 @@ export const RBAC_PERMISSION_GROUPS: ReadonlyArray<{
   {
     id: "account",
     permissions: [
-      "VIEW_PROFILE",
       "EDIT_PROFILE",
-      "REGISTER_BUYER",
       "DELETE_ACCOUNT",
       "SET_WALLET_PIN",
     ],
@@ -38,7 +62,6 @@ export const RBAC_PERMISSION_GROUPS: ReadonlyArray<{
     permissions: [
       "UPGRADE_SELLER",
       "APPROVE_SELLER",
-      "VIEW_SHOP",
       "EDIT_SHOP",
       "SUSPEND_SHOP",
     ],
@@ -46,13 +69,10 @@ export const RBAC_PERMISSION_GROUPS: ReadonlyArray<{
   {
     id: "product",
     permissions: [
-      "VIEW_PROD_PUB",
       "VIEW_PROD_BKG",
       "CREATE_PRODUCT",
       "EDIT_PRODUCT",
-      "DELETE_PRODUCT",
       "APPROVE_PRODUCT",
-      "MANAGE_BANNED",
     ],
   },
   {
@@ -72,7 +92,6 @@ export const RBAC_PERMISSION_GROUPS: ReadonlyArray<{
       "CREATE_ORDER",
       "UPDATE_ORDER",
       "CANCEL_ORDER",
-      "DELETE_ORDER",
       "PROCESS_RMA",
     ],
   },
@@ -82,7 +101,6 @@ export const RBAC_PERMISSION_GROUPS: ReadonlyArray<{
       "VIEW_TRANSACT",
       "PAYOUT_SELLER",
       "CONFIG_FEE",
-      "CONFIG_PAYMENT",
       "EXPORT_REPORT",
       "CALC_LAND_COST",
     ],
@@ -95,7 +113,6 @@ export const RBAC_PERMISSION_GROUPS: ReadonlyArray<{
       "VIEW_MLM_COMSN",
       "CONFIG_MLM",
       "APPROVE_MLM",
-      "VIEW_LEADERBD",
     ],
   },
   {
@@ -120,7 +137,7 @@ export const RBAC_PERMISSION_GROUPS: ReadonlyArray<{
   },
   {
     id: "review",
-    permissions: ["CREATE_REVIEW", "VIEW_REVIEW", "REPLY_REVIEW", "MODERATE_REVIEW"],
+    permissions: ["CREATE_REVIEW", "REPLY_REVIEW", "MODERATE_REVIEW"],
   },
   {
     id: "staff",
@@ -132,7 +149,7 @@ export const RBAC_PERMISSION_GROUPS: ReadonlyArray<{
   },
   {
     id: "system",
-    permissions: ["CONFIG_SYS", "BACKUP_RESTORE", "CONFIG_SECURE"],
+    permissions: ["CONFIG_SYS", "BACKUP_RESTORE"],
   },
 ];
 
@@ -143,13 +160,14 @@ const SYSTEM_PERMISSIONS = new Set<string>(
 export type RbacGroupFilter = "business" | "all" | RbacPermissionGroupId;
 
 export function isBusinessPermission(permission: RbacPermission): boolean {
-  return !SYSTEM_PERMISSIONS.has(permission);
+  return isMatrixUiPermission(permission) && !SYSTEM_PERMISSIONS.has(permission);
 }
 
 export function permissionMatchesGroupFilter(
   permission: RbacPermission,
   filter: RbacGroupFilter,
 ): boolean {
+  if (!isMatrixUiPermission(permission)) return false;
   if (filter === "all") return true;
   if (filter === "business") return isBusinessPermission(permission);
   const group = RBAC_PERMISSION_GROUPS.find((g) => g.id === filter);

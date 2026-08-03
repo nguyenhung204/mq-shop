@@ -13,6 +13,7 @@ import {
 } from "@/lib/api/rbac";
 import {
   businessGroupOptions,
+  isMatrixUiPermission,
   permissionMatchesGroupFilter,
   RBAC_PERMISSION_GROUPS,
   type RbacGroupFilter,
@@ -68,7 +69,7 @@ export function RbacPermissionMatrix() {
   const [draft, setDraft] = useState<Record<string, PermissionScope>>({});
   const [onlyOverrides, setOnlyOverrides] = useState(false);
   const [roleFilter, setRoleFilter] = useState<RbacRole | "">("");
-  /** Default: business ops only — hide CONFIG_SYS / BACKUP / CONFIG_SECURE. */
+  /** Default: business ops only — hide system group (CONFIG_SYS / BACKUP). */
   const [groupFilter, setGroupFilter] = useState<RbacGroupFilter>("business");
   const [search, setSearch] = useState("");
   const [resetOpen, setResetOpen] = useState(false);
@@ -161,10 +162,12 @@ export function RbacPermissionMatrix() {
     t,
   ]);
 
-  const dirtyCells = useMemo(
-    () => (matrix?.cells ? buildDiff(matrix.cells, draft) : []),
-    [matrix?.cells, draft],
-  );
+  const dirtyCells = useMemo(() => {
+    if (!matrix?.cells) return [];
+    return buildDiff(matrix.cells, draft).filter((cell) =>
+      isMatrixUiPermission(cell.permission),
+    );
+  }, [matrix?.cells, draft]);
   const isDirty = dirtyCells.length > 0;
   const busy = saveMutation.isPending || resetMutation.isPending;
 
