@@ -18,6 +18,8 @@ export const API_ERROR_I18N: Record<string, string> = {
   REFERRER_NOT_FOUND: "toast.referrerNotFound",
   REFERRER_INVALID: "toast.referrerInvalid",
   FORBIDDEN: "toast.accessDenied",
+  RBAC_MATRIX_LOCKOUT: "toast.rbacMatrixLockout",
+  RBAC_MATRIX_INVALID: "toast.rbacMatrixInvalid",
   INVALID_AVATAR: "toast.invalidImageType",
   AVATAR_TOO_LARGE: "toast.imageTooLarge",
   SHOP_NOT_FOUND: "toast.shopNotFound",

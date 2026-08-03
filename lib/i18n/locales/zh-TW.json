@@ -647,6 +647,7 @@
       "mlm": "MLM 等級",
       "commissionReport": "佣金報告",
       "backups": "備份",
+      "rbac": "權限設定",
       "dsar": "DSAR",
       "reviews": "評價"
     },
@@ -950,6 +951,50 @@
       "created": "建立時間",
       "download": "下載 ZIP",
       "maintenanceNote": "備份進行中時，寫入操作可能暫時無法使用（軟維護模式）。讀取請求仍正常運作。"
+    },
+    "rbac": {
+      "title": "權限設定",
+      "description": "設定各角色能做什麼。僅 Super Admin 可開啟此頁。",
+      "refresh": "重新整理",
+      "resetAll": "還原預設",
+      "search": "搜尋",
+      "searchPlaceholder": "名稱或說明…",
+      "filterRole": "顯示角色",
+      "allRoles": "全部角色",
+      "onlyOverrides": "僅顯示已調整",
+      "overrideCount": "{count} 處已調整",
+      "dirtyCount": "{count} 筆未儲存變更",
+      "permission": "權限",
+      "role": "角色",
+      "scope": "存取層級",
+      "defaultScope": "預設",
+      "updatedBy": "修改者",
+      "updatedAt": "修改時間",
+      "emptyFilter": "沒有符合篩選條件的結果。",
+      "overriddenHint": "已調整（預設：{default}）",
+      "overridesTitle": "已調整的權限",
+      "overridesDesc": "與系統內建預設不同的項目。",
+      "overridesEmpty": "尚未調整 — 目前全部使用預設。",
+      "resetConfirmTitle": "還原全部預設？",
+      "resetConfirmDesc": "這會清除所有調整，並將權限恢復為系統內建預設。無法從此畫面復原。",
+      "resetConfirmAction": "還原預設",
+      "roles": {
+        "GUEST": "訪客",
+        "BUYER": "買家",
+        "SELLER": "賣家",
+        "WAREHOUSE": "倉儲",
+        "CS": "客服",
+        "ACCOUNTANT": "會計",
+        "ADMIN": "Admin",
+        "SUPER_ADMIN": "Super Admin"
+      },
+      "scopes": {
+        "NONE": "無權限",
+        "APPROVE": "僅審核",
+        "SELF": "僅本人資料",
+        "SHOP": "僅自己的商店",
+        "ALL": "完整權限"
+      }
     },
     "dsar": {
       "title": "DSAR 匿名化",
@@ -2272,6 +2317,12 @@
     "staffUnlocked": "已解鎖員工",
     "staffDeleted": "已刪除員工",
     "accessDenied": "您沒有權限執行此操作。",
+    "rbacMatrixSaved": "權限已儲存",
+    "rbacMatrixSaveFailed": "無法儲存權限",
+    "rbacMatrixReset": "已還原全部預設",
+    "rbacMatrixResetFailed": "無法還原預設",
+    "rbacMatrixLockout": "無法移除 Super Admin 的必要權限（系統設定、指派角色、管理人員、查看使用者）。",
+    "rbacMatrixInvalid": "變更無效 — 請選擇存取層級，或還原預設。",
     "financeConfigNotFound": "找不到啟用中的財務設定。",
     "financeConfigNotPending": "僅待審核的財務設定可進行審核。",
     "financeConfigSubmitted": "財務設定已送出待審核",
@@ -2378,6 +2429,7 @@
     "hub": {
       "intro": "合規工具已移至 Admin 後台。請使用下方連結。",
       "backupsDesc": "建立 FULL 備份、查看進度並下載 ZIP。",
+      "rbacDesc": "查看並調整各角色的權限。",
       "dsarDesc": "核准並執行資料主體刪除申請。",
       "auditDesc": "可篩選的平台稽核軌跡，含 before/after。"
     }

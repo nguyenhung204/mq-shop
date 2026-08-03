@@ -379,6 +379,25 @@ export type {
 } from "./compliance";
 
 export {
+  adminRbacApi,
+  isRbacLockoutCell,
+  rbacCellKey,
+  RBAC_LOCKOUT_CELLS,
+} from "./rbac";
+export type {
+  RbacRole,
+  PermissionScope,
+  RbacPermission,
+  RbacMatrixCell,
+  RbacMatrixData,
+  RbacOverrideRow,
+  RbacOverrideCellInput,
+  PutRbacOverridesBody,
+  PutRbacOverridesResult,
+  ResetRbacMatrixResult,
+} from "./rbac";
+
+export {
   productReviewsApi,
   adminReviewsApi,
   toRatingNumber,

@@ -647,6 +647,7 @@
       "mlm": "MLM ranks",
       "commissionReport": "Commission Report",
       "backups": "Backups",
+      "rbac": "Access rights",
       "dsar": "DSAR",
       "reviews": "Reviews"
     },
@@ -950,6 +951,50 @@
       "created": "Created",
       "download": "Download ZIP",
       "maintenanceNote": "While a backup is running, write operations may be temporarily unavailable (soft maintenance). Read requests still work."
+    },
+    "rbac": {
+      "title": "Access rights",
+      "description": "Set what each role can do. Only Super Admins can open this page.",
+      "refresh": "Refresh",
+      "resetAll": "Restore defaults",
+      "search": "Search",
+      "searchPlaceholder": "Name or description…",
+      "filterRole": "Show role",
+      "allRoles": "All roles",
+      "onlyOverrides": "Only customized cells",
+      "overrideCount": "{count} customized",
+      "dirtyCount": "{count} unsaved changes",
+      "permission": "Right",
+      "role": "Role",
+      "scope": "Access level",
+      "defaultScope": "Default",
+      "updatedBy": "Changed by",
+      "updatedAt": "Changed at",
+      "emptyFilter": "Nothing matches this filter.",
+      "overriddenHint": "Customized (default: {default})",
+      "overridesTitle": "Customized rights",
+      "overridesDesc": "Cells that differ from the built-in defaults.",
+      "overridesEmpty": "Nothing customized — everything uses the defaults.",
+      "resetConfirmTitle": "Restore all defaults?",
+      "resetConfirmDesc": "This clears every customization and puts access rights back to the built-in defaults. You cannot undo this from the screen.",
+      "resetConfirmAction": "Restore defaults",
+      "roles": {
+        "GUEST": "Guest",
+        "BUYER": "Buyer",
+        "SELLER": "Seller",
+        "WAREHOUSE": "Warehouse",
+        "CS": "Customer service",
+        "ACCOUNTANT": "Accountant",
+        "ADMIN": "Admin",
+        "SUPER_ADMIN": "Super Admin"
+      },
+      "scopes": {
+        "NONE": "No access",
+        "APPROVE": "Approve only",
+        "SELF": "Own data only",
+        "SHOP": "Own shop only",
+        "ALL": "Full access"
+      }
     },
     "dsar": {
       "title": "DSAR anonymization",
@@ -2271,6 +2316,12 @@
     "staffUnlocked": "Staff unlocked",
     "staffDeleted": "Staff deleted",
     "accessDenied": "You do not have permission for this action.",
+    "rbacMatrixSaved": "Access rights saved",
+    "rbacMatrixSaveFailed": "Could not save access rights",
+    "rbacMatrixReset": "All customizations cleared",
+    "rbacMatrixResetFailed": "Could not restore defaults",
+    "rbacMatrixLockout": "You cannot remove Super Admin’s essential rights (system config, assign roles, manage staff, view users).",
+    "rbacMatrixInvalid": "Invalid change — choose an access level, or restore the default.",
     "financeConfigNotFound": "No active finance config found.",
     "financeConfigNotPending": "Only pending finance configs can be reviewed.",
     "financeConfigSubmitted": "Finance config submitted for approval",
@@ -2377,6 +2428,7 @@
     "hub": {
       "intro": "Compliance tools moved into the Admin console. Use the links below.",
       "backupsDesc": "FULL backup create, progress, and ZIP download.",
+      "rbacDesc": "See and change what each role is allowed to do.",
       "dsarDesc": "Approve and execute data subject erasure requests.",
       "auditDesc": "Filterable platform audit trail with before/after diffs."
     }

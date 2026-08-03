@@ -647,6 +647,7 @@
       "mlm": "Rank MLM",
       "commissionReport": "Báo cáo hoa hồng",
       "backups": "Sao lưu",
+      "rbac": "Bảng phân quyền",
       "dsar": "DSAR",
       "reviews": "Đánh giá"
     },
@@ -950,6 +951,50 @@
       "created": "Tạo lúc",
       "download": "Tải ZIP",
       "maintenanceNote": "Khi đang chạy backup, API ghi có thể tạm ngưng phục vụ (bảo trì mềm). Truy vấn đọc vẫn hoạt động."
+    },
+    "rbac": {
+      "title": "Bảng phân quyền",
+      "description": "Chỉnh quyền của từng vai trò. Chỉ Super Admin mới vào được trang này.",
+      "refresh": "Làm mới",
+      "resetAll": "Khôi phục mặc định",
+      "search": "Tìm kiếm",
+      "searchPlaceholder": "Tên quyền hoặc mô tả…",
+      "filterRole": "Xem vai trò",
+      "allRoles": "Tất cả vai trò",
+      "onlyOverrides": "Chỉ ô đã chỉnh",
+      "overrideCount": "{count} ô đã chỉnh",
+      "dirtyCount": "{count} thay đổi chưa lưu",
+      "permission": "Quyền",
+      "role": "Vai trò",
+      "scope": "Mức truy cập",
+      "defaultScope": "Mặc định",
+      "updatedBy": "Người sửa",
+      "updatedAt": "Cập nhật",
+      "emptyFilter": "Không có kết quả khớp bộ lọc.",
+      "overriddenHint": "Đã chỉnh (mặc định: {default})",
+      "overridesTitle": "Quyền đã chỉnh",
+      "overridesDesc": "Các ô khác với mặc định sẵn có của hệ thống.",
+      "overridesEmpty": "Chưa chỉnh gì — đang dùng toàn bộ mặc định.",
+      "resetConfirmTitle": "Khôi phục toàn bộ mặc định?",
+      "resetConfirmDesc": "Thao tác này xóa mọi chỉnh sửa và đưa phân quyền về mặc định sẵn có. Không hoàn tác được từ màn hình này.",
+      "resetConfirmAction": "Khôi phục mặc định",
+      "roles": {
+        "GUEST": "Khách",
+        "BUYER": "Người mua",
+        "SELLER": "Người bán",
+        "WAREHOUSE": "Kho",
+        "CS": "Chăm sóc khách hàng",
+        "ACCOUNTANT": "Kế toán",
+        "ADMIN": "Admin",
+        "SUPER_ADMIN": "Super Admin"
+      },
+      "scopes": {
+        "NONE": "Không có quyền",
+        "APPROVE": "Chỉ duyệt",
+        "SELF": "Chỉ dữ liệu của mình",
+        "SHOP": "Chỉ shop của mình",
+        "ALL": "Toàn quyền"
+      }
     },
     "dsar": {
       "title": "Ẩn danh DSAR",
@@ -2272,6 +2317,12 @@
     "staffUnlocked": "Đã mở khoá nhân sự",
     "staffDeleted": "Đã xoá nhân sự",
     "accessDenied": "Bạn không có quyền thực hiện thao tác này.",
+    "rbacMatrixSaved": "Đã lưu phân quyền",
+    "rbacMatrixSaveFailed": "Không lưu được phân quyền",
+    "rbacMatrixReset": "Đã khôi phục toàn bộ mặc định",
+    "rbacMatrixResetFailed": "Không khôi phục được mặc định",
+    "rbacMatrixLockout": "Không thể gỡ các quyền quan trọng của Super Admin (cấu hình hệ thống, gán vai trò, quản lý nhân sự, xem người dùng).",
+    "rbacMatrixInvalid": "Thay đổi không hợp lệ — hãy chọn mức truy cập, hoặc khôi phục mặc định.",
     "financeConfigNotFound": "Không tìm thấy cấu hình tài chính đang ACTIVE.",
     "financeConfigNotPending": "Chỉ cấu hình đang chờ duyệt mới được xét duyệt.",
     "financeConfigSubmitted": "Đã gửi cấu hình tài chính chờ duyệt",
@@ -2379,6 +2430,7 @@
     "hub": {
       "intro": "Công cụ compliance đã chuyển vào Admin. Dùng các liên kết bên dưới.",
       "backupsDesc": "Tạo backup FULL, theo dõi tiến độ và tải ZIP.",
+      "rbacDesc": "Xem và chỉnh quyền của từng vai trò.",
       "dsarDesc": "Duyệt và thực thi yêu cầu xoá dữ liệu.",
       "auditDesc": "Nhật ký audit có lọc và before/after."
     }

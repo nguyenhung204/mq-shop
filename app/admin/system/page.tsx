@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ClipboardList, HardDrive, ShieldAlert } from "lucide-react";
+import { ClipboardList, HardDrive, ShieldAlert, ShieldCheck } from "lucide-react";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -15,6 +15,12 @@ function SystemHubInner() {
       icon: HardDrive,
       title: t("admin.backups.title"),
       desc: t("superAdmin.hub.backupsDesc"),
+    },
+    {
+      href: "/admin/rbac",
+      icon: ShieldCheck,
+      title: t("admin.rbac.title"),
+      desc: t("superAdmin.hub.rbacDesc"),
     },
     {
       href: "/admin/dsar",

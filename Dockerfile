@@ -17,8 +17,8 @@ COPY . .
 
 # Public build-time env vars (baked into the client bundle).
 # Pass with: docker build --build-arg NEXT_PUBLIC_API_HOST=https://api.example.com .
-ARG NEXT_PUBLIC_API_HOST
-ENV NEXT_PUBLIC_API_HOST=https://api.mqplaza.com
+ARG NEXT_PUBLIC_API_HOST=https://api.mqplaza.com
+ENV NEXT_PUBLIC_API_HOST=$NEXT_PUBLIC_API_HOST
 
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
