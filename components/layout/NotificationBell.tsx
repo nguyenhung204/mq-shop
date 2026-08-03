@@ -6,16 +6,9 @@ import { Bell } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useNotifications } from "@/components/providers/NotificationProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-import { translateStatus } from "@/lib/i18n/status";
 import { localizeNotification } from "@/lib/notifications/localize";
 import { resolveNotificationRoute } from "@/lib/notifications/routes";
 import type { ApiNotification } from "@/lib/api/types";
-
-const STREAM_KEY_MAP: Record<string, string> = {
-  live: "connected",
-  reconnecting: "connecting",
-  offline: "disconnected",
-};
 
 export function NotificationBell() {
   const router = useRouter();
@@ -27,7 +20,6 @@ export function NotificationBell() {
     loading,
     page,
     meta,
-    streamStatus,
     refresh,
     setPage,
     markRead,
@@ -84,15 +76,7 @@ export function NotificationBell() {
       {open && (
         <div className="absolute right-0 top-full mt-2 w-[320px] max-w-[90vw] mq-card z-[80] overflow-hidden shadow-lg">
           <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-mq-border">
-            <div>
-              <span className="text-sm font-medium">{t("nav.notifications")}</span>
-              {streamStatus !== "idle" && (
-                <p className="text-[10px] text-mq-text-muted mt-0.5">
-                  {translateStatus(t, "stream", STREAM_KEY_MAP[streamStatus] ?? streamStatus)}
-                  {streamStatus === "live" ? ` · ${t("nav.notificationsLive")}` : ""}
-                </p>
-              )}
-            </div>
+            <span className="text-sm font-medium">{t("nav.notifications")}</span>
             <button
               type="button"
               className="text-xs text-mq-text-muted hover:text-mq-text disabled:opacity-40"

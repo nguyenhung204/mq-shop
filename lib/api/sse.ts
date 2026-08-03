@@ -4,6 +4,8 @@ export type SseHandlers = {
   onOpen?: () => void;
   onMessage: (raw: string) => void;
   onError?: (err: unknown) => void;
+  /** Called when the stream closed cleanly and we are about to reconnect. */
+  onReconnecting?: () => void;
 };
 
 /**
@@ -19,6 +21,14 @@ export function openAuthenticatedSse(
   return connectLoop(path, handlers, signal);
 }
 
+/** Sentinel — server closed the stream normally; we should silently reconnect. */
+class SseStreamEndedError extends Error {
+  constructor() {
+    super("SSE stream ended");
+    this.name = "SseStreamEndedError";
+  }
+}
+
 async function connectLoop(
   path: string,
   handlers: SseHandlers,
@@ -29,11 +39,21 @@ async function connectLoop(
   while (!signal.aborted) {
     try {
       await readOnce(path, handlers, signal);
+      // readOnce never resolves normally — it always throws. This branch is
+      // here for safety only.
       attempt = 0;
     } catch (err) {
       if (signal.aborted) return;
-      handlers.onError?.(err);
-      attempt += 1;
+      if (err instanceof SseStreamEndedError) {
+        // Server closed the keep-alive stream — normal SSE behaviour.
+        // Reconnect without advertising an error to the caller.
+        attempt = 0;
+        handlers.onReconnecting?.();
+      } else {
+        // Genuine network / auth error.
+        handlers.onError?.(err);
+        attempt += 1;
+      }
       const delay = Math.min(30_000, 1000 * 2 ** Math.min(attempt, 5));
       await sleep(delay, signal);
     }
@@ -99,8 +119,10 @@ async function readOnce(
     buffer = flushSseBuffer(buffer, handlers.onMessage);
   }
 
-  // Server closed the stream — treat as reconnectable error.
-  throw new Error("SSE stream ended");
+  // Server closed the stream — this is normal SSE behaviour (keep-alive timeout,
+  // server restart, etc.). Throw a sentinel so connectLoop can reconnect silently
+  // without surfacing an error to the UI.
+  throw new SseStreamEndedError();
 }
 
 /** Parse complete SSE events from buffer; return leftover incomplete chunk. */

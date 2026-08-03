@@ -37,9 +37,8 @@ import { useLanguage } from "./LanguageProvider";
 /** Page size for the header dropdown. */
 export const NOTIF_PAGE_SIZE = 8;
 
-/** How often to sync inbox while SSE is healthy / unhealthy. */
-const POLL_LIVE_MS = 20_000;
-const POLL_DEGRADED_MS = 8_000;
+/** How often to poll for missed notifications (SSE safety net). */
+const POLL_DEGRADED_MS = 20_000;
 
 type StreamStatus = "idle" | "live" | "reconnecting" | "offline";
 
@@ -315,7 +314,11 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     [refresh],
   );
 
-  // REST history on login
+  // REST history on login / logout reset.
+  // NOTE: intentionally does NOT include `refresh` in the dep array — we only
+  // want this to fire when auth state changes, not every time `refresh` is
+  // re-created. `refresh` itself is stable (useCallback with a fixed dep set),
+  // but listing it here would risk extra calls if it ever changes.
   useEffect(() => {
     if (authLoading) return;
     if (!isAuthenticated) {
@@ -327,8 +330,10 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       setStreamStatus("idle");
       return;
     }
-    void refresh(1);
-  }, [authLoading, isAuthenticated, refresh]);
+    // Initial hydrate — SSE kickoff will NOT do a redundant refresh on first
+    // open (wasLive guard), so this single call is the only one at login.
+    void refreshRef.current(1);
+  }, [authLoading, isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Authenticated SSE — stable effect (handlers via refs) so the socket does not flap.
   useEffect(() => {
@@ -343,6 +348,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       {
         onOpen: () => {
           setStreamStatus("live");
+          // Only re-sync on reconnect (not on first connect) to avoid
+          // duplicating the initial REST hydrate fired above.
           if (wasLive) void refreshRef.current(1, { quiet: true });
           wasLive = true;
         },
@@ -362,7 +369,16 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           }
         },
         onError: () => {
+          // onError fires on transient network drops; mark reconnecting so the
+          // UI badge reflects degraded state, but do NOT fetch here — the
+          // polling effect below will catch up.
           if (!ac.signal.aborted) setStreamStatus("reconnecting");
+        },
+        onReconnecting: () => {
+          // Server closed the stream normally (keep-alive timeout / restart).
+          // Stay "live" briefly; onOpen will fire again once we reconnect.
+          // Don't set "reconnecting" here — it would flash the status badge
+          // on every normal server-side stream rotation.
         },
       },
       ac.signal,
@@ -376,24 +392,18 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     };
   }, [isAuthenticated, authLoading]);
 
-  // Polling fallback — badge + toast even when SSE is down / buffered.
+  // Polling fallback — keeps badge fresh even when SSE is down.
+  // Uses a fixed POLL_DEGRADED_MS cadence. SSE already delivers real-time
+  // updates when healthy, so polling is purely a safety net.
   useEffect(() => {
     if (!isAuthenticated || authLoading) return;
 
-    const tick = () => {
+    const timer = setInterval(() => {
       void refreshRef.current(1, { quiet: true });
-    };
+    }, POLL_DEGRADED_MS);
 
-    const ms = streamStatus === "live" ? POLL_LIVE_MS : POLL_DEGRADED_MS;
-    const timer = setInterval(tick, ms);
-    // Immediate quiet sync shortly after mount / stream health change.
-    const kickoff = setTimeout(tick, 1_500);
-
-    return () => {
-      clearInterval(timer);
-      clearTimeout(kickoff);
-    };
-  }, [isAuthenticated, authLoading, streamStatus]);
+    return () => clearInterval(timer);
+  }, [isAuthenticated, authLoading]);
 
   // Catch-up when tab becomes visible again.
   useEffect(() => {

@@ -80,28 +80,6 @@ type RequestOptions = {
 let refreshPromise: Promise<boolean> | null = null;
 
 async function refreshAccessToken(): Promise<boolean> {
-  try {
-    // Docs: cookie-based POST /auth/refresh
-    const cookieRes = await fetch(`${getApiBase()}/auth/refresh`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-    });
-    if (cookieRes.ok) {
-      const json = (await cookieRes.json()) as {
-        data?: { accessToken?: string; refreshToken?: string; user?: unknown };
-        accessToken?: string;
-        refreshToken?: string;
-      };
-      const access = json.data?.accessToken || json.accessToken;
-      const refresh = json.data?.refreshToken || json.refreshToken;
-      if (access) setTokens(access, refresh);
-      return true;
-    }
-  } catch {
-    /* fall through to body refresh */
-  }
-
   const refreshToken = getRefreshToken();
   if (!refreshToken) {
     clearTokens();
@@ -138,9 +116,18 @@ async function refreshAccessToken(): Promise<boolean> {
   }
 }
 
-/** Used by authenticated SSE (EventSource cannot send Bearer). */
+/**
+ * Used by authenticated SSE (EventSource cannot send Bearer).
+ * Shares the same singleton refreshPromise as apiRequest so concurrent
+ * 401s from SSE + REST do not trigger two separate refresh calls.
+ */
 export function refreshAccessTokenForSse(): Promise<boolean> {
-  return refreshAccessToken();
+  if (!refreshPromise) {
+    refreshPromise = refreshAccessToken().finally(() => {
+      refreshPromise = null;
+    });
+  }
+  return refreshPromise;
 }
 
 function buildUrl(path: string, query?: RequestOptions["query"]): string {
