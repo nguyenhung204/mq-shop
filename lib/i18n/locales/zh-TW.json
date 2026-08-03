@@ -1256,6 +1256,8 @@
       "description": "個人提領佇列 — 核准、拒絕或處理 stub bank。",
       "hint": "與賣家撥款不同。這些申請會凍結／釋放使用者錢包。",
       "userId": "使用者 ID",
+      "search": "搜尋",
+      "searchPlaceholder": "依姓名或 email 搜尋…",
       "empty": "此篩選條件無錢包提領。",
       "process": "處理（stub 轉帳）",
       "processHint": "標記已付款並釋放凍結餘額（stub bank — 非真實轉帳）。",

@@ -449,8 +449,8 @@ export const adminApi = {
   rejectProduct: (id: string, body: { reason: string } | { reason: LocalizedText }) =>
     api.post(`/admin/products/${id}/reject`, body),
   hideProduct: (id: string) => api.post(`/admin/products/${id}/hide`, {}),
-  /** Same seller unhide path — HIDDEN → PENDING */
-  unhideProduct: (id: string) => api.post(`/products/${id}/unhide`, {}),
+  /** Admin unhide HIDDEN → PENDING (re-enter admin review queue) */
+  unhideProduct: (id: string) => api.post(`/admin/products/${id}/unhide`, {}),
   categories: () => catalogApi.categories(),
   createCategory: (body: {
     name: string;

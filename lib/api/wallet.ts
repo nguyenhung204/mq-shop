@@ -121,6 +121,7 @@ export type ListWalletWithdrawalsParams = {
 export type ListAdminWalletPayoutsParams = {
   status?: PayoutRequestStatus;
   userId?: string;
+  q?: string;
   page?: number;
   pageSize?: number;
 };
