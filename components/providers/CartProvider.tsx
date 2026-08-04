@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { useCartStore } from "@/lib/stores/cart-store";
 
-export type { CartItem } from "@/lib/stores/cart-store";
 export { useCart } from "@/lib/stores/cart-store";
 
 export function CartProvider({ children }: { children: React.ReactNode }) {

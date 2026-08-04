@@ -26,9 +26,6 @@ export type CartLine = {
   inStock?: number;
 };
 
-/** @deprecated Use CartLine */
-export type CartItem = CartLine;
-
 type CartActions = {
   /** Add from PDP Product (uses selectedVariantId). Returns false if blocked (multi-shop). */
   addItem: (product: Product, quantity?: number) => boolean;

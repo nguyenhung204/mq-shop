@@ -264,11 +264,6 @@ export function hasBlockingRma(order: Pick<OrderView, "rma">): boolean {
   return Boolean(status && BLOCKING_RMA_STATUSES.includes(status));
 }
 
-/** @deprecated use hasBlockingRma */
-export function hasActiveRma(order: Pick<OrderView, "rma" | "status">): boolean {
-  return hasBlockingRma(order);
-}
-
 /** RMA window: DELIVERED, within 7 days, and no blocking return request. */
 export function canRequestRma(
   order: Pick<OrderView, "status" | "deliveredAt" | "rma">,
@@ -280,20 +275,4 @@ export function canRequestRma(
   if (Number.isNaN(delivered)) return false;
   const sevenDays = 7 * 24 * 60 * 60 * 1000;
   return Date.now() - delivered <= sevenDays;
-}
-
-/** @deprecated Use translateStatus(t, "rmaMessage", status) instead. */
-export function rmaStatusLabel(status: RmaStatus): string {
-  switch (status) {
-    case "PENDING":
-      return "Return pending review";
-    case "APPROVED":
-      return "Return approved";
-    case "REJECTED":
-      return "Return rejected";
-    case "CLOSED":
-      return "Return closed";
-    default:
-      return status;
-  }
 }

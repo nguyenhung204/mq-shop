@@ -41,6 +41,7 @@ export type SellerPayoutItem = {
   id: string;
   settlementId: string;
   orderId: string;
+  orderCode?: string | null;
   amount: string;
 };
 

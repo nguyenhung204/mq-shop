@@ -26,9 +26,7 @@ export {
   nextFulfillmentStatus,
   canCancelOrder,
   canRequestRma,
-  hasActiveRma,
   hasBlockingRma,
-  rmaStatusLabel,
 } from "./orders";
 export type {
   OrderStatus,
@@ -227,38 +225,6 @@ export const catalogApi = {
   /** Public shop profile — APPROVED + not suspended. */
   shopStorefront: (shopId: string) =>
     api.get<ShopStorefront>(`/shops/${shopId}/storefront`),
-
-  /** @deprecated prefer listing() */
-  searchProducts: async (query: {
-    q?: string;
-    categoryId?: string;
-    locale?: string;
-    page?: number;
-    limit?: number;
-    pageSize?: number;
-  }) => {
-    try {
-      return await catalogApi.listing({
-        q: query.q,
-        categoryId: query.categoryId,
-        page: query.page,
-        pageSize: query.pageSize ?? query.limit,
-      });
-    } catch {
-      const legacy = await api.get<Paginated<ApiProduct> | ApiProduct[]>("/products/search", {
-        query: {
-          q: query.q,
-          categoryId: query.categoryId,
-          locale: query.locale,
-          page: query.page,
-          limit: query.limit ?? query.pageSize,
-        },
-      });
-      return { items: asArray<ApiProduct>(legacy), meta: undefined };
-    }
-  },
-  /** @deprecated prefer productDetail() for storefront PDP */
-  product: (id: string) => api.get<ApiProduct>(`/products/${id}`),
 };
 
 export const shopApi = {
@@ -508,50 +474,9 @@ export const adminApi = {
   deleteBanner: (id: string) => bannerApi.adminDelete(id),
 };
 
-/**
- * @deprecated Legacy payout-batch / withdraw / gateway-review paths (pre-007).
- * Prefer `financeConfigApi`, `adminPayoutApi`, `landingCostApi`, `financeReportApi`
- * from `@/lib/api/finance`. Wallet withdraw stays out of scope (module 009).
- */
-export const financeApi = {
-  createPayoutBatch: (body: unknown) => api.post("/finance/payout-batches", body),
-  payoutBatches: () => api.get("/finance/payout-batches"),
-  approvePayout: (id: string) => api.put(`/finance/payout-batches/${id}/approve`, {}),
-  rejectPayout: (id: string, body: { reason: string }) =>
-    api.put(`/finance/payout-batches/${id}/reject`, body),
-  completePayout: (id: string) =>
-    api.put(`/finance/payout-batches/${id}/mark-completed`, {}),
-  reviewGateway: (id: string, body: { decision: "APPROVED" | "REJECTED"; reason?: string }) =>
-    api.put(`/finance/payment-gateway-configs/${id}/review`, body),
-  gateways: () => api.get("/payment-gateway-configs"),
-  transactions: (query?: Record<string, string | number>) =>
-    api.get("/transactions", { query }),
-  exportTransactions: (body?: unknown) => api.post("/transactions/export", body ?? {}),
-  withdrawRequests: () => api.get("/finance/withdraw-requests"),
-  withdrawDecision: (id: string, body: { decision: "APPROVED" | "REJECTED"; reason?: string }) =>
-    api.put(`/finance/withdraw-requests/${id}/decision`, body),
-  completeWithdraw: (id: string) =>
-    api.put(`/finance/withdraw-requests/${id}/mark-completed`, {}),
-};
-
 /** Prefer `marketingApi` from `@/lib/api/promotions`. */
 export const cmsApi = {
   folders: (query?: { page?: number; pageSize?: number }) => marketingApi.folders(query),
   folder: (folderId: string) => marketingApi.folder(folderId),
   downloadFolderZip: (folderId: string) => marketingApi.downloadZip(folderId),
-};
-
-export const systemApi = {
-  approveStaff: (id: string) =>
-    api.put(`/super-admin/staff-accounts/${id}/approve`, {}),
-  auditLogs: (query?: Record<string, string>) =>
-    api.get("/super-admin/audit-logs", { query }),
-  startBackup: (body: { backupType: "FULL" | "PARTIAL" }) =>
-    api.post("/super-admin/backups", body),
-  backups: () => api.get("/super-admin/backups"),
-  backup: (id: string) => api.get(`/super-admin/backups/${id}`),
-  createAnonymization: (body: { targetUserId: string }) =>
-    api.post("/super-admin/anonymization-requests", body),
-  executeAnonymization: (id: string) =>
-    api.put(`/super-admin/anonymization-requests/${id}/execute`, {}),
 };

@@ -395,21 +395,3 @@ export function useUploadShopBanner() {
     },
   });
 }
-
-/** @deprecated Prefer `useDownloadMarketingFolder` from `@/lib/queries/promotions`. */
-export function useDownloadMaterials() {
-  return useMutation({
-    mutationFn: async (folderId: string) => {
-      const blob = await cmsApi.downloadFolderZip(folderId);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `marketing-${folderId}.zip`;
-      a.click();
-      URL.revokeObjectURL(url);
-      return folderId;
-    },
-    onSuccess: () => toast.success(tt("toast.downloadStarted")),
-    onError: (e) => toast.error(getErrorMessage(e, tt("toast.downloadFailed"))),
-  });
-}

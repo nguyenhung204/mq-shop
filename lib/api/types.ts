@@ -239,109 +239,6 @@ export type ApiCategory = {
   parentId?: string | null;
 };
 
-/** @deprecated Prefer `Banner` from `@/lib/api/promotions`. */
-export type ApiBanner = {
-  id: string;
-  title: string;
-  imageUrl: string;
-  linkUrl: string | null;
-  lang: "VI" | "EN" | "TW" | "ALL";
-  sortOrder: number;
-  isActive: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-};
-
-export type CartItem = {
-  id: string;
-  productId: string;
-  quantity: number;
-  product?: ApiProduct;
-  unitPriceUsd?: string | number;
-};
-
-export type Cart = {
-  id?: string;
-  shopId?: string | null;
-  items: CartItem[];
-};
-
-/** @deprecated Prefer OrderView / PaymentMethod from `@/lib/api/orders`. */
-export type OrderStatus =
-  | "PENDING"
-  | "PAID"
-  | "CONFIRMED"
-  | "PACKED"
-  | "SHIPPED"
-  | "DELIVERED"
-  | "CANCELLED"
-  | "REFUND_APPROVED"
-  | "REFUNDED"
-  | "PROCESSING"
-  | "EXPIRED";
-
-export type PaymentStatus = "UNPAID" | "PAID" | "FAILED" | "REFUND_PENDING";
-/** @deprecated Prefer COD | MOCK from `@/lib/api/orders`. */
-export type PaymentMethod = "COD" | "MOCK" | "BANK_TRANSFER" | "CARD";
-
-/** @deprecated Prefer OrderView from `@/lib/api/orders`. */
-export type ApiOrder = {
-  id: string;
-  code?: string;
-  shopId: string;
-  buyerId?: string;
-  status: OrderStatus;
-  paymentMethod: PaymentMethod;
-  paymentStatus?: PaymentStatus;
-  total?: number;
-  totalAmountUsd?: string | number;
-  subtotal?: number;
-  shippingFee?: number;
-  shippingFeeUsd?: string | number;
-  currency?: string;
-  shippingAddress: string | Record<string, unknown>;
-  createdAt: string;
-  deliveredAt?: string | null;
-  items?: {
-    id?: string;
-    sku: string;
-    quantity: number;
-    unitPrice?: number;
-    unitPriceUsd?: string | number;
-    titleSnapshot?: string;
-    productId?: string;
-    name?: string;
-    lineTotal?: number;
-    variantId?: string;
-  }[];
-};
-
-export type RmaStatus =
-  | "PENDING"
-  | "APPROVED"
-  | "REJECTED"
-  | "CLOSED"
-  | "REQUESTED"
-  | "STOCK_RETURNED"
-  | "WITHDRAWN";
-
-export type ApiRma = {
-  id: string;
-  orderId: string;
-  status: RmaStatus;
-  reason: string;
-  evidenceUrls?: string[];
-  bankInfo?: {
-    bankName: string;
-    accountNumber: string;
-    accountName: string;
-  };
-  reviewNote?: string | null;
-  autoApproveAt?: string;
-  requestedAt?: string;
-  createdAt?: string;
-};
-
 export type ShopStatus = "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED";
 
 export type ApiShop = {
@@ -484,17 +381,6 @@ export type ApiAuditLog = {
   beforeJson?: unknown;
   afterJson?: unknown;
   meta?: Record<string, unknown>;
-};
-
-/**
- * @deprecated Prefer `Wallet` from `@/lib/api/wallet` (`availableBalance` / `frozenBalance`).
- */
-export type WalletBalance = {
-  available: string | number;
-  frozen: string | number;
-  availableBalance?: string | number;
-  frozenBalance?: string | number;
-  pointUsdRate?: string | number;
 };
 
 export type ApiErrorBody = {

@@ -165,7 +165,7 @@ function AdminReviewsInner() {
         </div>
 
         {isLoading ? (
-          <TableSkeleton rows={6} cols={5} />
+          <TableSkeleton rows={6} cols={8} />
         ) : items.length === 0 ? (
           <p className="text-sm text-mq-text-muted">{t("admin.reviews.empty")}</p>
         ) : (
@@ -174,6 +174,8 @@ function AdminReviewsInner() {
               <thead className="bg-mq-surface-subtle text-left">
                 <tr>
                   <th className="p-3">{t("admin.reviews.product")}</th>
+                  <th className="p-3">{t("admin.common.shop")}</th>
+                  <th className="p-3">{t("admin.reviews.seller")}</th>
                   <th className="p-3">{t("admin.reviews.buyer")}</th>
                   <th className="p-3">{t("product.reviewsPage.rating")}</th>
                   <th className="p-3">{t("admin.common.status")}</th>
@@ -184,16 +186,17 @@ function AdminReviewsInner() {
               <tbody>
                 {items.map((r) => (
                   <tr key={r.id} className="border-t border-mq-border align-top">
-                    <td className="p-3 font-mono text-xs">
-                      {(r.productId || "").slice(0, 8)}…
+                    <td className="p-3 text-xs">
+                      {r.productName || (r.productId || "").slice(0, 8) + "…"}
+                    </td>
+                    <td className="p-3 text-xs">
+                      {r.shopName || "—"}
+                    </td>
+                    <td className="p-3 text-xs">
+                      {r.sellerName || "—"}
                     </td>
                     <td className="p-3 text-xs">
                       {r.buyer?.fullName?.trim() || "—"}
-                      {r.buyer?.id ? (
-                        <span className="block font-mono text-[10px] text-mq-text-muted mt-0.5">
-                          {r.buyer.id.slice(0, 8)}…
-                        </span>
-                      ) : null}
                     </td>
                     <td className="p-3">
                       <Stars rating={r.rating} />

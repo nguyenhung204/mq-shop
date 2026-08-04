@@ -22,6 +22,9 @@ export type ProductReview = {
   reply?: ProductReviewReply | null;
   orderId?: string | null;
   shopId?: string | null;
+  shopName?: string | null;
+  sellerName?: string | null;
+  productName?: string | null;
 };
 
 export type FeaturedReviewProduct = {

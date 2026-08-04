@@ -41,6 +41,7 @@ export type InventorySlipItem = {
   id: string;
   sku: string;
   quantity: number;
+  productName?: string | null;
 };
 
 export type InventorySlip = {
@@ -56,6 +57,8 @@ export type InventorySlip = {
   processedAt: string | null;
   createdAt: string;
   items: InventorySlipItem[];
+  shopName?: string | null;
+  createdByName?: string | null;
 };
 
 export type StockLedgerEntry = {

@@ -165,7 +165,7 @@ function PayoutDetailInner({ payoutId }: { payoutId: string }) {
                         href={`/orders/${item.orderId}`}
                         className="font-mono hover:underline"
                       >
-                        {item.orderId.slice(0, 8)}…
+                        {item.orderCode || item.orderId.slice(0, 8) + "…"}
                       </Link>
                       <p className="text-xs text-mq-text-muted mt-1">
                         {t("admin.payouts.settlementId")}: {item.settlementId.slice(0, 8)}…

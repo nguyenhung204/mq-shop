@@ -162,6 +162,9 @@ function SlipsTab({ initialSlipId }: { initialSlipId?: string | null }) {
                     {s.items.map((it) => (
                       <li key={it.id}>
                         {it.sku} ×{it.quantity}
+                        {it.productName ? (
+                          <span className="ml-1 text-mq-text-secondary">({it.productName})</span>
+                        ) : null}
                       </li>
                     ))}
                   </ul>
@@ -173,7 +176,10 @@ function SlipsTab({ initialSlipId }: { initialSlipId?: string | null }) {
                   <p className="text-xs text-mq-text-muted">{s.locationNote}</p>
                 ) : null}
                 <p className="text-xs text-mq-text-muted font-mono">
-                  {t("admin.common.shop")} {s.shopId.slice(0, 8)}… · {t("admin.inventoryPage.slip")} {s.id.slice(0, 8)}…
+                  {t("admin.common.shop")} {s.shopName || s.shopId.slice(0, 8) + "…"}
+                </p>
+                <p className="text-xs text-mq-text-muted">
+                  {t("admin.inventoryPage.createdBy")} {s.createdByName || s.createdByUserId.slice(0, 8) + "…"}
                 </p>
                 <p className="text-xs text-mq-text-muted">
                   {t("admin.inventoryPage.created")} {formatWhen(s.createdAt)}
