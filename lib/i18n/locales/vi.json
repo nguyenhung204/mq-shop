@@ -611,6 +611,8 @@
     "brand": "Quản trị",
     "brandSub": "Trung tâm điều khiển",
     "signOut": "Đăng xuất",
+    "darkMode": "Chế độ tối",
+    "lightMode": "Chế độ sáng",
     "openMenu": "Mở menu",
     "closeMenu": "Đóng menu",
     "groups": {

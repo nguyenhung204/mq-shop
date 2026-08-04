@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
-import { LogOut, Menu, Store, X } from "lucide-react";
+import { LogOut, Menu, Moon, Store, Sun, X } from "lucide-react";
 import { adminNavItems, ACCOUNTANT_COMMERCE_PERMS } from "@/components/admin/nav";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useTheme } from "@/components/providers/ThemeProvider";
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
@@ -97,6 +98,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 export function AdminShell({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
   const { t } = useLanguage();
+  const { dark, toggle } = useTheme();
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
@@ -169,6 +171,15 @@ export function AdminShell({ children }: { children: ReactNode }) {
             <p className="mq-admin-user-roles">{user?.roles?.join(" · ") || "—"}</p>
           </div>
           <LanguageSwitcher menuAlign="end" />
+          <button
+            type="button"
+            className="mq-admin-icon-btn"
+            onClick={toggle}
+            aria-label={dark ? t("admin.lightMode") : t("admin.darkMode")}
+            title={dark ? t("admin.lightMode") : t("admin.darkMode")}
+          >
+            {dark ? <Sun size={18} strokeWidth={1.75} /> : <Moon size={18} strokeWidth={1.75} />}
+          </button>
           <NotificationBell />
           <button type="button" className="mq-admin-logout" onClick={() => void onLogout()}>
             <LogOut size={16} strokeWidth={1.75} />

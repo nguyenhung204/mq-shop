@@ -611,6 +611,8 @@
     "brand": "Admin",
     "brandSub": "Control center",
     "signOut": "Sign out",
+    "darkMode": "Dark mode",
+    "lightMode": "Light mode",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "groups": {

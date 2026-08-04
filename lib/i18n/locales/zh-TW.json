@@ -611,6 +611,8 @@
     "brand": "管理後台",
     "brandSub": "控制中心",
     "signOut": "登出",
+    "darkMode": "深色模式",
+    "lightMode": "淺色模式",
     "openMenu": "開啟選單",
     "closeMenu": "關閉選單",
     "groups": {
