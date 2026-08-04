@@ -287,6 +287,8 @@ function AuditInner() {
           to: toIsoEnd(to),
         }),
       ),
+    refetchOnWindowFocus: true,
+    staleTime: 30_000,
   });
 
   const items = data?.items ?? [];
