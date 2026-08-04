@@ -2642,6 +2642,26 @@ body.mq-mobile-nav-open {
   border-color: rgba(255, 255, 255, 0.16);
 }
 
+.dark .mq-admin-btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.dark .mq-admin-btn-reject:hover:not(:disabled) {
+  background: rgba(252, 89, 52, 0.22);
+  border-color: rgba(252, 89, 52, 0.7);
+}
+
+.dark .mq-admin-btn-warn:hover:not(:disabled) {
+  background: rgba(255, 213, 74, 0.22);
+  border-color: rgba(255, 213, 74, 0.6);
+}
+
+.dark .mq-admin-btn-danger:hover:not(:disabled) {
+  background: rgba(230, 42, 101, 0.22);
+  border-color: rgba(230, 42, 101, 0.7);
+}
+
 /* Boost legacy mq-btn inside admin content */
 .mq-admin-shell .mq-admin-content .mq-btn {
   min-height: 2.35rem;
@@ -2677,10 +2697,20 @@ body.mq-mobile-nav-open {
   border-color: var(--mq-gold);
 }
 
+.dark .mq-admin-shell .mq-admin-content .mq-btn-primary:hover:not(:disabled) {
+  background: var(--mq-gold-hover);
+  box-shadow: 0 8px 20px rgba(255, 213, 74, 0.3);
+}
+
 .dark .mq-admin-shell .mq-admin-content .mq-btn-outline {
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.18);
   color: var(--mq-text);
+}
+
+.dark .mq-admin-shell .mq-admin-content .mq-btn-outline:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.32);
 }
 
 /* Admin modal */
