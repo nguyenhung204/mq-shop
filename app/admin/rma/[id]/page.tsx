@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { use, useState } from "react";
-import { Banknote, Check, X } from "lucide-react";
+import { ArrowLeft, Banknote, Check, X } from "lucide-react";
 import {
   useAdminRmaDecision,
   useAdminRmaDetail,
@@ -34,11 +34,14 @@ function RmaDetailInner({ id }: { id: string }) {
       <AdminPageHeader
         title={rma?.orderName ?? rma?.orderCode ? `RMA · ${rma.orderName ?? rma.orderCode}` : t("admin.rmaPage.detailTitle")}
         description={t("admin.rmaPage.detailDesc")}
+        actions={
+          <Link href="/admin/rma" className="mq-admin-btn mq-admin-btn-secondary">
+            <ArrowLeft size={16} />
+            {t("admin.rmaPage.backToInbox")}
+          </Link>
+        }
       />
       <div className="space-y-6 max-w-3xl">
-        <Link href="/admin/rma" className="text-sm text-mq-text-muted hover:text-mq-text">
-          {t("admin.rmaPage.backToInbox")}
-        </Link>
 
         {isError && (
           <div className="mq-alert mq-alert-error">

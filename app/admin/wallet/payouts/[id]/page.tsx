@@ -54,7 +54,7 @@ function WalletPayoutDetailInner({ payoutId }: { payoutId: string }) {
         actions={
           <Link
             href="/admin/wallet/payouts"
-            className="mq-btn mq-btn-outline shrink-0 inline-flex items-center gap-2"
+            className="mq-admin-btn mq-admin-btn-secondary"
           >
             <ArrowLeft size={16} aria-hidden />
             {t("admin.walletPayouts.backToList")}

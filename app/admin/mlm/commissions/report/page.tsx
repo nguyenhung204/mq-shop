@@ -3,6 +3,7 @@
 import { Fragment, useState } from "react";
 import Link from "next/link";
 import {
+  ArrowLeft,
   ArrowUpRight,
   ChevronDown,
   ChevronRight,
@@ -394,7 +395,7 @@ function TeamSection({ summary }: { summary: CommissionTypeSummary<TeamCommissio
                               {ni > 0 && <span className="text-mq-text-muted">↳</span>}
                               <span className={n.userId === r.userId ? "font-bold text-mq-text" : "text-mq-text-muted"}>
                                 {n.rankName} <span className="tabular-nums">({formatPercent(n.percent)})</span>
-                                {n.userId === r.userId ? <span className="ml-1 text-[var(--mq-accent-teal)]">← recipient</span> : ""}
+                                {n.userId === r.userId ? <span className="ml-1 text-[var(--mq-accent-teal)]">recipient</span> : ""}
                               </span>
                             </div>
                           ))}
@@ -623,7 +624,8 @@ function CommissionReportInner() {
         title={tr("title")}
         description={tr("description")}
         actions={
-          <Link href="/admin/mlm" className="mq-btn mq-btn-outline text-xs px-3 py-1.5">
+          <Link href="/admin/mlm" className="mq-admin-btn mq-admin-btn-secondary">
+            <ArrowLeft size={16} />
             {tr("backToMlm")}
           </Link>
         }

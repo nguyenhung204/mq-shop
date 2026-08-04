@@ -17,7 +17,7 @@ import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
 import { getErrorMessage } from "@/lib/queries/utils";
-import { Check, ShieldAlert, ShieldCheck, X } from "lucide-react";
+import { ArrowLeft, Check, ShieldAlert, ShieldCheck, X } from "lucide-react";
 
 function reasonText(reason: string | LocalizedText | null | undefined): string {
   if (!reason) return "";
@@ -48,11 +48,14 @@ function ShopDetailInner({ id }: { id: string }) {
       <AdminPageHeader
         title={shop?.name || t("admin.shops.detailTitle")}
         description={t("admin.shops.description")}
+        actions={
+          <Link href="/admin/shops" className="mq-admin-btn mq-admin-btn-secondary">
+            <ArrowLeft size={16} />
+            {t("admin.shops.backToQueue")}
+          </Link>
+        }
       />
       <div className="space-y-6 max-w-3xl">
-        <Link href="/admin/shops" className="text-sm text-mq-text-muted hover:text-mq-text">
-          ← {t("admin.shops.backToQueue")}
-        </Link>
 
         {isError && (
           <div className="mq-alert mq-alert-error">

@@ -59,7 +59,7 @@ function PayoutDetailInner({ payoutId }: { payoutId: string }) {
         title={t("admin.payouts.detailTitle")}
         description={t("admin.payouts.detailDescription")}
         actions={
-          <Link href="/admin/payouts" className="mq-btn mq-btn-outline shrink-0">
+          <Link href="/admin/payouts" className="mq-admin-btn mq-admin-btn-secondary">
             <ArrowLeft size={16} aria-hidden />
             {t("admin.payouts.backToList")}
           </Link>
