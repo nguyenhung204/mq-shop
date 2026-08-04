@@ -1024,7 +1024,9 @@
       "target": "Target user",
       "note": "Note",
       "created": "Created",
-      "targetUserId": "Target user ID",
+      "targetUserId": "User email",
+      "searchUserEmail": "Search user email...",
+      "noUserFound": "No users found",
       "execute": "Execute"
     },
     "audit": {

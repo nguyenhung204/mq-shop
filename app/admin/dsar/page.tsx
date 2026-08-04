@@ -1,12 +1,13 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { Check, Play, Plus, X } from "lucide-react";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { Check, Play, Plus, Search, X } from "lucide-react";
 import {
   useAdminDsarAction,
   useAdminDsarList,
   useCreateAdminDsar,
 } from "@/lib/queries/compliance";
+import { useCsCustomers } from "@/lib/queries/cs";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
@@ -36,7 +37,11 @@ function DsarInner() {
   const [page, setPage] = useState(1);
   const [createOpen, setCreateOpen] = useState(false);
   const [targetUserId, setTargetUserId] = useState("");
+  const [targetEmail, setTargetEmail] = useState("");
+  const [emailSearch, setEmailSearch] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
   const [note, setNote] = useState("");
+  const dropdownRef = useRef<HTMLDivElement>(null);
   /** Request id awaiting erasure confirmation — irreversible, so gate it. */
   const [executeId, setExecuteId] = useState<string | null>(null);
 
@@ -48,11 +53,36 @@ function DsarInner() {
   const createDsar = useCreateAdminDsar();
   const action = useAdminDsarAction();
 
+  // Search users for the email select (debounced via the query's enabled flag)
+  const { data: usersData, isLoading: usersLoading } = useCsCustomers(
+    emailSearch,
+    undefined,
+    1,
+    20,
+  );
+  // Filter out ADMIN and SUPER_ADMIN roles
+  const EXCLUDED_ROLES = ["ADMIN", "SUPER_ADMIN"];
+  const filteredUsers = (usersData?.items ?? []).filter(
+    (u) => !u.roles.some((r) => EXCLUDED_ROLES.includes(r)),
+  );
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const items = data?.items ?? [];
   const meta = data?.meta;
 
   const onCreate = async (e: FormEvent) => {
     e.preventDefault();
+    if (!targetUserId) return;
     try {
       await createDsar.mutateAsync({
         targetUserId: targetUserId.trim(),
@@ -60,6 +90,8 @@ function DsarInner() {
       });
       setCreateOpen(false);
       setTargetUserId("");
+      setTargetEmail("");
+      setEmailSearch("");
       setNote("");
     } catch {
       /* toast */
@@ -223,17 +255,73 @@ function DsarInner() {
               </button>
             </div>
             <form className="mq-admin-modal-body space-y-3" onSubmit={(e) => void onCreate(e)}>
-              <div>
+              <div ref={dropdownRef} className="relative">
                 <label className="block text-xs font-medium text-mq-text-muted mb-1.5">
                   {t("admin.dsar.targetUserId")}
                 </label>
-                <input
-                  className="mq-input"
-                  value={targetUserId}
-                  onChange={(e) => setTargetUserId(e.target.value)}
-                  required
-                  autoFocus
-                />
+                {targetEmail ? (
+                  <div className="flex items-center gap-2 mq-input">
+                    <span className="flex-1 truncate text-sm">{targetEmail}</span>
+                    <button
+                      type="button"
+                      className="text-mq-text-muted hover:text-mq-text-primary"
+                      onClick={() => {
+                        setTargetUserId("");
+                        setTargetEmail("");
+                        setEmailSearch("");
+                      }}
+                      aria-label={t("admin.common.clear") ?? "Clear"}
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <Search
+                      size={14}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-mq-text-muted pointer-events-none"
+                    />
+                    <input
+                      className="mq-input !pl-8 w-full"
+                      placeholder={t("admin.dsar.searchUserEmail") ?? "Tìm email người dùng..."}
+                      value={emailSearch}
+                      onChange={(e) => {
+                        setEmailSearch(e.target.value);
+                        setShowDropdown(true);
+                      }}
+                      onFocus={() => setShowDropdown(true)}
+                      autoFocus
+                    />
+                  </div>
+                )}
+                {showDropdown && !targetEmail && emailSearch.length >= 1 && (
+                  <div className="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto rounded-md border border-mq-border bg-mq-surface shadow-lg">
+                    {usersLoading ? (
+                      <div className="p-3 text-xs text-mq-text-muted">{t("admin.common.working") ?? "Đang tìm..."}</div>
+                    ) : filteredUsers.length === 0 ? (
+                      <div className="p-3 text-xs text-mq-text-muted">{t("admin.dsar.noUserFound") ?? "Không tìm thấy người dùng"}</div>
+                    ) : (
+                      filteredUsers.map((u) => (
+                        <button
+                          key={u.id}
+                          type="button"
+                          className="w-full text-left px-3 py-2 hover:bg-mq-surface-subtle text-sm transition-colors"
+                          onClick={() => {
+                            setTargetUserId(u.id);
+                            setTargetEmail(u.email);
+                            setShowDropdown(false);
+                            setEmailSearch("");
+                          }}
+                        >
+                          <div className="font-medium">{u.email}</div>
+                          {u.fullName && (
+                            <div className="text-xs text-mq-text-muted">{u.fullName}</div>
+                          )}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-xs font-medium text-mq-text-muted mb-1.5">
@@ -257,7 +345,7 @@ function DsarInner() {
                 <button
                   type="submit"
                   className="mq-admin-btn mq-admin-btn-approve"
-                  disabled={createDsar.isPending}
+                  disabled={createDsar.isPending || !targetUserId}
                 >
                   {createDsar.isPending ? t("admin.common.working") : t("admin.common.create")}
                 </button>

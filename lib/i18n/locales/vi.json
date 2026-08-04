@@ -1024,7 +1024,9 @@
       "target": "User đích",
       "note": "Ghi chú",
       "created": "Tạo lúc",
-      "targetUserId": "ID user đích",
+      "targetUserId": "Email người dùng",
+      "searchUserEmail": "Tìm email người dùng...",
+      "noUserFound": "Không tìm thấy người dùng",
       "execute": "Thực thi"
     },
     "audit": {

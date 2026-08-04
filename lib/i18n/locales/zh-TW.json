@@ -1024,7 +1024,9 @@
       "target": "目標使用者",
       "note": "備註",
       "created": "建立時間",
-      "targetUserId": "目標使用者 ID",
+      "targetUserId": "使用者信箱",
+      "searchUserEmail": "搜尋使用者信箱...",
+      "noUserFound": "找不到使用者",
       "execute": "執行"
     },
     "audit": {
