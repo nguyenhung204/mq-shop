@@ -2,12 +2,17 @@
 
 import Link from "next/link";
 import { useRankProgress } from "@/lib/queries/wallet";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { mlmRankLabel } from "@/lib/i18n/mlm-rank";
 
 export function WalletRankProgress({ className = "" }: { className?: string }) {
   const { t } = useLanguage();
+  const { hasRole } = useAuth();
   const { data, isLoading, isError } = useRankProgress();
+
+  // Only SELLER users participate in the MLM rank ladder
+  if (!hasRole("SELLER")) return null;
 
   if (isLoading) {
     return (

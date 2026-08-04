@@ -1,24 +1,9 @@
 "use client";
 
+import { useMlmRanks } from "@/lib/queries/wallet";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-import { mlmRankLabel } from "@/lib/i18n/mlm-rank";
-
-const REFERRAL_RATE_ROWS: Array<{ rankKey: string; rate: string }> = [
-  { rankKey: "0", rate: "5%" },
-  { rankKey: "1", rate: "5%" },
-  { rankKey: "2", rate: "5%" },
-  { rankKey: "3", rate: "7%" },
-  { rankKey: "4", rate: "8%" },
-  { rankKey: "5", rate: "9%" },
-  { rankKey: "6plus", rate: "10%" },
-];
-
-const GLOBAL_TIERS: Array<{ rankKey: string }> = [
-  { rankKey: "5" },
-  { rankKey: "6" },
-  { rankKey: "7" },
-  { rankKey: "10" },
-];
+import { formatPercent } from "@/lib/api/utils";
 
 type Pillar = {
   type: "REFERRAL" | "TEAM" | "LOYALTY" | "GLOBAL";
@@ -51,6 +36,14 @@ const PILLARS: Pillar[] = [
 
 export function WalletBonusGuide({ className = "" }: { className?: string }) {
   const { t } = useLanguage();
+  const { hasRole } = useAuth();
+  const { data: ranks } = useMlmRanks({ enabled: hasRole("SELLER") });
+
+  // Only show to SELLER
+  if (!hasRole("SELLER")) return null;
+
+  const activeRanks = (ranks ?? []).filter((r) => r.isActive);
+  const globalTiers = activeRanks.filter((r) => r.globalFundTier != null);
 
   return (
     <section
@@ -83,24 +76,22 @@ export function WalletBonusGuide({ className = "" }: { className?: string }) {
               {t(pillar.bodyKey)}
             </p>
 
-            {pillar.type === "REFERRAL" ? (
+            {pillar.type === "REFERRAL" && activeRanks.length > 0 ? (
               <div className="pt-1 space-y-2">
                 <p className="text-sm font-medium text-mq-text-muted">
                   {t("wallet.bonusGuide.referralRatesTitle")}
                 </p>
                 <ul className="grid gap-1.5 sm:grid-cols-2 text-sm text-mq-text-secondary">
-                  {REFERRAL_RATE_ROWS.map((row) => (
+                  {activeRanks.map((r) => (
                     <li
-                      key={row.rankKey}
+                      key={r.rank}
                       className="flex items-center justify-between gap-2 rounded-md bg-mq-surface px-2.5 py-2"
                     >
                       <span>
-                        {row.rankKey === "6plus"
-                          ? t("wallet.bonusGuide.ranks.6plus")
-                          : mlmRankLabel(t, Number(row.rankKey))}
+                        {r.name} <span className="text-mq-text-muted">(R{r.rank})</span>
                       </span>
                       <span className="tabular-nums font-semibold text-mq-text">
-                        {row.rate}
+                        {formatPercent(r.referralPercent)}
                       </span>
                     </li>
                   ))}
@@ -111,18 +102,46 @@ export function WalletBonusGuide({ className = "" }: { className?: string }) {
               </div>
             ) : null}
 
-            {pillar.type === "GLOBAL" ? (
+            {pillar.type === "TEAM" && activeRanks.length > 0 ? (
+              <div className="pt-1 space-y-2">
+                <p className="text-sm font-medium text-mq-text-muted">
+                  {t("wallet.bonusGuide.teamRatesTitle")}
+                </p>
+                <ul className="grid gap-1.5 sm:grid-cols-2 text-sm text-mq-text-secondary">
+                  {activeRanks
+                    .filter((r) => Number(r.teamPercent) > 0)
+                    .map((r) => (
+                      <li
+                        key={r.rank}
+                        className="flex items-center justify-between gap-2 rounded-md bg-mq-surface px-2.5 py-2"
+                      >
+                        <span>
+                          {r.name} <span className="text-mq-text-muted">(R{r.rank})</span>
+                        </span>
+                        <span className="tabular-nums font-semibold text-mq-text">
+                          {formatPercent(r.teamPercent)}
+                        </span>
+                      </li>
+                    ))}
+                </ul>
+                <p className="text-sm text-mq-text-muted leading-relaxed">
+                  {t("wallet.bonusGuide.teamNote")}
+                </p>
+              </div>
+            ) : null}
+
+            {pillar.type === "GLOBAL" && globalTiers.length > 0 ? (
               <div className="pt-1 space-y-2">
                 <p className="text-sm font-medium text-mq-text-muted">
                   {t("wallet.bonusGuide.globalTiersTitle")}
                 </p>
                 <ul className="flex flex-wrap gap-2">
-                  {GLOBAL_TIERS.map((tier) => (
+                  {globalTiers.map((r) => (
                     <li
-                      key={tier.rankKey}
+                      key={r.rank}
                       className="rounded-full border border-mq-border bg-mq-surface px-3 py-1.5 text-sm text-mq-text"
                     >
-                      {t(`wallet.bonusGuide.globalTiers.${tier.rankKey}`)}
+                      ≥ R{r.globalFundTier} · {r.name}
                     </li>
                   ))}
                 </ul>

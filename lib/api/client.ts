@@ -150,7 +150,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     if (typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent("mq:auth-logout"));
     }
-    throw new ApiError(401, "Unauthorized");
+    throw new ApiError(401, "UNAUTHORIZED");
   }
 
   if (res.status === 204) {
@@ -210,7 +210,7 @@ export async function apiGetBlob(
     if (typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent("mq:auth-logout"));
     }
-    throw new ApiError(401, "Unauthorized");
+    throw new ApiError(401, "UNAUTHORIZED");
   }
 
   if (!res.ok) {

@@ -57,8 +57,10 @@ export const API_ERROR_I18N: Record<string, string> = {
   IDEMPOTENCY_KEY_REUSE_MISMATCH: "toast.idempotencyKeyReuseMismatch",
   IDEMPOTENCY_REQUEST_IN_PROGRESS: "toast.idempotencyRequestInProgress",
   WALLET_RECIPIENT_USE_EMAIL: "toast.walletRecipientUseEmail",
-  VALIDATION_ERROR: "toast.validationError",
   PAYOUT_SHOP_NO_BANK_INFO: "toast.payoutShopNoBankInfo",
+  PROMOTION_RULE_RANK_NOT_FOUND: "toast.promotionRuleRankNotFound",
+  PROMOTION_RULE_INVALID_RANK_ORDER: "toast.promotionRuleInvalidRankOrder",
+  PROMOTION_RULE_DUPLICATE: "toast.promotionRuleDuplicate",
 };
 
 const STATUS_TOKENS_BY_DOMAIN: Record<string, string[]> = {
@@ -109,6 +111,8 @@ function translateKey(key: string, locale?: Locale | null): string {
 
 function messageForCode(code: string | null | undefined, locale?: Locale | null): string | null {
   if (!code) return null;
+  // VALIDATION_ERROR: prefer raw message from BE (contains field-specific detail)
+  if (code === 'VALIDATION_ERROR') return null;
   const key = API_ERROR_I18N[code];
   return key ? translateKey(key, locale) : null;
 }

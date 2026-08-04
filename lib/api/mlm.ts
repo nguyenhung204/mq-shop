@@ -30,7 +30,7 @@ export type ListNetworkTreeParams = {
   userId?: string;
 };
 
-export type RankProgressMode = "qualify_orders" | "f1_rank";
+export type RankProgressMode = "qualify_orders" | "f1_rank" | "seller_granted";
 
 export type MlmRankProgress = {
   mlmRank: number;
@@ -88,6 +88,41 @@ export type UpdateRankConfigBody = {
   teamPercent?: number;
   referralPercent?: number;
   globalFundTier?: number | null;
+  isActive?: boolean;
+};
+
+export type CreateRankConfigBody = {
+  rank: number;
+  name: string;
+  teamPercent: number;
+  referralPercent: number;
+  globalFundTier?: number | null;
+};
+
+export type PromotionRule = {
+  id: number;
+  fromRank: number;
+  toRank: number;
+  mode: 'qualify_orders' | 'f1_rank' | 'seller_granted';
+  requiredF1Rank: number | null;
+  count: number;
+  isActive: boolean;
+};
+
+export type CreatePromotionRuleBody = {
+  fromRank: number;
+  toRank: number;
+  mode: 'qualify_orders' | 'f1_rank' | 'seller_granted';
+  requiredF1Rank?: number | null;
+  count?: number;
+};
+
+export type UpdatePromotionRuleBody = {
+  fromRank?: number;
+  toRank?: number;
+  mode?: 'qualify_orders' | 'f1_rank' | 'seller_granted';
+  requiredF1Rank?: number | null;
+  count?: number;
   isActive?: boolean;
 };
 
@@ -215,8 +250,18 @@ export const mlmApi = {
 /** Admin MLM config — `CONFIG_MLM`. */
 export const adminMlmApi = {
   ranks: () => api.get<MlmRankConfig[]>("/admin/mlm/ranks"),
+  createRankConfig: (body: CreateRankConfigBody) =>
+    api.post<MlmRankConfig>("/admin/mlm/ranks", body),
   updateRankConfig: (rank: number, body: UpdateRankConfigBody) =>
     api.patch<MlmRankConfig>(`/admin/mlm/ranks/${rank}`, body),
+
+  promotionRules: () => api.get<PromotionRule[]>("/admin/mlm/promotion-rules"),
+  createPromotionRule: (body: CreatePromotionRuleBody) =>
+    api.post<PromotionRule>("/admin/mlm/promotion-rules", body),
+  updatePromotionRule: (id: number, body: UpdatePromotionRuleBody) =>
+    api.patch<PromotionRule>(`/admin/mlm/promotion-rules/${id}`, body),
+  deletePromotionRule: (id: number) =>
+    api.post<void>(`/admin/mlm/promotion-rules/${id}/delete`, {}),
   setUserRank: (userId: string, body: SetMlmRankBody) =>
     api.patch<SetMlmRankResult>(`/admin/mlm/users/${userId}/rank`, body),
   setUserReferrer: (userId: string, body: SetMlmReferrerBody) =>

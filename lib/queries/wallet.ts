@@ -25,11 +25,14 @@ import {
   mlmApi,
   type CommissionReport,
   type CommissionRow,
+  type CreatePromotionRuleBody,
+  type CreateRankConfigBody,
   type ListCommissionsParams,
   type ListNetworkTreeParams,
   type SetMlmRankBody,
   type SetMlmReferralRateBody,
   type SetMlmReferrerBody,
+  type UpdatePromotionRuleBody,
   type UpdateRankConfigBody,
 } from "@/lib/api/mlm";
 import { ApiError } from "@/lib/api/client";
@@ -464,6 +467,68 @@ export function useUpdateRankConfig() {
       void qc.invalidateQueries({ queryKey: mlmKeys.ranks() });
     },
     onError: (e) => toast.error(walletErrorMessage(e, tt("toast.mlmRankConfigUpdateFailed"))),
+  });
+}
+
+export function useCreateRankConfig() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreateRankConfigBody) =>
+      adminMlmApi.createRankConfig(body),
+    onSuccess: (res) => {
+      toast.success(tt("toast.mlmRankConfigCreated"));
+      if (res && typeof res === 'object' && 'warning' in res && res.warning === 'NO_PROMOTION_RULE') {
+        toast.warning(tt("toast.mlmRankNoPromotionRule"));
+      }
+      void qc.invalidateQueries({ queryKey: mlmKeys.ranks() });
+    },
+    onError: (e) => toast.error(walletErrorMessage(e, tt("toast.mlmRankConfigCreateFailed"))),
+  });
+}
+
+export function usePromotionRules(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: [...mlmKeys.all, "promotion-rules"],
+    queryFn: () => adminMlmApi.promotionRules(),
+    enabled: options?.enabled ?? true,
+  });
+}
+
+export function useCreatePromotionRule() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreatePromotionRuleBody) =>
+      adminMlmApi.createPromotionRule(body),
+    onSuccess: () => {
+      toast.success(tt("toast.promotionRuleCreated"));
+      void qc.invalidateQueries({ queryKey: mlmKeys.all });
+    },
+    onError: (e) => toast.error(walletErrorMessage(e, tt("toast.promotionRuleFailed"))),
+  });
+}
+
+export function useUpdatePromotionRule() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: number; body: UpdatePromotionRuleBody }) =>
+      adminMlmApi.updatePromotionRule(id, body),
+    onSuccess: () => {
+      toast.success(tt("toast.promotionRuleUpdated"));
+      void qc.invalidateQueries({ queryKey: mlmKeys.all });
+    },
+    onError: (e) => toast.error(walletErrorMessage(e, tt("toast.promotionRuleFailed"))),
+  });
+}
+
+export function useDeletePromotionRule() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => adminMlmApi.deletePromotionRule(id),
+    onSuccess: () => {
+      toast.success(tt("toast.promotionRuleDeleted"));
+      void qc.invalidateQueries({ queryKey: mlmKeys.all });
+    },
+    onError: (e) => toast.error(walletErrorMessage(e, tt("toast.promotionRuleFailed"))),
   });
 }
 

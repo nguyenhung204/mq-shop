@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/SearchableSelect";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { MlmCreateRankSection, MlmPromotionRulesSection } from "@/components/admin/MlmPromotionRules";
 
 function userLabel(u: AuthUser): string {
   const name = u.fullName?.trim();
@@ -541,6 +542,7 @@ function MlmAdminInner() {
         <p className="text-sm text-mq-text-muted">{t("admin.mlm.hint")}</p>
 
         {canSetRank ? (
+          <>
           <section className="space-y-2">
             <h2 className="text-base font-medium">{t("admin.mlm.ranksTitle")}</h2>
             {isLoading ? <AdminCardListSkeleton count={2} /> : null}
@@ -665,7 +667,7 @@ function MlmAdminInner() {
                       type="number"
                       step="0.01"
                       min="0"
-                      max="100"
+                      max="20"
                       value={editForm.teamPercent}
                       onChange={(e) => setEditForm({ ...editForm, teamPercent: e.target.value })}
                     />
@@ -677,7 +679,7 @@ function MlmAdminInner() {
                       type="number"
                       step="0.01"
                       min="0"
-                      max="100"
+                      max="10"
                       value={editForm.referralPercent}
                       onChange={(e) => setEditForm({ ...editForm, referralPercent: e.target.value })}
                     />
@@ -723,7 +725,11 @@ function MlmAdminInner() {
                 </form>
               </div>
             ) : null}
+            <MlmCreateRankSection />
           </section>
+
+          <MlmPromotionRulesSection />
+          </>
         ) : (
           <div className="mq-alert mq-alert-error text-sm">
             {t("admin.mlm.noConfigPerm")}
