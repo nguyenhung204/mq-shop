@@ -260,12 +260,7 @@ function AuditInner() {
   const displayLocale = locale || "en";
   const [page, setPage] = useState(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [action, setAction] = useState("");
   const [outcome, setOutcome] = useState("");
-  const [resourceType, setResourceType] = useState("");
-  const [actorId, setActorId] = useState("");
-  const [actorEmail, setActorEmail] = useState("");
-  const [ip, setIp] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -278,12 +273,7 @@ function AuditInner() {
       "audit-logs",
       page,
       pageSize,
-      action,
       outcome,
-      resourceType,
-      actorId,
-      actorEmail,
-      ip,
       from,
       to,
     ],
@@ -292,12 +282,7 @@ function AuditInner() {
         await adminApi.auditLogs({
           page,
           pageSize,
-          action: action || undefined,
           outcome: outcome || undefined,
-          resourceType: resourceType || undefined,
-          actorId: actorId || undefined,
-          actorEmail: actorEmail || undefined,
-          ip: ip || undefined,
           from: toIsoStart(from),
           to: toIsoEnd(to),
         }),
@@ -331,23 +316,13 @@ function AuditInner() {
   }, [items]);
 
   const activeFilterCount = [
-    action,
     outcome,
-    resourceType,
-    actorId,
-    actorEmail,
-    ip,
     from,
     to,
   ].filter(Boolean).length;
 
   const clearFilters = () => {
-    setAction("");
     setOutcome("");
-    setResourceType("");
-    setActorId("");
-    setActorEmail("");
-    setIp("");
     setFrom("");
     setTo("");
     setCategoryFilter("");
@@ -451,18 +426,6 @@ function AuditInner() {
         {filtersOpen ? (
           <div className="mq-admin-panel p-4 flex flex-wrap gap-3 items-end">
             <label className="flex flex-col gap-1 text-sm">
-              <span className="text-mq-text-muted text-xs">{t("admin.auditPage.actionCode")}</span>
-              <input
-                className="mq-input max-w-xs"
-                placeholder={t("admin.auditPage.filterAction")}
-                value={action}
-                onChange={(e) => {
-                  setAction(e.target.value);
-                  setPage(1);
-                }}
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-sm">
               <span className="text-mq-text-muted text-xs">{t("admin.auditPage.outcome")}</span>
               <select
                 className="mq-input !w-[10rem] max-w-full"
@@ -477,54 +440,6 @@ function AuditInner() {
                 <option value="failure">{t("admin.auditPage.failed")}</option>
                 <option value="denied">{t("admin.auditPage.denied")}</option>
               </select>
-            </label>
-            <label className="flex flex-col gap-1 text-sm">
-              <span className="text-mq-text-muted text-xs">{t("admin.auditPage.resourceType")}</span>
-              <input
-                className="mq-input max-w-xs"
-                placeholder={t("admin.auditPage.resourceTypePh")}
-                value={resourceType}
-                onChange={(e) => {
-                  setResourceType(e.target.value);
-                  setPage(1);
-                }}
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-sm">
-              <span className="text-mq-text-muted text-xs">{t("admin.auditPage.actorEmail")}</span>
-              <input
-                className="mq-input max-w-xs"
-                placeholder={t("admin.auditPage.actorEmailPh")}
-                value={actorEmail}
-                onChange={(e) => {
-                  setActorEmail(e.target.value.trim());
-                  setPage(1);
-                }}
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-sm">
-              <span className="text-mq-text-muted text-xs">{t("admin.auditPage.actor")}</span>
-              <input
-                className="mq-input max-w-xs"
-                placeholder={t("admin.auditPage.actorPh")}
-                value={actorId}
-                onChange={(e) => {
-                  setActorId(e.target.value.trim());
-                  setPage(1);
-                }}
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-sm">
-              <span className="text-mq-text-muted text-xs">{t("admin.auditPage.ip")}</span>
-              <input
-                className="mq-input max-w-[10rem]"
-                placeholder={t("admin.auditPage.ipPh")}
-                value={ip}
-                onChange={(e) => {
-                  setIp(e.target.value.trim());
-                  setPage(1);
-                }}
-              />
             </label>
             <label className="flex flex-col gap-1 text-sm">
               <span className="text-mq-text-muted text-xs">{t("transactions.startDate")}</span>

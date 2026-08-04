@@ -1265,12 +1265,12 @@
       "nameEn": "Tên (EN)",
       "nameVi": "Tên (VI)",
       "nameTw": "Tên (繁中)",
-      "noParent": "Không có cha",
+      "noParent": "Danh mục gốc",
       "slug": "Slug",
-      "parent": "Danh mục cha",
+      "parent": "Thuộc danh mục",
       "empty": "Chưa có danh mục.",
       "translateFrom": "Tự dịch sang 2 ngôn ngữ còn lại",
-      "translateHint": "Nhấn nút dịch (🌐) bên cạnh trường nào đã nhập để tự điền 2 ngôn ngữ còn lại.",
+      "translateHint": "Nhấn nút dịch bên cạnh trường nào đã nhập để tự điền 2 ngôn ngữ còn lại.",
       "translateSuccess": "Đã dịch thành công cả 3 ngôn ngữ.",
       "translatePartial": "Không tìm thấy trong từ điển — vui lòng nhập thủ công."
     },
@@ -2619,6 +2619,7 @@
       "Promotions": "Khuyến mãi",
       "Staff": "Nhân sự",
       "MLM": "MLM",
+      "Compliance": "Tuân thủ",
       "Other": "Khác"
     },
     "auditResource": {
