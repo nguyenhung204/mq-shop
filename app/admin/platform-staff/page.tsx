@@ -2,11 +2,12 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Check, Copy, Pencil, Plus, X } from "lucide-react";
+import { Check, Copy, Lock, Pencil, Plus, Trash2, Unlock, X } from "lucide-react";
 import type { AuthUser } from "@/lib/api/types";
 import { hasPendingStaffChange } from "@/lib/api/staff";
 import {
   useAdminPlatformStaffList,
+  useAdminUserAction,
   useCreatePlatformStaff,
   usePlatformStaffDualControlAction,
   useUpdatePlatformStaffRoles,
@@ -19,6 +20,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateRoles, translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { FormAlerts, useFormAlerts } from "@/lib/ui/form-feedback";
 
@@ -60,6 +62,12 @@ function PlatformStaffInner() {
   const createStaff = useCreatePlatformStaff();
   const updateRoles = useUpdatePlatformStaffRoles();
   const dualControl = usePlatformStaffDualControlAction();
+  const userAction = useAdminUserAction();
+  const [confirmAction, setConfirmAction] = useState<{
+    userId: string;
+    email: string;
+    action: "lock" | "unlock" | "delete";
+  } | null>(null);
 
   const items = data?.items ?? [];
   const meta = data?.meta;
@@ -270,6 +278,33 @@ function PlatformStaffInner() {
                             disabled={updateRoles.isPending}
                             onClick={() => setEditOpen(u)}
                           />
+                          {isSuperAdmin && u.status === "ACTIVE" && !u.roles?.includes("SUPER_ADMIN") ? (
+                            <AdminIconButton
+                              label={t("admin.common.lock")}
+                              icon={Lock}
+                              tone="warn"
+                              disabled={userAction.isPending}
+                              onClick={() => setConfirmAction({ userId: u.id, email: u.email, action: "lock" })}
+                            />
+                          ) : null}
+                          {isSuperAdmin && u.status === "LOCKED" ? (
+                            <AdminIconButton
+                              label={t("admin.common.unlock")}
+                              icon={Unlock}
+                              tone="approve"
+                              disabled={userAction.isPending}
+                              onClick={() => setConfirmAction({ userId: u.id, email: u.email, action: "unlock" })}
+                            />
+                          ) : null}
+                          {isSuperAdmin && !u.roles?.includes("SUPER_ADMIN") ? (
+                            <AdminIconButton
+                              label={t("admin.common.delete")}
+                              icon={Trash2}
+                              tone="reject"
+                              disabled={userAction.isPending}
+                              onClick={() => setConfirmAction({ userId: u.id, email: u.email, action: "delete" })}
+                            />
+                          ) : null}
                         </AdminActions>
                       </td>
                     </tr>
@@ -489,6 +524,40 @@ function PlatformStaffInner() {
           </div>
         </div>
       ) : null}
+
+      <ConfirmDialog
+        open={Boolean(confirmAction)}
+        title={
+          confirmAction?.action === "delete"
+            ? t("admin.platformStaff.confirmDeleteTitle")
+            : confirmAction?.action === "lock"
+              ? t("admin.platformStaff.confirmLockTitle")
+              : t("admin.platformStaff.confirmUnlockTitle")
+        }
+        description={
+          confirmAction
+            ? t("admin.platformStaff.confirmActionDesc", { email: confirmAction.email })
+            : ""
+        }
+        confirmLabel={
+          confirmAction?.action === "delete"
+            ? t("admin.common.delete")
+            : confirmAction?.action === "lock"
+              ? t("admin.common.lock")
+              : t("admin.common.unlock")
+        }
+        tone={confirmAction?.action === "delete" ? "danger" : undefined}
+        busy={userAction.isPending}
+        onClose={() => setConfirmAction(null)}
+        onConfirm={async () => {
+          if (!confirmAction) return;
+          await userAction.mutateAsync({
+            action: confirmAction.action,
+            userId: confirmAction.userId,
+          });
+          setConfirmAction(null);
+        }}
+      />
     </>
   );
 }

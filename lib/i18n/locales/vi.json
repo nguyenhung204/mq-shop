@@ -938,7 +938,11 @@
       "roleHint": "Chỉ gán được ADMIN (không gán SUPER_ADMIN tại đây).",
       "createHint": "Admin tạo → chờ Super Admin duyệt. Super Admin tạo → hoạt động ngay kèm mật khẩu tạm.",
       "pendingNotice": "Thay đổi đã lưu, đang chờ duyệt. Super Admin phải duyệt trước khi đăng nhập với vai trò mới.",
-      "reaffirmHint": "Gửi lại vai trò Admin để kiểm duyệt kép (Admin → chờ duyệt; Super Admin áp dụng ngay)."
+      "reaffirmHint": "Gửi lại vai trò Admin để kiểm duyệt kép (Admin → chờ duyệt; Super Admin áp dụng ngay).",
+      "confirmLockTitle": "Khoá tài khoản admin?",
+      "confirmUnlockTitle": "Mở khoá tài khoản admin?",
+      "confirmDeleteTitle": "Xoá tài khoản admin?",
+      "confirmActionDesc": "Thao tác này sẽ áp dụng cho {email}."
     },
     "backups": {
       "title": "Sao lưu",

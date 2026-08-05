@@ -938,7 +938,11 @@
       "roleHint": "僅可指派 ADMIN（不可在此指派 SUPER_ADMIN）。",
       "createHint": "Admin 建立 → 待 Super Admin 核准。Super Admin 建立 → 立即啟用並產生臨時密碼。",
       "pendingNotice": "變更已儲存，等待核准。需 Super Admin 核准後才能以新角色登入。",
-      "reaffirmHint": "重新送出 Admin 角色以進行雙重審核（Admin → 等待核准；Super Admin 立即套用）。"
+      "reaffirmHint": "重新送出 Admin 角色以進行雙重審核（Admin → 等待核准；Super Admin 立即套用）。",
+      "confirmLockTitle": "鎖定管理員帳號？",
+      "confirmUnlockTitle": "解鎖管理員帳號？",
+      "confirmDeleteTitle": "刪除管理員帳號？",
+      "confirmActionDesc": "此操作將套用至 {email}。"
     },
     "backups": {
       "title": "備份",

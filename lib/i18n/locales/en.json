@@ -938,7 +938,11 @@
       "roleHint": "Assignable role: ADMIN only (SUPER_ADMIN cannot be assigned here).",
       "createHint": "Admin creates → pending until Super Admin approves. Super Admin creates → active immediately with a temporary password.",
       "pendingNotice": "Change saved and pending approval. Super Admin must approve before the account can sign in with the new roles.",
-      "reaffirmHint": "Re-submit the Admin role for dual-control review (Admin → pending approval; Super Admin applies immediately)."
+      "reaffirmHint": "Re-submit the Admin role for dual-control review (Admin → pending approval; Super Admin applies immediately).",
+      "confirmLockTitle": "Lock admin account?",
+      "confirmUnlockTitle": "Unlock admin account?",
+      "confirmDeleteTitle": "Delete admin account?",
+      "confirmActionDesc": "This action will be applied to {email}."
     },
     "backups": {
       "title": "Backups",
