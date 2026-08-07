@@ -28,6 +28,7 @@ import {
   type CreatePromotionRuleBody,
   type CreateRankConfigBody,
   type ListCommissionsParams,
+  type ListFullTreeParams,
   type ListNetworkTreeParams,
   type SetMlmRankBody,
   type SetMlmReferralRateBody,
@@ -80,6 +81,14 @@ export const mlmKeys = {
       ...mlmKeys.all,
       "network-tree",
       params.userId ?? "",
+      params.maxDepth ?? 20,
+      params.limit ?? 500,
+    ] as const,
+  fullTree: (params: ListFullTreeParams) =>
+    [
+      ...mlmKeys.all,
+      "full-tree",
+      params.userId,
       params.maxDepth ?? 20,
       params.limit ?? 500,
     ] as const,
@@ -202,6 +211,20 @@ export function useNetworkTree(
     queryKey: mlmKeys.networkTree(params),
     queryFn: () => mlmApi.networkTree(params),
     enabled: options?.enabled ?? true,
+  });
+}
+
+export function useFullTree(
+  params: ListFullTreeParams,
+  options?: { enabled?: boolean },
+) {
+  return useQuery({
+    queryKey: mlmKeys.fullTree(params),
+    queryFn: () => adminMlmApi.fullTree(params.userId, {
+      maxDepth: params.maxDepth,
+      limit: params.limit,
+    }),
+    enabled: (options?.enabled ?? true) && Boolean(params.userId),
   });
 }
 

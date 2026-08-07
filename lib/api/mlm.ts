@@ -13,6 +13,9 @@ export type NetworkNode = {
   fullName: string | null;
   mlmRank: number | null;
   referrerId: string | null;
+  avatarUrl?: string | null;
+  referralCount?: number | null;
+  totalEarnings?: string | null;
 };
 
 export type NetworkTree = {
@@ -28,6 +31,20 @@ export type ListNetworkTreeParams = {
   limit?: number;
   /** Acc / Admin / SA only (scope ALL). */
   userId?: string;
+};
+
+export type FullNetworkTree = {
+  focusUserId: string;
+  maxDepth: number;
+  totalUpline: number;
+  totalDownline: number;
+  nodes: NetworkNode[];
+};
+
+export type ListFullTreeParams = {
+  userId: string;
+  maxDepth?: number;
+  limit?: number;
 };
 
 export type RankProgressMode = "qualify_orders" | "f1_rank" | "seller_granted";
@@ -77,6 +94,7 @@ export type ListCommissionsParams = {
 export type MlmRankConfig = {
   rank: number;
   name: string;
+  nameI18n: Record<string, string>;
   teamPercent: string;
   referralPercent: string;
   globalFundTier: number | null;
@@ -85,6 +103,7 @@ export type MlmRankConfig = {
 
 export type UpdateRankConfigBody = {
   name?: string;
+  nameI18n?: Record<string, string>;
   teamPercent?: number;
   referralPercent?: number;
   globalFundTier?: number | null;
@@ -94,6 +113,7 @@ export type UpdateRankConfigBody = {
 export type CreateRankConfigBody = {
   rank: number;
   name: string;
+  nameI18n?: Record<string, string>;
   teamPercent: number;
   referralPercent: number;
   globalFundTier?: number | null;
@@ -250,6 +270,9 @@ export const mlmApi = {
 /** Admin MLM config — `CONFIG_MLM`. */
 export const adminMlmApi = {
   ranks: () => api.get<MlmRankConfig[]>("/admin/mlm/ranks"),
+  /** Full tree: upline + downline for a user. */
+  fullTree: (userId: string, query?: { maxDepth?: number; limit?: number }) =>
+    api.get<FullNetworkTree>(`/admin/mlm/users/${userId}/full-tree`, { query }),
   createRankConfig: (body: CreateRankConfigBody) =>
     api.post<MlmRankConfig>("/admin/mlm/ranks", body),
   updateRankConfig: (rank: number, body: UpdateRankConfigBody) =>

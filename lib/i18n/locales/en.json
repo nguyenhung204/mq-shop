@@ -246,10 +246,10 @@
     "deleteReplyDesc": "The seller reply will be removed.",
     "deleteReplyBtn": "Delete",
     "deleteBannerTitle": "Delete this banner?",
-    "deleteBannerDesc": "Banner \u201c{title}\u201d will be removed permanently.",
+    "deleteBannerDesc": "Banner “{title}” will be removed permanently.",
     "deleteBannerBtn": "Delete",
     "deleteAssetTitle": "Delete this file?",
-    "deleteAssetDesc": "\u201c{name}\u201d will be removed permanently.",
+    "deleteAssetDesc": "“{name}” will be removed permanently.",
     "deleteAssetBtn": "Delete",
     "dsarApproveTitle": "Approve this erasure request?",
     "dsarApproveDesc": "The request will move to approved status.",
@@ -1811,18 +1811,18 @@
       "skuImages": "SKU images",
       "skuImagesCount": "{count}/{max} · empty → product gallery",
       "noSkuImages": "No SKU images yet.",
-      "gallerySummary": "{count}/{max} · \u22645MB · JPEG/PNG/WebP/GIF",
+      "gallerySummary": "{count}/{max} · ≤5MB · JPEG/PNG/WebP/GIF",
       "pendingUpload": "{size} KB · pending upload",
       "galleryUploadHint": "Images upload after the product exists. Optional on create.",
       "maxImagesError": "Maximum {max} images.",
-      "imageTooLargeError": "\u201c{name}\u201d exceeds 5MB.",
-      "imageInvalidTypeError": "\u201c{name}\u201d is not JPEG/PNG/WebP/GIF.",
+      "imageTooLargeError": "“{name}” exceeds 5MB.",
+      "imageInvalidTypeError": "“{name}” is not JPEG/PNG/WebP/GIF.",
       "skuRequiredError": "Each variant needs a SKU.",
-      "invalidSellPriceError": "Invalid sell price for SKU \u201c{sku}\u201d.",
+      "invalidSellPriceError": "Invalid sell price for SKU “{sku}”.",
       "variantRequiredError": "Add at least one variant (SKU + sell price).",
       "maxImagesPerSkuError": "Maximum {max} images per SKU.",
       "optionKeyValueError": "Option key and value cannot be empty.",
-      "invalidOptionError": "Invalid options \u201c{piece}\u201d. Use key=value (e.g. size=M, color=black)."
+      "invalidOptionError": "Invalid options “{piece}”. Use key=value (e.g. size=M, color=black)."
     },
     "inventoryPage": {
       "warehouses": "Warehouses",
@@ -1878,11 +1878,10 @@
       "beforeAfter": "Before → After",
       "addSkuLineError": "Add at least one SKU line.",
       "duplicateSkuError": "Duplicate SKU in slip items — each SKU can appear only once.",
-      "invalidQuantityError": "Invalid quantity for SKU \u201c{sku}\u201d.",
+      "invalidQuantityError": "Invalid quantity for SKU “{sku}”.",
       "needWarehouseFirst": "You need at least one warehouse before creating a slip.",
       "goToWarehouses": "Create warehouse"
     },
-
     "transfers": {
       "title": "Transfers",
       "description": "Transfer stock between warehouses.",
@@ -2168,7 +2167,15 @@
     },
     "rankProgressBuyerGate": "This account is not on the promotion ladder.",
     "rankProgressBuyerGateHint": "This account does not have a buyer role and cannot participate in the MLM ladder.",
-    "rankProgressOpenShop": "Open a shop",    "rankProgressPreDistributor": "not Distributor yet"
+    "rankProgressOpenShop": "Open a shop",
+    "rankProgressPreDistributor": "not Distributor yet",
+    "networkTreeYou": "YOU",
+    "networkTreeReferrals": "Referrals",
+    "networkTreeEarnings": "Earnings",
+    "networkTreeExpand": "Expand",
+    "networkTreeCollapse": "Collapse",
+    "networkViewTree": "Tree",
+    "networkViewList": "List"
   },
   "toast": {
     "somethingWentWrong": "Something went wrong",
@@ -2460,7 +2467,8 @@
     "mlmReconcileBatch": "Reconcile batch: checked {checked}, promoted {promoted}",
     "mlmReconcileFailed": "Rank reconcile failed",
     "shopUnlocked": "Shop unlocked and restored to approved",
-    "shopNotSuspended": "Shop is not violation-locked — cannot unlock."
+    "shopNotSuspended": "Shop is not violation-locked — cannot unlock.",
+    "sellerClosureBlocked": "Account cannot be closed. Please resolve all active orders, RMA requests, pending payouts, and wallet balance first."
   },
   "superAdmin": {
     "title": "System administration",

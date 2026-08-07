@@ -246,10 +246,10 @@
     "deleteReplyDesc": "Phản hồi của shop sẽ bị xóa.",
     "deleteReplyBtn": "Xóa",
     "deleteBannerTitle": "Xóa banner này?",
-    "deleteBannerDesc": "Banner \u201c{title}\u201d sẽ bị xóa vĩnh viễn.",
+    "deleteBannerDesc": "Banner “{title}” sẽ bị xóa vĩnh viễn.",
     "deleteBannerBtn": "Xóa",
     "deleteAssetTitle": "Xóa tệp này?",
-    "deleteAssetDesc": "\u201c{name}\u201d sẽ bị xóa vĩnh viễn.",
+    "deleteAssetDesc": "“{name}” sẽ bị xóa vĩnh viễn.",
     "deleteAssetBtn": "Xóa",
     "dsarApproveTitle": "Duyệt yêu cầu xóa dữ liệu?",
     "dsarApproveDesc": "Yêu cầu sẽ chuyển sang trạng thái đã duyệt.",
@@ -1882,7 +1882,6 @@
       "needWarehouseFirst": "Bạn cần có ít nhất một kho trước khi tạo phiếu.",
       "goToWarehouses": "Tạo kho"
     },
-
     "transfers": {
       "title": "Chuyển kho",
       "description": "Chuyển hàng giữa các kho.",
@@ -2169,7 +2168,14 @@
     "rankProgressBuyerGate": "Tài khoản này chưa nằm trong lộ trình thăng cấp.",
     "rankProgressBuyerGateHint": "Tài khoản này không có role buyer và không thể tham gia lộ trình MLM.",
     "rankProgressOpenShop": "Mở cửa hàng",
-    "rankProgressPreDistributor": "chưa phải Nhà phân phối"
+    "rankProgressPreDistributor": "chưa phải Nhà phân phối",
+    "networkTreeYou": "BẠN",
+    "networkTreeReferrals": "Giới thiệu",
+    "networkTreeEarnings": "Thu nhập",
+    "networkTreeExpand": "Mở rộng",
+    "networkTreeCollapse": "Thu gọn",
+    "networkViewTree": "Cây",
+    "networkViewList": "Danh sách"
   },
   "toast": {
     "somethingWentWrong": "Đã xảy ra lỗi",
@@ -2461,7 +2467,8 @@
     "mlmReconcileBatch": "Batch: kiểm {checked}, thăng {promoted}",
     "mlmReconcileFailed": "Reconcile rank thất bại",
     "shopUnlocked": "Đã mở khóa shop và khôi phục duyệt",
-    "shopNotSuspended": "Shop không bị khóa vi phạm — không thể mở khóa."
+    "shopNotSuspended": "Shop không bị khóa vi phạm — không thể mở khóa.",
+    "sellerClosureBlocked": "Không thể xoá tài khoản. Vui lòng giải quyết hết đơn hàng đang xử lý, yêu cầu đổi trả, yêu cầu rút tiền và số dư ví trước."
   },
   "superAdmin": {
     "title": "Quản trị hệ thống",

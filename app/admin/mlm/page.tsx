@@ -12,12 +12,11 @@ import type {
   MlmRankConfig,
   MonthlyCommissionOverviewRow,
   MonthlyCommissionSuggestedAction,
-  NetworkNode,
 } from "@/lib/api/mlm";
 import {
   useMlmRanks,
   useMonthlyCommissionOverview,
-  useNetworkTree,
+  useFullTree,
   useReconcileMlmRanks,
   useRunMonthlyCommissions,
   useSetMlmRank,
@@ -29,6 +28,7 @@ import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { mlmRankLabel } from "@/lib/i18n/mlm-rank";
 import {
   SearchableSelect,
   type SearchableSelectOption,
@@ -36,6 +36,7 @@ import {
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { MlmCreateRankSection, MlmPromotionRulesSection } from "@/components/admin/MlmPromotionRules";
+import { NetworkTreeFlow } from "@/components/wallet/network-tree/NetworkTreeFlow";
 
 function userLabel(u: AuthUser): string {
   const name = u.fullName?.trim();
@@ -202,7 +203,7 @@ function GlobalFundDetail({
 }
 
 function MlmAdminInner() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { hasRole } = useAuth();
 
   /**
@@ -278,12 +279,13 @@ function MlmAdminInner() {
 
   const [treeUserId, setTreeUserId] = useState("");
   const [treeQuery, setTreeQuery] = useState("");
+  const [treeModalOpen, setTreeModalOpen] = useState(false);
   const [yearMonth, setYearMonth] = useState("");
   const [expandedMonth, setExpandedMonth] = useState<string | null>(null);
   const [monthlyOk, setMonthlyOk] = useState("");
   const [monthlyError, setMonthlyError] = useState("");
   const [editingRank, setEditingRank] = useState<MlmRankConfig | null>(null);
-  const [editForm, setEditForm] = useState({ name: "", teamPercent: "", referralPercent: "", globalFundTier: "", isActive: true });
+  const [editForm, setEditForm] = useState({ name: "", nameVi: "", nameEn: "", nameZhTw: "", teamPercent: "", referralPercent: "", globalFundTier: "", isActive: true });
 
   useEffect(() => {
     if (yearMonth || months.length === 0) return;
@@ -305,8 +307,8 @@ function MlmAdminInner() {
     isLoading: treeLoading,
     isError: treeError,
     error: treeErr,
-  } = useNetworkTree(
-    treeQuery ? { userId: treeQuery, maxDepth: 20, limit: 500 } : {},
+  } = useFullTree(
+    { userId: treeQuery, maxDepth: 20, limit: 500 },
     { enabled: Boolean(treeQuery) && canViewTree },
   );
 
@@ -319,16 +321,6 @@ function MlmAdminInner() {
     () => userOptions.filter((o) => o.value !== referrerUserId),
     [userOptions, referrerUserId],
   );
-
-  const treeByDepth = useMemo(() => {
-    const map = new Map<number, NetworkNode[]>();
-    for (const node of tree?.nodes ?? []) {
-      const list = map.get(node.depth) ?? [];
-      list.push(node);
-      map.set(node.depth, list);
-    }
-    return [...map.entries()].sort((a, b) => a[0] - b[0]);
-  }, [tree?.nodes]);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -501,6 +493,7 @@ function MlmAdminInner() {
     e.preventDefault();
     if (!treeUserId.trim()) return;
     setTreeQuery(treeUserId.trim());
+    setTreeModalOpen(true);
   };
 
   const onRunMonthly = async (e: FormEvent) => {
@@ -580,7 +573,7 @@ function MlmAdminInner() {
                         className="border-b border-mq-border last:border-0 hover:bg-mq-surface-subtle/60"
                       >
                         <td className="px-3 py-1.5 font-semibold text-mq-text">{r.rank}</td>
-                        <td className="px-3 py-1.5 text-mq-text">{r.name}</td>
+                        <td className="px-3 py-1.5 text-mq-text">{mlmRankLabel(t, r.rank, r.name, { nameI18n: r.nameI18n, locale })}</td>
                         <td className="px-3 py-1.5 text-right text-mq-text-muted">
                           {formatPercent(r.teamPercent)}
                         </td>
@@ -612,6 +605,9 @@ function MlmAdminInner() {
                               setEditingRank(r);
                               setEditForm({
                                 name: r.name,
+                                nameVi: r.nameI18n?.vi ?? "",
+                                nameEn: r.nameI18n?.en ?? "",
+                                nameZhTw: r.nameI18n?.["zh-TW"] ?? "",
                                 teamPercent: String(r.teamPercent),
                                 referralPercent: String(r.referralPercent),
                                 globalFundTier: r.globalFundTier != null ? String(r.globalFundTier) : "",
@@ -640,6 +636,13 @@ function MlmAdminInner() {
                     e.preventDefault();
                     const body: Record<string, unknown> = {};
                     if (editForm.name !== editingRank.name) body.name = editForm.name;
+                    // Build nameI18n from individual locale fields
+                    const newI18n: Record<string, string> = {};
+                    if (editForm.nameVi.trim()) newI18n.vi = editForm.nameVi.trim();
+                    if (editForm.nameEn.trim()) newI18n.en = editForm.nameEn.trim();
+                    if (editForm.nameZhTw.trim()) newI18n["zh-TW"] = editForm.nameZhTw.trim();
+                    const oldI18n = editingRank.nameI18n ?? {};
+                    if (JSON.stringify(newI18n) !== JSON.stringify(oldI18n)) body.nameI18n = newI18n;
                     const tp = Number(editForm.teamPercent);
                     if (Number.isFinite(tp) && String(tp) !== String(editingRank.teamPercent)) body.teamPercent = tp;
                     const rp = Number(editForm.referralPercent);
@@ -658,6 +661,31 @@ function MlmAdminInner() {
                       className="mq-input"
                       value={editForm.name}
                       onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                    />
+                  </label>
+                  <label className="block text-xs space-y-1">
+                    <span className="text-mq-text-muted">🇻🇳 Tiếng Việt</span>
+                    <input
+                      className="mq-input"
+                      value={editForm.nameVi}
+                      onChange={(e) => setEditForm({ ...editForm, nameVi: e.target.value })}
+                      placeholder={editForm.name}
+                    />
+                  </label>
+                  <label className="block text-xs space-y-1">
+                    <span className="text-mq-text-muted">🇬🇧 English</span>
+                    <input
+                      className="mq-input"
+                      value={editForm.nameEn}
+                      onChange={(e) => setEditForm({ ...editForm, nameEn: e.target.value })}
+                    />
+                  </label>
+                  <label className="block text-xs space-y-1">
+                    <span className="text-mq-text-muted">🇹🇼 繁體中文</span>
+                    <input
+                      className="mq-input"
+                      value={editForm.nameZhTw}
+                      onChange={(e) => setEditForm({ ...editForm, nameZhTw: e.target.value })}
                     />
                   </label>
                   <label className="block text-xs space-y-1">
@@ -1112,50 +1140,80 @@ function MlmAdminInner() {
                   {getErrorMessage(treeErr, t("admin.common.failed"))}
                 </div>
               ) : null}
-              {tree ? (
-                <div className="space-y-3 max-h-[28rem] overflow-y-auto overflow-x-hidden pr-1 min-w-0">
-                  <div className="flex flex-wrap gap-2 text-xs sticky top-0 bg-mq-surface-elevated py-1 z-10">
-                    <span className="mq-badge mq-badge-muted">
-                      {t("wallet.networkTotal")}: {tree.totalDownline}
-                    </span>
-                    {tree.truncated ? (
-                      <span className="mq-badge mq-badge-orange">
-                        {t("wallet.networkTruncated")}
-                      </span>
-                    ) : null}
-                  </div>
-                  {treeByDepth.map(([depth, nodes]) => (
-                    <div key={depth} className="space-y-1 min-w-0">
-                      <p className="text-xs uppercase tracking-wider text-mq-text-muted">
-                        F{depth} · {nodes.length}
-                      </p>
-                      {nodes.slice(0, 20).map((n) => (
-                        <div
-                          key={n.userId}
-                          className="text-sm flex items-center justify-between gap-2 border-b border-mq-border py-1 min-w-0"
-                        >
-                          <span className="truncate min-w-0">
-                            {n.fullName || n.email || n.userId.slice(0, 8)}
-                          </span>
-                          {n.mlmRank != null ? (
-                            <span className="text-xs text-mq-text-muted shrink-0">
-                              {t("wallet.rank")} {n.mlmRank}
-                            </span>
-                          ) : null}
-                        </div>
-                      ))}
-                      {nodes.length > 20 ? (
-                        <p className="text-xs text-mq-text-muted">
-                          +{nodes.length - 20} more
-                        </p>
-                      ) : null}
-                    </div>
-                  ))}
-                </div>
-              ) : null}
             </section>
           ) : null}
         </div>
+
+        {/* Tree Modal */}
+        {treeModalOpen && (
+          <div className="mq-admin-modal-root" role="presentation">
+            <button
+              type="button"
+              className="mq-admin-modal-backdrop"
+              aria-label="Close"
+              onClick={() => setTreeModalOpen(false)}
+            />
+            <div
+              className="relative z-[1] w-[95vw] max-w-[1400px] h-[90vh] rounded-2xl border border-mq-border bg-mq-surface shadow-lg flex flex-col overflow-hidden"
+              role="dialog"
+              aria-modal="true"
+            >
+              {/* Modal header */}
+              <div className="flex items-center justify-between px-5 py-3 border-b border-mq-border bg-mq-surface-elevated shrink-0">
+                <div className="min-w-0">
+                  <h2 className="text-base font-semibold text-mq-text truncate">
+                    {t("admin.mlm.treeTitle")} — {treeUser?.fullName || treeUser?.email || treeQuery}
+                  </h2>
+                  {tree ? (
+                    <div className="flex flex-wrap gap-2 text-xs mt-1">
+                      <span className="mq-badge mq-badge-muted">
+                        Upline: {tree.totalUpline}
+                      </span>
+                      <span className="mq-badge mq-badge-muted">
+                        {t("wallet.networkTotal")}: {tree.totalDownline}
+                      </span>
+                    </div>
+                  ) : null}
+                </div>
+                <button
+                  type="button"
+                  className="shrink-0 p-2 rounded-lg hover:bg-mq-surface-subtle text-mq-text-muted hover:text-mq-text transition-colors"
+                  onClick={() => setTreeModalOpen(false)}
+                  aria-label="Close"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Modal body */}
+              <div className="flex-1 min-h-0 p-4">
+                {treeLoading ? (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-sm text-mq-text-muted">{t("wallet.loading")}</p>
+                  </div>
+                ) : treeError ? (
+                  <div className="flex items-center justify-center h-full">
+                    <div className="mq-alert mq-alert-error break-words">
+                      {getErrorMessage(treeErr, t("admin.common.failed"))}
+                    </div>
+                  </div>
+                ) : tree ? (
+                  <div className="w-full h-full">
+                    <NetworkTreeFlow
+                      nodes={tree.nodes}
+                      rootUserId={tree.focusUserId}
+                      expandAll
+                      className="w-full h-full rounded-xl overflow-hidden bg-mq-surface-subtle"
+                    />
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        )}
 
         {canSetRank ? (
           <div className="grid gap-4 items-start lg:grid-cols-2">

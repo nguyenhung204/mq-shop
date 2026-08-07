@@ -1882,7 +1882,6 @@
       "needWarehouseFirst": "您需要先建立至少一個倉庫才能建立單據。",
       "goToWarehouses": "建立倉庫"
     },
-
     "transfers": {
       "title": "調撥",
       "description": "在倉庫之間轉移庫存。",
@@ -2169,7 +2168,14 @@
     "rankProgressBuyerGate": "此帳號目前不在升級路徑中。",
     "rankProgressBuyerGateHint": "此帳號不具有買家角色，無法參與 MLM 升級路徑。",
     "rankProgressOpenShop": "去開店",
-    "rankProgressPreDistributor": "尚未成為經銷商"
+    "rankProgressPreDistributor": "尚未成為經銷商",
+    "networkTreeYou": "您",
+    "networkTreeReferrals": "推薦人數",
+    "networkTreeEarnings": "收入",
+    "networkTreeExpand": "展開",
+    "networkTreeCollapse": "收起",
+    "networkViewTree": "樹狀圖",
+    "networkViewList": "列表"
   },
   "toast": {
     "somethingWentWrong": "發生錯誤",
@@ -2461,7 +2467,8 @@
     "mlmReconcileBatch": "批次：檢查 {checked}，升級 {promoted}",
     "mlmReconcileFailed": "等級校正失敗",
     "shopUnlocked": "已解除鎖定並恢復為已核准",
-    "shopNotSuspended": "商店未因違規鎖定 — 無法解除。"
+    "shopNotSuspended": "商店未因違規鎖定 — 無法解除。",
+    "sellerClosureBlocked": "無法關閉帳號。請先處理所有進行中的訂單、退換貨申請、提款申請及錢包餘額。"
   },
   "superAdmin": {
     "title": "系統管理",

@@ -61,6 +61,7 @@ export const API_ERROR_I18N: Record<string, string> = {
   PROMOTION_RULE_RANK_NOT_FOUND: "toast.promotionRuleRankNotFound",
   PROMOTION_RULE_INVALID_RANK_ORDER: "toast.promotionRuleInvalidRankOrder",
   PROMOTION_RULE_DUPLICATE: "toast.promotionRuleDuplicate",
+  SELLER_CLOSURE_BLOCKED: "toast.sellerClosureBlocked",
 };
 
 const STATUS_TOKENS_BY_DOMAIN: Record<string, string[]> = {

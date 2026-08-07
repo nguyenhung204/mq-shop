@@ -309,6 +309,9 @@ export function MlmCreateRankSection() {
   const [form, setForm] = useState({
     rank: "",
     name: "",
+    nameVi: "",
+    nameEn: "",
+    nameZhTw: "",
     teamPercent: "0",
     referralPercent: "10",
     globalFundTier: "",
@@ -316,15 +319,20 @@ export function MlmCreateRankSection() {
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    const nameI18n: Record<string, string> = {};
+    if (form.nameVi.trim()) nameI18n.vi = form.nameVi.trim();
+    if (form.nameEn.trim()) nameI18n.en = form.nameEn.trim();
+    if (form.nameZhTw.trim()) nameI18n["zh-TW"] = form.nameZhTw.trim();
     await createRank.mutateAsync({
       rank: Number(form.rank),
       name: form.name.trim(),
+      nameI18n: Object.keys(nameI18n).length > 0 ? nameI18n : undefined,
       teamPercent: Number(form.teamPercent),
       referralPercent: Number(form.referralPercent),
       globalFundTier: form.globalFundTier.trim() ? Number(form.globalFundTier) : null,
     });
     setOpen(false);
-    setForm({ rank: "", name: "", teamPercent: "0", referralPercent: "10", globalFundTier: "" });
+    setForm({ rank: "", name: "", nameVi: "", nameEn: "", nameZhTw: "", teamPercent: "0", referralPercent: "10", globalFundTier: "" });
   };
 
   if (!open) {
@@ -362,6 +370,31 @@ export function MlmCreateRankSection() {
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             required
+          />
+        </label>
+        <label className="block text-xs space-y-1">
+          <span className="text-mq-text-muted">🇻🇳 Tiếng Việt</span>
+          <input
+            className="mq-input"
+            value={form.nameVi}
+            onChange={(e) => setForm({ ...form, nameVi: e.target.value })}
+            placeholder={form.name}
+          />
+        </label>
+        <label className="block text-xs space-y-1">
+          <span className="text-mq-text-muted">🇬🇧 English</span>
+          <input
+            className="mq-input"
+            value={form.nameEn}
+            onChange={(e) => setForm({ ...form, nameEn: e.target.value })}
+          />
+        </label>
+        <label className="block text-xs space-y-1">
+          <span className="text-mq-text-muted">🇹🇼 繁體中文</span>
+          <input
+            className="mq-input"
+            value={form.nameZhTw}
+            onChange={(e) => setForm({ ...form, nameZhTw: e.target.value })}
           />
         </label>
         <label className="block text-xs space-y-1">
