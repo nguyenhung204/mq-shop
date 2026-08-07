@@ -9,6 +9,7 @@ import {
   FileBarChart2,
   FolderOpen,
   FolderTree,
+  GitBranchPlus,
   HandCoins,
   HardDrive,
   ImageIcon,
@@ -218,6 +219,14 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.commissionReport",
     icon: FileBarChart2,
     roles: ["SUPER_ADMIN"],
+    group: "commerce",
+  },
+  {
+    href: "/admin/rank-tree",
+    labelKey: "admin.nav.rankTree",
+    icon: GitBranchPlus,
+    permissions: ["CONFIG_MLM", "VIEW_MLM_TREE"],
+    roles: ["SUPER_ADMIN", "ACCOUNTANT", "ADMIN"],
     group: "commerce",
   },
   {

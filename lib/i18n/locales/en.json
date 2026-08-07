@@ -649,6 +649,7 @@
       "walletAdjust": "Wallet adjust",
       "mlm": "MLM ranks",
       "commissionReport": "Commission Report",
+      "rankTree": "Rank Tree",
       "backups": "Backups",
       "rbac": "Access rights",
       "dsar": "DSAR",
@@ -1357,6 +1358,31 @@
       "notePh": "Reason for this adjustment",
       "submit": "Apply adjustment",
       "success": "Adjusted {email} by {amount} TWD"
+    },
+    "rankTree": {
+      "title": "Rank Tree",
+      "description": "Overview of the MLM rank hierarchy tree",
+      "rootRank": "Root rank (highest)",
+      "minRank": "Lowest rank displayed",
+      "displayRange": "Showing R{from} to R{to}",
+      "hintClick": "Click user node → view detail",
+      "hintExpand": "Click \"+ Expand\" → expand branch",
+      "expand": "+ Expand",
+      "users": "users",
+      "loading": "Loading...",
+      "f1Label": "F1",
+      "teamLabel": "TEAM",
+      "noPermission": "You do not have permission to view this page.",
+      "loadError": "Failed to load rank data.",
+      "drawer": {
+        "title": "User Detail",
+        "status": "Status",
+        "active": "Active",
+        "inactive": "Inactive",
+        "f1Direct": "Direct F1",
+        "totalTeam": "Total team",
+        "f1List": "F1"
+      }
     },
     "mlm": {
       "title": "MLM ranks",

@@ -649,6 +649,7 @@
       "walletAdjust": "錢包調整",
       "mlm": "MLM 等級",
       "commissionReport": "佣金報告",
+      "rankTree": "等級樹狀圖",
       "backups": "備份",
       "rbac": "權限設定",
       "dsar": "DSAR",
@@ -1357,6 +1358,31 @@
       "notePh": "調整原因",
       "submit": "套用調整",
       "success": "已調整 {email} {amount} TWD"
+    },
+    "rankTree": {
+      "title": "等級樹狀圖",
+      "description": "查看 MLM 等級階層樹狀總覽",
+      "rootRank": "最高等級（根節點）",
+      "minRank": "顯示的最低等級",
+      "displayRange": "顯示 R{from} 至 R{to}",
+      "hintClick": "點擊用戶節點 → 查看詳情",
+      "hintExpand": "點擊「+ 展開」→ 展開分支",
+      "expand": "+ 展開",
+      "users": "人",
+      "loading": "載入中...",
+      "f1Label": "F1",
+      "teamLabel": "TEAM",
+      "noPermission": "您無權查看此頁面。",
+      "loadError": "無法載入等級資料。",
+      "drawer": {
+        "title": "用戶詳情",
+        "status": "狀態",
+        "active": "活躍",
+        "inactive": "未活躍",
+        "f1Direct": "直推 F1",
+        "totalTeam": "團隊總計",
+        "f1List": "F1"
+      }
     },
     "mlm": {
       "title": "MLM 等級",

@@ -649,6 +649,7 @@
       "walletAdjust": "Điều chỉnh ví",
       "mlm": "Rank MLM",
       "commissionReport": "Báo cáo hoa hồng",
+      "rankTree": "Sơ đồ cấp bậc",
       "backups": "Sao lưu",
       "rbac": "Bảng phân quyền",
       "dsar": "DSAR",
@@ -1357,6 +1358,31 @@
       "notePh": "Lý do điều chỉnh",
       "submit": "Áp dụng",
       "success": "Đã điều chỉnh {email} {amount} TWD"
+    },
+    "rankTree": {
+      "title": "Sơ đồ cấp bậc",
+      "description": "Xem tổng quan cây cấp bậc (rank) của hệ thống MLM",
+      "rootRank": "Rank gốc (cao nhất)",
+      "minRank": "Rank thấp nhất hiển thị",
+      "displayRange": "Hiển thị từ R{from} đến R{to}",
+      "hintClick": "Click user node → xem chi tiết",
+      "hintExpand": "Click \"+ Expand\" → mở rộng nhánh",
+      "expand": "+ Mở rộng",
+      "users": "users",
+      "loading": "Đang tải...",
+      "f1Label": "F1",
+      "teamLabel": "TEAM",
+      "noPermission": "Bạn không có quyền xem trang này.",
+      "loadError": "Không thể tải dữ liệu rank.",
+      "drawer": {
+        "title": "Chi tiết user",
+        "status": "Trạng thái",
+        "active": "Hoạt động",
+        "inactive": "Không hoạt động",
+        "f1Direct": "F1 trực tiếp",
+        "totalTeam": "Tổng team",
+        "f1List": "F1"
+      }
     },
     "mlm": {
       "title": "Rank MLM",
