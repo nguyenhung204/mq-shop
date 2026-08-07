@@ -14,6 +14,7 @@ import {
 } from "@/lib/queries/catalog";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useRegion } from "@/components/providers/RegionProvider";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { Container } from "@/components/ui/shared";
@@ -26,6 +27,7 @@ function parseOptionalNumber(value: string | null): number | undefined {
 
 export function ShopStorefrontContent() {
   const { t, locale } = useLanguage();
+  const { regionCode } = useRegion();
   const params = useParams<{ id: string }>();
   const shopId = params.id;
   const searchParams = useSearchParams();
@@ -61,6 +63,7 @@ export function ShopStorefrontContent() {
     shopId,
     q: q || undefined,
     categoryId,
+    countryCode: regionCode || undefined,
     minPrice,
     maxPrice,
     page,

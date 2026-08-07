@@ -200,6 +200,7 @@ export const catalogApi = {
     q?: string;
     categoryId?: string;
     shopId?: string;
+    countryCode?: string;
     minPrice?: number;
     maxPrice?: number;
     page?: number;
@@ -212,6 +213,7 @@ export const catalogApi = {
           q: query.q,
           categoryId: query.categoryId,
           shopId: query.shopId,
+          countryCode: query.countryCode,
           minPrice: query.minPrice,
           maxPrice: query.maxPrice,
           page: query.page ?? 1,
@@ -229,6 +231,20 @@ export const catalogApi = {
   /** Public shop profile — APPROVED + not suspended. */
   shopStorefront: (shopId: string) =>
     api.get<ShopStorefront>(`/shops/${shopId}/storefront`),
+
+  /** Check if variants are available in a specific region warehouse. */
+  checkRegionAvailability: (body: {
+    variantIds: string[];
+    targetCountryCode: string;
+  }) =>
+    api.post<{
+      results: Array<{
+        variantId: string;
+        available: boolean;
+        warehouseCountry: string | null;
+        availableStock: number;
+      }>;
+    }>("/catalog/check-region-availability", body),
 };
 
 export const shopApi = {

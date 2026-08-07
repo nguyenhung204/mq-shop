@@ -19,6 +19,8 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import { CartMenu } from "@/components/layout/CartMenu";
+import { RegionSwitcher } from "@/components/layout/RegionSwitcher";
+import { useRegion } from "@/components/providers/RegionProvider";
 import { useWishlist } from "@/components/providers/WishlistProvider";
 import { RoleSwitcher } from "@/components/layout/RoleSwitcher";
 import { TopBar } from "@/components/layout/TopBar";
@@ -52,6 +54,7 @@ export function Header() {
   const { t, locale } = useLanguage();
   const router = useRouter();
   const { itemCount: wishlistCount } = useWishlist();
+  const { regionCode } = useRegion();
 
   const { data: apiCategories = [] } = useCatalogCategories();
   const roots = useMemo(() => rootCategories(apiCategories), [apiCategories]);
@@ -67,15 +70,17 @@ export function Header() {
     return () => window.clearTimeout(timer);
   }, [query]);
 
-  const { data: featuredListing = [] } = useCatalogListing({ pageSize: 12 });
+  const { data: featuredListing = [] } = useCatalogListing({ pageSize: 12, countryCode: regionCode || undefined });
   const { data: categoryListing = [] } = useCatalogListing({
     categoryId: activeCategoryId || undefined,
+    countryCode: regionCode || undefined,
     pageSize: 12,
     enabled: Boolean(activeCategoryId) && activeMega === "products",
   });
   const { data: searchSuggestions = [], isFetching: suggestLoading } =
     useCatalogListing({
       q: debouncedQuery,
+      countryCode: regionCode || undefined,
       pageSize: 6,
       enabled: debouncedQuery.length >= 2,
     });
@@ -354,6 +359,7 @@ export function Header() {
               <span className="hidden lg:block w-px h-5 bg-mq-border mx-1.5" aria-hidden />
 
               <LanguageSwitcher className="hidden lg:block" />
+              <RegionSwitcher className="hidden lg:flex" />
               <button
                 type="button"
                 onClick={toggle}
@@ -591,6 +597,7 @@ export function Header() {
               <div className="flex items-center gap-1 overflow-visible">
                 <NotificationBell />
                 <UserMenu />
+                <RegionSwitcher />
                 <LanguageSwitcher menuAlign="start" menuPlacement="above" />
                 <button type="button" onClick={toggle} className="mq-theme-toggle mq-icon-btn" aria-label={t("nav.toggleTheme")}>
                   {dark ? (

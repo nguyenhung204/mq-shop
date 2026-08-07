@@ -95,6 +95,8 @@ export type ListingCard = {
   /** Product reviews (011). */
   ratingAvg?: number | string | null;
   reviewCount?: number | null;
+  /** Country codes where this product is available. */
+  countryCodes?: string[];
 };
 
 export type ProductVariant = {
@@ -163,6 +165,8 @@ export type PublicProductDetail = {
   /** Product reviews (011). */
   ratingAvg?: number | string | null;
   reviewCount?: number | null;
+  /** Country codes where this product is available. */
+  countryCodes?: string[];
 };
 
 export type ApiProduct = {
@@ -206,6 +210,8 @@ export type CreateProductRequest = {
     sellingPrice: number;
     options?: Record<string, string>;
   }>;
+  /** ISO country codes where this product should be visible. */
+  countryCodes?: string[];
 };
 
 export type UpdateProductRequest = {
@@ -213,6 +219,8 @@ export type UpdateProductRequest = {
   description?: string;
   categoryId?: string;
   attributes?: Record<string, unknown> | null;
+  /** ISO country codes where this product should be visible. */
+  countryCodes?: string[];
 };
 
 export type AddProductVariantRequest = {

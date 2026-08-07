@@ -66,6 +66,7 @@ export function mapListingCard(p: BeListing, categorySlug = "all"): Product {
       ? { id: p.shopId ?? "", name: p.shopName, logoUrl: null }
       : undefined,
     createdAt: p.createdAt,
+    countryCodes: p.countryCodes,
   };
 }
 
@@ -120,6 +121,7 @@ export function mapPublicProductDetail(p: PublicProductDetail): Product {
         ? null
         : undefined,
     createdAt: p.createdAt,
+    countryCodes: p.countryCodes,
   };
 }
 

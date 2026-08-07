@@ -10,6 +10,7 @@ import type { Product } from "@/lib/data/products";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { categoryImages, miscImages } from "@/lib/images";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useRegion } from "@/components/providers/RegionProvider";
 import { HeroSlider } from "@/components/home/HeroSlider";
 import { CategoryMarquee } from "@/components/home/CategoryMarquee";
 import { FeaturedReviews } from "@/components/home/FeaturedReviews";
@@ -32,6 +33,7 @@ const FALLBACK_CATEGORY_IMAGES: Record<string, string> = {
 
 export function HomePageContent() {
   const { t, locale } = useLanguage();
+  const { regionCode } = useRegion();
   const [categories, setCategories] = useState<ApiCategory[]>([]);
   const [listing, setListing] = useState<Product[]>([]);
   const [loadingCats, setLoadingCats] = useState(true);
@@ -51,7 +53,7 @@ export function HomePageContent() {
     setLoadingProducts(true);
     setError(null);
     void catalogApi
-      .listing({ page: 1, pageSize: 24 })
+      .listing({ page: 1, pageSize: 24, countryCode: regionCode || undefined })
       .then((res) => {
         setListing(res.items.map((p) => mapListingCard(p)));
       })
@@ -60,7 +62,7 @@ export function HomePageContent() {
         setError(getErrorMessage(err, t("home.loadProductsFailed")));
       })
       .finally(() => setLoadingProducts(false));
-  }, [t]);
+  }, [t, regionCode]);
 
   const inStock = useMemo(
     () => listing.filter((p) => p.inStock > 0 && p.displayMode !== "OUT_OF_STOCK_WATERMARK"),

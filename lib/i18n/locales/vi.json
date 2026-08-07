@@ -91,12 +91,13 @@
   },
   "common": {
     "discoverNow": "Khám phá ngay",
-    "shopAll": "Xem tất cả",
+    "shopAll": "Mua tất cả",
     "seeCollection": "Xem bộ sưu tập",
     "addToCart": "Thêm vào giỏ",
     "standard": "Tiêu chuẩn",
     "mqQuality": "Chất lượng MQ",
-    "mqCollection": "Bộ sưu tập MQ"
+    "mqCollection": "Bộ sưu tập MQ",
+    "cancel": "Hủy"
   },
   "home": {
     "hero1Title": "NÂNG TẦM CUỘC SỐNG",
@@ -1822,7 +1823,9 @@
       "variantRequiredError": "Thêm ít nhất một biến thể (SKU + giá bán).",
       "maxImagesPerSkuError": "Tối đa {max} ảnh cho mỗi SKU.",
       "optionKeyValueError": "Khóa và giá trị tùy chọn không được để trống.",
-      "invalidOptionError": "Tùy chọn không hợp lệ “{piece}”. Dùng dạng khóa=giá trị (ví dụ: size=M, color=black)."
+      "invalidOptionError": "Tùy chọn không hợp lệ “{piece}”. Dùng dạng khóa=giá trị (ví dụ: size=M, color=black).",
+      "countryCodes": "Vùng hiển thị",
+      "countryCodesHint": "Chọn vùng mà sản phẩm này sẽ hiển thị."
     },
     "inventoryPage": {
       "warehouses": "Kho",
@@ -2111,7 +2114,7 @@
     "pillarTeam": "Đội nhóm — thưởng chênh lệch cuối tháng trên doanh số mạng (không tính mua của chính bạn).",
     "pillarLoyalty": "Trung thành — mua cá nhân hoàn tất ≥ NT$2.000/tháng trong 12 tháng → thưởng NT$28.000.",
     "pillarGlobal": "Toàn cầu — 2% doanh số sàn chia theo các cấp cao; cấp trống công ty giữ.",
-    "rankSeller": "Đối tác cửa hàng",
+    "rankSeller": "Người mua hàng",
     "rankLabel": "{name}",
     "rankProgressTitle": "Lộ trình thăng cấp",
     "rankProgressNext": "Bước kế: {name}",
@@ -2145,7 +2148,7 @@
       "globalTiersTitle": "Ai được chia quỹ",
       "globalNote": "Cấp cao hơn có thể đủ điều kiện ở nhiều mức chia. Mức trống do công ty giữ.",
       "ranks": {
-        "0": "Đối tác cửa hàng",
+        "0": "Người mua hàng",
         "1": "Nhà phân phối",
         "2": "Nhà phân phối khu vực",
         "3": "Đại lý",
@@ -2875,5 +2878,24 @@
     "seller": "Bán hàng",
     "admin": "Quản trị",
     "wallet": "Ví"
+  },
+  "region": {
+    "select": "Chọn vùng",
+    "selectTitle": "Chọn Vùng Mua Hàng",
+    "selectSubtitle": "Sản phẩm hiển thị sẽ dựa trên vùng bạn chọn.",
+    "selectHint": "Bạn có thể thay đổi vùng mua hàng bất kỳ lúc nào từ thanh menu.",
+    "confirm": "Xác nhận",
+    "switchRegion": "Đổi vùng mua hàng"
+  },
+  "crossBorder": {
+    "title": "Phát hiện sản phẩm xuyên biên giới",
+    "subtitle": "Một số sản phẩm trong giỏ hàng không có sẵn tại quốc gia bạn giao hàng. Chúng sẽ được vận chuyển quốc tế.",
+    "availableIn": "Có sẵn tại:",
+    "suggestion": "Tiết kiệm phí ship!",
+    "suggestionDetail": "Chuyển giao hàng sang {region} để có phí ship rẻ hơn và nhận hàng nhanh hơn.",
+    "switchRegion": "Giao tới {region}",
+    "continueAnyway": "Tiếp tục với vận chuyển quốc tế",
+    "regionSwitched": "Đã cập nhật vùng mua hàng! Danh sách sản phẩm sẽ được làm mới.",
+    "badge": "QT"
   }
 }

@@ -96,7 +96,8 @@
     "addToCart": "加入購物車",
     "standard": "標準",
     "mqQuality": "MQ 品質",
-    "mqCollection": "MQ 系列"
+    "mqCollection": "MQ 系列",
+    "cancel": "取消"
   },
   "home": {
     "hero1Title": "提升日常品味",
@@ -1822,7 +1823,9 @@
       "variantRequiredError": "請新增至少一個規格（SKU + 售價）。",
       "maxImagesPerSkuError": "每個 SKU 最多 {max} 張圖片。",
       "optionKeyValueError": "選項的鍵與值不可為空。",
-      "invalidOptionError": "選項「{piece}」無效。請使用鍵=值格式（例如 size=M, color=black）。"
+      "invalidOptionError": "選項「{piece}」無效。請使用鍵=值格式（例如 size=M, color=black）。",
+      "countryCodes": "顯示地區",
+      "countryCodesHint": "選擇此商品將在哪些地區顯示。"
     },
     "inventoryPage": {
       "warehouses": "倉庫",
@@ -2111,7 +2114,7 @@
     "pillarTeam": "團隊 — 月底依網路業績差額獎金（不含自購）。",
     "pillarLoyalty": "忠誠 — 個人完成消費 ≥ NT$2,000/月連續 12 個月 → NT$28,000 獎金。",
     "pillarGlobal": "全球 — 平台業績 2% 依較高等級分配；空缺由公司保留。",
-    "rankSeller": "開店夥伴",
+    "rankSeller": "買家",
     "rankLabel": "{name}",
     "rankProgressTitle": "升級路徑",
     "rankProgressNext": "下一階：{name}",
@@ -2145,7 +2148,7 @@
       "globalTiersTitle": "可參與分配的等級",
       "globalNote": "較高等級可能同時符合多個分配帶。空缺由公司保留。",
       "ranks": {
-        "0": "開店夥伴",
+        "0": "買家",
         "1": "經銷商",
         "2": "區域經銷商",
         "3": "代理商",
@@ -2875,5 +2878,24 @@
     "seller": "賣家",
     "admin": "管理",
     "wallet": "錢包"
+  },
+  "region": {
+    "select": "選擇地區",
+    "selectTitle": "選擇購物地區",
+    "selectSubtitle": "商品將根據您選擇的地區顯示。",
+    "selectHint": "您可以隨時從頂部選單更改購物地區。",
+    "confirm": "確認地區",
+    "switchRegion": "切換購物地區"
+  },
+  "crossBorder": {
+    "title": "偵測到跨境商品",
+    "subtitle": "您購物車中部分商品在配送國家無當地庫存，將以國際物流配送。",
+    "availableIn": "可購買地區：",
+    "suggestion": "節省運費！",
+    "suggestionDetail": "改配送到 {region} 可享更低運費和更快配送。",
+    "switchRegion": "改配送到 {region}",
+    "continueAnyway": "繼續國際配送",
+    "regionSwitched": "購物地區已更新！商品列表將重新整理。",
+    "badge": "國際"
   }
 }

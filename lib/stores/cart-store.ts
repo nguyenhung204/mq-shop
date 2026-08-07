@@ -24,6 +24,8 @@ export type CartLine = {
   variantOptions?: Record<string, string>;
   /** Available stock for low-stock / OOS display. */
   inStock?: number;
+  /** Country codes where this product is available (from products.country_codes). */
+  countryCodes?: string[];
 };
 
 type CartActions = {
@@ -69,6 +71,7 @@ function resolveLine(product: Product, quantity: number): CartLine | null {
     slug: product.slug,
     variantOptions: variant?.options ?? undefined,
     inStock: variant?.availableStock ?? product.inStock,
+    countryCodes: product.countryCodes ?? undefined,
   };
 }
 

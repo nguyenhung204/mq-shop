@@ -96,7 +96,8 @@
     "addToCart": "Add to Cart",
     "standard": "Standard",
     "mqQuality": "MQ Quality",
-    "mqCollection": "MQ Collection"
+    "mqCollection": "MQ Collection",
+    "cancel": "Cancel"
   },
   "home": {
     "hero1Title": "ELEVATE DAILY LIVING",
@@ -1822,7 +1823,9 @@
       "variantRequiredError": "Add at least one variant (SKU + sell price).",
       "maxImagesPerSkuError": "Maximum {max} images per SKU.",
       "optionKeyValueError": "Option key and value cannot be empty.",
-      "invalidOptionError": "Invalid options “{piece}”. Use key=value (e.g. size=M, color=black)."
+      "invalidOptionError": "Invalid options “{piece}”. Use key=value (e.g. size=M, color=black).",
+      "countryCodes": "Available Regions",
+      "countryCodesHint": "Select which regions this product will be displayed in."
     },
     "inventoryPage": {
       "warehouses": "Warehouses",
@@ -2111,7 +2114,7 @@
     "pillarTeam": "Team — month-end differential bonus on your network volume (your own purchases don’t count).",
     "pillarLoyalty": "Loyalty — personal completed spend of NT$2,000+/month for 12 months → NT$28,000 bonus.",
     "pillarGlobal": "Global — 2% of platform sales shared across higher ranks; empty tiers stay with the company.",
-    "rankSeller": "Shop partner",
+    "rankSeller": "Buyer",
     "rankLabel": "{name}",
     "rankProgressTitle": "Your promotion path",
     "rankProgressNext": "Next: {name}",
@@ -2145,7 +2148,7 @@
       "globalTiersTitle": "Who can join the pool",
       "globalNote": "Higher levels can qualify for more than one share band. Empty bands are kept by the company.",
       "ranks": {
-        "0": "Shop partner",
+        "0": "Buyer",
         "1": "Distributor",
         "2": "Regional Distributor",
         "3": "Agency",
@@ -2875,5 +2878,24 @@
     "seller": "Seller",
     "admin": "Admin",
     "wallet": "Wallet"
+  },
+  "region": {
+    "select": "Select Region",
+    "selectTitle": "Choose Your Shopping Region",
+    "selectSubtitle": "Products shown will be based on your selected region.",
+    "selectHint": "You can change your shopping region anytime from the header.",
+    "confirm": "Confirm Region",
+    "switchRegion": "Switch Shopping Region"
+  },
+  "crossBorder": {
+    "title": "Cross-Border Items Detected",
+    "subtitle": "Some items in your cart are not available locally in the country you're shipping to. They will be shipped internationally.",
+    "availableIn": "Available in:",
+    "suggestion": "Save on shipping!",
+    "suggestionDetail": "Switch shipping to {region} for cheaper shipping and faster delivery.",
+    "switchRegion": "Ship to {region} instead",
+    "continueAnyway": "Continue with International Shipping",
+    "regionSwitched": "Shopping region updated! Product listings will refresh.",
+    "badge": "Intl"
   }
 }

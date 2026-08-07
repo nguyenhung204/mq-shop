@@ -18,16 +18,23 @@ import { useCheckout, useShippingQuote } from "@/lib/queries/orders";
 import { useCart } from "@/components/providers/CartProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useRegion } from "@/components/providers/RegionProvider";
 import { CountrySelect } from "@/components/ui/CountrySelect";
 import { PhoneInput } from "@/components/ui/PhoneInput";
 import { AddressRegionFields } from "@/components/ui/AddressRegionFields";
 import { QuantityStepper } from "@/components/ui/QuantityStepper";
 import { Container, PageHero } from "@/components/ui/shared";
 import { FormAlerts } from "@/lib/ui/form-feedback";
+import {
+  CrossBorderWarningModal,
+  detectCrossBorderItems,
+} from "@/components/cart/CrossBorderWarningModal";
+import type { GateRegionId } from "@/lib/i18n/regions";
 
 export function CheckoutContent() {
   const { t, locale } = useLanguage();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { regionCode, setRegion } = useRegion();
   const {
     items,
     selectedItems,
@@ -52,6 +59,8 @@ export function CheckoutContent() {
   const [dialCountry, setDialCountry] = useState("VN");
   const [submitError, setSubmitError] = useState<unknown>(null);
   const [dialTouched, setDialTouched] = useState(false);
+  const [crossBorderOpen, setCrossBorderOpen] = useState(false);
+  const [crossBorderBypassed, setCrossBorderBypassed] = useState(false);
   const quote = useShippingQuote();
   const checkout = useCheckout();
 
@@ -111,6 +120,13 @@ export function CheckoutContent() {
 
   const address = watch("shippingAddress");
   const lineItems = useMemo(() => checkoutSelectedItems(), [selectedItems]);
+
+  // Detect cross-border items: compare shipping address country vs product countryCodes
+  const shippingCountry = address?.country?.toUpperCase() || null;
+  const crossBorderCheck = useMemo(
+    () => detectCrossBorderItems(selectedItems, shippingCountry),
+    [selectedItems, shippingCountry],
+  );
 
   const syncPhone = (nextDialCountry: string, nextNational: string) => {
     setNationalPhone(nextNational);
@@ -218,6 +234,15 @@ export function CheckoutContent() {
   const previewTotal = selectedSubtotal + (shippingFee ?? 0);
 
   const onSubmit = async (values: CheckoutFormValues) => {
+    // Check for cross-border items before placing order
+    if (
+      crossBorderCheck.crossBorderItems.length > 0 &&
+      !crossBorderBypassed
+    ) {
+      setCrossBorderOpen(true);
+      return;
+    }
+
     setSubmitError(null);
     try {
       const phone = toE164(
@@ -242,6 +267,24 @@ export function CheckoutContent() {
     } catch (err) {
       setSubmitError(err);
     }
+  };
+
+  const handleCrossBorderContinue = () => {
+    setCrossBorderBypassed(true);
+    setCrossBorderOpen(false);
+    // Re-trigger form submit
+    handleSubmit(onSubmit)();
+  };
+
+  const handleCrossBorderSwitchRegion = (regionId: GateRegionId) => {
+    // Map region id to country code for shipping address
+    const countryMap: Record<GateRegionId, string> = { tw: "TW", my: "MY", vn: "VN", sg: "SG" };
+    const newCountry = countryMap[regionId] || "VN";
+    setValue("shippingAddress.country", newCountry, { shouldValidate: true });
+    setRegion(regionId);
+    setCrossBorderOpen(false);
+    setCrossBorderBypassed(false);
+    toast.info(t("crossBorder.regionSwitched"));
   };
 
   const submitErrorText = submitError
@@ -542,6 +585,15 @@ export function CheckoutContent() {
           </aside>
         </form>
       </Container>
+
+      <CrossBorderWarningModal
+        open={crossBorderOpen}
+        onClose={() => setCrossBorderOpen(false)}
+        onContinue={handleCrossBorderContinue}
+        onSwitchRegion={handleCrossBorderSwitchRegion}
+        crossBorderItems={crossBorderCheck.crossBorderItems}
+        alternativeRegions={crossBorderCheck.alternativeRegions}
+      />
     </>
   );
 }

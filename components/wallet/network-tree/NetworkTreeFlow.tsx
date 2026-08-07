@@ -228,27 +228,15 @@ function NetworkTreeFlowInner({
 }) {
   const { t } = useLanguage();
 
-  // Expand/collapse state
-  // In full-tree mode (initialExpandAll), expand all nodes by default
-  const [expandedSet, setExpandedSet] = useState<Set<string>>(() => {
-    if (initialExpandAll) {
-      const all = new Set(apiNodes.map((n) => n.userId));
-      all.add(rootUserId);
-      return all;
-    }
-    return new Set([rootUserId]);
+  // Always expand all nodes (no collapse functionality)
+  const [expandedSet] = useState<Set<string>>(() => {
+    const all = new Set(apiNodes.map((n) => n.userId));
+    all.add(rootUserId);
+    return all;
   });
 
-  const onToggleExpand = useCallback((nodeId: string) => {
-    setExpandedSet((prev) => {
-      const next = new Set(prev);
-      if (next.has(nodeId)) {
-        next.delete(nodeId);
-      } else {
-        next.add(nodeId);
-      }
-      return next;
-    });
+  const onToggleExpand = useCallback((_nodeId: string) => {
+    // No-op — collapse disabled
   }, []);
 
   // Build nodes + edges (recomputes on expand/collapse)
@@ -275,6 +263,8 @@ function NetworkTreeFlowInner({
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={false}
+        noDragClassName="nodrag"
+        noPanClassName="nopan"
         panOnDrag
         zoomOnScroll
       >

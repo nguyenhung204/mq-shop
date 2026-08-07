@@ -5,6 +5,7 @@ import { CartProvider } from "@/components/providers/CartProvider";
 import { FlyToCartProvider } from "@/components/cart/FlyToCartProvider";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import { NotificationProvider } from "@/components/providers/NotificationProvider";
+import { RegionBridge } from "@/components/providers/RegionBridge";
 import { WishlistProvider } from "@/components/providers/WishlistProvider";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
@@ -47,16 +48,18 @@ export default function RootLayout({
           <ThemeProvider>
             <LanguageProvider>
               <AuthProvider>
-                <NotificationProvider>
-                  <WishlistProvider>
-                    <CartProvider>
-                      <FlyToCartProvider>
-                        <AppShell>{children}</AppShell>
-                        <AppToaster />
-                      </FlyToCartProvider>
-                    </CartProvider>
-                  </WishlistProvider>
-                </NotificationProvider>
+                <RegionBridge>
+                  <NotificationProvider>
+                    <WishlistProvider>
+                      <CartProvider>
+                        <FlyToCartProvider>
+                          <AppShell>{children}</AppShell>
+                          <AppToaster />
+                        </FlyToCartProvider>
+                      </CartProvider>
+                    </WishlistProvider>
+                  </NotificationProvider>
+                </RegionBridge>
               </AuthProvider>
             </LanguageProvider>
           </ThemeProvider>

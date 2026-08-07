@@ -43,6 +43,8 @@ export type Product = {
   } | null;
   /** ISO-8601 from listing/PDP when available. */
   createdAt?: string;
+  /** Country codes where this product is available (from DB country_codes column). */
+  countryCodes?: string[];
 };
 
 export const products: Product[] = [

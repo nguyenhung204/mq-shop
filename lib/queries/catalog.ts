@@ -11,6 +11,7 @@ export type CatalogListingParams = {
   q?: string;
   categoryId?: string;
   shopId?: string;
+  countryCode?: string;
   minPrice?: number;
   maxPrice?: number;
   page?: number;
@@ -27,6 +28,7 @@ export const catalogKeys = {
       params.q ?? "",
       params.categoryId ?? "",
       params.shopId ?? "",
+      params.countryCode ?? "",
       params.minPrice ?? "",
       params.maxPrice ?? "",
       params.page ?? 1,
@@ -50,12 +52,13 @@ export function useCatalogListing(
 ) {
   const page = params.page ?? 1;
   const pageSize = params.pageSize ?? 12;
-  const { q, categoryId, shopId, minPrice, maxPrice } = params;
+  const { q, categoryId, shopId, countryCode, minPrice, maxPrice } = params;
   return useQuery({
     queryKey: catalogKeys.listing({
       q,
       categoryId,
       shopId,
+      countryCode,
       minPrice,
       maxPrice,
       page,
@@ -66,6 +69,7 @@ export function useCatalogListing(
         q,
         categoryId,
         shopId,
+        countryCode,
         minPrice,
         maxPrice,
         page,
@@ -84,13 +88,14 @@ export function useCatalogListingPage(
 ) {
   const page = params.page ?? 1;
   const pageSize = params.pageSize ?? 24;
-  const { q, categoryId, shopId, minPrice, maxPrice } = params;
+  const { q, categoryId, shopId, countryCode, minPrice, maxPrice } = params;
   return useQuery({
     queryKey: [
       ...catalogKeys.listing({
         q,
         categoryId,
         shopId,
+        countryCode,
         minPrice,
         maxPrice,
         page,
@@ -103,6 +108,7 @@ export function useCatalogListingPage(
         q,
         categoryId,
         shopId,
+        countryCode,
         minPrice,
         maxPrice,
         page,

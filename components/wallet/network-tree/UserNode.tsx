@@ -80,7 +80,7 @@ function UserNodeComponent({ data }: NodeProps) {
 
       {/* Card */}
       <div
-        className={`w-[240px] rounded-2xl border border-mq-border bg-mq-surface-elevated p-4 shadow-sm transition-shadow hover:shadow-md ${
+        className={`nodrag nopan w-[240px] rounded-2xl border border-mq-border bg-mq-surface-elevated p-4 shadow-sm transition-shadow hover:shadow-md ${
           d.isRoot ? "ring-2 ring-mq-gold/40" : ""
         }`}
       >
@@ -132,35 +132,7 @@ function UserNodeComponent({ data }: NodeProps) {
           </div>
         </div>
 
-        {/* Expand/Collapse button */}
-        {d.hasChildren && (
-          <button
-            type="button"
-            className="nodrag nopan mt-3 w-full flex items-center justify-center gap-1 py-1.5 rounded-lg border border-mq-border text-xs font-medium text-mq-text-muted hover:text-mq-text hover:border-mq-text-muted transition-colors cursor-pointer"
-            onPointerDown={(e) => e.stopPropagation()}
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={(e) => {
-              e.stopPropagation();
-              d.onToggleExpand?.(d.userId);
-            }}
-          >
-            {d.isExpanded ? (
-              <>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="18 15 12 9 6 15" />
-                </svg>
-                {d.labels.collapse}
-              </>
-            ) : (
-              <>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
-                {d.labels.expand}
-              </>
-            )}
-          </button>
-        )}
+        {/* Expand/Collapse button — removed, always show all nodes */}
       </div>
 
       {/* Source handle (outgoing edge to children) */}

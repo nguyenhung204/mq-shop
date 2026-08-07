@@ -8,6 +8,8 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { getTranslation } from "@/lib/i18n/get-translation";
 import { GATE_REGIONS, type GateRegionId } from "@/lib/i18n/regions";
 
+const REGION_STORAGE_KEY = "mq-region";
+
 export function LanguageGate() {
   const { needsSelection, setLocale } = useLanguage();
   const [picked, setPicked] = useState<GateRegionId | null>(null);
@@ -19,7 +21,13 @@ export function LanguageGate() {
   const gt = (key: string) => getTranslation(previewLocale, key);
 
   const handleContinue = () => {
-    if (selectedRegion) setLocale(selectedRegion.locale);
+    if (selectedRegion) {
+      setLocale(selectedRegion.locale);
+      // Also persist the shopping region so user doesn't need to pick again after login
+      localStorage.setItem(REGION_STORAGE_KEY, selectedRegion.id);
+      // Notify RegionProvider in same tab
+      window.dispatchEvent(new Event("mq:region-sync"));
+    }
   };
 
   return (

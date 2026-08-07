@@ -11,6 +11,7 @@ import {
 } from "@/lib/queries/catalog";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useRegion } from "@/components/providers/RegionProvider";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { Container, PageHero } from "@/components/ui/shared";
@@ -23,6 +24,7 @@ function parseOptionalNumber(value: string | null): number | undefined {
 
 export function ShopContent() {
   const { t, locale } = useLanguage();
+  const { regionCode } = useRegion();
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -53,6 +55,7 @@ export function ShopContent() {
   const listingQuery = useCatalogListingPage({
     q: q || undefined,
     categoryId,
+    countryCode: regionCode || undefined,
     minPrice,
     maxPrice,
     page,

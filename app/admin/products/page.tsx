@@ -130,6 +130,18 @@ function ProductsInner() {
                   {productPriceLabel(p)} ·{" "}
                   {t("admin.productsPage.stock", { n: String(p.stock ?? "—") })} · {translateStatus(t, "product", p.status)}
                 </p>
+                {Array.isArray((p as any).countryCodes) && (p as any).countryCodes.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {(p as any).countryCodes.map((code: string) => (
+                      <span
+                        key={code}
+                        className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] leading-none font-medium bg-blue-50 border border-blue-200 text-blue-700"
+                      >
+                        {code}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 {excerpt ? (
                   <p className="text-xs text-mq-text-secondary mt-2">{excerpt}</p>
                 ) : null}

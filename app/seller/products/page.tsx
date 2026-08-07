@@ -14,6 +14,7 @@ import {
   useDeleteVariantImages,
   useHideSellerProduct,
   useSellerProducts,
+  useSellerShop,
   useUnhideSellerProduct,
   useUpdateSellerProduct,
   useUpdateSellerVariant,
@@ -152,6 +153,8 @@ function draftFromVariants(variants: ProductVariant[]): VariantDraft[] {
 
 function ProductsInner() {
   const { t, locale } = useLanguage();
+  const { data: myShop } = useSellerShop();
+  const shopCountryCode = myShop?.countryCode?.toUpperCase() || "VN";
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
   const { data, isLoading: productsLoading, isError, error } = useSellerProducts(
@@ -183,6 +186,7 @@ function ProductsInner() {
     title: "",
     description: "",
     attributesText: "",
+    countryCodes: [shopCountryCode] as string[],
   });
   const [variants, setVariants] = useState<VariantDraft[]>([
     { key: crypto.randomUUID(), sku: "", sellingPrice: "19.99", optionsText: "" },
@@ -198,7 +202,7 @@ function ProductsInner() {
     setExistingUrls([]);
     setRemovedUrls([]);
     setNewFiles([]);
-    setForm({ categoryId: "", title: "", description: "", attributesText: "" });
+    setForm({ categoryId: "", title: "", description: "", attributesText: "", countryCodes: [shopCountryCode] });
     setVariants([
       { key: crypto.randomUUID(), sku: "", sellingPrice: "19.99", optionsText: "" },
     ]);
@@ -210,7 +214,7 @@ function ProductsInner() {
     setExistingUrls([]);
     setRemovedUrls([]);
     setNewFiles([]);
-    setForm({ categoryId: "", title: "", description: "", attributesText: "" });
+    setForm({ categoryId: "", title: "", description: "", attributesText: "", countryCodes: [shopCountryCode] });
     setVariants([
       { key: crypto.randomUUID(), sku: "", sellingPrice: "19.99", optionsText: "" },
     ]);
@@ -230,6 +234,9 @@ function ProductsInner() {
       attributesText: formatOptionsText(
         (p.attributes as Record<string, string> | null | undefined) ?? null,
       ),
+      countryCodes: Array.isArray((p as any).countryCodes) && (p as any).countryCodes.length
+        ? (p as any).countryCodes
+        : ["VN"],
     });
     setVariants(draftFromVariants(variantsOf(p)));
     setShowForm(true);
@@ -416,6 +423,7 @@ function ProductsInner() {
             description: form.description || form.title,
             categoryId: form.categoryId,
             attributes: attrsParsed.options ?? null,
+            countryCodes: form.countryCodes,
           },
           silent: wasRejected,
         });
@@ -477,6 +485,7 @@ function ProductsInner() {
           categoryId: form.categoryId,
           attributes: attrsParsed.options,
           variants: cleaned,
+          countryCodes: form.countryCodes,
         });
         if (newFiles.length && created?.id) {
           await uploadImages.mutateAsync({
@@ -608,6 +617,46 @@ function ProductsInner() {
             value={form.attributesText}
             onChange={(e) => setForm({ ...form, attributesText: e.target.value })}
           />
+
+          {/* Country/region availability multi-select */}
+          <fieldset className="sm:col-span-2 border border-mq-border rounded-[var(--mq-radius)] p-4">
+            <legend className="text-sm font-semibold text-mq-text px-1">
+              {t("seller.productsPage.countryCodes")}
+            </legend>
+            <p className="text-xs text-mq-text-muted mb-3">
+              {t("seller.productsPage.countryCodesHint")}
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {[
+                { code: "VN", label: "🇻🇳 Việt Nam" },
+                { code: "TW", label: "🇹🇼 台灣" },
+                { code: "MY", label: "🇲🇾 Malaysia" },
+                { code: "SG", label: "🇸🇬 Singapore" },
+              ].map(({ code, label }) => (
+                <label
+                  key={code}
+                  className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors ${
+                    form.countryCodes.includes(code)
+                      ? "border-[#0d8f8a] bg-[#0d8f8a]/5 text-mq-text"
+                      : "border-mq-border text-mq-text-muted hover:border-[#0d8f8a]/40"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    className="accent-[#0d8f8a]"
+                    checked={form.countryCodes.includes(code)}
+                    onChange={(e) => {
+                      const next = e.target.checked
+                        ? [...form.countryCodes, code]
+                        : form.countryCodes.filter((c) => c !== code);
+                      setForm({ ...form, countryCodes: next.length ? next : [code] });
+                    }}
+                  />
+                  <span className="text-sm">{label}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
 
           <div className="sm:col-span-2 space-y-3 border border-mq-border rounded-[var(--mq-radius)] p-4">
             <div className="flex flex-wrap items-baseline justify-between gap-2">

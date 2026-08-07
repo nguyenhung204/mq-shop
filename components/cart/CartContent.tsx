@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { formatPrice } from "@/lib/data/products";
 import { useCart } from "@/components/providers/CartProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useRegion } from "@/components/providers/RegionProvider";
 import { Container, PageHero } from "@/components/ui/shared";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { QuantityStepper } from "@/components/ui/QuantityStepper";
@@ -96,6 +97,7 @@ function PriceDisplay({
 
 export function CartContent() {
   const { t } = useLanguage();
+  const { regionCode } = useRegion();
   const router = useRouter();
   const { items, itemCount, updateQuantity, removeItem, clearCart, setSelectedVariantIds } = useCart();
 
@@ -308,6 +310,19 @@ export function CartContent() {
                               {stock.label}
                             </p>
                           )}
+
+                          {/* cross-border badge */}
+                          {regionCode &&
+                            item.countryCodes &&
+                            item.countryCodes.length > 0 &&
+                            !item.countryCodes.includes(regionCode) && (
+                              <span className="inline-flex items-center gap-1 w-fit rounded px-1.5 py-0.5 text-[11px] leading-none bg-amber-50 border border-amber-200 text-amber-700">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.354-5.646M12 21a9.004 9.004 0 01-8.354-5.646M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5a17.92 17.92 0 01-8.716-2.247m0 0A9 9 0 013 12c0-1.605.42-3.113 1.157-4.418" />
+                                </svg>
+                                {t("crossBorder.badge")}
+                              </span>
+                            )}
 
                           {/* stepper + delete */}
                           <div className="flex items-center gap-3 mt-1">
