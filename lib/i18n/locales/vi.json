@@ -2040,7 +2040,8 @@
       "TEAM": "Đội nhóm",
       "GLOBAL": "Toàn cầu",
       "LOYALTY": "Trung thành",
-      "ADJUST": "Điều chỉnh"
+      "ADJUST": "Điều chỉnh",
+      "SELLER_PAYOUT": "Chi trả seller"
     },
     "pinRequiredBanner": "Cần đặt PIN ví trước khi tiếp tục.",
     "p2pEmail": "Email người nhận",
@@ -2175,6 +2176,7 @@
     "networkTreeYou": "BẠN",
     "networkTreeReferrals": "Giới thiệu",
     "networkTreeEarnings": "Thu nhập",
+    "networkTreeLevel": "Cấp độ",
     "networkTreeExpand": "Mở rộng",
     "networkTreeCollapse": "Thu gọn",
     "networkViewTree": "Cây",

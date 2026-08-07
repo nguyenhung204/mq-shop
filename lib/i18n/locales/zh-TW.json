@@ -2040,7 +2040,8 @@
       "TEAM": "團隊",
       "GLOBAL": "全球",
       "LOYALTY": "忠誠",
-      "ADJUST": "調整"
+      "ADJUST": "調整",
+      "SELLER_PAYOUT": "賣家撥款"
     },
     "pinRequiredBanner": "請先設定錢包 PIN 再繼續。",
     "p2pEmail": "收款人電子郵件",
@@ -2175,6 +2176,7 @@
     "networkTreeYou": "您",
     "networkTreeReferrals": "推薦人數",
     "networkTreeEarnings": "收入",
+    "networkTreeLevel": "等級",
     "networkTreeExpand": "展開",
     "networkTreeCollapse": "收起",
     "networkViewTree": "樹狀圖",

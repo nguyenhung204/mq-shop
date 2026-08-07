@@ -19,7 +19,8 @@ export type WalletTxReason =
   | "TEAM"
   | "GLOBAL"
   | "LOYALTY"
-  | "ADJUST";
+  | "ADJUST"
+  | "SELLER_PAYOUT";
 
 export type WalletTxDirection = "IN" | "OUT";
 

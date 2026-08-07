@@ -35,6 +35,7 @@ const TX_REASONS: Array<WalletTxReason | ""> = [
   "GLOBAL",
   "LOYALTY",
   "ADJUST",
+  "SELLER_PAYOUT",
 ];
 
 function formatWhen(iso: string): string {
@@ -48,6 +49,7 @@ function formatWhen(iso: string): string {
 function reasonBadgeClass(reason: string): string {
   if (reason.startsWith("WITHDRAW")) return "mq-badge mq-badge-orange";
   if (reason === "P2P") return "mq-badge mq-badge-cyan";
+  if (reason === "SELLER_PAYOUT") return "mq-badge mq-badge-green";
   if (reason === "REFERRAL" || reason === "TEAM" || reason === "GLOBAL" || reason === "LOYALTY") {
     return "mq-badge mq-badge-muted";
   }

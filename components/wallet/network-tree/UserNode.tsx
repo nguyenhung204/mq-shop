@@ -22,6 +22,7 @@ export type UserNodeData = {
     you: string;
     referrals: string;
     earnings: string;
+    level: string;
     expand: string;
     collapse: string;
   };
@@ -39,11 +40,24 @@ function getInitials(name: string | null, email: string | null): string {
   return "??";
 }
 
-function formatCurrency(amount: string | null | undefined): string {
-  if (!amount || amount === "0") return "$0.00";
-  const num = parseFloat(amount);
-  if (isNaN(num)) return "$0.00";
-  return `$${num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+/** Color mapping for MLM rank levels */
+function rankColor(rank: number | null): { bg: string; text: string; badge: string } {
+  switch (rank) {
+    case 0:
+      return { bg: "bg-slate-100", text: "text-slate-600", badge: "Seller" };
+    case 1:
+      return { bg: "bg-emerald-100", text: "text-emerald-700", badge: "Level 1" };
+    case 2:
+      return { bg: "bg-blue-100", text: "text-blue-700", badge: "Level 2" };
+    case 3:
+      return { bg: "bg-purple-100", text: "text-purple-700", badge: "Level 3" };
+    case 4:
+      return { bg: "bg-amber-100", text: "text-amber-700", badge: "Level 4" };
+    case 5:
+      return { bg: "bg-rose-100", text: "text-rose-700", badge: "Level 5" };
+    default:
+      return { bg: "bg-gray-100", text: "text-gray-500", badge: "—" };
+  }
 }
 
 function statusDot(depth: number): string {
@@ -124,11 +138,13 @@ function UserNodeComponent({ data }: NodeProps) {
           </div>
           <div className="text-right">
             <p className="text-[10px] uppercase tracking-wider text-mq-text-muted font-medium">
-              {d.labels.earnings}
+              {d.labels.level}
             </p>
-            <p className="text-base font-bold text-mq-gold tabular-nums leading-tight">
-              {formatCurrency(d.totalEarnings)}
-            </p>
+            <span
+              className={`inline-block mt-0.5 px-2 py-0.5 rounded-full text-xs font-bold ${rankColor(d.mlmRank).bg} ${rankColor(d.mlmRank).text}`}
+            >
+              {d.mlmRank != null ? d.mlmRank : "—"}
+            </span>
           </div>
         </div>
 

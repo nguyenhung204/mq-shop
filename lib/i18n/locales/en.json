@@ -2040,7 +2040,8 @@
       "TEAM": "Team",
       "GLOBAL": "Global",
       "LOYALTY": "Loyalty",
-      "ADJUST": "Adjustment"
+      "ADJUST": "Adjustment",
+      "SELLER_PAYOUT": "Seller Payout"
     },
     "pinRequiredBanner": "Set your wallet PIN before continuing.",
     "p2pEmail": "Recipient email",
@@ -2175,6 +2176,7 @@
     "networkTreeYou": "YOU",
     "networkTreeReferrals": "Referrals",
     "networkTreeEarnings": "Earnings",
+    "networkTreeLevel": "Level",
     "networkTreeExpand": "Expand",
     "networkTreeCollapse": "Collapse",
     "networkViewTree": "Tree",

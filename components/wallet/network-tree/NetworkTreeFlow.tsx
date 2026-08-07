@@ -119,6 +119,7 @@ function buildFlowElements(
     you: t("wallet.networkTreeYou"),
     referrals: t("wallet.networkTreeReferrals"),
     earnings: t("wallet.networkTreeEarnings"),
+    level: t("wallet.networkTreeLevel"),
     expand: t("wallet.networkTreeExpand"),
     collapse: t("wallet.networkTreeCollapse"),
   };
