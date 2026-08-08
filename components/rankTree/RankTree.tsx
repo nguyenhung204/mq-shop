@@ -233,12 +233,12 @@ export default function RankTree({
 
         // 3. Add new user nodes
         for (const n of addNodes) {
-          newNodes.push({ id: n.id, data: n.data, type: 'html' });
+          newNodes.push({ id: n.id, data: n.data as unknown as Record<string, unknown>, type: 'html' });
         }
 
         // 4. Add new edges
         for (const e of addEdges) {
-          newEdges.push({ id: e.id, source: e.source, target: e.target, type: 'polyline' });
+          newEdges.push({ id: e.id, source: e.source, target: e.target, type: 'polyline' } as never);
         }
 
         // Set data and re-render
@@ -312,33 +312,33 @@ export default function RankTree({
       data: {
         nodes: nodes.map((n) => ({
           id: n.id,
-          data: n.data,
+          data: n.data as unknown as Record<string, unknown>,
           type: 'html',
         })),
-        edges,
+        edges: edges as never[],
       },
 
       node: {
         type: 'html',
         style: {
-          size: (datum) => {
+          size: (datum: any) => {
             const d = datum.data as unknown as RankTreeNodeData;
             if (d.type === 'group') {
               return [GROUP_NODE_WIDTH, GROUP_NODE_HEIGHT];
             }
             return [USER_NODE_WIDTH, USER_NODE_HEIGHT];
           },
-          dx: (datum) => {
+          dx: (datum: any) => {
             const d = datum.data as unknown as RankTreeNodeData;
             if (d.type === 'group') return -GROUP_NODE_WIDTH / 2;
             return -USER_NODE_WIDTH / 2;
           },
-          dy: (datum) => {
+          dy: (datum: any) => {
             const d = datum.data as unknown as RankTreeNodeData;
             if (d.type === 'group') return -GROUP_NODE_HEIGHT / 2;
             return -USER_NODE_HEIGHT / 2;
           },
-          innerHTML: (datum) => {
+          innerHTML: (datum: any) => {
             const d = datum.data as unknown as RankTreeNodeData;
             return createNodeHTML(d);
           },
