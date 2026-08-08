@@ -128,6 +128,14 @@ export interface RankTreeLabels {
   loading: string;
   f1Label: string;
   teamLabel: string;
+  /** Node-specific labels */
+  levelPrefix: string;       // "Cấp" / "Level" / "等級"
+  levelLabel: string;        // "Cấp độ" / "Level" / "等級"
+  f1Direct: string;          // "F1 TRỰC TIẾP" / "F1 DIRECT" / "F1 直屬"
+  totalTeam: string;         // "TỔNG TEAM" / "TOTAL TEAM" / "總團隊"
+  unit: string;              // "người" / "members" / "人"
+  membersThisLevel: string;  // "thành viên cấp này" / "members at this level" / "此級成員"
+  inBranch: string;          // "người trong nhánh" / "in branch" / "分支中"
 }
 
 export interface RankTreeProps {

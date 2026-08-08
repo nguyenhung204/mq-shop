@@ -113,9 +113,10 @@
 ================================ */
 
 .rt-node--user {
-  width: 260px;
+  width: 280px;
   height: 150px;
   padding: 16px 18px;
+  cursor: default;
 }
 
 /* ================================
@@ -254,6 +255,12 @@
   color: #334155;
 }
 
+.rt-node__metric-unit {
+  font-size: 10px;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
 .rt-node__rank-circle {
   width: 32px;
   height: 32px;
@@ -272,7 +279,7 @@
 
 .rt-node--group {
   width: 220px;
-  height: 110px;
+  height: 120px;
   padding: 16px 18px;
   border-style: dashed;
   border-color: #cbd5e1;

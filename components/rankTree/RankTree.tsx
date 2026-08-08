@@ -8,7 +8,6 @@ import { Graph } from '@antv/g6';
 import type { RankTreeProps, RankTreeLabels, GroupNode, RankTreeNodeData } from './types';
 import {
   generateOverviewTree,
-  getInitials,
   getRankColor,
   mockLoadChildren,
   expandGroupNode,
@@ -18,10 +17,10 @@ import './rankTree.css';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const USER_NODE_WIDTH = 260;
+const USER_NODE_WIDTH = 280;
 const USER_NODE_HEIGHT = 150;
 const GROUP_NODE_WIDTH = 220;
-const GROUP_NODE_HEIGHT = 110;
+const GROUP_NODE_HEIGHT = 120;
 
 const DEFAULT_LABELS: RankTreeLabels = {
   expand: '+ Expand',
@@ -29,6 +28,13 @@ const DEFAULT_LABELS: RankTreeLabels = {
   loading: 'Loading...',
   f1Label: 'F1',
   teamLabel: 'TEAM',
+  levelPrefix: 'Level',
+  levelLabel: 'Level',
+  f1Direct: 'F1 DIRECT',
+  totalTeam: 'TOTAL TEAM',
+  unit: 'members',
+  membersThisLevel: 'members at this level',
+  inBranch: 'in branch',
 };
 
 /** Current labels — set by component before render. */
@@ -47,29 +53,29 @@ function escapeHtml(value: string): string {
 
 /**
  * HTML cho user node.
+ * Hiển thị tên rank thay vì tên user, thêm chú thích cấp độ.
  */
 function createUserNodeHTML(data: RankTreeNodeData & { type: 'user' }): string {
   const rankColor = getRankColor(data.rank);
-  const initials = getInitials(data.userName);
   const badgeIcon = data.rank >= 7 ? '♛' : '◆';
-  const userName = escapeHtml(data.userName);
   const rankName = escapeHtml(data.rankName);
+  const rankInitials = `R${data.rank}`;
 
   return `
     <div class="rt-node rt-node--user" data-node-id="${data.id}">
       <div class="rt-node__badge" style="background:${rankColor.background};color:${rankColor.color};border-color:${rankColor.border};">
         <span class="rt-node__badge-icon">${badgeIcon}</span>
-        <span>${rankName} (R${data.rank})</span>
+        <span>${activeLabels.levelPrefix} ${data.rank}</span>
       </div>
 
       <div class="rt-node__profile">
         <div class="rt-node__avatar-wrap">
-          <div class="rt-node__avatar">${initials}</div>
+          <div class="rt-node__avatar" style="background:${rankColor.background};color:${rankColor.color};border-color:${rankColor.border};">${rankInitials}</div>
           <span class="rt-node__status ${data.isActive ? 'rt-node__status--active' : 'rt-node__status--inactive'}"></span>
         </div>
         <div class="rt-node__info">
-          <p class="rt-node__username" title="${userName}">${userName}</p>
-          <div class="rt-node__rank-label">${rankName}</div>
+          <p class="rt-node__username" title="${rankName}">${rankName}</p>
+          <div class="rt-node__rank-label">${activeLabels.levelLabel} ${data.rank} · R${data.rank}</div>
         </div>
       </div>
 
@@ -77,12 +83,12 @@ function createUserNodeHTML(data: RankTreeNodeData & { type: 'user' }): string {
 
       <div class="rt-node__footer">
         <div>
-          <div class="rt-node__metric-label">${activeLabels.f1Label}</div>
-          <div class="rt-node__metric-value">${data.f1Count}</div>
+          <div class="rt-node__metric-label">${activeLabels.f1Direct}</div>
+          <div class="rt-node__metric-value">${data.f1Count} <span class="rt-node__metric-unit">${activeLabels.unit}</span></div>
         </div>
         <div>
-          <div class="rt-node__metric-label">${activeLabels.teamLabel}</div>
-          <div class="rt-node__metric-value">${data.teamCount}</div>
+          <div class="rt-node__metric-label">${activeLabels.totalTeam}</div>
+          <div class="rt-node__metric-value">${data.teamCount} <span class="rt-node__metric-unit">${activeLabels.unit}</span></div>
         </div>
         <div class="rt-node__rank-circle" style="background:${rankColor.background};color:${rankColor.color};border-color:${rankColor.border};">
           ${data.rank}
@@ -94,6 +100,7 @@ function createUserNodeHTML(data: RankTreeNodeData & { type: 'user' }): string {
 
 /**
  * HTML cho group/aggregate node.
+ * Hiển thị rõ ràng: cấp rank, số lượng thành viên trực tiếp, tổng team con.
  */
 function createGroupNodeHTML(data: GroupNode): string {
   const rankColor = getRankColor(data.rank);
@@ -102,7 +109,7 @@ function createGroupNodeHTML(data: GroupNode): string {
   return `
     <div class="rt-node rt-node--group" data-node-id="${data.id}">
       <div class="rt-node__badge rt-node__badge--group" style="background:${rankColor.background};color:${rankColor.color};border-color:${rankColor.border};">
-        <span>${rankName}</span>
+        <span>${activeLabels.levelPrefix} ${data.rank}</span>
       </div>
 
       <div class="rt-group__body">
@@ -110,8 +117,8 @@ function createGroupNodeHTML(data: GroupNode): string {
           R${data.rank}
         </div>
         <div class="rt-group__info">
-          <p class="rt-group__title">${rankName} × ${data.count}</p>
-          <p class="rt-group__sub">${data.userCount} ${activeLabels.users}</p>
+          <p class="rt-group__title">${rankName}</p>
+          <p class="rt-group__sub">${data.count} ${activeLabels.membersThisLevel} · ${data.userCount} ${activeLabels.inBranch}</p>
         </div>
       </div>
 
@@ -268,14 +275,14 @@ export default function RankTree({
         }
       }
 
-      // Check user node click
-      const userNode = target.closest('.rt-node--user') as HTMLElement | null;
-      if (userNode && onUserClick) {
-        const nodeId = userNode.getAttribute('data-node-id');
-        if (nodeId) {
-          onUserClick(nodeId);
-        }
-      }
+      // Check user node click — disabled, no detail drawer
+      // const userNode = target.closest('.rt-node--user') as HTMLElement | null;
+      // if (userNode && onUserClick) {
+      //   const nodeId = userNode.getAttribute('data-node-id');
+      //   if (nodeId) {
+      //     onUserClick(nodeId);
+      //   }
+      // }
     },
     [handleExpandGroup, onUserClick],
   );

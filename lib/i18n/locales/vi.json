@@ -1372,6 +1372,13 @@
       "loading": "Đang tải...",
       "f1Label": "F1",
       "teamLabel": "TEAM",
+      "levelPrefix": "Cấp",
+      "levelLabel": "Cấp độ",
+      "f1Direct": "F1 TRỰC TIẾP",
+      "totalTeam": "TỔNG TEAM",
+      "unit": "người",
+      "membersThisLevel": "thành viên cấp này",
+      "inBranch": "người trong nhánh",
       "noPermission": "Bạn không có quyền xem trang này.",
       "loadError": "Không thể tải dữ liệu rank.",
       "drawer": {

@@ -1372,6 +1372,13 @@
       "loading": "Loading...",
       "f1Label": "F1",
       "teamLabel": "TEAM",
+      "levelPrefix": "Level",
+      "levelLabel": "Level",
+      "f1Direct": "F1 DIRECT",
+      "totalTeam": "TOTAL TEAM",
+      "unit": "members",
+      "membersThisLevel": "members at this level",
+      "inBranch": "in branch",
       "noPermission": "You do not have permission to view this page.",
       "loadError": "Failed to load rank data.",
       "drawer": {

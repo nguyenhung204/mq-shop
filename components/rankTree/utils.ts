@@ -104,27 +104,15 @@ export function countSubtreeUsers(
 
 // ─── Overview Tree Generation ─────────────────────────────────────────────────
 
-const MOCK_NAMES = [
-  'Seed Seller',
-  'Nguyễn Minh Anh',
-  'Trần Hoàng Nam',
-  'Lê Thu Hà',
-  'Phạm Minh Đức',
-  'Alex Chen',
-  'Marcus Sterling',
-  'Jordan V.',
-  'Casey Roe',
-  'Ava Wright',
-  'Daniel Lee',
-  'Sophia Nguyen',
-];
-
 let globalNameSeq = 0;
 
-function nextMockName(): string {
-  const name = MOCK_NAMES[globalNameSeq % MOCK_NAMES.length];
+/**
+ * Tạo tên hiển thị dựa trên rank name thay vì tên user giả.
+ * Ví dụ: "Hoàng quan 2 sao #1", "Hoàng quan 2 sao #2"
+ */
+function nextMockName(rankName: string): string {
   globalNameSeq += 1;
-  return name;
+  return `${rankName} #${globalNameSeq}`;
 }
 
 /**
@@ -167,7 +155,7 @@ export function generateOverviewTree(
   const rootUser: TreeUser = {
     id: rootId,
     parentId: null,
-    userName: nextMockName(),
+    userName: nextMockName(getRankName(rootRankData, locale) || `Rank ${rootRank}`),
     rank: rootRank,
     rankName: getRankName(rootRankData, locale) || `Rank ${rootRank}`,
     f1Count: rootF1Count,
@@ -195,7 +183,7 @@ export function generateOverviewTree(
       const f1User: TreeUser = {
         id: f1Id,
         parentId: rootId,
-        userName: nextMockName(),
+        userName: nextMockName(getRankName(f1RankData, locale) || `Rank ${f1Rank}`),
         rank: f1Rank,
         rankName: getRankName(f1RankData, locale) || `Rank ${f1Rank}`,
         f1Count: f1ChildCount,
@@ -292,7 +280,7 @@ export function mockLoadChildren(
     children.push({
       id: childId,
       parentId,
-      userName: nextMockName(),
+      userName: nextMockName(getRankName(childRankData, locale) || `Rank ${childRank}`),
       rank: childRank,
       rankName: getRankName(childRankData, locale) || `Rank ${childRank}`,
       f1Count: childRule?.count ?? 0,

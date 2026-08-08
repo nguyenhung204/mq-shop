@@ -212,6 +212,13 @@ export default function AdminRankTreePage() {
                   loading: t("admin.rankTree.loading"),
                   f1Label: t("admin.rankTree.f1Label"),
                   teamLabel: t("admin.rankTree.teamLabel"),
+                  levelPrefix: t("admin.rankTree.levelPrefix"),
+                  levelLabel: t("admin.rankTree.levelLabel"),
+                  f1Direct: t("admin.rankTree.f1Direct"),
+                  totalTeam: t("admin.rankTree.totalTeam"),
+                  unit: t("admin.rankTree.unit"),
+                  membersThisLevel: t("admin.rankTree.membersThisLevel"),
+                  inBranch: t("admin.rankTree.inBranch"),
                 }}
                 onUserClick={handleUserClick}
               />

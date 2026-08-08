@@ -1372,6 +1372,13 @@
       "loading": "載入中...",
       "f1Label": "F1",
       "teamLabel": "TEAM",
+      "levelPrefix": "等級",
+      "levelLabel": "等級",
+      "f1Direct": "F1 直屬",
+      "totalTeam": "總團隊",
+      "unit": "人",
+      "membersThisLevel": "此級成員",
+      "inBranch": "人在分支中",
       "noPermission": "您無權查看此頁面。",
       "loadError": "無法載入等級資料。",
       "drawer": {
