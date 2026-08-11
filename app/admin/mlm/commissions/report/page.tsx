@@ -13,7 +13,7 @@ import {
   Search,
   Users,
 } from "lucide-react";
-import { useCommissionReport } from "@/lib/queries/wallet";
+import { useCommissionReport, useLoyaltyHistory } from "@/lib/queries/wallet";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
@@ -27,6 +27,7 @@ import type {
   GenericCommissionEntry,
   GlobalFundTierReport,
   GlobalFundTierStatus,
+  LoyaltyCommissionEntry,
   ReferralCommissionEntry,
   TeamCommissionEntry,
 } from "@/lib/api/mlm";
@@ -282,6 +283,8 @@ function ReferralSection({ summary }: { summary: CommissionTypeSummary<ReferralC
                         <tr>
                           <Th>{tr("colBuyer")}</Th>
                           <Th>{tr("colOrder")}</Th>
+                          <Th center>{tr("colJoining")}</Th>
+                          <Th>{tr("colPolicyVersion")}</Th>
                           <Th right>{tr("colOrderTotal")}</Th>
                           <Th>{tr("colDeliveredAt")}</Th>
                         </tr>
@@ -295,6 +298,14 @@ function ReferralSection({ summary }: { summary: CommissionTypeSummary<ReferralC
                                 {e.orderCode}<ExternalLink size={10} />
                               </Link>
                             </Td>
+                            <Td center>
+                              {e.isJoining ? (
+                                <span className="mq-badge mq-badge-teal">{tr("joiningYes")}</span>
+                              ) : (
+                                <span className="mq-badge mq-badge-muted">{tr("joiningNo")}</span>
+                              )}
+                            </Td>
+                            <Td muted>{e.policyVersion ?? "—"}</Td>
                             <Td right>{formatMoney(e.orderTotal)}</Td>
                             <Td muted>{fmtDate(e.deliveredAt)}</Td>
                           </tr>
@@ -514,7 +525,79 @@ function GlobalSection({ tiers }: { tiers: GlobalFundTierReport[] }) {
 
 // ─── Loyalty section ──────────────────────────────────────────────────────────
 
-function LoyaltySection({ summary }: { summary: CommissionTypeSummary<GenericCommissionEntry> }) {
+function LoyaltyHistoryPanel({ userId }: { userId: string }) {
+  const { t } = useLanguage();
+  const tr = (k: string) => t(`admin.mlm.commissionReport.${k}`);
+  const { data, isLoading, isError } = useLoyaltyHistory(userId, 12, true);
+
+  if (isLoading) {
+    return <p className="text-xs text-mq-text-muted">{tr("loyaltyHistoryLoading")}</p>;
+  }
+  if (isError || !data) {
+    return <p className="text-xs text-mq-text-muted">{tr("loyaltyHistoryEmpty")}</p>;
+  }
+
+  return (
+    <div className="space-y-3">
+      <p className="text-[11px] text-mq-text-muted">{tr("loyaltyQualifyRule")}</p>
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-mq-text-muted">
+        <span>
+          {tr("loyaltyCurrentStreak")}:{" "}
+          <span className="font-semibold text-mq-text">{data.currentStreak}</span>
+        </span>
+        <span>
+          {tr("loyaltyLastQualified")}:{" "}
+          <span className="font-semibold text-mq-text">
+            {data.lastLoyaltyQualifiedMonth ?? "—"}
+          </span>
+        </span>
+        <span>
+          {tr("loyaltyCompletedCycles")}:{" "}
+          <span className="font-semibold text-mq-text">{data.completedCycles}</span>
+        </span>
+      </div>
+      {data.months.length === 0 ? (
+        <p className="text-xs text-mq-text-muted">{tr("loyaltyHistoryEmpty")}</p>
+      ) : (
+        <ReportTable>
+          <thead>
+            <tr>
+              <Th>{tr("colMonth")}</Th>
+              <Th right>{tr("colMaxOrder")}</Th>
+              <Th>{tr("colQualifyingOrder")}</Th>
+              <Th center>{tr("colQualified")}</Th>
+              <Th right>{tr("colStreak")}</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.months.map((m) => (
+              <tr key={m.yearMonth} className="last:border-0">
+                <Td muted>{m.yearMonth}</Td>
+                <Td right>{formatMoney(m.maxOrderAmount)}</Td>
+                <Td muted>{m.qualifyingOrderCode ?? "—"}</Td>
+                <Td center>
+                  {m.status === "QUALIFIED"
+                    ? tr("pvQualified")
+                    : m.status === "NO_DATA"
+                      ? tr("pvNoData")
+                      : tr("pvReset")}
+                  {m.resetReason === "below_max_order_threshold" && (
+                    <span className="block text-[10px] text-mq-text-muted">
+                      {tr("loyaltyResetBelow")}
+                    </span>
+                  )}
+                </Td>
+                <Td right>{m.streakAfter}</Td>
+              </tr>
+            ))}
+          </tbody>
+        </ReportTable>
+      )}
+    </div>
+  );
+}
+
+function LoyaltySection({ summary }: { summary: CommissionTypeSummary<LoyaltyCommissionEntry> }) {
   const { t } = useLanguage();
   const tr = (k: string) => t(`admin.mlm.commissionReport.${k}`);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -535,7 +618,7 @@ function LoyaltySection({ summary }: { summary: CommissionTypeSummary<GenericCom
       </thead>
       <tbody>
         {summary.users.map((r) => {
-          const consecutiveMonths = r.entries[0]?.meta?.consecutiveMonths as number | undefined;
+          const entry = r.entries[0];
           return (
             <Fragment key={r.userId}>
               <tr
@@ -558,32 +641,57 @@ function LoyaltySection({ summary }: { summary: CommissionTypeSummary<GenericCom
                 <tr>
                   <td colSpan={4} className="p-0 border-b border-mq-border">
                     <div className="bg-mq-surface-subtle/50 px-4 py-3 space-y-3">
-                      {consecutiveMonths !== undefined && (
-                        <p className="text-xs text-mq-text-muted">
-                          {tr("loyaltyHistoryTitle")}:{" "}
-                          <span className="font-semibold text-mq-text">{consecutiveMonths} months</span>
-                        </p>
+                      {entry && (
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-mq-text-muted">
+                          {entry.consecutiveMonths != null && (
+                            <span>
+                              {tr("colConsecutive")}:{" "}
+                              <span className="font-semibold text-mq-text">
+                                {entry.consecutiveMonths}
+                              </span>
+                            </span>
+                          )}
+                          {entry.cycleNumber != null && (
+                            <span>
+                              {tr("colCycle")}:{" "}
+                              <span className="font-semibold text-mq-text">
+                                {entry.cycleNumber}
+                              </span>
+                            </span>
+                          )}
+                          {entry.gapResetBeforeThisMonth && (
+                            <span className="mq-badge mq-badge-pink">{tr("loyaltyResetGap")}</span>
+                          )}
+                        </div>
                       )}
                       {r.entries.length > 0 && (
                         <ReportTable>
                           <thead>
                             <tr>
-                              <Th>{tr("colOrder")}</Th>
-                              <Th right>{tr("colOrderTotal")}</Th>
+                              <Th>{tr("colQualifyingOrder")}</Th>
+                              <Th right>{tr("colMaxOrder")}</Th>
                               <Th right>{tr("colCommission")}</Th>
                             </tr>
                           </thead>
                           <tbody>
-                            {r.entries.map((e, i) => (
-                              <tr key={`${r.userId}-loyalty-${i}`} className="last:border-0">
-                                <Td muted>{e.orderCode ?? "—"}</Td>
-                                <Td right>{formatMoney(e.orderTotal ?? "0")}</Td>
-                                <Td right><span className="font-semibold">{formatMoney(e.commissionAmount ?? "0")}</span></Td>
+                            {r.entries.map((e) => (
+                              <tr key={e.ledgerId} className="last:border-0">
+                                <Td muted>{e.qualifyingOrderCode ?? e.qualifyingOrderId ?? "—"}</Td>
+                                <Td right>{formatMoney(e.maxOrderAmount)}</Td>
+                                <Td right>
+                                  <span className="font-semibold">{formatMoney(e.payoutAmount)}</span>
+                                </Td>
                               </tr>
                             ))}
                           </tbody>
                         </ReportTable>
                       )}
+                      <div>
+                        <p className="text-xs font-medium text-mq-text mb-2">
+                          {tr("loyaltyHistoryTitle")}
+                        </p>
+                        <LoyaltyHistoryPanel userId={r.userId} />
+                      </div>
                     </div>
                   </td>
                 </tr>

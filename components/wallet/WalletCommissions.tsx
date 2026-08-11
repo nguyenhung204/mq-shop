@@ -116,17 +116,6 @@ function CommissionsPanel({ embedded = false }: { embedded?: boolean }) {
             <p className="text-xs text-mq-text-muted">
               {t("wallet.commissionRate")}: {formatPercent(row.ratePercent)} ·{" "}
               {t("wallet.commissionBase")}: {formatMoney(row.baseAmount)}
-              {row.sourceOrderId ? (
-                <>
-                  {" · "}
-                  <Link
-                    href={`/orders/${row.sourceOrderId}`}
-                    className="font-mono hover:underline"
-                  >
-                    {row.sourceOrderId.slice(0, 8)}…
-                  </Link>
-                </>
-              ) : null}
             </p>
           </div>
           <span className="tabular-nums font-medium">

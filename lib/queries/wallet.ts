@@ -106,6 +106,8 @@ export const mlmKeys = {
     [...mlmKeys.all, "monthly-overview", monthsBack] as const,
   commissionReport: (yearMonth?: string) =>
     [...mlmKeys.all, "commission-report", yearMonth ?? ""] as const,
+  loyaltyHistory: (userId: string, monthsBack = 12) =>
+    [...mlmKeys.all, "loyalty-history", userId, monthsBack] as const,
 };
 
 export const adminWalletKeys = {
@@ -566,9 +568,17 @@ export function useDeletePromotionRule() {
 
 export function useRunMonthlyCommissions() {
   const qc = useQueryClient();
+  const idempotency = useMemo(() => createIdempotencyKeyStore(), []);
   return useMutation({
-    mutationFn: (body?: { yearMonth?: string }) => adminMlmApi.runMonthly(body),
+    mutationFn: (body?: { yearMonth?: string }) => {
+      const payload = body ?? {};
+      return adminMlmApi.runMonthly(
+        payload,
+        idempotency.keyFor({ action: "run-monthly", ...payload }),
+      );
+    },
     onSuccess: (data) => {
+      idempotency.invalidate();
       toast.success(
         tt("toast.mlmMonthlyRan", {
           yearMonth: data?.yearMonth ?? "",
@@ -577,8 +587,10 @@ export function useRunMonthlyCommissions() {
       void qc.invalidateQueries({ queryKey: mlmKeys.all });
       void qc.invalidateQueries({ queryKey: walletKeys.all });
     },
-    onError: (e) =>
-      toast.error(walletErrorMessage(e, tt("toast.mlmMonthlyRunFailed"))),
+    onError: (e) => {
+      onWalletIdempotencyError(e, idempotency);
+      toast.error(walletErrorMessage(e, tt("toast.mlmMonthlyRunFailed")));
+    },
   });
 }
 
@@ -659,5 +671,18 @@ export function useCommissionReport(yearMonth?: string) {
   return useQuery<CommissionReport>({
     queryKey: mlmKeys.commissionReport(yearMonth),
     queryFn: () => adminMlmApi.commissionReport(yearMonth ? { yearMonth } : {}),
+  });
+}
+
+export function useLoyaltyHistory(
+  userId: string | null | undefined,
+  monthsBack = 12,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: mlmKeys.loyaltyHistory(userId ?? "", monthsBack),
+    queryFn: () =>
+      adminMlmApi.loyaltyHistory(userId!, { monthsBack }),
+    enabled: Boolean(enabled && userId),
   });
 }

@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { Pencil, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import type { PromotionRule } from "@/lib/api/mlm";
 import {
   useCreatePromotionRule,
@@ -14,11 +15,36 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { getErrorMessage } from "@/lib/queries/utils";
+import {
+  MLM_GLOBAL_TIER_MAX,
+  MLM_GLOBAL_TIER_MIN,
+  MLM_RANK_MAX,
+  MLM_RANK_MIN,
+  MLM_REFERRAL_PERCENT_MAX,
+  MLM_REFERRAL_PERCENT_MIN,
+  MLM_TEAM_PERCENT_MAX,
+  MLM_TEAM_PERCENT_MIN,
+  isValidMlmRank,
+  validatePromotionRankPair,
+  validateRankConfigInput,
+  type MlmBoundError,
+} from "@/lib/mlm/rank-bounds";
 
 function modeLabel(mode: string, t: (k: string) => string): string {
   if (mode === "qualify_orders") return t("admin.mlm.rules.modeQualifyOrders");
   if (mode === "seller_granted") return t("admin.mlm.rules.modeSellerGranted");
   return t("admin.mlm.rules.modeF1Rank");
+}
+
+function boundErrorMessage(
+  err: MlmBoundError,
+  t: (k: string) => string,
+): string {
+  if (err === "rank") return t("admin.mlm.rankInvalid");
+  if (err === "teamPercent") return t("admin.mlm.teamPercentInvalid");
+  if (err === "referralPercent") return t("admin.mlm.referralPercentInvalid");
+  if (err === "globalFundTier") return t("admin.mlm.globalTierInvalid");
+  return t("admin.mlm.promotionRankInvalid");
 }
 
 export function MlmPromotionRulesSection() {
@@ -66,9 +92,23 @@ export function MlmPromotionRulesSection() {
 
   const onSubmitCreate = async (e: FormEvent) => {
     e.preventDefault();
+    const fromRank = Number(form.fromRank);
+    const toRank = Number(form.toRank);
+    const pairErr = validatePromotionRankPair(fromRank, toRank);
+    if (pairErr) {
+      toast.error(boundErrorMessage(pairErr, t));
+      return;
+    }
+    if (form.mode === "f1_rank") {
+      const req = Number(form.requiredF1Rank);
+      if (!isValidMlmRank(req)) {
+        toast.error(t("admin.mlm.rankInvalid"));
+        return;
+      }
+    }
     await createRule.mutateAsync({
-      fromRank: Number(form.fromRank),
-      toRank: Number(form.toRank),
+      fromRank,
+      toRank,
       mode: form.mode,
       requiredF1Rank: form.mode === "f1_rank" ? Number(form.requiredF1Rank) : null,
       count: Number(form.count),
@@ -80,11 +120,25 @@ export function MlmPromotionRulesSection() {
   const onSubmitEdit = async (e: FormEvent) => {
     e.preventDefault();
     if (editingId == null) return;
+    const fromRank = Number(form.fromRank);
+    const toRank = Number(form.toRank);
+    const pairErr = validatePromotionRankPair(fromRank, toRank);
+    if (pairErr) {
+      toast.error(boundErrorMessage(pairErr, t));
+      return;
+    }
+    if (form.mode === "f1_rank") {
+      const req = Number(form.requiredF1Rank);
+      if (!isValidMlmRank(req)) {
+        toast.error(t("admin.mlm.rankInvalid"));
+        return;
+      }
+    }
     await updateRule.mutateAsync({
       id: editingId,
       body: {
-        fromRank: Number(form.fromRank),
-        toRank: Number(form.toRank),
+        fromRank,
+        toRank,
         mode: form.mode,
         requiredF1Rank: form.mode === "f1_rank" ? Number(form.requiredF1Rank) : null,
         count: Number(form.count),
@@ -198,7 +252,8 @@ export function MlmPromotionRulesSection() {
               <input
                 className="mq-input"
                 type="number"
-                min="0"
+                min={MLM_RANK_MIN}
+                max={MLM_RANK_MAX}
                 value={form.fromRank}
                 onChange={(e) => setForm({ ...form, fromRank: e.target.value })}
                 required
@@ -209,7 +264,8 @@ export function MlmPromotionRulesSection() {
               <input
                 className="mq-input"
                 type="number"
-                min="1"
+                min={MLM_RANK_MIN}
+                max={MLM_RANK_MAX}
                 value={form.toRank}
                 onChange={(e) => setForm({ ...form, toRank: e.target.value })}
                 required
@@ -235,7 +291,8 @@ export function MlmPromotionRulesSection() {
                 <input
                   className="mq-input"
                   type="number"
-                  min="0"
+                  min={MLM_RANK_MIN}
+                  max={MLM_RANK_MAX}
                   value={form.requiredF1Rank}
                   onChange={(e) => setForm({ ...form, requiredF1Rank: e.target.value })}
                   required
@@ -323,13 +380,29 @@ export function MlmCreateRankSection() {
     if (form.nameVi.trim()) nameI18n.vi = form.nameVi.trim();
     if (form.nameEn.trim()) nameI18n.en = form.nameEn.trim();
     if (form.nameZhTw.trim()) nameI18n["zh-TW"] = form.nameZhTw.trim();
+    const rank = Number(form.rank);
+    const teamPercent = Number(form.teamPercent);
+    const referralPercent = Number(form.referralPercent);
+    const globalFundTier = form.globalFundTier.trim()
+      ? Number(form.globalFundTier)
+      : null;
+    const boundErr = validateRankConfigInput({
+      rank,
+      teamPercent,
+      referralPercent,
+      globalFundTier,
+    });
+    if (boundErr) {
+      toast.error(boundErrorMessage(boundErr, t));
+      return;
+    }
     await createRank.mutateAsync({
-      rank: Number(form.rank),
+      rank,
       name: form.name.trim(),
       nameI18n: Object.keys(nameI18n).length > 0 ? nameI18n : undefined,
-      teamPercent: Number(form.teamPercent),
-      referralPercent: Number(form.referralPercent),
-      globalFundTier: form.globalFundTier.trim() ? Number(form.globalFundTier) : null,
+      teamPercent,
+      referralPercent,
+      globalFundTier,
     });
     setOpen(false);
     setForm({ rank: "", name: "", nameVi: "", nameEn: "", nameZhTw: "", teamPercent: "0", referralPercent: "10", globalFundTier: "" });
@@ -357,7 +430,8 @@ export function MlmCreateRankSection() {
           <input
             className="mq-input"
             type="number"
-            min="1"
+            min={MLM_RANK_MIN}
+            max={MLM_RANK_MAX}
             value={form.rank}
             onChange={(e) => setForm({ ...form, rank: e.target.value })}
             required
@@ -403,8 +477,8 @@ export function MlmCreateRankSection() {
             className="mq-input"
             type="number"
             step="0.01"
-            min="0"
-            max="100"
+            min={MLM_TEAM_PERCENT_MIN}
+            max={MLM_TEAM_PERCENT_MAX}
             value={form.teamPercent}
             onChange={(e) => setForm({ ...form, teamPercent: e.target.value })}
             required
@@ -416,8 +490,8 @@ export function MlmCreateRankSection() {
             className="mq-input"
             type="number"
             step="0.01"
-            min="0"
-            max="100"
+            min={MLM_REFERRAL_PERCENT_MIN}
+            max={MLM_REFERRAL_PERCENT_MAX}
             value={form.referralPercent}
             onChange={(e) => setForm({ ...form, referralPercent: e.target.value })}
             required
@@ -429,7 +503,8 @@ export function MlmCreateRankSection() {
             className="mq-input"
             type="number"
             step="1"
-            min="1"
+            min={MLM_GLOBAL_TIER_MIN}
+            max={MLM_GLOBAL_TIER_MAX}
             value={form.globalFundTier}
             onChange={(e) => setForm({ ...form, globalFundTier: e.target.value })}
             placeholder="—"
