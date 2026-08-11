@@ -25,10 +25,9 @@ export interface PromotionRule {
 }
 
 /**
- * Mock rank data.
- *
- * Sau này có thể bỏ data này và truyền ranks
- * trực tiếp từ API vào RankTree.
+ * Mock rank data — baseline A1 only (R0–R10).
+ * Team ≤13%, Referral ≤10%, globalFundTier R5–R10 unique.
+ * Do not add R11+ here; demo extras must live in a separate non-baseline file.
  */
 export const MOCK_RANKS: Rank[] = [
   {
@@ -145,7 +144,7 @@ export const MOCK_RANKS: Rank[] = [
     },
     teamPercent: '11.0000',
     referralPercent: '10.0000',
-    globalFundTier: 7,
+    globalFundTier: 8,
     isActive: true,
   },
   {
@@ -158,7 +157,7 @@ export const MOCK_RANKS: Rank[] = [
     },
     teamPercent: '12.0000',
     referralPercent: '10.0000',
-    globalFundTier: 7,
+    globalFundTier: 9,
     isActive: true,
   },
   {
@@ -173,45 +172,6 @@ export const MOCK_RANKS: Rank[] = [
     referralPercent: '10.0000',
     globalFundTier: 10,
     isActive: true,
-  },
-  {
-    rank: 11,
-    name: 'Hoàng quan 4 sao',
-    nameI18n: {
-      en: '4-Star Crown',
-      vi: 'Hoàng quan 4 sao',
-      'zh-TW': '四星皇冠',
-    },
-    teamPercent: '14.0000',
-    referralPercent: '10.0000',
-    globalFundTier: 10,
-    isActive: false,
-  },
-  {
-    rank: 12,
-    name: 'Hoàng quan 5 sao',
-    nameI18n: {
-      en: '5-Star Crown',
-      vi: 'Hoàng quan 5 sao',
-      'zh-TW': '五星皇冠',
-    },
-    teamPercent: '15.0000',
-    referralPercent: '10.0000',
-    globalFundTier: 10,
-    isActive: false,
-  },
-  {
-    rank: 13,
-    name: 'Hoàng quan 6 sao',
-    nameI18n: {
-      en: '6-Star Crown',
-      vi: 'Hoàng quan 6 sao',
-      'zh-TW': '六星皇冠',
-    },
-    teamPercent: '16.0000',
-    referralPercent: '10.0000',
-    globalFundTier: 10,
-    isActive: false,
   },
 ];
 
@@ -306,15 +266,6 @@ export const MOCK_RULES: PromotionRule[] = [
     toRank: 10,
     mode: 'f1_rank',
     requiredF1Rank: 9,
-    count: 2,
-    isActive: true,
-  },
-  {
-    id: 13,
-    fromRank: 10,
-    toRank: 11,
-    mode: 'f1_rank',
-    requiredF1Rank: 10,
     count: 2,
     isActive: true,
   },

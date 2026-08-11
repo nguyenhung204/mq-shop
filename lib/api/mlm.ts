@@ -168,18 +168,6 @@ export type SetMlmReferrerResult = {
   referrerId: string | null;
 };
 
-export type SetMlmReferralRateBody = {
-  /** Override % in 0..10, or `null` to clear override. */
-  ratePercent: number | null;
-};
-
-export type SetMlmReferralRateResult = {
-  userId: string;
-  email?: string;
-  fullName?: string | null;
-  referralRateOverride: string | number | null;
-};
-
 export type RankReconcileResult = {
   userId: string;
   fromRank: number;
@@ -263,6 +251,8 @@ export const mlmApi = {
   networkTree: (query?: ListNetworkTreeParams) =>
     api.get<NetworkTree>("/mlm/network-tree", { query }),
   rankProgress: () => api.get<MlmRankProgress>("/mlm/rank-progress"),
+  /** Seller-readable rank rate table (VIEW_MLM_COMSN). */
+  rankConfigs: () => api.get<MlmRankConfig[]>("/mlm/rank-configs"),
   commissions: (query?: ListCommissionsParams) =>
     api.get<CommissionListRes>("/mlm/commissions", { query, withMeta: true }),
 };
@@ -289,21 +279,26 @@ export const adminMlmApi = {
     api.patch<SetMlmRankResult>(`/admin/mlm/users/${userId}/rank`, body),
   setUserReferrer: (userId: string, body: SetMlmReferrerBody) =>
     api.patch<SetMlmReferrerResult>(`/admin/mlm/users/${userId}/referrer`, body),
-  setUserReferralRate: (userId: string, body: SetMlmReferralRateBody) =>
-    api.patch<SetMlmReferralRateResult>(
-      `/admin/mlm/users/${userId}/referral-rate`,
-      body,
-    ),
   monthlyOverview: (query?: { monthsBack?: number }) =>
     api.get<MonthlyCommissionOverview>("/admin/mlm/commissions/monthly-overview", {
       query: { monthsBack: query?.monthsBack ?? 12 },
     }),
   /** Demo/ops: run TEAM / LOYALTY / GLOBAL for a period (default = previous UTC month). */
-  runMonthly: (body?: { yearMonth?: string }) =>
-    api.post<{ yearMonth: string }>(
-      "/admin/mlm/commissions/run-monthly",
-      body ?? {},
-    ),
+  runMonthly: (
+    body: { yearMonth?: string } | undefined,
+    idempotencyKey: string,
+  ) =>
+    api.post<{
+      yearMonth: string;
+      timezone: "UTC";
+      policyKey: string;
+      periodStart: string;
+      periodEnd: string;
+      batchId: string | null;
+      status: "COMPLETED" | "SKIPPED_ALREADY_COMPLETED";
+    }>("/admin/mlm/commissions/run-monthly", body ?? {}, {
+      headers: { "Idempotency-Key": idempotencyKey },
+    }),
 
   /**
    * Wake Rank Engine — promote eligible users (self multi-step + upline).
@@ -318,6 +313,13 @@ export const adminMlmApi = {
   /** Monthly commission audit report. Defaults to previous UTC month. */
   commissionReport: (query?: { yearMonth?: string }) =>
     api.get<CommissionReport>("/admin/mlm/commissions/report", { query }),
+
+  /** Loyalty max-order qualify + streak history for one user. */
+  loyaltyHistory: (userId: string, query?: { monthsBack?: number }) =>
+    api.get<LoyaltyHistoryReport>(
+      `/admin/mlm/commissions/loyalty-history/${userId}`,
+      { query: { monthsBack: query?.monthsBack ?? 12 } },
+    ),
 };
 
 // ─── Commission Report types (mirrors monthly-commission.job.ts on BE) ────────
@@ -341,40 +343,102 @@ export type CommissionReportKpi = {
 // ── Entry types ──────────────────────────────────────────────────────────────
 
 export type ReferralCommissionEntry = {
+  ledgerId?: string;
+  payoutAmount?: string;
+  baseAmount?: string;
+  ratePercent?: string;
+  sourceOrderId?: string | null;
   orderCode: string;
   orderTotal: string;
   buyerEmail: string;
-  ratePercent?: string;
+  buyerId?: string | null;
+  buyerFullName?: string | null;
   commissionAmount?: string;
   deliveredAt: string | null;
+  isJoining?: boolean;
+  joiningOrderId?: string | null;
+  policyVersion?: string | null;
+  creditedAt?: string | Date | null;
 };
 
 export type TeamChainNode = {
+  mlmRank: number;
+  teamPercent: number;
+  /** Optional richer fields if BE expands later */
+  userId?: string;
+  email?: string;
+  fullName?: string | null;
+  rankName?: string;
+  percent?: string;
+};
+
+export type TeamCommissionEntry = {
+  ledgerId: string;
+  payoutAmount: string;
+  baseAmount: string;
+  teamPercent: string;
+  maxBelow: string;
+  paidPercent: string;
+  chainNodes?: TeamChainNode[];
+  branchRootUserId?: string | null;
+  branchRootEmail?: string | null;
+  branchRootFullName?: string | null;
+  creditedAt?: string | Date | null;
+};
+
+export type GenericCommissionEntry = {
+  ledgerId?: string;
+  payoutAmount?: string;
+  baseAmount?: string;
+  ratePercent?: string;
+  orderCode?: string;
+  orderTotal?: string;
+  commissionAmount?: string;
+  meta?: Record<string, unknown> | null;
+  creditedAt?: string | Date | null;
+};
+
+export type LoyaltyCommissionEntry = {
+  ledgerId: string;
+  payoutAmount: string;
+  baseAmount: string;
+  maxOrderAmount: string;
+  qualifyingOrderId: string | null;
+  qualifyingOrderCode: string | null;
+  consecutiveMonths: number | null;
+  cycleNumber: number | null;
+  qualifyRule: "MAX_SINGLE_ORDER";
+  gapResetBeforeThisMonth: boolean;
+  meta?: Record<string, unknown> | null;
+  creditedAt: string | Date | null;
+};
+
+export type LoyaltyMonthRow = {
+  yearMonth: string;
+  personalPv: string;
+  maxOrderAmount: string;
+  qualifyingOrderId: string | null;
+  qualifyingOrderCode: string | null;
+  deliveredOrderCount: number;
+  qualified: boolean;
+  streakAfter: number;
+  status: "QUALIFIED" | "RESET" | "NO_DATA";
+  resetReason: "below_max_order_threshold" | "no_delivered_orders" | null;
+};
+
+export type LoyaltyHistoryReport = {
   userId: string;
   email: string;
   fullName: string | null;
   mlmRank: number;
   rankName: string;
-  percent: string;
-};
-
-export type TeamCommissionEntry = {
-  orderCode: string;
-  orderTotal: string;
-  buyerEmail: string;
-  teamPercent: string;
-  maxBelow: string;
-  paidPercent: string;
-  commissionAmount?: string;
-  /** Audit chain from buyer up to this recipient. */
-  chainNodes?: TeamChainNode[];
-};
-
-export type GenericCommissionEntry = {
-  orderCode?: string;
-  orderTotal?: string;
-  commissionAmount?: string;
-  meta?: Record<string, unknown>;
+  currentStreak: number;
+  lastLoyaltyQualifiedMonth: string | null;
+  completedCycles: number;
+  qualifyRule: "MAX_SINGLE_ORDER";
+  thresholdTwd: number;
+  months: LoyaltyMonthRow[];
+  bonusEntries: LoyaltyCommissionEntry[];
 };
 
 // ── Shared row / summary types ────────────────────────────────────────────────
@@ -423,5 +487,5 @@ export type CommissionReport = {
   global: CommissionTypeSummary<GenericCommissionEntry> & {
     tiers: GlobalFundTierReport[];
   };
-  loyalty: CommissionTypeSummary<GenericCommissionEntry>;
+  loyalty: CommissionTypeSummary<LoyaltyCommissionEntry>;
 };

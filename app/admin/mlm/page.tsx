@@ -20,7 +20,6 @@ import {
   useReconcileMlmRanks,
   useRunMonthlyCommissions,
   useSetMlmRank,
-  useSetMlmReferralRate,
   useSetMlmReferrer,
   useUpdateRankConfig,
 } from "@/lib/queries/wallet";
@@ -37,6 +36,16 @@ import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { MlmCreateRankSection, MlmPromotionRulesSection } from "@/components/admin/MlmPromotionRules";
 import { NetworkTreeFlow } from "@/components/wallet/network-tree/NetworkTreeFlow";
+import {
+  MLM_GLOBAL_TIER_MAX,
+  MLM_GLOBAL_TIER_MIN,
+  MLM_REFERRAL_PERCENT_MAX,
+  MLM_REFERRAL_PERCENT_MIN,
+  MLM_TEAM_PERCENT_MAX,
+  MLM_TEAM_PERCENT_MIN,
+  validateRankConfigInput,
+} from "@/lib/mlm/rank-bounds";
+import { toast } from "sonner";
 
 function userLabel(u: AuthUser): string {
   const name = u.fullName?.trim();
@@ -207,21 +216,22 @@ function MlmAdminInner() {
   const { hasRole } = useAuth();
 
   /**
-   * CONFIG_MLM matrix: Admin=NONE, Accountant=APPROVE, Super Admin=ALL.
-   * Do not use hasPermission("CONFIG_MLM") alone — AuthProvider treats ADMIN as all-perms.
+   * CONFIG_MLM: Super Admin=ALL (mutate). Accountant=APPROVE (read/approve only — BE 403 on PATCH).
+   * APPROVE_MLM: Accountant + Super Admin can run monthly / flush.
    */
-  const canSetRank = hasRole("SUPER_ADMIN") || hasRole("ACCOUNTANT");
+  const canMutateConfig = hasRole("SUPER_ADMIN");
+  const canApproveSettlement =
+    hasRole("SUPER_ADMIN") || hasRole("ACCOUNTANT");
   const canViewTree =
     hasRole("SUPER_ADMIN") ||
     hasRole("ACCOUNTANT") ||
     hasRole("ADMIN");
 
   const { data: ranks, isLoading, isError, error } = useMlmRanks({
-    enabled: canSetRank,
+    enabled: canMutateConfig || canApproveSettlement,
   });
   const setRank = useSetMlmRank();
   const setReferrer = useSetMlmReferrer();
-  const setReferralRate = useSetMlmReferralRate();
   const runMonthly = useRunMonthlyCommissions();
   const reconcileRanks = useReconcileMlmRanks();
   const updateRankConfig = useUpdateRankConfig();
@@ -230,7 +240,7 @@ function MlmAdminInner() {
     isLoading: monthlyLoading,
     isError: monthlyIsError,
     error: monthlyErr,
-  } = useMonthlyCommissionOverview(12, { enabled: canSetRank });
+  } = useMonthlyCommissionOverview(12, { enabled: canApproveSettlement });
   const months = monthlyOverview?.months ?? [];
 
   const { data: usersPage } = useQuery({
@@ -267,10 +277,7 @@ function MlmAdminInner() {
   const [referrerError, setReferrerError] = useState("");
   const [referrerOk, setReferrerOk] = useState("");
 
-  const [rateUserId, setRateUserId] = useState("");
-  const [ratePercent, setRatePercent] = useState("");
-  const [rateError, setRateError] = useState("");
-  const [rateOk, setRateOk] = useState("");
+  const [legacyRateUserId, setLegacyRateUserId] = useState("");
 
   const [reconcileUserId, setReconcileUserId] = useState("");
   const [reconcileLimit, setReconcileLimit] = useState("100");
@@ -314,7 +321,7 @@ function MlmAdminInner() {
 
   const selectedUser = users.find((u) => u.id === selectedUserId);
   const referrerTarget = users.find((u) => u.id === referrerUserId);
-  const rateTarget = users.find((u) => u.id === rateUserId);
+  const legacyRateTarget = users.find((u) => u.id === legacyRateUserId);
   const treeUser = users.find((u) => u.id === treeUserId);
 
   const referrerOptions = useMemo(
@@ -398,49 +405,6 @@ function MlmAdminInner() {
     }
   };
 
-  const onSetRate = async (e: FormEvent) => {
-    e.preventDefault();
-    setRateError("");
-    setRateOk("");
-    if (!rateUserId) {
-      setRateError(t("admin.mlm.userRequired"));
-      return;
-    }
-    const n = Number(ratePercent);
-    if (!Number.isFinite(n) || n < 0 || n > 10) {
-      setRateError(t("admin.mlm.rateInvalid"));
-      return;
-    }
-    try {
-      await setReferralRate.mutateAsync({
-        userId: rateUserId,
-        body: { ratePercent: n },
-      });
-      setRateOk(t("admin.mlm.rateUpdated", { rate: String(n) }));
-    } catch {
-      /* toast */
-    }
-  };
-
-  const onClearRate = async () => {
-    setRateError("");
-    setRateOk("");
-    if (!rateUserId) {
-      setRateError(t("admin.mlm.userRequired"));
-      return;
-    }
-    try {
-      await setReferralRate.mutateAsync({
-        userId: rateUserId,
-        body: { ratePercent: null },
-      });
-      setRatePercent("");
-      setRateOk(t("admin.mlm.rateCleared"));
-    } catch {
-      /* toast */
-    }
-  };
-
   const onReconcileUser = async (e: FormEvent) => {
     e.preventDefault();
     setReconcileError("");
@@ -514,9 +478,20 @@ function MlmAdminInner() {
     }
     try {
       const res = await runMonthly.mutateAsync({ yearMonth });
+      const periodStart = res.periodStart
+        ? new Date(res.periodStart).toISOString().slice(0, 10)
+        : "";
+      const periodEnd = res.periodEnd
+        ? new Date(res.periodEnd).toISOString().slice(0, 10)
+        : "";
       setMonthlyOk(
         t("admin.mlm.runMonthlyDone", {
           yearMonth: res.yearMonth || yearMonth,
+          timezone: res.timezone || "UTC",
+          periodStart,
+          periodEnd,
+          batchId: res.batchId || "—",
+          status: res.status || "",
         }),
       );
     } catch {
@@ -534,7 +509,7 @@ function MlmAdminInner() {
       <div className="space-y-6 w-full">
         <p className="text-sm text-mq-text-muted">{t("admin.mlm.hint")}</p>
 
-        {canSetRank ? (
+        {canMutateConfig ? (
           <>
           <section className="space-y-2">
             <h2 className="text-base font-medium">{t("admin.mlm.ranksTitle")}</h2>
@@ -651,6 +626,21 @@ function MlmAdminInner() {
                     if (gf !== editingRank.globalFundTier) body.globalFundTier = gf;
                     if (editForm.isActive !== editingRank.isActive) body.isActive = editForm.isActive;
                     if (Object.keys(body).length === 0) { setEditingRank(null); return; }
+                    const boundErr = validateRankConfigInput({
+                      teamPercent: body.teamPercent !== undefined ? Number(body.teamPercent) : undefined,
+                      referralPercent:
+                        body.referralPercent !== undefined ? Number(body.referralPercent) : undefined,
+                      globalFundTier:
+                        body.globalFundTier !== undefined
+                          ? (body.globalFundTier as number | null)
+                          : undefined,
+                    });
+                    if (boundErr) {
+                      if (boundErr === "teamPercent") toast.error(t("admin.mlm.teamPercentInvalid"));
+                      else if (boundErr === "referralPercent") toast.error(t("admin.mlm.referralPercentInvalid"));
+                      else toast.error(t("admin.mlm.globalTierInvalid"));
+                      return;
+                    }
                     await updateRankConfig.mutateAsync({ rank: editingRank.rank, body });
                     setEditingRank(null);
                   }}
@@ -694,8 +684,8 @@ function MlmAdminInner() {
                       className="mq-input"
                       type="number"
                       step="0.01"
-                      min="0"
-                      max="20"
+                      min={MLM_TEAM_PERCENT_MIN}
+                      max={MLM_TEAM_PERCENT_MAX}
                       value={editForm.teamPercent}
                       onChange={(e) => setEditForm({ ...editForm, teamPercent: e.target.value })}
                     />
@@ -706,8 +696,8 @@ function MlmAdminInner() {
                       className="mq-input"
                       type="number"
                       step="0.01"
-                      min="0"
-                      max="10"
+                      min={MLM_REFERRAL_PERCENT_MIN}
+                      max={MLM_REFERRAL_PERCENT_MAX}
                       value={editForm.referralPercent}
                       onChange={(e) => setEditForm({ ...editForm, referralPercent: e.target.value })}
                     />
@@ -718,8 +708,8 @@ function MlmAdminInner() {
                       className="mq-input"
                       type="number"
                       step="1"
-                      min="1"
-                      max="10"
+                      min={MLM_GLOBAL_TIER_MIN}
+                      max={MLM_GLOBAL_TIER_MAX}
                       value={editForm.globalFundTier}
                       onChange={(e) => setEditForm({ ...editForm, globalFundTier: e.target.value })}
                       placeholder="—"
@@ -764,8 +754,11 @@ function MlmAdminInner() {
           </div>
         )}
 
-        {canSetRank ? (
+        {canApproveSettlement ? (
           <section className="mq-card p-5 space-y-4">
+            <div className="mq-alert mq-alert-warning text-sm">
+              {t("admin.mlm.payoutHoldBanner")}
+            </div>
             <div>
               <h2 className="text-base font-medium">{t("admin.mlm.runMonthlyTitle")}</h2>
               <p className="text-sm text-mq-text-muted mt-1">
@@ -935,7 +928,7 @@ function MlmAdminInner() {
           </section>
         ) : null}
 
-        {canSetRank ? (
+        {canMutateConfig ? (
           <section className="mq-card p-5 space-y-4">
             <div>
               <h2 className="text-base font-medium">{t("admin.mlm.reconcileTitle")}</h2>
@@ -1006,10 +999,10 @@ function MlmAdminInner() {
 
         <div
           className={`grid gap-4 items-start ${
-            canSetRank && canViewTree ? "lg:grid-cols-2" : "grid-cols-1"
+            canMutateConfig && canViewTree ? "lg:grid-cols-2" : "grid-cols-1"
           }`}
         >
-          {canSetRank ? (
+          {canMutateConfig ? (
             <section className="mq-card p-5 space-y-3 min-w-0">
               <h2 className="text-base font-medium">{t("admin.mlm.setRankTitle")}</h2>
               <p className="text-sm text-mq-text-muted">{t("admin.mlm.setRankHint")}</p>
@@ -1056,8 +1049,12 @@ function MlmAdminInner() {
                     {selectedUser.referralRateOverride != null &&
                     selectedUser.referralRateOverride !== "" ? (
                       <p className="text-mq-text-muted">
+                        <span className="mq-badge mq-badge-muted mr-1">
+                          {t("admin.mlm.rateOverrideDeprecated")}
+                        </span>
                         {t("wallet.referralRateOverride")}:{" "}
-                        {selectedUser.referralRateOverride}%
+                        {selectedUser.referralRateOverride}%{" "}
+                        ({t("admin.mlm.rateOverrideIgnored")})
                       </p>
                     ) : null}
                   </div>
@@ -1215,7 +1212,7 @@ function MlmAdminInner() {
           </div>
         )}
 
-        {canSetRank ? (
+        {canMutateConfig ? (
           <div className="grid gap-4 items-start lg:grid-cols-2">
             <section className="mq-card p-5 space-y-3 min-w-0">
               <h2 className="text-base font-medium">{t("admin.mlm.setReferrerTitle")}</h2>
@@ -1299,74 +1296,43 @@ function MlmAdminInner() {
             <section className="mq-card p-5 space-y-3 min-w-0">
               <h2 className="text-base font-medium">{t("admin.mlm.setRateTitle")}</h2>
               <p className="text-sm text-mq-text-muted">{t("admin.mlm.setRateHint")}</p>
-              {rateError ? (
-                <div className="mq-alert mq-alert-error break-words">{rateError}</div>
-              ) : null}
-              {rateOk ? (
-                <div className="mq-alert mq-alert-success break-words">{rateOk}</div>
-              ) : null}
-              <form className="space-y-3" onSubmit={(e) => void onSetRate(e)}>
+              <div className="space-y-3">
                 <label className="block text-sm min-w-0">
                   <span className="text-xs text-mq-text-muted">{t("admin.mlm.searchUser")}</span>
                   <div className="mt-1">
                     <SearchableSelect
                       options={userOptions}
-                      value={rateUserId}
-                      required
+                      value={legacyRateUserId}
                       aria-label={t("admin.mlm.searchUser")}
                       placeholder={t("admin.mlm.searchUserPh")}
                       searchPlaceholder={t("admin.mlm.searchUserPh")}
-                      onChange={setRateUserId}
+                      onChange={setLegacyRateUserId}
                     />
                   </div>
                 </label>
-                {rateTarget ? (
-                  <div className="rounded-md border border-mq-border bg-mq-surface-subtle px-3 py-2 text-xs space-y-0.5">
+                {legacyRateTarget ? (
+                  <div className="rounded-md border border-mq-border bg-mq-surface-subtle px-3 py-2 text-xs space-y-1">
                     <p className="truncate font-medium">
-                      {rateTarget.fullName || rateTarget.email}
+                      {legacyRateTarget.fullName || legacyRateTarget.email}
                     </p>
                     <p className="text-mq-text-muted">
                       {t("wallet.referralRateOverride")}:{" "}
-                      {rateTarget.referralRateOverride != null &&
-                      rateTarget.referralRateOverride !== ""
-                        ? `${rateTarget.referralRateOverride}%`
+                      {legacyRateTarget.referralRateOverride != null &&
+                      legacyRateTarget.referralRateOverride !== ""
+                        ? `${legacyRateTarget.referralRateOverride}%`
                         : t("admin.mlm.rateDefault")}
+                    </p>
+                    <p>
+                      <span className="mq-badge mq-badge-muted">
+                        {t("admin.mlm.rateOverrideDeprecated")}
+                      </span>{" "}
+                      <span className="text-mq-text-muted">
+                        {t("admin.mlm.rateOverrideIgnored")}
+                      </span>
                     </p>
                   </div>
                 ) : null}
-                <label className="flex flex-col gap-1 text-sm">
-                  <span className="text-xs text-mq-text-muted">{t("admin.mlm.ratePercent")}</span>
-                  <input
-                    className="mq-input !w-[8rem] max-w-full"
-                    type="number"
-                    min={0}
-                    max={10}
-                    step={0.01}
-                    value={ratePercent}
-                    onChange={(e) => setRatePercent(e.target.value)}
-                    placeholder="0–10"
-                  />
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="submit"
-                    className="mq-btn mq-btn-primary"
-                    disabled={setReferralRate.isPending || !rateUserId}
-                  >
-                    {setReferralRate.isPending
-                      ? t("admin.common.saving")
-                      : t("admin.mlm.setRate")}
-                  </button>
-                  <button
-                    type="button"
-                    className="mq-btn mq-btn-outline"
-                    disabled={setReferralRate.isPending || !rateUserId}
-                    onClick={() => void onClearRate()}
-                  >
-                    {t("admin.mlm.clearRate")}
-                  </button>
-                </div>
-              </form>
+              </div>
             </section>
           </div>
         ) : null}

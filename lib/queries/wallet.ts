@@ -31,7 +31,6 @@ import {
   type ListFullTreeParams,
   type ListNetworkTreeParams,
   type SetMlmRankBody,
-  type SetMlmReferralRateBody,
   type SetMlmReferrerBody,
   type UpdatePromotionRuleBody,
   type UpdateRankConfigBody,
@@ -106,6 +105,8 @@ export const mlmKeys = {
     [...mlmKeys.all, "monthly-overview", monthsBack] as const,
   commissionReport: (yearMonth?: string) =>
     [...mlmKeys.all, "commission-report", yearMonth ?? ""] as const,
+  loyaltyHistory: (userId: string, monthsBack = 12) =>
+    [...mlmKeys.all, "loyalty-history", userId, monthsBack] as const,
 };
 
 export const adminWalletKeys = {
@@ -451,6 +452,15 @@ export function useMlmRanks(options?: { enabled?: boolean }) {
   });
 }
 
+/** Seller guide — public rate table without CONFIG_MLM. */
+export function useSellerMlmRankConfigs(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: [...mlmKeys.ranks(), "seller"],
+    queryFn: () => mlmApi.rankConfigs(),
+    enabled: options?.enabled ?? true,
+  });
+}
+
 export function useMonthlyCommissionOverview(
   monthsBack = 12,
   options?: { enabled?: boolean },
@@ -557,19 +567,40 @@ export function useDeletePromotionRule() {
 
 export function useRunMonthlyCommissions() {
   const qc = useQueryClient();
+  const idempotency = useMemo(() => createIdempotencyKeyStore(), []);
   return useMutation({
-    mutationFn: (body?: { yearMonth?: string }) => adminMlmApi.runMonthly(body),
+    mutationFn: (body?: { yearMonth?: string }) => {
+      const payload = body ?? {};
+      return adminMlmApi.runMonthly(
+        payload,
+        idempotency.keyFor({ action: "run-monthly", ...payload }),
+      );
+    },
     onSuccess: (data) => {
+      idempotency.invalidate();
+      const periodStart = data?.periodStart
+        ? new Date(data.periodStart).toISOString().slice(0, 10)
+        : "";
+      const periodEnd = data?.periodEnd
+        ? new Date(data.periodEnd).toISOString().slice(0, 10)
+        : "";
       toast.success(
         tt("toast.mlmMonthlyRan", {
           yearMonth: data?.yearMonth ?? "",
+          timezone: data?.timezone ?? "UTC",
+          periodStart,
+          periodEnd,
+          batchId: data?.batchId ?? "—",
+          status: data?.status ?? "",
         }),
       );
       void qc.invalidateQueries({ queryKey: mlmKeys.all });
       void qc.invalidateQueries({ queryKey: walletKeys.all });
     },
-    onError: (e) =>
-      toast.error(walletErrorMessage(e, tt("toast.mlmMonthlyRunFailed"))),
+    onError: (e) => {
+      onWalletIdempotencyError(e, idempotency);
+      toast.error(walletErrorMessage(e, tt("toast.mlmMonthlyRunFailed")));
+    },
   });
 }
 
@@ -626,29 +657,22 @@ export function useSetMlmReferrer() {
   });
 }
 
-export function useSetMlmReferralRate() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({
-      userId,
-      body,
-    }: {
-      userId: string;
-      body: SetMlmReferralRateBody;
-    }) => adminMlmApi.setUserReferralRate(userId, body),
-    onSuccess: () => {
-      toast.success(tt("toast.mlmReferralRateUpdated"));
-      void qc.invalidateQueries({ queryKey: mlmKeys.all });
-      void qc.invalidateQueries({ queryKey: ["admin", "users"] });
-    },
-    onError: (e) =>
-      toast.error(walletErrorMessage(e, tt("toast.mlmReferralRateUpdateFailed"))),
-  });
-}
-
 export function useCommissionReport(yearMonth?: string) {
   return useQuery<CommissionReport>({
     queryKey: mlmKeys.commissionReport(yearMonth),
     queryFn: () => adminMlmApi.commissionReport(yearMonth ? { yearMonth } : {}),
+  });
+}
+
+export function useLoyaltyHistory(
+  userId: string | null | undefined,
+  monthsBack = 12,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: mlmKeys.loyaltyHistory(userId ?? "", monthsBack),
+    queryFn: () =>
+      adminMlmApi.loyaltyHistory(userId!, { monthsBack }),
+    enabled: Boolean(enabled && userId),
   });
 }

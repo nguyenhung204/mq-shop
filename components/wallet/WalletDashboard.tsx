@@ -313,8 +313,9 @@ function WalletInner({ embedded = false }: { embedded?: boolean }) {
             ) : null}
             {user?.referralRateOverride != null &&
             user.referralRateOverride !== "" ? (
-              <span className="mq-badge mq-badge-teal">
-                {t("wallet.referralRateOverride")}: {user.referralRateOverride}%
+              <span className="mq-badge mq-badge-muted">
+                {t("wallet.referralRateOverride")}: {user.referralRateOverride}%{" "}
+                ({t("admin.mlm.rateOverrideIgnored")})
               </span>
             ) : null}
             {user?.hasWalletPin ? (
