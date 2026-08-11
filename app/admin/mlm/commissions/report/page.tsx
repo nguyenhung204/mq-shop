@@ -367,24 +367,29 @@ function TeamSection({ summary }: { summary: CommissionTypeSummary<TeamCommissio
                     <ReportTable>
                       <thead>
                         <tr>
-                          <Th>{tr("colBuyer")}</Th>
-                          <Th>{tr("colOrder")}</Th>
-                          <Th right>{tr("colOrderTotal")}</Th>
+                          <Th>{tr("colBranchRoot")}</Th>
+                          <Th right>{tr("colVolume")}</Th>
+                          <Th right>{tr("colCommission")}</Th>
                           <Th right>{tr("colTeamPercent")}</Th>
                           <Th right>{tr("colMaxBelow")}</Th>
                           <Th right>{tr("colPaidPercent")}</Th>
                         </tr>
                       </thead>
                       <tbody>
-                        {r.entries.map((e, i) => (
-                          <tr key={`${r.userId}-${e.orderCode}-${i}`} className="last:border-0">
-                            <Td muted>{e.buyerEmail}</Td>
-                            <Td>
-                              <Link href={`/admin/orders?q=${e.orderCode}`} className="inline-flex items-center gap-1 text-[var(--mq-accent-teal)] hover:underline font-medium">
-                                {e.orderCode}<ExternalLink size={10} />
-                              </Link>
+                        {r.entries.map((e) => (
+                          <tr key={e.ledgerId} className="last:border-0">
+                            <Td muted>
+                              <span className="block font-medium text-mq-text">
+                                {e.branchRootFullName?.trim() || e.branchRootEmail || "—"}
+                              </span>
+                              {e.branchRootEmail && e.branchRootFullName?.trim() ? (
+                                <span className="block text-[11px]">{e.branchRootEmail}</span>
+                              ) : null}
                             </Td>
-                            <Td right>{formatMoney(e.orderTotal)}</Td>
+                            <Td right>{formatMoney(e.baseAmount)}</Td>
+                            <Td right>
+                              <span className="font-semibold">{formatMoney(e.payoutAmount)}</span>
+                            </Td>
                             <Td right muted>{formatPercent(e.teamPercent)}</Td>
                             <Td right muted>{formatPercent(e.maxBelow)}</Td>
                             <Td right>
@@ -395,18 +400,33 @@ function TeamSection({ summary }: { summary: CommissionTypeSummary<TeamCommissio
                       </tbody>
                     </ReportTable>
                     <p className="text-[11px] text-mq-text-muted">
-                      Paid % = Team % − Max Below (differential commission)
+                      {tr("teamDifferentialHint")}
                     </p>
                     {r.entries[0]?.chainNodes && r.entries[0].chainNodes.length > 0 && (
                       <div className="space-y-1">
-                        <p className="text-[11px] font-semibold uppercase tracking-wide text-mq-text-muted">Chain</p>
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-mq-text-muted">
+                          {tr("teamChainTitle")}
+                        </p>
                         <div className="flex flex-col text-[11px] gap-0.5">
                           {r.entries[0].chainNodes.map((n, ni) => (
-                            <div key={n.userId} className="flex items-center gap-1.5">
+                            <div key={`${n.mlmRank}-${ni}`} className="flex items-center gap-1.5">
                               {ni > 0 && <span className="text-mq-text-muted">↳</span>}
-                              <span className={n.userId === r.userId ? "font-bold text-mq-text" : "text-mq-text-muted"}>
-                                {n.rankName} <span className="tabular-nums">({formatPercent(n.percent)})</span>
-                                {n.userId === r.userId ? <span className="ml-1 text-[var(--mq-accent-teal)]">recipient</span> : ""}
+                              <span
+                                className={
+                                  n.mlmRank === r.mlmRank
+                                    ? "font-bold text-mq-text"
+                                    : "text-mq-text-muted"
+                                }
+                              >
+                                {n.rankName || mlmRankLabel(t, n.mlmRank)}{" "}
+                                <span className="tabular-nums">
+                                  ({formatPercent(String(n.teamPercent))})
+                                </span>
+                                {n.mlmRank === r.mlmRank ? (
+                                  <span className="ml-1 text-[var(--mq-accent-teal)]">
+                                    {tr("teamChainRecipient")}
+                                  </span>
+                                ) : null}
                               </span>
                             </div>
                           ))}

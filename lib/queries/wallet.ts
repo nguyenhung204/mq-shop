@@ -31,7 +31,6 @@ import {
   type ListFullTreeParams,
   type ListNetworkTreeParams,
   type SetMlmRankBody,
-  type SetMlmReferralRateBody,
   type SetMlmReferrerBody,
   type UpdatePromotionRuleBody,
   type UpdateRankConfigBody,
@@ -579,9 +578,20 @@ export function useRunMonthlyCommissions() {
     },
     onSuccess: (data) => {
       idempotency.invalidate();
+      const periodStart = data?.periodStart
+        ? new Date(data.periodStart).toISOString().slice(0, 10)
+        : "";
+      const periodEnd = data?.periodEnd
+        ? new Date(data.periodEnd).toISOString().slice(0, 10)
+        : "";
       toast.success(
         tt("toast.mlmMonthlyRan", {
           yearMonth: data?.yearMonth ?? "",
+          timezone: data?.timezone ?? "UTC",
+          periodStart,
+          periodEnd,
+          batchId: data?.batchId ?? "—",
+          status: data?.status ?? "",
         }),
       );
       void qc.invalidateQueries({ queryKey: mlmKeys.all });
@@ -644,26 +654,6 @@ export function useSetMlmReferrer() {
     },
     onError: (e) =>
       toast.error(walletErrorMessage(e, tt("toast.mlmReferrerUpdateFailed"))),
-  });
-}
-
-export function useSetMlmReferralRate() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({
-      userId,
-      body,
-    }: {
-      userId: string;
-      body: SetMlmReferralRateBody;
-    }) => adminMlmApi.setUserReferralRate(userId, body),
-    onSuccess: () => {
-      toast.success(tt("toast.mlmReferralRateUpdated"));
-      void qc.invalidateQueries({ queryKey: mlmKeys.all });
-      void qc.invalidateQueries({ queryKey: ["admin", "users"] });
-    },
-    onError: (e) =>
-      toast.error(walletErrorMessage(e, tt("toast.mlmReferralRateUpdateFailed"))),
   });
 }
 

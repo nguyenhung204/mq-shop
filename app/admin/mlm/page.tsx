@@ -478,9 +478,20 @@ function MlmAdminInner() {
     }
     try {
       const res = await runMonthly.mutateAsync({ yearMonth });
+      const periodStart = res.periodStart
+        ? new Date(res.periodStart).toISOString().slice(0, 10)
+        : "";
+      const periodEnd = res.periodEnd
+        ? new Date(res.periodEnd).toISOString().slice(0, 10)
+        : "";
       setMonthlyOk(
         t("admin.mlm.runMonthlyDone", {
           yearMonth: res.yearMonth || yearMonth,
+          timezone: res.timezone || "UTC",
+          periodStart,
+          periodEnd,
+          batchId: res.batchId || "—",
+          status: res.status || "",
         }),
       );
     } catch {

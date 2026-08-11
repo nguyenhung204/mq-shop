@@ -169,8 +169,6 @@ export type {
   SetMlmRankResult,
   SetMlmReferrerBody,
   SetMlmReferrerResult,
-  SetMlmReferralRateBody,
-  SetMlmReferralRateResult,
   RankReconcileResult,
   RankReconcileBatchResult,
   MonthlyCommissionSuggestedAction,

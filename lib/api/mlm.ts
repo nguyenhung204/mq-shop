@@ -168,18 +168,6 @@ export type SetMlmReferrerResult = {
   referrerId: string | null;
 };
 
-export type SetMlmReferralRateBody = {
-  /** Override % in 0..10, or `null` to clear override. */
-  ratePercent: number | null;
-};
-
-export type SetMlmReferralRateResult = {
-  userId: string;
-  email?: string;
-  fullName?: string | null;
-  referralRateOverride: string | number | null;
-};
-
 export type RankReconcileResult = {
   userId: string;
   fromRank: number;
@@ -291,11 +279,6 @@ export const adminMlmApi = {
     api.patch<SetMlmRankResult>(`/admin/mlm/users/${userId}/rank`, body),
   setUserReferrer: (userId: string, body: SetMlmReferrerBody) =>
     api.patch<SetMlmReferrerResult>(`/admin/mlm/users/${userId}/referrer`, body),
-  setUserReferralRate: (userId: string, body: SetMlmReferralRateBody) =>
-    api.patch<SetMlmReferralRateResult>(
-      `/admin/mlm/users/${userId}/referral-rate`,
-      body,
-    ),
   monthlyOverview: (query?: { monthsBack?: number }) =>
     api.get<MonthlyCommissionOverview>("/admin/mlm/commissions/monthly-overview", {
       query: { monthsBack: query?.monthsBack ?? 12 },
@@ -379,24 +362,28 @@ export type ReferralCommissionEntry = {
 };
 
 export type TeamChainNode = {
-  userId: string;
-  email: string;
-  fullName: string | null;
   mlmRank: number;
-  rankName: string;
-  percent: string;
+  teamPercent: number;
+  /** Optional richer fields if BE expands later */
+  userId?: string;
+  email?: string;
+  fullName?: string | null;
+  rankName?: string;
+  percent?: string;
 };
 
 export type TeamCommissionEntry = {
-  orderCode: string;
-  orderTotal: string;
-  buyerEmail: string;
+  ledgerId: string;
+  payoutAmount: string;
+  baseAmount: string;
   teamPercent: string;
   maxBelow: string;
   paidPercent: string;
-  commissionAmount?: string;
-  /** Audit chain from buyer up to this recipient. */
   chainNodes?: TeamChainNode[];
+  branchRootUserId?: string | null;
+  branchRootEmail?: string | null;
+  branchRootFullName?: string | null;
+  creditedAt?: string | Date | null;
 };
 
 export type GenericCommissionEntry = {
