@@ -263,6 +263,8 @@ export const mlmApi = {
   networkTree: (query?: ListNetworkTreeParams) =>
     api.get<NetworkTree>("/mlm/network-tree", { query }),
   rankProgress: () => api.get<MlmRankProgress>("/mlm/rank-progress"),
+  /** Seller-readable rank rate table (VIEW_MLM_COMSN). */
+  rankConfigs: () => api.get<MlmRankConfig[]>("/mlm/rank-configs"),
   commissions: (query?: ListCommissionsParams) =>
     api.get<CommissionListRes>("/mlm/commissions", { query, withMeta: true }),
 };

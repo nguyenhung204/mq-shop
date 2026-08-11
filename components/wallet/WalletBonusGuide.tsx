@@ -1,6 +1,6 @@
 "use client";
 
-import { useMlmRanks } from "@/lib/queries/wallet";
+import { useSellerMlmRankConfigs } from "@/lib/queries/wallet";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { formatPercent } from "@/lib/api/utils";
@@ -15,7 +15,7 @@ const PILLARS: Pillar[] = [
   {
     type: "REFERRAL",
     bodyKey: "wallet.bonusGuide.referralBody",
-    timingKey: "wallet.bonusGuide.timingRealtime",
+    timingKey: "wallet.bonusGuide.timingJoining",
   },
   {
     type: "TEAM",
@@ -37,7 +37,7 @@ const PILLARS: Pillar[] = [
 export function WalletBonusGuide({ className = "" }: { className?: string }) {
   const { t } = useLanguage();
   const { hasRole } = useAuth();
-  const { data: ranks } = useMlmRanks({ enabled: hasRole("SELLER") });
+  const { data: ranks } = useSellerMlmRankConfigs({ enabled: hasRole("SELLER") });
 
   // Only show to SELLER
   if (!hasRole("SELLER")) return null;

@@ -451,6 +451,15 @@ export function useMlmRanks(options?: { enabled?: boolean }) {
   });
 }
 
+/** Seller guide — public rate table without CONFIG_MLM. */
+export function useSellerMlmRankConfigs(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: [...mlmKeys.ranks(), "seller"],
+    queryFn: () => mlmApi.rankConfigs(),
+    enabled: options?.enabled ?? true,
+  });
+}
+
 export function useMonthlyCommissionOverview(
   monthsBack = 12,
   options?: { enabled?: boolean },

@@ -226,7 +226,7 @@ export const NOTIFICATION_TYPE_COPY: Record<
     },
     COMMISSION_REFERRAL_SKIPPED_NOT_BUYER: {
       title: "Commission not credited",
-      body: "Referral commission was skipped — referrer does not have a buyer account.",
+      body: "Referral commission was skipped — referrer must be a seller (approved shop).",
     },
     COMMISSION_JOB_FAILED: {
       title: "Commission job failed",
@@ -496,7 +496,7 @@ export const NOTIFICATION_TYPE_COPY: Record<
     },
     COMMISSION_REFERRAL_SKIPPED_NOT_BUYER: {
       title: "Không cộng hoa hồng",
-      body: "Bỏ qua hoa hồng — người giới thiệu không có tài khoản buyer.",
+      body: "Bỏ qua hoa hồng — người giới thiệu phải là seller (shop được duyệt).",
     },
     COMMISSION_JOB_FAILED: {
       title: "Xử lý hoa hồng lỗi",
@@ -766,7 +766,7 @@ export const NOTIFICATION_TYPE_COPY: Record<
     },
     COMMISSION_REFERRAL_SKIPPED_NOT_BUYER: {
       title: "未發放佣金",
-      body: "未發放推薦佣金 — 推薦人不具有買家帳號。",
+      body: "未發放推薦佣金 — 推薦人必須是賣家（已核准商店）。",
     },
     COMMISSION_JOB_FAILED: {
       title: "佣金處理失敗",

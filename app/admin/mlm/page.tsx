@@ -207,17 +207,19 @@ function MlmAdminInner() {
   const { hasRole } = useAuth();
 
   /**
-   * CONFIG_MLM matrix: Admin=NONE, Accountant=APPROVE, Super Admin=ALL.
-   * Do not use hasPermission("CONFIG_MLM") alone — AuthProvider treats ADMIN as all-perms.
+   * CONFIG_MLM: Super Admin=ALL (mutate). Accountant=APPROVE (read/approve only — BE 403 on PATCH).
+   * APPROVE_MLM: Accountant + Super Admin can run monthly / flush.
    */
-  const canSetRank = hasRole("SUPER_ADMIN") || hasRole("ACCOUNTANT");
+  const canMutateConfig = hasRole("SUPER_ADMIN");
+  const canApproveSettlement =
+    hasRole("SUPER_ADMIN") || hasRole("ACCOUNTANT");
   const canViewTree =
     hasRole("SUPER_ADMIN") ||
     hasRole("ACCOUNTANT") ||
     hasRole("ADMIN");
 
   const { data: ranks, isLoading, isError, error } = useMlmRanks({
-    enabled: canSetRank,
+    enabled: canMutateConfig || canApproveSettlement,
   });
   const setRank = useSetMlmRank();
   const setReferrer = useSetMlmReferrer();
@@ -230,7 +232,7 @@ function MlmAdminInner() {
     isLoading: monthlyLoading,
     isError: monthlyIsError,
     error: monthlyErr,
-  } = useMonthlyCommissionOverview(12, { enabled: canSetRank });
+  } = useMonthlyCommissionOverview(12, { enabled: canApproveSettlement });
   const months = monthlyOverview?.months ?? [];
 
   const { data: usersPage } = useQuery({
@@ -534,7 +536,7 @@ function MlmAdminInner() {
       <div className="space-y-6 w-full">
         <p className="text-sm text-mq-text-muted">{t("admin.mlm.hint")}</p>
 
-        {canSetRank ? (
+        {canMutateConfig ? (
           <>
           <section className="space-y-2">
             <h2 className="text-base font-medium">{t("admin.mlm.ranksTitle")}</h2>
@@ -764,8 +766,11 @@ function MlmAdminInner() {
           </div>
         )}
 
-        {canSetRank ? (
+        {canApproveSettlement ? (
           <section className="mq-card p-5 space-y-4">
+            <div className="mq-alert mq-alert-warning text-sm">
+              {t("admin.mlm.payoutHoldBanner")}
+            </div>
             <div>
               <h2 className="text-base font-medium">{t("admin.mlm.runMonthlyTitle")}</h2>
               <p className="text-sm text-mq-text-muted mt-1">
@@ -935,7 +940,7 @@ function MlmAdminInner() {
           </section>
         ) : null}
 
-        {canSetRank ? (
+        {canMutateConfig ? (
           <section className="mq-card p-5 space-y-4">
             <div>
               <h2 className="text-base font-medium">{t("admin.mlm.reconcileTitle")}</h2>
@@ -1006,10 +1011,10 @@ function MlmAdminInner() {
 
         <div
           className={`grid gap-4 items-start ${
-            canSetRank && canViewTree ? "lg:grid-cols-2" : "grid-cols-1"
+            canMutateConfig && canViewTree ? "lg:grid-cols-2" : "grid-cols-1"
           }`}
         >
-          {canSetRank ? (
+          {canMutateConfig ? (
             <section className="mq-card p-5 space-y-3 min-w-0">
               <h2 className="text-base font-medium">{t("admin.mlm.setRankTitle")}</h2>
               <p className="text-sm text-mq-text-muted">{t("admin.mlm.setRankHint")}</p>
@@ -1215,7 +1220,7 @@ function MlmAdminInner() {
           </div>
         )}
 
-        {canSetRank ? (
+        {canMutateConfig ? (
           <div className="grid gap-4 items-start lg:grid-cols-2">
             <section className="mq-card p-5 space-y-3 min-w-0">
               <h2 className="text-base font-medium">{t("admin.mlm.setReferrerTitle")}</h2>
