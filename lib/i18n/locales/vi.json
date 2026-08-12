@@ -767,7 +767,7 @@
         "transactions": "Xem ORDER và PAYOUT; xuất báo cáo",
         "payouts": "Tạo và duyệt phiếu chi trả seller",
         "landingCost": "Tính landing cost từ dòng hàng và phí",
-        "financeConfigs": "Cấu hình phí dual-control (SA gửi, Acc duyệt)",
+        "financeConfigs": "Cấu hình phí dual-control + tỷ giá FX (SA)",
         "finance": "Legacy: rút ví, lô chi trả và duyệt cổng",
         "promotions": "Duyệt KM seller và tạo KM nền tảng",
         "banners": "Banner CMS trang chủ / khuyến mãi",
@@ -1114,7 +1114,7 @@
     },
     "financeConfigs": {
       "title": "Cấu hình phí",
-      "description": "Dual-control: Super Admin gửi cấu hình, Accountant duyệt.",
+      "description": "Phí nền tảng (dual-control) và tỷ giá hiển thị FX (Super Admin).",
       "activeBanner": "Cấu hình phí đang hoạt động",
       "noActive": "Chưa có cấu hình hoạt động. Gửi mới và chờ kế toán duyệt.",
       "submitNew": "Gửi cấu hình",

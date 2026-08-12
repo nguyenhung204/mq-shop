@@ -12,6 +12,7 @@ import {
   useRejectFinanceConfig,
 } from "@/lib/queries/finance";
 import { AuthGuard } from "@/components/guards/AuthGuard";
+import { AdminFxRatesPanel } from "@/components/admin/AdminFxRatesPanel";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
@@ -88,9 +89,11 @@ function formatWhen(iso: string | null | undefined): string {
 
 function FinanceConfigsInner() {
   const { t, locale } = useLanguage();
-  const { hasRole } = useAuth();
+  const { hasRole, hasAnyPermission } = useAuth();
   const canSubmit = hasRole("SUPER_ADMIN");
   const canReview = hasRole("ACCOUNTANT") || hasRole("SUPER_ADMIN");
+  const canEditFx =
+    hasRole("SUPER_ADMIN") || hasAnyPermission(["CONFIG_SYS"]);
 
   const [status, setStatus] = useState<FinanceConfigStatus | "">("PENDING_APPROVAL");
   const [page, setPage] = useState(1);
@@ -154,6 +157,8 @@ function FinanceConfigsInner() {
       />
 
       <div className="space-y-5">
+        {canEditFx ? <AdminFxRatesPanel /> : null}
+
         {!activeLoading && (
           <div className="mq-card p-4 space-y-2">
             <p className="text-xs uppercase tracking-wide text-mq-text-muted">

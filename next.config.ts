@@ -17,6 +17,11 @@ const nextConfig: NextConfig = {
         destination: "/admin/payouts",
         permanent: false,
       },
+      {
+        source: "/admin/fx-rates",
+        destination: "/admin/finance/configs",
+        permanent: false,
+      },
     ];
   },
   images: {

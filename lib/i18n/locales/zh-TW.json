@@ -767,7 +767,7 @@
         "transactions": "瀏覽 ORDER／PAYOUT；匯出報表",
         "payouts": "建立並核准賣家撥款單",
         "landingCost": "依行項目與費用計算落地成本",
-        "financeConfigs": "雙重控管平台費與閘道設定",
+        "financeConfigs": "雙重控管費用設定 + 顯示匯率 FX（SA）",
         "finance": "舊版：錢包提領、批次與金流審核",
         "promotions": "審核賣家活動並建立平台促銷",
         "banners": "首頁／促銷 CMS 橫幅",
@@ -1114,7 +1114,7 @@
     },
     "financeConfigs": {
       "title": "費用設定",
-      "description": "雙重控管：Super Admin 送出，Accountant 核准。",
+      "description": "平台費用（雙重控管）與顯示匯率 FX（Super Admin）。",
       "activeBanner": "生效中的費用設定",
       "noActive": "尚無生效的費用設定。請送出後等待會計核准。",
       "submitNew": "送出設定",

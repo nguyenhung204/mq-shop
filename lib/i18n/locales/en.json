@@ -767,7 +767,7 @@
         "transactions": "Browse ORDER and PAYOUT rows; export reports",
         "payouts": "Create and approve seller payout slips",
         "landingCost": "Calculate landing cost from line items and fees",
-        "financeConfigs": "Dual-control platform fee and gateway config",
+        "financeConfigs": "Dual-control fee config + display FX rates (SA)",
         "finance": "Legacy wallet withdraws, batches, and gateway reviews",
         "promotions": "Approve seller campaigns and create platform promos",
         "banners": "Homepage and promo CMS creatives",
@@ -1114,7 +1114,7 @@
     },
     "financeConfigs": {
       "title": "Fee configuration",
-      "description": "Dual-control platform fees: Super Admin submits, Accountant approves.",
+      "description": "Platform fees (dual-control) and display FX rates (Super Admin).",
       "activeBanner": "Active fee configuration",
       "noActive": "No active fee configuration yet. Submit one and wait for accountant approval.",
       "submitNew": "Submit config",
