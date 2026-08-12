@@ -12,9 +12,33 @@ export type OrderStatus =
   | "REFUND_APPROVED"
   | "REFUNDED";
 
-export type PaymentMethod = "COD" | "MOCK";
+/**
+ * Prefer OFF_PLATFORM for bank-transfer / off-platform settlement.
+ * COD kept for backward compatibility (same PENDING flow as OFF_PLATFORM).
+ * MOCK kept for admin place-order / dev.
+ */
+export type PaymentMethod = "OFF_PLATFORM" | "COD" | "MOCK";
 
-export type RmaStatus = "PENDING" | "APPROVED" | "REJECTED" | "CLOSED";
+export type ShopPaymentProfile = {
+  shopId: string;
+  shopName: string;
+  bankName: string | null;
+  accountNumber: string | null;
+  accountName: string | null;
+  qrUrl?: string | null;
+};
+
+export type RmaStatus =
+  | "PENDING"
+  | "REQUESTED"
+  | "APPROVED"
+  | "REJECTED"
+  | "RETURN_SHIPPED"
+  | "RETURN_RECEIVED"
+  | "REFUND_PENDING"
+  | "REFUND_SENT"
+  | "CLOSED"
+  | "COMPLETED";
 
 export type ShippingAddress = {
   fullName: string;
@@ -132,6 +156,14 @@ export type OrderView = {
   total: number;
   currency: "USD";
   paymentMethod: PaymentMethod;
+  /** Buyer-uploaded bank-transfer proof (OFF_PLATFORM / legacy COD). */
+  paymentProofUrl?: string | null;
+  paymentProofUploadedAt?: string | null;
+  paymentRejectedReason?: string | null;
+  /** Set when stale proof review is escalated to admin/CS. */
+  paymentEscalatedAt?: string | null;
+  /** Set when paid fulfillment is escalated for no shipping progress. */
+  fulfillmentEscalatedAt?: string | null;
   shippingAddress: ShippingAddress;
   items: OrderItemView[];
   cancelReason: string | null;
@@ -155,6 +187,7 @@ export type ListOrdersParams = {
 
 export type AdminListOrdersParams = ListOrdersParams & {
   shopId?: string;
+  paymentEscalated?: boolean;
 };
 
 export type UpdateOrderStatusRequest = {
@@ -195,6 +228,22 @@ export const orderApi = {
 
   removeRmaEvidence: (rmaId: string, urls: string[]) =>
     api.delete<RmaView>(`/rma/${rmaId}/evidence`, { body: { urls } }),
+
+  /** Multipart field `proof` — buyer payment bill for OFF_PLATFORM/COD. */
+  uploadPaymentProof: (orderId: string, file: File) => {
+    const fd = new FormData();
+    fd.append("proof", file);
+    return api.postForm<OrderView>(`/orders/${orderId}/payment-proof`, fd);
+  },
+
+  confirmPayment: (orderId: string) =>
+    api.post<OrderView>(`/orders/${orderId}/payment/confirm`, {}),
+
+  rejectPayment: (orderId: string, reason: string) =>
+    api.post<OrderView>(`/orders/${orderId}/payment/reject`, { reason }),
+
+  createFulfillmentComplaint: (orderId: string, reason: string) =>
+    api.post(`/orders/${orderId}/fulfillment-complaint`, { reason }),
 };
 
 export const adminOrdersApi = {
@@ -227,7 +276,59 @@ export const adminOrdersApi = {
   /** Accountant: RMA APPROVED + order REFUND_APPROVED → order REFUNDED, RMA CLOSED. */
   markRmaRefunded: (rmaId: string, body?: { note?: string }) =>
     api.post<AdminRmaDetailView>(`/admin/rma/${rmaId}/mark-refunded`, body ?? {}),
+
+  /** Admin force-confirm off-platform payment (requires proof) → PAID. */
+  forcePaid: (orderId: string, note?: string) =>
+    api.post<OrderView>(
+      `/admin/orders/${orderId}/payment/force-paid`,
+      note ? { note } : {},
+    ),
+
+  rejectPayment: (orderId: string, reason: string) =>
+    api.post<OrderView>(`/admin/orders/${orderId}/payment/reject`, { reason }),
+
+  listFulfillmentComplaints: () =>
+    api.get<{ items: FulfillmentComplaintView[] }>(
+      "/admin/orders/fulfillment-complaints",
+    ),
 };
+
+export type FulfillmentComplaintView = {
+  id: string;
+  orderId: string;
+  buyerId: string;
+  shopId: string;
+  reason: string;
+  status: string;
+  createdAt: string;
+};
+
+/** OFF_PLATFORM preferred; COD is legacy alias with the same PENDING proof flow. */
+export function isOffPlatformLike(method: PaymentMethod): boolean {
+  return method === "OFF_PLATFORM" || method === "COD";
+}
+
+export function canUploadPaymentProof(
+  order: Pick<OrderView, "status" | "paymentMethod">,
+): boolean {
+  return order.status === "PENDING" && isOffPlatformLike(order.paymentMethod);
+}
+
+export function canSellerReviewPayment(
+  order: Pick<OrderView, "status" | "paymentMethod" | "paymentProofUrl">,
+): boolean {
+  return (
+    order.status === "PENDING" &&
+    isOffPlatformLike(order.paymentMethod) &&
+    Boolean(order.paymentProofUrl)
+  );
+}
+
+export function canAdminForcePaid(
+  order: Pick<OrderView, "status" | "paymentMethod" | "paymentProofUrl">,
+): boolean {
+  return canSellerReviewPayment(order);
+}
 
 /** Next status in seller fulfillment pipeline, or null if terminal / not actionable. */
 export function nextFulfillmentStatus(

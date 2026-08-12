@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { formatMoney } from "@/lib/api/utils";
+import { formatPoints } from "@/lib/api/utils";
 import type { TransferPreviewResult } from "@/lib/api/wallet";
 import {
   useTransferPreview,
@@ -271,7 +271,7 @@ function P2pPanel({
                 <p className="text-xs text-mq-text-muted">
                   {t("wallet.available")}:{" "}
                   <span className="tabular-nums font-medium text-mq-text">
-                    {formatMoney(balance?.availableBalance)}
+                    {formatPoints(balance?.availableBalance)}
                   </span>
                 </p>
               ) : null}

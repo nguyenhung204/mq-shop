@@ -41,6 +41,7 @@ export const orderKeys = {
       "admin",
       params.status ?? "",
       params.shopId ?? "",
+      params.paymentEscalated ? "escalated" : "",
       params.page ?? 1,
       params.pageSize ?? 20,
     ] as const,
@@ -210,11 +211,12 @@ export function useAdminOrders(params: AdminListOrdersParams = {}) {
   const pageSize = params.pageSize ?? 20;
   const status = params.status;
   const shopId = params.shopId;
+  const paymentEscalated = params.paymentEscalated;
   return useQuery({
-    queryKey: orderKeys.adminList({ page, pageSize, status, shopId }),
+    queryKey: orderKeys.adminList({ page, pageSize, status, shopId, paymentEscalated }),
     queryFn: async () =>
       parsePage<OrderView>(
-        await adminOrdersApi.list({ page, pageSize, status, shopId }),
+        await adminOrdersApi.list({ page, pageSize, status, shopId, paymentEscalated }),
       ),
     placeholderData: (prev) => prev,
   });
@@ -324,5 +326,92 @@ export function useAdminRmaMarkRefunded() {
       toast.success(tt("toast.markedRefunded"));
     },
     onError: (e) => toast.error(orderErrorMessage(e, tt("toast.markRefundedFailed"))),
+  });
+}
+
+function invalidateOrder(queryClient: ReturnType<typeof useQueryClient>, orderId: string) {
+  void queryClient.invalidateQueries({ queryKey: orderKeys.detail(orderId) });
+  void queryClient.invalidateQueries({ queryKey: orderKeys.all });
+}
+
+export function useUploadPaymentProof(orderId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (file: File) => orderApi.uploadPaymentProof(orderId, file),
+    onSuccess: (order) => {
+      queryClient.setQueryData(orderKeys.detail(orderId), order);
+      invalidateOrder(queryClient, orderId);
+      toast.success(tt("toast.paymentProofUploaded"));
+    },
+    onError: (e) => toast.error(orderErrorMessage(e, tt("toast.paymentProofUploadFailed"))),
+  });
+}
+
+export function useConfirmPayment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (orderId: string) => orderApi.confirmPayment(orderId),
+    onSuccess: (order) => {
+      queryClient.setQueryData(orderKeys.detail(order.id), order);
+      invalidateOrder(queryClient, order.id);
+      toast.success(tt("toast.paymentConfirmed"));
+    },
+    onError: (e) => toast.error(orderErrorMessage(e, tt("toast.paymentConfirmFailed"))),
+  });
+}
+
+export function useRejectPayment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ orderId, reason }: { orderId: string; reason: string }) =>
+      orderApi.rejectPayment(orderId, reason),
+    onSuccess: (order) => {
+      queryClient.setQueryData(orderKeys.detail(order.id), order);
+      invalidateOrder(queryClient, order.id);
+      toast.success(tt("toast.paymentRejected"));
+    },
+    onError: (e) => toast.error(orderErrorMessage(e, tt("toast.paymentRejectFailed"))),
+  });
+}
+
+export function useAdminForcePaid() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ orderId, note }: { orderId: string; note?: string }) =>
+      adminOrdersApi.forcePaid(orderId, note),
+    onSuccess: (order) => {
+      queryClient.setQueryData(orderKeys.detail(order.id), order);
+      invalidateOrder(queryClient, order.id);
+      toast.success(tt("toast.paymentForcePaid"));
+    },
+    onError: (e) => toast.error(orderErrorMessage(e, tt("toast.paymentForcePaidFailed"))),
+  });
+}
+
+export function useAdminRejectPayment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ orderId, reason }: { orderId: string; reason: string }) =>
+      adminOrdersApi.rejectPayment(orderId, reason),
+    onSuccess: (order) => {
+      queryClient.setQueryData(orderKeys.detail(order.id), order);
+      invalidateOrder(queryClient, order.id);
+      toast.success(tt("toast.paymentRejected"));
+    },
+    onError: (e) => toast.error(orderErrorMessage(e, tt("toast.paymentRejectFailed"))),
+  });
+}
+
+export function useCreateFulfillmentComplaint() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ orderId, reason }: { orderId: string; reason: string }) =>
+      orderApi.createFulfillmentComplaint(orderId, reason),
+    onSuccess: (_data, vars) => {
+      invalidateOrder(queryClient, vars.orderId);
+      toast.success(tt("toast.fulfillmentComplaintSent"));
+    },
+    onError: (e) =>
+      toast.error(orderErrorMessage(e, tt("toast.fulfillmentComplaintFailed"))),
   });
 }

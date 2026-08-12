@@ -106,9 +106,14 @@ export function resolveNotificationRoute(
     case "ORDER_STATUS_UPDATED":
     case "ORDER_CANCELLED":
     case "ORDER_CREATED_BY_ADMIN":
-    case "ORDER_CREATED_PAYMENT_NEEDED": {
+    case "ORDER_CREATED_PAYMENT_NEEDED":
+    case "ORDER_PAYMENT_PROOF_UPLOADED":
+    case "ORDER_PAYMENT_CONFIRMED":
+    case "ORDER_PAYMENT_REJECTED":
+    case "ORDER_PAYMENT_ESCALATED": {
       const m = requireMeta(meta, ["orderId"]);
-      return m ? `/orders/${m.orderId}` : "/orders";
+      if (m) return `/orders/${m.orderId}`;
+      return seller && !buyerOnly ? "/seller/orders" : "/orders";
     }
 
     case "RMA_NEW": {

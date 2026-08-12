@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
-import { formatMoney, formatPercent } from "@/lib/api/utils";
+import { formatMoney, formatPercent, formatPoints } from "@/lib/api/utils";
 import type { CommissionType } from "@/lib/api/mlm";
 import { useCommissions } from "@/lib/queries/wallet";
 import { AuthGuard } from "@/components/guards/AuthGuard";
@@ -119,7 +118,7 @@ function CommissionsPanel({ embedded = false }: { embedded?: boolean }) {
             </p>
           </div>
           <span className="tabular-nums font-medium">
-            {formatMoney(row.payoutAmount)}
+            {formatPoints(row.payoutAmount)}
           </span>
         </div>
       ))}

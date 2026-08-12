@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment, useState, type FormEvent } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -13,7 +13,11 @@ import {
   Search,
   Users,
 } from "lucide-react";
-import { useCommissionReport, useLoyaltyHistory } from "@/lib/queries/wallet";
+import {
+  useCommissionReport,
+  useLoyaltyHistory,
+  useMarkCommissionPeriodPaid,
+} from "@/lib/queries/wallet";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
@@ -24,7 +28,6 @@ import { getErrorMessage } from "@/lib/queries/utils";
 import type {
   CommissionReportBatchStatus,
   CommissionTypeSummary,
-  GenericCommissionEntry,
   GlobalFundTierReport,
   GlobalFundTierStatus,
   LoyaltyCommissionEntry,
@@ -50,6 +53,10 @@ function tierStatusBadge(status: GlobalFundTierStatus): string {
 function fmtDate(iso: string | null | undefined): string {
   if (!iso) return "—";
   return iso.slice(0, 10);
+}
+
+function isYearMonth(value: string): boolean {
+  return /^\d{4}-(0[1-9]|1[0-2])$/.test(value.trim());
 }
 
 // ─── Primitives ───────────────────────────────────────────────────────────────
@@ -733,13 +740,28 @@ function CommissionReportInner() {
   const [inputYm, setInputYm] = useState("");
   const [queryYm, setQueryYm] = useState<string | undefined>(undefined);
   const [activeSection, setActiveSection] = useState<CommissionSection | null>(null);
+  const [paidYearMonth, setPaidYearMonth] = useState("");
+  const [paidError, setPaidError] = useState("");
 
   const { data, isLoading, isError, error } = useCommissionReport(queryYm);
+  const markPeriodPaid = useMarkCommissionPeriodPaid();
 
   function handleLoad() {
     const trimmed = inputYm.trim();
     setQueryYm(trimmed || undefined);
     setActiveSection(null);
+  }
+
+  async function handleMarkPaid(e: FormEvent) {
+    e.preventDefault();
+    setPaidError("");
+    const yearMonth = (paidYearMonth || data?.yearMonth || queryYm || "").trim();
+    if (!isYearMonth(yearMonth)) {
+      setPaidError(tr("markPaidError"));
+      return;
+    }
+    await markPeriodPaid.mutateAsync(yearMonth);
+    setPaidYearMonth(yearMonth);
   }
 
   function toggleSection(s: CommissionSection) {
@@ -792,6 +814,35 @@ function CommissionReportInner() {
             )}
           </div>
         </div>
+
+        <form className="mq-admin-panel p-4 space-y-3" onSubmit={(e) => void handleMarkPaid(e)}>
+          <div>
+            <h2 className="text-sm font-semibold text-mq-text">{tr("markPaidTitle")}</h2>
+            <p className="text-xs text-mq-text-muted mt-0.5">{tr("markPaidHint")}</p>
+          </div>
+          {paidError ? <div className="mq-alert mq-alert-error">{paidError}</div> : null}
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="flex flex-col gap-1 min-w-0">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-mq-text-muted">
+                {tr("yearMonthLabel")}
+              </span>
+              <input
+                type="text"
+                className="mq-input text-sm w-40"
+                placeholder={data?.yearMonth || queryYm || tr("yearMonthPlaceholder")}
+                value={paidYearMonth}
+                onChange={(e) => setPaidYearMonth(e.target.value)}
+              />
+            </label>
+            <button
+              type="submit"
+              className="mq-btn mq-btn-primary"
+              disabled={markPeriodPaid.isPending}
+            >
+              {markPeriodPaid.isPending ? t("admin.common.working") : tr("markPaid")}
+            </button>
+          </div>
+        </form>
 
         {isError && (
           <div className="mq-alert mq-alert-error">
@@ -904,7 +955,7 @@ function CommissionReportInner() {
 
 export default function CommissionReportPage() {
   return (
-    <AuthGuard roles={["SUPER_ADMIN"]}>
+    <AuthGuard roles={["SUPER_ADMIN", "ACCOUNTANT", "ADMIN"]}>
       <CommissionReportInner />
     </AuthGuard>
   );

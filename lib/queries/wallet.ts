@@ -664,6 +664,20 @@ export function useCommissionReport(yearMonth?: string) {
   });
 }
 
+export function useMarkCommissionPeriodPaid() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (yearMonth: string) => adminMlmApi.markPeriodPaid(yearMonth),
+    onSuccess: () => {
+      toast.success(tt("toast.commissionPeriodMarkedPaid"));
+      void qc.invalidateQueries({ queryKey: mlmKeys.all });
+      void qc.invalidateQueries({ queryKey: walletKeys.all });
+    },
+    onError: (e) =>
+      toast.error(walletErrorMessage(e, tt("toast.commissionPeriodMarkFailed"))),
+  });
+}
+
 export function useLoyaltyHistory(
   userId: string | null | undefined,
   monthsBack = 12,

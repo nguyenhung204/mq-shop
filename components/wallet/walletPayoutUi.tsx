@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { PayoutRequestStatus, UserPayoutRequest } from "@/lib/api/wallet";
-import { formatMoney } from "@/lib/api/utils";
+import { formatPoints } from "@/lib/api/utils";
 
 export function walletPayoutStatusBadgeClass(status: PayoutRequestStatus): string {
   switch (status) {
@@ -56,7 +56,7 @@ export function WalletPayoutDetailFields({
     <div className="mq-card p-5 space-y-4 text-sm">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-1 min-w-0">
-          <p className="text-2xl tabular-nums font-medium">{formatMoney(payout.amount)}</p>
+          <p className="text-2xl tabular-nums font-medium">{formatPoints(payout.amount)}</p>
           <p className="text-xs text-mq-text-muted font-mono break-all">{payout.id}</p>
         </div>
         <span className={walletPayoutStatusBadgeClass(payout.status)}>

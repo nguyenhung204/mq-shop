@@ -100,6 +100,15 @@ export function formatMoney(value: string | number | undefined | null): string {
   }).format(n);
 }
 
+export function formatPoints(value: string | number | undefined | null): string {
+  const n = typeof value === "string" ? Number(value) : value ?? 0;
+  if (!Number.isFinite(n)) return "0 PTS";
+  return `${new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(n)} PTS`;
+}
+
 /** Format BE percent strings (e.g. `"5.0000"`) as `5%` / `6.5%`. */
 export function formatPercent(value: string | number | undefined | null): string {
   const n = typeof value === "string" ? Number(value) : value ?? 0;

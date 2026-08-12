@@ -4,7 +4,7 @@ import { FormEvent, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { adminApi } from "@/lib/api";
 import type { AuthUser } from "@/lib/api/types";
-import { parsePage } from "@/lib/api/utils";
+import { formatPoints, parsePage } from "@/lib/api/utils";
 import { useAdjustWalletBalance } from "@/lib/queries/wallet";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
@@ -77,7 +77,7 @@ function WalletAdjustInner() {
       });
       setOkMsg(
         t("admin.walletAdjust.success", {
-          amount: String(n),
+          amount: formatPoints(n),
           email: selected?.email ?? userId.slice(0, 8),
         }),
       );

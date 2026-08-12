@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import type { PayoutRequestStatus } from "@/lib/api/wallet";
-import { formatMoney } from "@/lib/api/utils";
+import { formatPoints } from "@/lib/api/utils";
 import {
   useWalletWithdraw,
   useWalletWithdrawals,
@@ -223,7 +223,7 @@ function WithdrawPanel({
                 className="rounded-md border border-mq-border p-3 flex items-center justify-between gap-3 text-sm hover:border-mq-accent transition-colors block"
               >
                 <div className="space-y-1 min-w-0 flex-1">
-                  <p className="tabular-nums font-medium">{formatMoney(w.amount)}</p>
+                  <p className="tabular-nums font-medium">{formatPoints(w.amount)}</p>
                   <p className="text-xs text-mq-text-muted">
                     {formatWalletPayoutWhen(w.createdAt)}
                   </p>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
-import { formatMoney } from "@/lib/api/utils";
+import { formatPoints } from "@/lib/api/utils";
 import type { WalletTransaction, WalletTxReason } from "@/lib/api/wallet";
 import {
   useConfirmWalletPin,
@@ -211,8 +211,8 @@ function TxRow({ row }: { row: WalletTransaction }) {
   const { t } = useLanguage();
   const signed =
     row.direction === "OUT"
-      ? `−${formatMoney(row.amount)}`
-      : `+${formatMoney(row.amount)}`;
+      ? `−${formatPoints(row.amount)}`
+      : `+${formatPoints(row.amount)}`;
   return (
     <div className="mq-card p-4 flex flex-wrap justify-between gap-3 text-sm">
       <div className="space-y-1 min-w-0">
@@ -350,7 +350,7 @@ function WalletInner({ embedded = false }: { embedded?: boolean }) {
                 {t("wallet.available")}
               </p>
               <p className="text-2xl mt-2 tabular-nums">
-                {formatMoney(balance?.availableBalance)}
+                {formatPoints(balance?.availableBalance)}
               </p>
             </div>
             <div className="mq-card p-5">
@@ -358,7 +358,7 @@ function WalletInner({ embedded = false }: { embedded?: boolean }) {
                 {t("wallet.frozen")}
               </p>
               <p className="text-2xl mt-2 tabular-nums">
-                {formatMoney(balance?.frozenBalance)}
+                {formatPoints(balance?.frozenBalance)}
               </p>
               <p className="text-xs text-mq-text-muted mt-1">{t("wallet.frozenHint")}</p>
             </div>

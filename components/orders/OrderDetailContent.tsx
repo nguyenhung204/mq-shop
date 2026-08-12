@@ -9,6 +9,8 @@ import { formatMoney } from "@/lib/api/utils";
 import {
   canCancelOrder,
   canRequestRma,
+  canSellerReviewPayment,
+  canUploadPaymentProof,
   hasBlockingRma,
   nextFulfillmentStatus,
   type RmaStatus,
@@ -16,8 +18,16 @@ import {
 import { translateStatus } from "@/lib/i18n/status";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-import { useCancelOrder, useOrder, useUpdateOrderStatus } from "@/lib/queries/orders";
-import { useSellerShop } from "@/lib/queries/seller";
+import {
+  useCancelOrder,
+  useConfirmPayment,
+  useCreateFulfillmentComplaint,
+  useOrder,
+  useRejectPayment,
+  useUpdateOrderStatus,
+  useUploadPaymentProof,
+} from "@/lib/queries/orders";
+import { useSellerShop, useShopPaymentProfile } from "@/lib/queries/seller";
 import { useWarehouses } from "@/lib/queries/inventory";
 import { useProductReviews } from "@/lib/queries/reviews";
 import { AuthGuard } from "@/components/guards/AuthGuard";
@@ -133,11 +143,17 @@ function OrderDetailInner() {
   const { user } = useAuth();
   const { data: order, isLoading, isError, error } = useOrder(id);
   const { data: shop } = useSellerShop();
+  const { data: paymentProfile } = useShopPaymentProfile(order?.shopId);
   const cancelOrder = useCancelOrder(id);
   const updateStatus = useUpdateOrderStatus();
+  const uploadProof = useUploadPaymentProof(id);
+  const confirmPayment = useConfirmPayment();
+  const rejectPayment = useRejectPayment();
+  const fulfillmentComplaint = useCreateFulfillmentComplaint();
+  const [complaintModalOpen, setComplaintModalOpen] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
-  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
-  const [pendingReason, setPendingReason] = useState("");
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [proofFile, setProofFile] = useState<File | null>(null);
 
   const roles = user?.roles ?? [];
   const myShopId = user?.shopId || shop?.id || null;
@@ -148,6 +164,11 @@ function OrderDetailInner() {
     (roles.includes("SELLER") ||
       roles.includes("WAREHOUSE") ||
       roles.includes("CS") ||
+      roles.includes("ADMIN") ||
+      roles.includes("SUPER_ADMIN"));
+  const canConfirmPayment =
+    Boolean(order && canSellerReviewPayment(order)) &&
+    ((isShopOrder && roles.includes("SELLER")) ||
       roles.includes("ADMIN") ||
       roles.includes("SUPER_ADMIN"));
   // Fulfillment staff can see which warehouse ships each line (checklist §5 item 6).
@@ -161,13 +182,32 @@ function OrderDetailInner() {
   const canCancel =
     Boolean(order && canCancelOrder(order.status) && (isBuyer || isShopOrder));
   const showRma = Boolean(order && isBuyer && canRequestRma(order));
+  const canComplaintNoShip = Boolean(
+    order &&
+      isBuyer &&
+      (order.status === "PAID" ||
+        order.status === "CONFIRMED" ||
+        order.status === "PACKED") &&
+      (order.fulfillmentEscalatedAt ||
+        (order.paidAt &&
+          Date.now() - new Date(order.paidAt).getTime() >= 72 * 3600_000)),
+  );
   const rmaInfo = order ? resolveRmaInfo(order) : null;
   const canReview = Boolean(order && isBuyer && order.status === "DELIVERED" && user?.id);
+  const showBuyerPayment =
+    Boolean(order && isBuyer && canUploadPaymentProof(order));
+  const showSellerPayment =
+    Boolean(order && canConfirmPayment);
 
   const confirmCancel = async (reason: string) => {
     await cancelOrder.mutateAsync(reason);
     setCancelModalOpen(false);
-    setCancelConfirmOpen(false);
+  };
+
+  const onUploadProof = async () => {
+    if (!proofFile) return;
+    await uploadProof.mutateAsync(proofFile);
+    setProofFile(null);
   };
 
   return (
@@ -286,6 +326,141 @@ function OrderDetailInner() {
               ))}
             </ul>
 
+            {showBuyerPayment ? (
+              <div className="pt-4 border-t border-mq-border space-y-3">
+                <h2 className="text-sm font-semibold">{t("orders.payment.title")}</h2>
+                <p className="text-sm text-mq-text-secondary">{t("orders.payment.paySellerHint")}</p>
+                {paymentProfile ? (
+                  <div className="rounded-[var(--mq-radius-sm)] border border-mq-border bg-mq-surface-subtle p-4 text-sm space-y-2">
+                    <p className="font-medium text-mq-text">
+                      {paymentProfile.shopName || t("checkout.sellerPaymentProfile")}
+                    </p>
+                    {paymentProfile.bankName || paymentProfile.accountNumber ? (
+                      <dl className="grid gap-1.5 text-mq-text-secondary">
+                        {paymentProfile.bankName ? (
+                          <div className="flex flex-wrap gap-x-2">
+                            <dt className="text-mq-text-muted">{t("checkout.bankName")}:</dt>
+                            <dd>{paymentProfile.bankName}</dd>
+                          </div>
+                        ) : null}
+                        {paymentProfile.accountNumber ? (
+                          <div className="flex flex-wrap gap-x-2">
+                            <dt className="text-mq-text-muted">{t("checkout.accountNumber")}:</dt>
+                            <dd className="font-mono">{paymentProfile.accountNumber}</dd>
+                          </div>
+                        ) : null}
+                        {paymentProfile.accountName ? (
+                          <div className="flex flex-wrap gap-x-2">
+                            <dt className="text-mq-text-muted">{t("checkout.accountName")}:</dt>
+                            <dd>{paymentProfile.accountName}</dd>
+                          </div>
+                        ) : null}
+                      </dl>
+                    ) : (
+                      <p className="text-mq-accent-orange text-xs">
+                        {t("checkout.bankInfoUnavailable")}
+                      </p>
+                    )}
+                    {paymentProfile.qrUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={paymentProfile.qrUrl}
+                        alt={t("checkout.paymentQr")}
+                        className="mt-2 max-h-40 w-auto rounded border border-mq-border bg-white object-contain"
+                      />
+                    ) : null}
+                  </div>
+                ) : (
+                  <p className="text-xs text-mq-text-muted">
+                    {t("checkout.loadingPaymentProfile")}
+                  </p>
+                )}
+                {order.paymentRejectedReason ? (
+                  <div className="mq-alert mq-alert-warn text-sm">
+                    <p className="font-medium">{t("orders.payment.rejectedTitle")}</p>
+                    <p>{t("orders.detail.reasonLabel", { reason: order.paymentRejectedReason })}</p>
+                    <p className="text-xs mt-1">{t("orders.payment.reuploadHint")}</p>
+                  </div>
+                ) : null}
+                {order.paymentProofUrl && !order.paymentRejectedReason ? (
+                  <div className="rounded-[var(--mq-radius-sm)] border border-mq-border bg-mq-surface-subtle p-4 space-y-2 text-sm">
+                    <p className="font-medium text-mq-text">{t("orders.payment.waitingSeller")}</p>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={order.paymentProofUrl}
+                      alt={t("orders.payment.proofAlt")}
+                      className="max-h-48 w-auto rounded border border-mq-border object-contain bg-white"
+                    />
+                    {order.paymentProofUploadedAt ? (
+                      <p className="text-xs text-mq-text-muted">
+                        {t("orders.payment.uploadedAt", {
+                          date: new Date(order.paymentProofUploadedAt).toLocaleString(),
+                        })}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <label className="block text-sm" htmlFor="payment-proof">
+                      {t("orders.payment.uploadLabel")}
+                    </label>
+                    <input
+                      id="payment-proof"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      className="mq-input"
+                      onChange={(e) => setProofFile(e.target.files?.[0] ?? null)}
+                    />
+                    <p className="text-xs text-mq-text-muted">{t("orders.payment.uploadHint")}</p>
+                    <button
+                      type="button"
+                      className="mq-btn mq-btn-primary"
+                      disabled={!proofFile || uploadProof.isPending}
+                      onClick={() => void onUploadProof()}
+                    >
+                      {uploadProof.isPending
+                        ? t("orders.payment.uploading")
+                        : t("orders.payment.uploadBtn")}
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : null}
+
+            {showSellerPayment ? (
+              <div className="pt-4 border-t border-mq-border space-y-3">
+                <h2 className="text-sm font-semibold">{t("orders.payment.sellerReviewTitle")}</h2>
+                {order.paymentProofUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={order.paymentProofUrl}
+                    alt={t("orders.payment.proofAlt")}
+                    className="max-h-56 w-auto rounded border border-mq-border object-contain bg-white"
+                  />
+                ) : null}
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    className="mq-btn mq-btn-primary"
+                    disabled={confirmPayment.isPending || rejectPayment.isPending}
+                    onClick={() => void confirmPayment.mutateAsync(order.id)}
+                  >
+                    {confirmPayment.isPending
+                      ? t("orders.payment.confirming")
+                      : t("orders.payment.confirmBtn")}
+                  </button>
+                  <button
+                    type="button"
+                    className="mq-btn mq-btn-outline"
+                    disabled={confirmPayment.isPending || rejectPayment.isPending}
+                    onClick={() => setRejectModalOpen(true)}
+                  >
+                    {t("orders.payment.rejectBtn")}
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
             {canFulfill && nextStatus ? (
               <div className="pt-4 border-t border-mq-border">
                 <button
@@ -324,6 +499,15 @@ function OrderDetailInner() {
                 {t("orders.detail.requestReturn")}
               </Link>
             ) : null}
+            {canComplaintNoShip ? (
+              <button
+                type="button"
+                className="mq-btn mq-btn-outline"
+                onClick={() => setComplaintModalOpen(true)}
+              >
+                {t("orders.detail.fulfillmentComplaintBtn")}
+              </button>
+            ) : null}
           </div>
         )}
       </Container>
@@ -336,6 +520,36 @@ function OrderDetailInner() {
         busy={cancelOrder.isPending}
         onClose={() => setCancelModalOpen(false)}
         onConfirm={(reason) => void confirmCancel(reason)}
+      />
+      <AdminReasonModal
+        open={rejectModalOpen}
+        title={t("orders.payment.rejectTitle")}
+        description={t("orders.payment.rejectDesc")}
+        confirmLabel={t("orders.payment.rejectBtn")}
+        maxLength={500}
+        busy={rejectPayment.isPending}
+        onClose={() => setRejectModalOpen(false)}
+        onConfirm={(reason) => {
+          if (!order) return;
+          void rejectPayment.mutateAsync({ orderId: order.id, reason }).then(() => {
+            setRejectModalOpen(false);
+          });
+        }}
+      />
+      <AdminReasonModal
+        open={complaintModalOpen}
+        title={t("orders.detail.fulfillmentComplaintTitle")}
+        description={t("orders.detail.fulfillmentComplaintDesc")}
+        confirmLabel={t("orders.detail.fulfillmentComplaintBtn")}
+        maxLength={500}
+        busy={fulfillmentComplaint.isPending}
+        onClose={() => setComplaintModalOpen(false)}
+        onConfirm={(reason) => {
+          if (!order) return;
+          void fulfillmentComplaint
+            .mutateAsync({ orderId: order.id, reason })
+            .then(() => setComplaintModalOpen(false));
+        }}
       />
     </>
   );

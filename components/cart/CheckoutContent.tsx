@@ -15,6 +15,7 @@ import {
 } from "@/lib/validations/checkout";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { useCheckout, useShippingQuote } from "@/lib/queries/orders";
+import { useShopPaymentProfile } from "@/lib/queries/seller";
 import { useCart } from "@/components/providers/CartProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -84,7 +85,7 @@ export function CheckoutContent() {
         postalCode: "",
         country: "VN",
       },
-      paymentMethod: "MOCK",
+      paymentMethod: "OFF_PLATFORM",
       note: "",
     },
   });
@@ -112,7 +113,7 @@ export function CheckoutContent() {
         postalCode: "",
         country: shipCountry,
       },
-      paymentMethod: "MOCK",
+      paymentMethod: "OFF_PLATFORM",
       note: "",
     });
     setProfileSeeded(true);
@@ -120,6 +121,8 @@ export function CheckoutContent() {
 
   const address = watch("shippingAddress");
   const lineItems = useMemo(() => checkoutSelectedItems(), [selectedItems]);
+  const checkoutShopId = selectedShopIds[0] ?? selectedItems[0]?.shopId ?? null;
+  const { data: paymentProfile } = useShopPaymentProfile(checkoutShopId);
 
   // Detect cross-border items: compare shipping address country vs product countryCodes
   const shippingCountry = address?.country?.toUpperCase() || null;
@@ -217,7 +220,7 @@ export function CheckoutContent() {
             {t("checkout.orderLabel")} <strong>{placed.displayName}</strong> · {formatPrice(placed.total)}{" "}
             USD
           </p>
-          <p className="text-sm text-mq-text-muted mb-8">{t("checkout.paymentStubNote")}</p>
+          <p className="text-sm text-mq-text-muted mb-8">{t("checkout.paySellerDirectly")}</p>
           <div className="flex flex-wrap gap-3 justify-center">
             <Link href={`/orders/${placed.id}`} className="mq-btn mq-btn-primary">
               {t("checkout.viewOrder")}
@@ -471,25 +474,56 @@ export function CheckoutContent() {
             </section>
 
             <section className="border border-mq-border bg-mq-surface p-6 rounded-[var(--mq-radius-lg)] shadow-[var(--mq-shadow-sm)]">
-              <h2 className="text-lg font-semibold text-mq-text mb-5">
+              <h2 className="text-lg font-semibold text-mq-text mb-2">
                 {t("checkout.paymentMethod")}
               </h2>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="sm:col-span-2">
-                  <label className="block text-sm mb-1.5" htmlFor="paymentMethod">
-                    {t("checkout.paymentMethod")}
-                  </label>
-                  <select
-                    id="paymentMethod"
-                    className="mq-input"
-                    {...register("paymentMethod")}
-                  >
-                    <option value="MOCK">{t("checkout.paymentMock")}</option>
-                    <option value="COD">{t("checkout.paymentCod")}</option>
-                  </select>
-                  <p className="text-xs text-mq-text-muted mt-2">{t("checkout.paymentHint")}</p>
-                </div>
-                <div className="sm:col-span-2">
+              <p className="text-sm text-mq-text-muted mb-5">{t("checkout.paySellerDirectly")}</p>
+              <input type="hidden" {...register("paymentMethod")} />
+              <div className="space-y-4">
+                {paymentProfile ? (
+                  <div className="rounded-[var(--mq-radius-sm)] border border-mq-border bg-mq-surface-subtle p-4 text-sm space-y-2">
+                    <p className="font-medium text-mq-text">
+                      {paymentProfile.shopName || t("checkout.sellerPaymentProfile")}
+                    </p>
+                    {paymentProfile.bankName || paymentProfile.accountNumber ? (
+                      <dl className="grid gap-1.5 text-mq-text-secondary">
+                        {paymentProfile.bankName ? (
+                          <div className="flex flex-wrap gap-x-2">
+                            <dt className="text-mq-text-muted">{t("checkout.bankName")}:</dt>
+                            <dd>{paymentProfile.bankName}</dd>
+                          </div>
+                        ) : null}
+                        {paymentProfile.accountNumber ? (
+                          <div className="flex flex-wrap gap-x-2">
+                            <dt className="text-mq-text-muted">{t("checkout.accountNumber")}:</dt>
+                            <dd className="font-mono">{paymentProfile.accountNumber}</dd>
+                          </div>
+                        ) : null}
+                        {paymentProfile.accountName ? (
+                          <div className="flex flex-wrap gap-x-2">
+                            <dt className="text-mq-text-muted">{t("checkout.accountName")}:</dt>
+                            <dd>{paymentProfile.accountName}</dd>
+                          </div>
+                        ) : null}
+                      </dl>
+                    ) : (
+                      <p className="text-mq-accent-orange text-xs">
+                        {t("checkout.bankInfoUnavailable")}
+                      </p>
+                    )}
+                    {paymentProfile.qrUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={paymentProfile.qrUrl}
+                        alt={t("checkout.paymentQr")}
+                        className="mt-2 max-h-40 w-auto rounded border border-mq-border bg-white object-contain"
+                      />
+                    ) : null}
+                  </div>
+                ) : checkoutShopId ? (
+                  <p className="text-xs text-mq-text-muted">{t("checkout.loadingPaymentProfile")}</p>
+                ) : null}
+                <div>
                   <label className="block text-sm mb-1.5" htmlFor="note">
                     {t("checkout.note")}
                   </label>

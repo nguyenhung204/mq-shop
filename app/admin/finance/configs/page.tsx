@@ -9,6 +9,7 @@ import {
   useApproveFinanceConfig,
   useCreateFinanceConfig,
   useFinanceConfigs,
+  useMarkFeePeriodCollected,
   useRejectFinanceConfig,
 } from "@/lib/queries/finance";
 import { AuthGuard } from "@/components/guards/AuthGuard";
@@ -87,11 +88,17 @@ function formatWhen(iso: string | null | undefined): string {
   }
 }
 
+function isYearMonth(value: string): boolean {
+  return /^\d{4}-(0[1-9]|1[0-2])$/.test(value.trim());
+}
+
 function FinanceConfigsInner() {
   const { t, locale } = useLanguage();
   const { hasRole, hasAnyPermission } = useAuth();
   const canSubmit = hasRole("SUPER_ADMIN");
   const canReview = hasRole("ACCOUNTANT") || hasRole("SUPER_ADMIN");
+  const canMarkFeeCollected =
+    hasRole("ACCOUNTANT") || hasRole("ADMIN") || hasRole("SUPER_ADMIN");
   const canEditFx =
     hasRole("SUPER_ADMIN") || hasAnyPermission(["CONFIG_SYS"]);
 
@@ -101,6 +108,9 @@ function FinanceConfigsInner() {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [formError, setFormError] = useState("");
   const [rejectTarget, setRejectTarget] = useState<FinanceConfig | null>(null);
+  const [feeShopId, setFeeShopId] = useState("");
+  const [feeYearMonth, setFeeYearMonth] = useState("");
+  const [feeError, setFeeError] = useState("");
 
   const { data: active, isLoading: activeLoading } = useActiveFinanceConfig();
   const { data, isLoading, isError, error } = useFinanceConfigs({
@@ -114,6 +124,7 @@ function FinanceConfigsInner() {
   const createConfig = useCreateFinanceConfig();
   const approveConfig = useApproveFinanceConfig();
   const rejectConfig = useRejectFinanceConfig();
+  const markFeeCollected = useMarkFeePeriodCollected();
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -132,6 +143,18 @@ function FinanceConfigsInner() {
     } catch (err) {
       setFormError(getErrorMessage(err, t("toast.financeConfigCreateFailed"), locale));
     }
+  };
+
+  const onMarkFeeCollected = async (e: FormEvent) => {
+    e.preventDefault();
+    setFeeError("");
+    const shopId = feeShopId.trim();
+    const yearMonth = feeYearMonth.trim();
+    if (!shopId || !isYearMonth(yearMonth)) {
+      setFeeError(t("admin.financeConfigs.periodMarkError"));
+      return;
+    }
+    await markFeeCollected.mutateAsync({ shopId, yearMonth });
   };
 
   return (
@@ -158,6 +181,58 @@ function FinanceConfigsInner() {
 
       <div className="space-y-5">
         {canEditFx ? <AdminFxRatesPanel /> : null}
+
+        {canMarkFeeCollected ? (
+          <form
+            className="mq-card p-5 space-y-3"
+            onSubmit={(e) => void onMarkFeeCollected(e)}
+          >
+            <div>
+              <h3 className="font-semibold text-mq-text">
+                {t("admin.financeConfigs.markFeeCollectedTitle")}
+              </h3>
+              <p className="text-sm text-mq-text-muted mt-1">
+                {t("admin.financeConfigs.markFeeCollectedHint")}
+              </p>
+            </div>
+            {feeError ? <div className="mq-alert mq-alert-error">{feeError}</div> : null}
+            <div className="grid sm:grid-cols-[1fr_10rem_auto] gap-3 items-end">
+              <label className="block text-sm">
+                <span className="text-xs text-mq-text-muted">
+                  {t("admin.common.shop")}
+                </span>
+                <input
+                  className="mq-input mt-1"
+                  value={feeShopId}
+                  onChange={(e) => setFeeShopId(e.target.value)}
+                  placeholder={t("admin.financeConfigs.shopIdPlaceholder")}
+                  required
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="text-xs text-mq-text-muted">
+                  {t("admin.financeConfigs.yearMonth")}
+                </span>
+                <input
+                  className="mq-input mt-1"
+                  value={feeYearMonth}
+                  onChange={(e) => setFeeYearMonth(e.target.value)}
+                  placeholder="2026-07"
+                  required
+                />
+              </label>
+              <button
+                type="submit"
+                className="mq-btn mq-btn-primary"
+                disabled={markFeeCollected.isPending}
+              >
+                {markFeeCollected.isPending
+                  ? t("admin.common.working")
+                  : t("admin.financeConfigs.markFeeCollected")}
+              </button>
+            </div>
+          </form>
+        ) : null}
 
         {!activeLoading && (
           <div className="mq-card p-4 space-y-2">
@@ -415,7 +490,7 @@ function FinanceConfigsInner() {
 
 export default function AdminFinanceConfigsPage() {
   return (
-    <AuthGuard roles={["SUPER_ADMIN", "ACCOUNTANT"]} permissions={["CONFIG_FEE"]}>
+    <AuthGuard roles={["SUPER_ADMIN", "ACCOUNTANT", "ADMIN"]} permissions={["CONFIG_FEE"]}>
       <FinanceConfigsInner />
     </AuthGuard>
   );

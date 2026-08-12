@@ -180,6 +180,11 @@ export type RankReconcileBatchResult = {
   promotedUsers: RankReconcileResult[];
 };
 
+export type MarkCommissionPeriodPaidResult = {
+  yearMonth: string;
+  status?: string;
+};
+
 export type MonthlyCommissionSuggestedAction =
   | "RUN"
   | "RE_RUN_IDEMPOTENT"
@@ -313,6 +318,12 @@ export const adminMlmApi = {
   /** Monthly commission audit report. Defaults to previous UTC month. */
   commissionReport: (query?: { yearMonth?: string }) =>
     api.get<CommissionReport>("/admin/mlm/commissions/report", { query }),
+
+  markPeriodPaid: (yearMonth: string) =>
+    api.post<MarkCommissionPeriodPaidResult>(
+      `/admin/commission/periods/${yearMonth}/mark-paid`,
+      {},
+    ),
 
   /** Loyalty max-order qualify + streak history for one user. */
   loyaltyHistory: (userId: string, query?: { monthsBack?: number }) =>

@@ -3,16 +3,18 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { Ban } from "lucide-react";
+import { Ban, CircleDollarSign, X } from "lucide-react";
 import { adminApi } from "@/lib/api";
-import type { OrderStatus } from "@/lib/api/orders";
+import { canAdminForcePaid, type OrderStatus, type PaymentMethod } from "@/lib/api/orders";
 import type { ApiProduct, AuthUser, ProductVariant } from "@/lib/api/types";
 import { formatMoney, parsePage } from "@/lib/api/utils";
 import {
   useAdminCancelOrder,
   useAdminCheckout,
+  useAdminForcePaid,
   useAdminOrders,
   useAdminShippingQuote,
+  useAdminRejectPayment,
 } from "@/lib/queries/orders";
 import { useAdminProducts, useAdminShops } from "@/lib/queries/admin";
 import { AuthGuard } from "@/components/guards/AuthGuard";
@@ -30,6 +32,8 @@ import {
 } from "@/components/ui/SearchableSelect";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { isValidNationalPhone, toE164 } from "@/lib/data/phone";
 import { getErrorMessage } from "@/lib/queries/utils";
 
@@ -56,8 +60,10 @@ function variantOptionLabel(v: ProductVariant): string {
 
 function OrdersInner() {
   const { t } = useLanguage();
+  const { hasRole } = useAuth();
   const [status, setStatus] = useState<OrderStatus | "">("");
   const [shopId, setShopId] = useState("");
+  const [escalatedOnly, setEscalatedOnly] = useState(false);
   const [page, setPage] = useState(1);
   const [createOpen, setCreateOpen] = useState(false);
 
@@ -118,12 +124,21 @@ function OrdersInner() {
   const { data, isLoading, isError, error } = useAdminOrders({
     status: status || undefined,
     shopId: shopId || undefined,
+    paymentEscalated: escalatedOnly || undefined,
     page,
     pageSize: 20,
   });
   const cancelOrder = useAdminCancelOrder();
+  const forcePaid = useAdminForcePaid();
+  const rejectPayment = useAdminRejectPayment();
   const [cancelTarget, setCancelTarget] = useState<{ id: string; code: string; displayName: string } | null>(null);
-  const items = data?.items ?? [];
+  const [forcePaidTarget, setForcePaidTarget] = useState<{ id: string; displayName: string } | null>(null);
+  const [rejectPaymentTarget, setRejectPaymentTarget] = useState<{ id: string; displayName: string } | null>(null);
+  const canReviewPayment = hasRole("ADMIN") || hasRole("SUPER_ADMIN");
+  const rawItems = data?.items ?? [];
+  const items = escalatedOnly
+    ? rawItems.filter((o) => Boolean(o.paymentEscalatedAt))
+    : rawItems;
   const meta = data?.meta;
 
   const [buyerId, setBuyerId] = useState("");
@@ -136,7 +151,7 @@ function OrdersInner() {
   const [city, setCity] = useState("");
   const [district, setDistrict] = useState("");
   const [line1, setLine1] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"COD" | "MOCK">("COD");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("MOCK");
   const [quoteFee, setQuoteFee] = useState<number | null>(null);
   const adminQuote = useAdminShippingQuote();
   const adminCheckout = useAdminCheckout();
@@ -180,8 +195,8 @@ function OrdersInner() {
 
   useEffect(() => {
     if (!quoteBody) {
-      setQuoteFee(null);
-      return;
+      const t = window.setTimeout(() => setQuoteFee(null), 0);
+      return () => window.clearTimeout(t);
     }
     const t = window.setTimeout(() => {
       void adminQuote
@@ -264,11 +279,12 @@ function OrdersInner() {
           <select
             className="mq-input"
             value={paymentMethod}
-            onChange={(e) => setPaymentMethod(e.target.value as "COD" | "MOCK")}
+            onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
             aria-label="Payment method"
           >
-            <option value="COD">COD</option>
             <option value="MOCK">MOCK</option>
+            <option value="OFF_PLATFORM">OFF_PLATFORM</option>
+            <option value="COD">COD</option>
           </select>
           <input
             className="mq-input"
@@ -367,6 +383,18 @@ function OrdersInner() {
             </option>
           ))}
         </select>
+        <button
+          type="button"
+          className={`mq-btn text-xs ${
+            escalatedOnly ? "mq-btn-primary" : "mq-btn-outline"
+          }`}
+          onClick={() => {
+            setEscalatedOnly((v) => !v);
+            setPage(1);
+          }}
+        >
+          {t("admin.ordersPage.escalatedPayments")}
+        </button>
       </div>
 
       <div className="space-y-4">
@@ -396,6 +424,31 @@ function OrdersInner() {
             </div>
             {o.status !== "CANCELLED" && o.status !== "DELIVERED" && o.status !== "REFUND_APPROVED" ? (
               <AdminActions>
+                {canReviewPayment && canAdminForcePaid(o) ? (
+                  <AdminIconButton
+                    label={
+                      o.paymentEscalatedAt
+                        ? t("admin.ordersPage.forcePaidEscalated")
+                        : t("admin.ordersPage.forcePaid")
+                    }
+                    icon={CircleDollarSign}
+                    disabled={forcePaid.isPending}
+                    onClick={() =>
+                      setForcePaidTarget({ id: o.id, displayName: o.displayName })
+                    }
+                  />
+                ) : null}
+                {canReviewPayment && canAdminForcePaid(o) ? (
+                  <AdminIconButton
+                    label={t("orders.payment.rejectBtn")}
+                    icon={X}
+                    tone="reject"
+                    disabled={rejectPayment.isPending}
+                    onClick={() =>
+                      setRejectPaymentTarget({ id: o.id, displayName: o.displayName })
+                    }
+                  />
+                ) : null}
                 <AdminIconButton
                   label={t("admin.common.cancel")}
                   icon={Ban}
@@ -428,6 +481,43 @@ function OrdersInner() {
             reason: "Admin force cancel",
           });
           setCancelTarget(null);
+        }}
+      />
+      <ConfirmDialog
+        open={Boolean(forcePaidTarget)}
+        title={t("admin.ordersPage.forcePaidTitle")}
+        description={
+          forcePaidTarget
+            ? t("admin.ordersPage.forcePaidDesc", { name: forcePaidTarget.displayName })
+            : undefined
+        }
+        confirmLabel={t("admin.ordersPage.forcePaid")}
+        busy={forcePaid.isPending}
+        onClose={() => setForcePaidTarget(null)}
+        onConfirm={async () => {
+          if (!forcePaidTarget) return;
+          await forcePaid.mutateAsync({ orderId: forcePaidTarget.id });
+          setForcePaidTarget(null);
+        }}
+      />
+      <AdminReasonModal
+        open={Boolean(rejectPaymentTarget)}
+        title={t("orders.payment.rejectTitle")}
+        description={
+          rejectPaymentTarget
+            ? t("admin.ordersPage.rejectPaymentDesc", {
+                name: rejectPaymentTarget.displayName,
+              })
+            : t("orders.payment.rejectDesc")
+        }
+        confirmLabel={t("orders.payment.rejectBtn")}
+        maxLength={500}
+        busy={rejectPayment.isPending}
+        onClose={() => setRejectPaymentTarget(null)}
+        onConfirm={async (reason) => {
+          if (!rejectPaymentTarget) return;
+          await rejectPayment.mutateAsync({ orderId: rejectPaymentTarget.id, reason });
+          setRejectPaymentTarget(null);
         }}
       />
     </>

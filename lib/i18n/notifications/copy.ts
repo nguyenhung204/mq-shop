@@ -65,8 +65,8 @@ export const NOTIFICATION_TYPE_COPY: Record<
       body: "An order was delivered but your shop has no bank info. Update now to receive payouts.",
     },
     SELLER_PAYOUT_COMPLETED: {
-      title: "Payout completed",
-      body: "Your payout of {amount} has been credited to your wallet.",
+      title: "Payout reconciled",
+      body: "Seller payout {amount} has been completed in accounting. No wallet credit was created.",
     },
     SELLER_PAYOUT_REJECTED: {
       title: "Payout rejected",
@@ -103,6 +103,22 @@ export const NOTIFICATION_TYPE_COPY: Record<
     ORDER_CREATED_PAYMENT_NEEDED: {
       title: "Payment needed",
       body: "Order {orderId} was created. Complete payment to continue.",
+    },
+    ORDER_PAYMENT_PROOF_UPLOADED: {
+      title: "Payment proof uploaded",
+      body: "Order {orderId} has new payment proof ready for review.",
+    },
+    ORDER_PAYMENT_CONFIRMED: {
+      title: "Payment confirmed",
+      body: "Payment for order {orderId} was confirmed.",
+    },
+    ORDER_PAYMENT_REJECTED: {
+      title: "Payment proof rejected",
+      body: "Payment proof for order {orderId} was rejected.{reason}",
+    },
+    ORDER_PAYMENT_ESCALATED: {
+      title: "Payment review escalated",
+      body: "Order {orderId} payment proof needs platform review.",
     },
     RMA_NEW: {
       title: "New return request",
@@ -335,8 +351,8 @@ export const NOTIFICATION_TYPE_COPY: Record<
       body: "Đơn hàng đã giao nhưng shop chưa có thông tin ngân hàng. Cập nhật ngay để nhận thanh toán.",
     },
     SELLER_PAYOUT_COMPLETED: {
-      title: "Đã chi trả",
-      body: "Khoản chi trả {amount} đã được ghi có vào ví của bạn.",
+      title: "Đã đối soát chi trả",
+      body: "Khoản chi trả seller {amount} đã hoàn tất ở kế toán. Không ghi có vào ví.",
     },
     SELLER_PAYOUT_REJECTED: {
       title: "Chi trả bị từ chối",
@@ -373,6 +389,22 @@ export const NOTIFICATION_TYPE_COPY: Record<
     ORDER_CREATED_PAYMENT_NEEDED: {
       title: "Cần thanh toán",
       body: "Đơn {orderId} đã tạo. Hoàn tất thanh toán để tiếp tục.",
+    },
+    ORDER_PAYMENT_PROOF_UPLOADED: {
+      title: "Đã tải chứng từ thanh toán",
+      body: "Đơn {orderId} có chứng từ thanh toán mới cần duyệt.",
+    },
+    ORDER_PAYMENT_CONFIRMED: {
+      title: "Đã xác nhận thanh toán",
+      body: "Thanh toán cho đơn {orderId} đã được xác nhận.",
+    },
+    ORDER_PAYMENT_REJECTED: {
+      title: "Chứng từ thanh toán bị từ chối",
+      body: "Chứng từ thanh toán của đơn {orderId} bị từ chối.{reason}",
+    },
+    ORDER_PAYMENT_ESCALATED: {
+      title: "Thanh toán cần nền tảng duyệt",
+      body: "Chứng từ thanh toán của đơn {orderId} cần platform review.",
     },
     RMA_NEW: {
       title: "Yêu cầu đổi trả mới",
@@ -605,8 +637,8 @@ export const NOTIFICATION_TYPE_COPY: Record<
       body: "訂單已送達但商店尚無銀行資料。請立即更新以接收撥款。",
     },
     SELLER_PAYOUT_COMPLETED: {
-      title: "已完成撥款",
-      body: "您的撥款 {amount} 已轉入您的銀行帳戶。",
+      title: "撥款已對帳",
+      body: "賣家撥款 {amount} 已於會計完成處理，未入帳至錢包。",
     },
     SELLER_PAYOUT_REJECTED: {
       title: "撥款被拒絕",
@@ -643,6 +675,22 @@ export const NOTIFICATION_TYPE_COPY: Record<
     ORDER_CREATED_PAYMENT_NEEDED: {
       title: "需要付款",
       body: "訂單 {orderId} 已建立，請完成付款。",
+    },
+    ORDER_PAYMENT_PROOF_UPLOADED: {
+      title: "已上傳付款憑證",
+      body: "訂單 {orderId} 有新的付款憑證待審核。",
+    },
+    ORDER_PAYMENT_CONFIRMED: {
+      title: "付款已確認",
+      body: "訂單 {orderId} 的付款已確認。",
+    },
+    ORDER_PAYMENT_REJECTED: {
+      title: "付款憑證已拒絕",
+      body: "訂單 {orderId} 的付款憑證已被拒絕。{reason}",
+    },
+    ORDER_PAYMENT_ESCALATED: {
+      title: "付款審核已升級",
+      body: "訂單 {orderId} 的付款憑證需要平台審核。",
     },
     RMA_NEW: {
       title: "新退貨申請",

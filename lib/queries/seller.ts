@@ -352,6 +352,27 @@ export function useApplyShop() {
   });
 }
 
+export function useShopPaymentProfile(shopId: string | null | undefined) {
+  return useQuery({
+    queryKey: [...sellerKeys.all, "payment-profile", shopId ?? ""] as const,
+    queryFn: () => shopApi.getPaymentProfile(shopId!),
+    enabled: Boolean(shopId),
+    staleTime: 60_000,
+  });
+}
+
+export function useUpdateMyShopBankInfo() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: shopApi.updateMyShopBankInfo,
+    onSuccess: (shop) => {
+      queryClient.setQueryData(sellerKeys.shop(), shop);
+      toast.success(tt("toast.bankInfoSaved"));
+    },
+    onError: (e) => toast.error(getErrorMessage(e, tt("toast.bankInfoSaveFailed"))),
+  });
+}
+
 function shopMediaErrorMessage(e: unknown, fallback: string): string {
   if (e instanceof ApiError) {
     switch (e.code) {

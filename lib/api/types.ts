@@ -277,6 +277,8 @@ export type ShopBankInfo = {
   bankName: string;
   accountNumber: string;
   accountName: string;
+  /** Optional payment QR image URL for buyer checkout. */
+  qrUrl?: string | null;
 };
 
 export type ApiNotification = {
@@ -327,6 +329,10 @@ export type NotificationType =
   | "ORDER_CANCELLED"
   | "ORDER_CREATED_BY_ADMIN"
   | "ORDER_CREATED_PAYMENT_NEEDED"
+  | "ORDER_PAYMENT_PROOF_UPLOADED"
+  | "ORDER_PAYMENT_CONFIRMED"
+  | "ORDER_PAYMENT_REJECTED"
+  | "ORDER_PAYMENT_ESCALATED"
   | "RMA_NEW"
   | "RMA_APPROVED"
   | "RMA_REJECTED"

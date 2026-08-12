@@ -2,7 +2,11 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { FileText, ImageIcon, LayoutDashboard, Store } from "lucide-react";
-import { useApplyShop, useSellerShop } from "@/lib/queries/seller";
+import {
+  useApplyShop,
+  useSellerShop,
+  useUpdateMyShopBankInfo,
+} from "@/lib/queries/seller";
 import { ShopBrandingUpload } from "@/components/seller/ShopBrandingUpload";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
@@ -35,11 +39,18 @@ export function ShopDashboard({ initialSection }: Props) {
     t,
     defaultErrorFallback: t("toast.applyFailed"),
   });
+  const bankAlerts = useFormAlerts({
+    locale,
+    t,
+    defaultErrorFallback: t("toast.bankInfoSaveFailed"),
+  });
   const { data: shop, isLoading, isError, error } = useSellerShop();
   const applyShop = useApplyShop();
+  const updateBank = useUpdateMyShopBankInfo();
   const canReapply = shop?.status === "REJECTED" && !shop.isSuspended;
   const showApply = !shop || canReapply;
   const canEditBranding = Boolean(shop && shop.status === "APPROVED" && !shop.isSuspended);
+  const canEditBank = Boolean(shop && shop.status === "APPROVED" && !shop.isSuspended);
 
   const [section, setSection] = useState<ShopSection>(() => {
     if (initialSection) return initialSection;
@@ -49,6 +60,15 @@ export function ShopDashboard({ initialSection }: Props) {
     name: "",
     taxId: "",
     countryCode: "VN",
+    bankName: "",
+    accountNumber: "",
+    accountName: "",
+  });
+  const [bankForm, setBankForm] = useState({
+    bankName: "",
+    accountNumber: "",
+    accountName: "",
+    qrUrl: "",
   });
   const [documentFile, setDocumentFile] = useState<File | null>(null);
 
@@ -62,6 +82,16 @@ export function ShopDashboard({ initialSection }: Props) {
       setSection(initialSection && initialSection !== "apply" ? initialSection : "overview");
     }
   }, [isLoading, shop, canReapply, section, initialSection]);
+
+  useEffect(() => {
+    if (!shop?.bankInfo) return;
+    setBankForm({
+      bankName: shop.bankInfo.bankName || "",
+      accountNumber: shop.bankInfo.accountNumber || "",
+      accountName: shop.bankInfo.accountName || "",
+      qrUrl: shop.bankInfo.qrUrl || "",
+    });
+  }, [shop?.bankInfo]);
 
   const navItems = useMemo(() => {
     const items: { id: ShopSection; label: string; icon: typeof Store }[] = [
@@ -88,17 +118,39 @@ export function ShopDashboard({ initialSection }: Props) {
       applyAlerts.setLocalError("seller.shop.documentRequired");
       return;
     }
+    if (!form.bankName.trim() || !form.accountNumber.trim() || !form.accountName.trim()) {
+      applyAlerts.setLocalError("seller.shop.bankRequired");
+      return;
+    }
     applyAlerts.clearAlerts();
     try {
       const fd = new FormData();
       fd.append("name", form.name);
       fd.append("taxId", form.taxId);
       fd.append("countryCode", form.countryCode);
+      fd.append("bankName", form.bankName.trim());
+      fd.append("accountNumber", form.accountNumber.trim());
+      fd.append("accountName", form.accountName.trim());
       fd.append("document", documentFile);
       await applyShop.mutateAsync(fd);
       setSection("overview");
     } catch (err) {
       applyAlerts.setErrorFromApi(err);
+    }
+  };
+
+  const saveBank = async (e: FormEvent) => {
+    e.preventDefault();
+    bankAlerts.clearAlerts();
+    try {
+      await updateBank.mutateAsync({
+        bankName: bankForm.bankName.trim(),
+        accountNumber: bankForm.accountNumber.trim(),
+        accountName: bankForm.accountName.trim(),
+        qrUrl: bankForm.qrUrl.trim() || null,
+      });
+    } catch (err) {
+      bankAlerts.setErrorFromApi(err);
     }
   };
 
@@ -118,15 +170,13 @@ export function ShopDashboard({ initialSection }: Props) {
       >
         {navItems.map((item) => {
           const Icon = item.icon;
-          const active = section === item.id;
           const disabled = !shop && item.id !== "apply";
           return (
             <button
               key={item.id}
               type="button"
+              className={`mq-shop-nav-item${section === item.id ? " is-active" : ""}`}
               disabled={disabled}
-              className={`mq-shop-nav-item inline-flex shrink-0 items-center gap-2${active ? " is-active" : ""}`}
-              aria-current={active ? "page" : undefined}
               onClick={() => setSection(item.id)}
             >
               <Icon size={16} strokeWidth={1.75} />
@@ -171,6 +221,14 @@ export function ShopDashboard({ initialSection }: Props) {
             ) : null}
             {shop.status === "APPROVED" && !shop.isSuspended ? (
               <p className="text-mq-text-muted">{t("seller.titles.overviewDesc")}</p>
+            ) : null}
+            {shop.bankInfo ? (
+              <p className="text-mq-text-secondary text-xs">
+                {t("seller.shop.bankInfo")}: {shop.bankInfo.bankName} · {shop.bankInfo.accountNumber} ·{" "}
+                {shop.bankInfo.accountName}
+              </p>
+            ) : shop.status === "APPROVED" ? (
+              <p className="text-mq-accent-orange text-xs">{t("seller.shop.bankInfoMissing")}</p>
             ) : null}
             <div className="flex flex-wrap gap-2 pt-1">
               <button
@@ -219,7 +277,20 @@ export function ShopDashboard({ initialSection }: Props) {
             </div>
             <div>
               <dt>{t("admin.shops.owner")}</dt>
-              <dd className="font-mono text-xs">{shop.ownerId || "—"}</dd>
+              <dd>
+                {shop.ownerName || shop.ownerEmail
+                  ? (
+                      <span>
+                        {shop.ownerName ?? "—"}
+                        {shop.ownerEmail ? (
+                          <span className="text-mq-text-muted ml-1 text-xs">
+                            ({shop.ownerEmail})
+                          </span>
+                        ) : null}
+                      </span>
+                    )
+                  : "—"}
+              </dd>
             </div>
             <div>
               <dt>{t("seller.inventoryPage.flags")}</dt>
@@ -281,10 +352,68 @@ export function ShopDashboard({ initialSection }: Props) {
               )}
             </div>
           ) : null}
+
+          {canEditBank ? (
+            <div className="mt-6 pt-5 border-t border-mq-border">
+              <h3 className="text-sm font-semibold mb-1">{t("seller.shop.bankInfo")}</h3>
+              <p className="text-xs text-mq-text-muted mb-4">{t("seller.shop.bankInfoDesc")}</p>
+              <FormAlerts error={bankAlerts.error} />
+              <form className="mq-shop-form" onSubmit={(e) => void saveBank(e)}>
+                <div className="mq-shop-field">
+                  <label htmlFor="bank-name">{t("seller.shop.bankName")}</label>
+                  <input
+                    id="bank-name"
+                    className="mq-input"
+                    value={bankForm.bankName}
+                    onChange={(e) => setBankForm({ ...bankForm, bankName: e.target.value })}
+                    required
+                    minLength={2}
+                    maxLength={100}
+                  />
+                </div>
+                <div className="mq-shop-field">
+                  <label htmlFor="bank-account">{t("seller.shop.accountNumber")}</label>
+                  <input
+                    id="bank-account"
+                    className="mq-input"
+                    value={bankForm.accountNumber}
+                    onChange={(e) => setBankForm({ ...bankForm, accountNumber: e.target.value })}
+                    required
+                    minLength={5}
+                    maxLength={30}
+                  />
+                </div>
+                <div className="mq-shop-field">
+                  <label htmlFor="bank-holder">{t("seller.shop.accountName")}</label>
+                  <input
+                    id="bank-holder"
+                    className="mq-input"
+                    value={bankForm.accountName}
+                    onChange={(e) => setBankForm({ ...bankForm, accountName: e.target.value })}
+                    required
+                    minLength={2}
+                    maxLength={100}
+                  />
+                </div>
+                <div className="mq-shop-field">
+                  <label htmlFor="bank-qr">{t("seller.shop.qrUrlOptional")}</label>
+                  <input
+                    id="bank-qr"
+                    className="mq-input"
+                    type="url"
+                    value={bankForm.qrUrl}
+                    onChange={(e) => setBankForm({ ...bankForm, qrUrl: e.target.value })}
+                    placeholder="https://"
+                  />
+                </div>
+                <button className="mq-btn mq-btn-primary" disabled={updateBank.isPending}>
+                  {updateBank.isPending ? t("admin.common.saving") : t("seller.shop.saveBankInfo")}
+                </button>
+              </form>
+            </div>
+          ) : null}
         </section>
       ) : null}
-
-      {/* Bank info form removed — payouts now credit directly to the shop owner's wallet */}
 
       {section === "branding" && shop ? (
         <section className="mq-shop-panel">
@@ -349,6 +478,43 @@ export function ShopDashboard({ initialSection }: Props) {
                 value={form.countryCode}
                 onValueChange={(countryCode) => setForm({ ...form, countryCode })}
                 required
+              />
+            </div>
+            <div className="mq-shop-field">
+              <label htmlFor="apply-bank-name">{t("seller.shop.bankName")}</label>
+              <input
+                id="apply-bank-name"
+                className="mq-input"
+                value={form.bankName}
+                onChange={(e) => setForm({ ...form, bankName: e.target.value })}
+                required
+                minLength={2}
+                maxLength={100}
+              />
+            </div>
+            <div className="mq-shop-field">
+              <label htmlFor="apply-account-number">{t("seller.shop.accountNumber")}</label>
+              <input
+                id="apply-account-number"
+                className="mq-input"
+                value={form.accountNumber}
+                onChange={(e) => setForm({ ...form, accountNumber: e.target.value })}
+                required
+                minLength={5}
+                maxLength={30}
+              />
+              <p className="mq-shop-hint">{t("seller.shop.bankRequiredHint")}</p>
+            </div>
+            <div className="mq-shop-field">
+              <label htmlFor="apply-account-name">{t("seller.shop.accountName")}</label>
+              <input
+                id="apply-account-name"
+                className="mq-input"
+                value={form.accountName}
+                onChange={(e) => setForm({ ...form, accountName: e.target.value })}
+                required
+                minLength={2}
+                maxLength={100}
               />
             </div>
             <div className="mq-shop-field">
