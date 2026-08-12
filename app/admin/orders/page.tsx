@@ -15,6 +15,7 @@ import {
   useAdminShippingQuote,
 } from "@/lib/queries/orders";
 import { useAdminProducts, useAdminShops } from "@/lib/queries/admin";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
@@ -219,8 +220,13 @@ function OrdersInner() {
         }
       />
 
+      <LedgerTwdNote className="mb-4" />
+
       {createOpen ? (
         <form className="mq-admin-panel p-5 mb-6 grid sm:grid-cols-2 gap-3" onSubmit={(e) => void onCreate(e)}>
+          <p className="text-xs text-mq-text-muted sm:col-span-2">
+            {t("admin.ordersPage.ledgerCheckoutNote")}
+          </p>
           <label className="block text-sm sm:col-span-2">
             <span className="text-xs text-mq-text-muted">{t("admin.ordersPage.buyer")}</span>
             <div className="mt-1">

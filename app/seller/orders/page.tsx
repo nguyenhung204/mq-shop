@@ -13,6 +13,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { OrderListSkeleton } from "@/components/ui/Skeleton";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 
 function SellerOrdersInner() {
   const { t } = useLanguage();
@@ -29,6 +30,7 @@ function SellerOrdersInner() {
 
   return (
     <div className="space-y-4">
+      <LedgerTwdNote />
       <p className="text-sm text-mq-text-muted">
         {t("seller.ordersPage.help")}{" "}
         <Link href="/seller/inventory" className="underline">

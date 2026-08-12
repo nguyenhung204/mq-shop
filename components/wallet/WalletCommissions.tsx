@@ -15,6 +15,7 @@ import { WalletRankProgress } from "@/components/wallet/WalletRankProgress";
 import { WalletBonusGuide } from "@/components/wallet/WalletBonusGuide";
 import { mlmRankLabel } from "@/lib/i18n/mlm-rank";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 
 
 const TYPES: Array<CommissionType | "ALL"> = [
@@ -47,6 +48,7 @@ function CommissionsPanel({ embedded = false }: { embedded?: boolean }) {
 
   const body = (
     <div className="space-y-5">
+      <LedgerTwdNote />
       <WalletBonusGuide />
 
       <WalletRankProgress />

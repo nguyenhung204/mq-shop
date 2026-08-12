@@ -73,7 +73,56 @@ export function RegionFlag({ regionId }: { regionId: GateRegionId }) {
     );
   }
 
-  // Singapore
+  if (regionId === "sg") {
+    return (
+      <CircleFrame>
+        <svg viewBox="0 0 64 64" className="h-full w-full" preserveAspectRatio="xMidYMid slice">
+          <rect width="64" height="32" fill="#ED2939" />
+          <rect y="32" width="64" height="32" fill="#fff" />
+          <circle cx="18" cy="16" r="9" fill="#fff" />
+          <circle cx="21.5" cy="16" r="8" fill="#ED2939" />
+          <g fill="#fff">
+            {[0, 72, 144, 216, 288].map((deg) => {
+              const a = ((deg - 90) * Math.PI) / 180;
+              const cx = 30 + Math.cos(a) * 6;
+              const cy = 16 + Math.sin(a) * 6;
+              return (
+                <polygon
+                  key={deg}
+                  points={`${cx},${cy - 2.2} ${cx + 0.6},${cy - 0.6} ${cx + 2.3},${cy - 0.6} ${cx + 0.95},${cy + 0.4} ${cx + 1.5},${cy + 2} ${cx},${cy + 1} ${cx - 1.5},${cy + 2} ${cx - 0.95},${cy + 0.4} ${cx - 2.3},${cy - 0.6} ${cx - 0.6},${cy - 0.6}`}
+                />
+              );
+            })}
+          </g>
+        </svg>
+      </CircleFrame>
+    );
+  }
+
+  if (regionId === "us") {
+    return (
+      <CircleFrame>
+        <svg viewBox="0 0 64 64" className="h-full w-full" preserveAspectRatio="xMidYMid slice">
+          <rect width="64" height="64" fill="#B22234" />
+          {Array.from({ length: 6 }).map((_, i) => (
+            <rect key={i} y={(i * 2 + 1) * (64 / 13)} width="64" height={64 / 13} fill="#fff" />
+          ))}
+          <rect width="28" height="28" fill="#3C3B6E" />
+          {Array.from({ length: 9 }).map((_, i) => (
+            <circle
+              key={i}
+              cx={4 + (i % 3) * 8}
+              cy={4 + Math.floor(i / 3) * 6}
+              r="1.2"
+              fill="#fff"
+            />
+          ))}
+        </svg>
+      </CircleFrame>
+    );
+  }
+
+  // fallback
   return (
     <CircleFrame>
       <svg viewBox="0 0 64 64" className="h-full w-full" preserveAspectRatio="xMidYMid slice">

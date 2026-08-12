@@ -131,7 +131,7 @@ export function mapApiProduct(p: BeProduct, locale = "vi"): Product {
     p.translations?.find((t) => t.locale === locale || t.locale === locale.replace("-", "_")) ||
     p.translations?.[0];
   const name = p.title || p.name || translation?.name || p.sku || "Product";
-  const priceRaw = p.minPrice ?? p.price ?? p.priceUsd;
+  const priceRaw = p.minPrice ?? p.price;
   const price = typeof priceRaw === "string" ? Number(priceRaw) : Number(priceRaw ?? 0);
   const stock = typeof p.stock === "number" ? p.stock : p.isOutOfStock ? 0 : 99;
   const outOfStock = stock <= 0 || !!p.isOutOfStock || !!p.restockingOverlay;

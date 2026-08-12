@@ -11,11 +11,15 @@
     "terms": "服務條款",
     "privacy": "隱私權政策",
     "cookies": "Cookie 設定",
-    "copyright": "© 2024 MQ Shop. 版權所有。"
+    "copyright": "© 2024 MQ Shop. 版權所有。",
+    "ledgerNote": "價格依區域幣別顯示；結帳與帳本仍為 TWD。"
+  },
+  "ledger": {
+    "twdNote": "本頁所有金額均為 TWD（帳本金額）。"
   },
   "topBar": {
-    "promo": "滿 NT$75 免運費 — 選購 MQ 系列",
-    "promoShort": "滿 NT$75 免運"
+    "promo": "探索 MQ 系列 — 運費於結帳顯示（TWD）",
+    "promoShort": "結帳顯示 TWD 運費"
   },
   "nav": {
     "aboutUs": "關於我們",
@@ -165,8 +169,8 @@
     "shipsFrom": "出貨地",
     "searchPlaceholder": "在本店搜尋…",
     "priceRange": "價格區間 (TWD)",
-    "minPrice": "最低",
-    "maxPrice": "最高",
+    "minPrice": "最低 (TWD)",
+    "maxPrice": "最高 (TWD)",
     "applyPrice": "套用價格",
     "clearFilters": "清除篩選",
     "loading": "載入商店中…",
@@ -190,7 +194,7 @@
     "quantity": "數量",
     "shipping": "運費",
     "free": "免費",
-    "freeShippingHint": "再消費 {amount} 即可免運",
+    "freeShippingHint": "有免運促銷活動時即可免運",
     "total": "總計",
     "proceedCheckout": "前往結帳",
     "continueShopping": "繼續購物",
@@ -313,7 +317,10 @@
     "paymentMethod": "付款方式",
     "paymentMock": "MOCK（立即 PAID — 開發用）",
     "paymentCod": "COD（PENDING 至付款）",
-    "paymentHint": "幣別 TWD。運費來自 shipping-quote API（stub）。",
+    "paymentHint": "結帳以 TWD 計價（帳本）。顯示價格依區域幣別換算。",
+    "displayCurrencyNote": "結帳支付 {amount} TWD。顯示幣別：{currency}。",
+    "fxRateChanged": "匯率已更新。請重新確認價格後再下單。",
+    "fxUnavailable": "無法載入匯率，暫停以所在地幣別結帳。請稍後再試或切換至台灣 (TWD)。",
     "paymentStubNote": "付款為 stub（COD → PENDING，MOCK → PAID），無 PSP 導轉。",
     "note": "備註（選填）",
     "notePlaceholder": "給賣家的配送備註…",
@@ -332,7 +339,7 @@
     "compare": "比較",
     "askUs": "詢問我們",
     "deliveryEstimate": "預計配送：3–5 個工作天",
-    "freeShippingNote": "滿 NT$75 免運費",
+    "freeShippingNote": "運費於結帳以 TWD 報價；有免運促銷時免運",
     "secureCheckout": "安全可靠的結帳流程",
     "tabDescription": "商品描述",
     "tabAdditional": "附加資訊",
@@ -641,6 +648,7 @@
       "landingCost": "落地成本",
       "finance": "財務（舊版）",
       "financeConfigs": "費用設定",
+      "fxRates": "匯率 FX",
       "promotions": "促銷",
       "banners": "橫幅",
       "marketing": "行銷",
@@ -749,7 +757,7 @@
       "snapshot": {
         "ordersToday": "今日訂單",
         "ordersThisWeek": "本週訂單",
-        "gmvDeliveredThisMonthUsd": "本月已交付 GMV",
+        "gmvDeliveredThisMonth": "本月已交付 GMV",
         "activeShops": "活躍商店",
         "activeProducts": "上架商品",
         "suspendedShops": "停權商店"
@@ -848,9 +856,9 @@
       "name": "名稱",
       "type": "類型",
       "discountPct": "折扣 %",
-      "discountAmt": "折扣金額",
+      "discountAmt": "折扣金額 (TWD)",
       "voucherCode": "優惠碼",
-      "budget": "預算（選填）",
+      "budget": "預算 (TWD，選填)",
       "start": "開始",
       "end": "結束",
       "skus": "SKU（逗號或空白分隔）",
@@ -1151,12 +1159,28 @@
         "REJECTED": "已拒絕"
       }
     },
+    "fx": {
+      "title": "顯示匯率",
+      "subtitle": "全系統匯率：1 TWD = rate × 報價幣別。僅影響前台顯示。",
+      "ledgerNote": "帳本、錢包、佣金與結帳仍為 TWD。",
+      "asOf": "生效時間",
+      "source": "來源",
+      "formTitle": "更新匯率",
+      "formHint": "每次儲存新增一筆（保留歷史）。TWD 恆為 1。",
+      "note": "備註（選填）",
+      "save": "儲存匯率",
+      "saved": "已更新匯率",
+      "saveFailed": "無法儲存匯率",
+      "loadFailed": "無法載入匯率",
+      "baseCurrency": "基準幣別：TWD（帳本）。匯率為 TWD → 報價幣。"
+    },
     "productsPage": {
       "pendingReview": "待審核",
       "empty": "此篩選條件無商品。",
       "rejectTitle": "拒絕商品",
       "stock": "庫存 {n}",
-      "qty": "數量 {n}"
+      "qty": "數量 {n}",
+      "priceTwd": "價格 (TWD)"
     },
     "inventoryPage": {
       "slips": "單據",
@@ -1235,7 +1259,8 @@
       "city": "城市",
       "country": "國家",
       "phone": "電話",
-      "quantity": "數量"
+      "quantity": "數量",
+      "ledgerCheckoutNote": "管理員代下單以 TWD 計價並入帳，不套用顯示匯率。"
     },
     "rmaPage": {
       "pending": "待審",
@@ -1633,6 +1658,7 @@
     }
   },
   "seller": {
+    "priceTwdHint": "請以新台幣（TWD）輸入價格。買家依區域會看到換算後價格（MYR/VND/SGD/USD）。",
     "brand": "賣家中心",
     "warehouseBrand": "倉庫",
     "applyBrand": "開設商店",
@@ -1707,9 +1733,9 @@
       "name": "名稱",
       "type": "類型",
       "discountPct": "折扣 %",
-      "discountAmt": "折扣金額",
+      "discountAmt": "折扣金額 (TWD)",
       "voucherCode": "優惠碼",
-      "budget": "預算（選填）",
+      "budget": "預算 (TWD，選填)",
       "start": "開始",
       "end": "結束",
       "skus": "SKU（商店規格）",
@@ -1861,7 +1887,9 @@
       "title": "標題",
       "description": "說明",
       "sku": "SKU",
-      "sellPrice": "售價",
+      "sellPrice": "售價 (TWD)",
+      "sellPricePlaceholder": "例：1990",
+      "priceTwd": "價格 (TWD)",
       "options": "選項（選填），例如 size=M, color=black",
       "variants": "規格（SKU + 售價）",
       "gallery": "圖庫",
@@ -1908,7 +1936,9 @@
       "addSku": "新增 SKU",
       "createSku": "建立 SKU",
       "noSkus": "尚無 SKU。",
-      "sellPrice": "售價",
+      "sellPrice": "售價 (TWD)",
+      "sellPricePlaceholder": "例：1990",
+      "priceTwd": "價格 (TWD)",
       "available": "可用",
       "reserved": "已保留",
       "reservedCount": "已保留 {count}",
@@ -2018,19 +2048,19 @@
     "itemsHeading": "行項目",
     "addLine": "新增行",
     "removeLine": "移除行",
-    "unitPrice": "單價",
+    "unitPrice": "單價 (TWD)",
     "quantity": "數量",
-    "lineDiscount": "行折扣",
-    "shippingFee": "運費",
-    "vatAmount": "VAT",
-    "packagingFee": "包裝費",
-    "promoDiscount": "促銷折抵",
+    "lineDiscount": "行折扣 (TWD)",
+    "shippingFee": "運費 (TWD)",
+    "vatAmount": "VAT (TWD)",
+    "packagingFee": "包裝費 (TWD)",
+    "promoDiscount": "促銷折抵 (TWD)",
     "calculate": "計算",
     "calculating": "計算中…",
     "formError": "金額須 ≥ 0。數量須為整數 ≥ 1。",
     "resultHeading": "結果",
     "itemsSubtotal": "商品小計",
-    "finalAmount": "最終金額"
+    "finalAmount": "最終金額 (TWD)"
   },
   "transactions": {
     "title": "交易",
@@ -2438,6 +2468,7 @@
     "checkoutIdempotencyKeyRequired": "缺少結帳識別碼，請重試。",
     "checkoutIdempotencyMismatch": "結帳資料已變更但識別碼重複使用，請重新下單。",
     "checkoutInProgress": "此訂單正在建立中，請稍候。",
+    "fxRateChanged": "匯率已更新。請重新確認價格後再下單。",
     "affiliateCopied": "已複製聯盟連結",
     "invalidImageType": "圖片類型無效。請使用 JPEG、PNG、WebP 或 GIF。",
     "imageTooLarge": "圖片必須 ≤ 5MB。",
@@ -2846,7 +2877,7 @@
     "q1": "退貨政策是什麼？",
     "a1": "我們提供送達後 14 天內的免費退貨服務。商品必須未使用且保持原包裝。聯繫客服團隊即可啟動退貨流程。",
     "q2": "運送需要多長時間？",
-    "a2": "標準運送需 3–5 個工作天。快遞（1–2 天）可在結帳時選擇。滿 NT$75 免運費。",
+    "a2": "標準運送通常 3–5 個工作天。運費於結帳以 TWD 報價（目前 stub NT$5）。有免運促銷時免運。",
     "q3": "是否提供國際運送？",
     "a3": "是的，我們運送至超過 40 個國家。國際運費和配送時間因目的地而異。",
     "q4": "如何追蹤訂單？",
@@ -2911,7 +2942,7 @@
   "iconBoxPage": {
     "title": "圖示區塊",
     "freeShipping": "免運費",
-    "freeShippingDesc": "滿 NT$75 免運費。快速可靠的配送到府。",
+    "freeShippingDesc": "運費於結帳以 TWD 報價。有免運促銷時免運。",
     "securePayment": "安全付款",
     "securePaymentDesc": "您的付款資訊經過加密，並透過可信賴的金流閘道處理。",
     "easyReturns": "輕鬆退貨",
@@ -2930,7 +2961,7 @@
     "detailsLabel": "詳細資料",
     "detailsContent": "材料：頂級。產地：符合道德採購。保固：科技產品享 1 年製造商保固。保養：請參閱各產品頁面。",
     "shippingLabel": "運送",
-    "shippingContent": "標準：3–5 個工作天（NT$5.99）。快遞：1–2 個工作天（NT$12.99）。滿 NT$75 免運費。國際運費因地而異。",
+    "shippingContent": "標準：通常 3–5 個工作天。費用來自 shipping-quote（目前 stub NT$5，TWD）。有免運促銷時免運。國際運費可能不同。",
     "reviewsLabel": "評價",
     "reviewsContent": "顧客熱愛 MQ。平均評分：4.8/5 星，超過 2,000 則評價。「我所有過最棒的網購體驗。」— 已驗證買家"
   },

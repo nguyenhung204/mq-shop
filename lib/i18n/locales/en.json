@@ -11,11 +11,15 @@
     "terms": "Terms of Service",
     "privacy": "Privacy Policy",
     "cookies": "Cookie Settings",
-    "copyright": "© 2024 MQ Shop. All rights reserved."
+    "copyright": "© 2024 MQ Shop. All rights reserved.",
+    "ledgerNote": "Prices shown in your region currency; checkout and ledger use TWD."
+  },
+  "ledger": {
+    "twdNote": "All amounts on this page are in TWD (ledger currency)."
   },
   "topBar": {
-    "promo": "Free shipping on orders over NT$75 — Explore the MQ Summer Collection",
-    "promoShort": "Free shipping over NT$75"
+    "promo": "Explore the MQ collection — shipping shown at checkout (TWD)",
+    "promoShort": "Shipping in TWD at checkout"
   },
   "nav": {
     "aboutUs": "About Us",
@@ -165,8 +169,8 @@
     "shipsFrom": "Ships from",
     "searchPlaceholder": "Search in this shop…",
     "priceRange": "Price range (TWD)",
-    "minPrice": "Min",
-    "maxPrice": "Max",
+    "minPrice": "Min (TWD)",
+    "maxPrice": "Max (TWD)",
     "applyPrice": "Apply price",
     "clearFilters": "Clear filters",
     "loading": "Loading shop…",
@@ -190,7 +194,7 @@
     "quantity": "Quantity",
     "shipping": "Shipping",
     "free": "Free",
-    "freeShippingHint": "Add {amount} more for free shipping",
+    "freeShippingHint": "Free shipping applies when a free-ship promotion is active",
     "total": "Total",
     "proceedCheckout": "Proceed to Checkout",
     "continueShopping": "Continue shopping",
@@ -313,7 +317,10 @@
     "paymentMethod": "Payment",
     "paymentMock": "MOCK (instant PAID — dev)",
     "paymentCod": "COD (PENDING until paid)",
-    "paymentHint": "Currency TWD. Shipping fee from shipping-quote API (stub).",
+    "paymentHint": "Charged in TWD (ledger). Display prices follow your region currency.",
+    "displayCurrencyNote": "You pay {amount} TWD at checkout. Display: {currency}.",
+    "fxRateChanged": "Exchange rates were updated. Please review the new prices and place your order again.",
+    "fxUnavailable": "Exchange rates are unavailable. Checkout in your region currency is temporarily disabled. Try again later or switch to Taiwan (TWD).",
     "paymentStubNote": "Payment is stubbed (COD → PENDING, MOCK → PAID). No PSP redirect.",
     "note": "Note (optional)",
     "notePlaceholder": "Delivery note for the seller…",
@@ -332,7 +339,7 @@
     "compare": "Compare",
     "askUs": "Ask us",
     "deliveryEstimate": "Estimated delivery: 3–5 business days",
-    "freeShippingNote": "Free shipping on orders over NT$75",
+    "freeShippingNote": "Shipping fee is quoted at checkout in TWD; free with an active free-ship promo",
     "secureCheckout": "Guaranteed safe and secure checkout",
     "tabDescription": "Description",
     "tabAdditional": "Additional Info",
@@ -641,6 +648,7 @@
       "landingCost": "Landing cost",
       "finance": "Finance (legacy)",
       "financeConfigs": "Fee config",
+      "fxRates": "FX rates",
       "promotions": "Promotions",
       "banners": "Banners",
       "marketing": "Marketing",
@@ -749,7 +757,7 @@
       "snapshot": {
         "ordersToday": "Orders today",
         "ordersThisWeek": "Orders this week",
-        "gmvDeliveredThisMonthUsd": "Delivered GMV (this month)",
+        "gmvDeliveredThisMonth": "Delivered GMV (this month)",
         "activeShops": "Active shops",
         "activeProducts": "Active products",
         "suspendedShops": "Suspended shops"
@@ -848,9 +856,9 @@
       "name": "Name",
       "type": "Type",
       "discountPct": "Discount %",
-      "discountAmt": "Discount amount",
+      "discountAmt": "Discount amount (TWD)",
       "voucherCode": "Voucher code",
-      "budget": "Budget (optional)",
+      "budget": "Budget (TWD, optional)",
       "start": "Start",
       "end": "End",
       "skus": "SKUs (comma or space separated)",
@@ -1151,12 +1159,28 @@
         "REJECTED": "Rejected"
       }
     },
+    "fx": {
+      "title": "Display FX rates",
+      "subtitle": "System-wide rates: 1 TWD = rate × quote currency. Affects storefront display only.",
+      "ledgerNote": "Ledger, wallet, commission, and checkout charges remain TWD.",
+      "asOf": "Effective",
+      "source": "Source",
+      "formTitle": "Update rates",
+      "formHint": "Each save inserts a new effective row (history kept). TWD is always 1.",
+      "note": "Note (optional)",
+      "save": "Save rates",
+      "saved": "FX rates updated",
+      "saveFailed": "Could not save FX rates",
+      "loadFailed": "Could not load FX rates",
+      "baseCurrency": "Base currency: TWD (ledger). Rates are TWD → quote."
+    },
     "productsPage": {
       "pendingReview": "Pending review",
       "empty": "No products for this filter.",
       "rejectTitle": "Reject product",
       "stock": "stock {n}",
-      "qty": "qty {n}"
+      "qty": "qty {n}",
+      "priceTwd": "Price (TWD)"
     },
     "inventoryPage": {
       "slips": "Slips",
@@ -1235,7 +1259,8 @@
       "city": "City",
       "country": "Country",
       "phone": "Phone",
-      "quantity": "Quantity"
+      "quantity": "Quantity",
+      "ledgerCheckoutNote": "Admin orders are charged and recorded in TWD (ledger). Display FX is not applied."
     },
     "rmaPage": {
       "pending": "Pending",
@@ -1633,6 +1658,7 @@
     }
   },
   "seller": {
+    "priceTwdHint": "Enter prices in New Taiwan Dollar (TWD). Buyers see converted prices (MYR/VND/SGD/USD) by region.",
     "brand": "Seller Center",
     "warehouseBrand": "Warehouse",
     "applyBrand": "Open a Shop",
@@ -1707,9 +1733,9 @@
       "name": "Name",
       "type": "Type",
       "discountPct": "Discount %",
-      "discountAmt": "Discount amount",
+      "discountAmt": "Discount amount (TWD)",
       "voucherCode": "Voucher code",
-      "budget": "Budget (optional)",
+      "budget": "Budget (TWD, optional)",
       "start": "Start",
       "end": "End",
       "skus": "SKUs (shop variants)",
@@ -1861,7 +1887,9 @@
       "title": "Title",
       "description": "Description",
       "sku": "SKU",
-      "sellPrice": "Sell price",
+      "sellPrice": "Sell price (TWD)",
+      "sellPricePlaceholder": "e.g. 1990",
+      "priceTwd": "Price (TWD)",
       "options": "Options (optional), e.g. size=M, color=black",
       "variants": "Variants (SKU + sell price)",
       "gallery": "Gallery images",
@@ -1908,7 +1936,9 @@
       "addSku": "Add SKU",
       "createSku": "Create SKU",
       "noSkus": "No SKUs yet.",
-      "sellPrice": "Sell price",
+      "sellPrice": "Sell price (TWD)",
+      "sellPricePlaceholder": "e.g. 1990",
+      "priceTwd": "Price (TWD)",
       "available": "Available",
       "reserved": "Reserved",
       "reservedCount": "{count} reserved",
@@ -2018,19 +2048,19 @@
     "itemsHeading": "Line items",
     "addLine": "Add line",
     "removeLine": "Remove line",
-    "unitPrice": "Unit price",
+    "unitPrice": "Unit price (TWD)",
     "quantity": "Qty",
-    "lineDiscount": "Line discount",
-    "shippingFee": "Shipping",
-    "vatAmount": "VAT",
-    "packagingFee": "Packaging",
-    "promoDiscount": "Promo discount",
+    "lineDiscount": "Line discount (TWD)",
+    "shippingFee": "Shipping (TWD)",
+    "vatAmount": "VAT (TWD)",
+    "packagingFee": "Packaging (TWD)",
+    "promoDiscount": "Promo discount (TWD)",
     "calculate": "Calculate",
     "calculating": "Calculating…",
     "formError": "Use non-negative amounts. Quantity must be a whole number ≥ 1.",
     "resultHeading": "Result",
     "itemsSubtotal": "Items subtotal",
-    "finalAmount": "Final amount"
+    "finalAmount": "Final amount (TWD)"
   },
   "transactions": {
     "title": "Transactions",
@@ -2438,6 +2468,7 @@
     "checkoutIdempotencyKeyRequired": "Missing checkout idempotency key. Please try again.",
     "checkoutIdempotencyMismatch": "Checkout data changed with a reused key. Please place the order again.",
     "checkoutInProgress": "This order is already being placed. Please wait a moment.",
+    "fxRateChanged": "Exchange rates were updated. Please review prices and try again.",
     "affiliateCopied": "Affiliate link copied",
     "invalidImageType": "Invalid image type. Use JPEG, PNG, WebP, or GIF.",
     "imageTooLarge": "Image must be ≤ 5MB.",
@@ -2846,7 +2877,7 @@
     "q1": "What is your return policy?",
     "a1": "We offer hassle-free returns within 14 days of delivery. Items must be unused and in original packaging. Contact our support team to initiate a return.",
     "q2": "How long does shipping take?",
-    "a2": "Standard shipping takes 3–5 business days. Express shipping (1–2 days) is available at checkout. Free shipping on orders over NT$75.",
+    "a2": "Standard shipping usually takes 3–5 business days. The fee is quoted at checkout in TWD (flat stub NT$5 today). Free shipping applies when a free-ship promotion is active.",
     "q3": "Do you ship internationally?",
     "a3": "Yes, we ship to over 40 countries worldwide. International shipping rates and delivery times vary by destination.",
     "q4": "How can I track my order?",
@@ -2911,7 +2942,7 @@
   "iconBoxPage": {
     "title": "Icon Box",
     "freeShipping": "Free Shipping",
-    "freeShippingDesc": "Complimentary shipping on all orders over NT$75. Fast and reliable delivery to your door.",
+    "freeShippingDesc": "Shipping is quoted at checkout in TWD. Free shipping when a free-ship promotion applies.",
     "securePayment": "Secure Payment",
     "securePaymentDesc": "Your payment information is encrypted and processed through trusted payment gateways.",
     "easyReturns": "Easy Returns",
@@ -2930,7 +2961,7 @@
     "detailsLabel": "Details",
     "detailsContent": "Materials: Premium grade. Origin: Ethically sourced. Warranty: 1 year manufacturer warranty on all tech products. Care: See individual product pages.",
     "shippingLabel": "Shipping",
-    "shippingContent": "Standard: 3–5 business days (NT$5.99). Express: 1–2 business days (NT$12.99). Free shipping on orders over NT$75. International rates vary.",
+    "shippingContent": "Standard: typically 3–5 business days. Fee from shipping-quote (current stub NT$5, TWD). Free shipping when a free-ship promotion is active. International rates may vary.",
     "reviewsLabel": "Reviews",
     "reviewsContent": "Our customers love MQ. Average rating: 4.8/5 stars across 2,000+ reviews. \"Best online shopping experience I've had.\" — Verified Buyer"
   },

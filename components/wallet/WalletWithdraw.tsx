@@ -19,6 +19,7 @@ import {
   formatWalletPayoutWhen,
   walletPayoutStatusBadgeClass,
 } from "@/components/wallet/walletPayoutUi";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 
 const STATUSES: Array<PayoutRequestStatus | ""> = [
   "",
@@ -89,6 +90,7 @@ function WithdrawPanel({
 
   const body = (
     <div className="space-y-6">
+      <LedgerTwdNote />
       {needsPin ? (
         <div className="mq-alert mq-alert-error">
           {t("wallet.pinRequiredBanner")}{" "}

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/api/utils";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 import type { WalletTransaction, WalletTxReason } from "@/lib/api/wallet";
 import {
   useConfirmWalletPin,
@@ -343,6 +344,8 @@ function WalletInner({ embedded = false }: { embedded?: boolean }) {
               </button>
             </div>
           ) : null}
+
+          <LedgerTwdNote className="mb-2" />
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="mq-card p-5">

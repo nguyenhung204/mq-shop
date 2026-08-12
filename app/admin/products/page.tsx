@@ -11,6 +11,7 @@ import {
 } from "@/lib/queries/admin";
 import { formatMoney } from "@/lib/api/utils";
 import type { ApiProduct } from "@/lib/api/types";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
@@ -21,6 +22,7 @@ import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { countryCodeLabel } from "@/lib/i18n/regions";
 
 type ProductVisibilityAction = { kind: "hide" | "unhide"; id: string };
 
@@ -39,12 +41,12 @@ function productExcerpt(p: ApiProduct): string {
 }
 
 function productPriceLabel(p: ApiProduct): string {
-  const min = p.minPrice ?? p.price ?? Number(p.priceUsd);
-  const max = p.maxPrice ?? p.price ?? Number(p.priceUsd);
+  const min = p.minPrice ?? p.price;
+  const max = p.maxPrice ?? p.price;
   if (min != null && max != null && !Number.isNaN(min) && !Number.isNaN(max) && min !== max) {
     return `${formatMoney(min)} – ${formatMoney(max)}`;
   }
-  return formatMoney(min ?? p.priceUsd);
+  return formatMoney(min);
 }
 
 function productVariants(p: ApiProduct) {
@@ -95,6 +97,8 @@ function ProductsInner() {
         }
       />
 
+      <LedgerTwdNote className="mb-4" />
+
       <div className="space-y-4">
         {isError && (
           <div className="mq-alert mq-alert-error">
@@ -137,7 +141,7 @@ function ProductsInner() {
                         key={code}
                         className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] leading-none font-medium bg-blue-50 border border-blue-200 text-blue-700"
                       >
-                        {code}
+                        {countryCodeLabel(code)}
                       </span>
                     ))}
                   </div>
@@ -150,7 +154,9 @@ function ProductsInner() {
                     {variants.map((v) => (
                       <li key={v.id} className="flex flex-wrap gap-x-2">
                         <span className="font-medium text-mq-text-secondary">{v.sku}</span>
-                        <span>{formatMoney(v.sellingPrice)}</span>
+                        <span>
+                          {t("admin.productsPage.priceTwd")}: {formatMoney(v.sellingPrice)}
+                        </span>
                         <span>
                           {t("admin.productsPage.qty", { n: String(v.availableStock) })}
                         </span>

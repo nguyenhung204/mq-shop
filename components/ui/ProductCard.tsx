@@ -6,7 +6,8 @@ import { useState } from "react";
 import { BarChart2, Eye, Heart, iconProps } from "@/components/ui/icons";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { SaleCountdown } from "@/components/ui/SaleCountdown";
-import { Product, formatPrice } from "@/lib/data/products";
+import { Product } from "@/lib/data/products";
+import { useDisplayMoney } from "@/components/providers/DisplayMoneyProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useWishlist } from "@/components/providers/WishlistProvider";
 import { useFlyToCart } from "@/components/cart/FlyToCartProvider";
@@ -23,6 +24,7 @@ export function ProductCard({
 }) {
   const [hovered, setHovered] = useState(false);
   const { locale, t } = useLanguage();
+  const { formatDisplay } = useDisplayMoney();
   const { toggleItem, isInWishlist } = useWishlist();
   const { flyToWishlist } = useFlyToCart();
   const wished = isInWishlist(product.id);
@@ -110,12 +112,12 @@ export function ProductCard({
             {product.minPrice != null &&
             product.maxPrice != null &&
             product.minPrice !== product.maxPrice
-              ? `${formatPrice(product.minPrice)} – ${formatPrice(product.maxPrice)}`
-              : formatPrice(product.price)}
+              ? `${formatDisplay(product.minPrice)} – ${formatDisplay(product.maxPrice)}`
+              : formatDisplay(product.price)}
           </span>
           {product.originalPrice && (
             <span className="text-sm text-mq-text-muted line-through">
-              {formatPrice(product.originalPrice)}
+              {formatDisplay(product.originalPrice)}
             </span>
           )}
         </div>
@@ -136,6 +138,7 @@ export function ProductCardMini({
   product: Product;
   onNavigate?: () => void;
 }) {
+  const { formatDisplay } = useDisplayMoney();
   return (
     <Link
       href={`/product/${product.slug}`}
@@ -163,11 +166,11 @@ export function ProductCardMini({
           {product.minPrice != null &&
           product.maxPrice != null &&
           product.minPrice !== product.maxPrice
-            ? `${formatPrice(product.minPrice)} – ${formatPrice(product.maxPrice)}`
-            : formatPrice(product.price)}
+            ? `${formatDisplay(product.minPrice)} – ${formatDisplay(product.maxPrice)}`
+            : formatDisplay(product.price)}
           {product.originalPrice && (
             <span className="text-mq-text-muted line-through ml-1.5 font-normal">
-              {formatPrice(product.originalPrice)}
+              {formatDisplay(product.originalPrice)}
             </span>
           )}
         </p>

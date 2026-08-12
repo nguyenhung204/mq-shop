@@ -20,6 +20,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 
 const STATUSES: Array<PayoutRequestStatus | ""> = [
   "",
@@ -86,6 +87,8 @@ function WalletPayoutsInner() {
         title={t("admin.walletPayouts.title")}
         description={t("admin.walletPayouts.description")}
       />
+
+      <LedgerTwdNote className="mb-2" />
 
       <div className="space-y-4">
         <p className="text-sm text-mq-text-muted">{t("admin.walletPayouts.hint")}</p>

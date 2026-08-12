@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { formatMoney } from "@/lib/api/utils";
+import { formatOrderMoney } from "@/lib/fx/formatOrderMoney";
 import {
   canCancelOrder,
   canRequestRma,
@@ -129,7 +130,9 @@ function OrderLineReview({
 
 function OrderDetailInner() {
   const { id } = useParams<{ id: string }>();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+  const intlLocale =
+    locale === "zh-TW" ? "zh-TW" : locale === "vi" ? "vi-VN" : "en-US";
   const { user } = useAuth();
   const { data: order, isLoading, isError, error } = useOrder(id);
   const { data: shop } = useSellerShop();
@@ -138,6 +141,27 @@ function OrderDetailInner() {
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
   const [pendingReason, setPendingReason] = useState("");
+
+  const formatOrderAmount = (twd: number, field: "total" | "subtotal" | "shippingFee" = "total") => {
+    if (!order) return formatMoney(twd);
+    const base = {
+      total: order.total,
+      subtotal: order.subtotal,
+      shippingFee: order.shippingFee,
+      currency: order.currency,
+      displayCurrency: order.displayCurrency,
+      fxRate: order.fxRate,
+      displayTotal: order.displayTotal,
+    };
+    if (field !== "total") {
+      return formatOrderMoney({ ...base, total: twd }, field, intlLocale).primary;
+    }
+    return formatOrderMoney(base, "total", intlLocale).primary;
+  };
+
+  const orderTotalMoney = order
+    ? formatOrderMoney(order, "total", intlLocale)
+    : null;
 
   const roles = user?.roles ?? [];
   const myShopId = user?.shopId || shop?.id || null;
@@ -220,12 +244,19 @@ function OrderDetailInner() {
               </div>
             ) : null}
             <p className="text-sm">
-              {t("orders.detail.totalLabel")}: <strong>{formatMoney(order.total)}</strong> {order.currency}
+              {t("orders.detail.totalLabel")}: <strong>{formatOrderAmount(order.total)}</strong>
+              {orderTotalMoney?.ledgerHint ? (
+                <span className="text-mq-text-muted text-xs ml-1">
+                  ({orderTotalMoney.ledgerHint} {order.currency})
+                </span>
+              ) : orderTotalMoney?.showCurrencySuffix ? (
+                <span className="text-mq-text-muted"> {order.currency}</span>
+              ) : null}
               <span className="text-mq-text-muted">
                 {" "}
                 {t("orders.detail.subtotalShipHint", {
-                  subtotal: formatMoney(order.subtotal),
-                  shippingFee: formatMoney(order.shippingFee),
+                  subtotal: formatOrderAmount(order.subtotal, "subtotal"),
+                  shippingFee: formatOrderAmount(order.shippingFee, "shippingFee"),
                 })}
               </span>
             </p>
@@ -281,7 +312,7 @@ function OrderDetailInner() {
                       />
                     ) : null}
                   </div>
-                  <span className="shrink-0 font-medium">{formatMoney(item.lineTotal)}</span>
+                  <span className="shrink-0 font-medium">{formatOrderAmount(item.lineTotal)}</span>
                 </li>
               ))}
             </ul>
