@@ -10,6 +10,7 @@ import { Container, PageHero } from "@/components/ui/shared";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { WalletPayoutDetailFields } from "@/components/wallet/walletPayoutUi";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { usePointsDisplayFx } from "@/lib/hooks/usePointsDisplayFx";
 
 function WithdrawalDetailInner({
   payoutId,
@@ -24,6 +25,7 @@ function WithdrawalDetailInner({
 }) {
   const { t } = useLanguage();
   const { data: payout, isLoading, isError, error } = useWalletWithdrawal(payoutId);
+  const { displayCurrency, isRegionTwd, formatTwdAsRegion } = usePointsDisplayFx();
 
   const labels = {
     status: (s: PayoutRequestStatus) => t(`wallet.payoutStatus.${s}`),
@@ -34,6 +36,14 @@ function WithdrawalDetailInner({
     gatewayRef: t("wallet.withdrawGatewayRef"),
     createdAt: t("wallet.withdrawCreatedAt"),
     updatedAt: t("wallet.withdrawUpdatedAt"),
+    fiatLabel: t("wallet.fiatLabel"),
+    regionApprox:
+      payout?.fiatAmount && !isRegionTwd
+        ? t("wallet.fiatApproxRegion", {
+            amount: formatTwdAsRegion(payout.fiatAmount) ?? "",
+            currency: displayCurrency,
+          })
+        : null,
   };
 
   const body = (

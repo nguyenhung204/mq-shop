@@ -23,6 +23,7 @@ import { WalletRankProgress } from "@/components/wallet/WalletRankProgress";
 import { buildReferralRegisterUrl } from "@/lib/mlm/referralLink";
 import { mlmRankLabel } from "@/lib/i18n/mlm-rank";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { usePointsDisplayFx } from "@/lib/hooks/usePointsDisplayFx";
 
 const TX_REASONS: Array<WalletTxReason | ""> = [
   "",
@@ -242,6 +243,14 @@ function WalletInner({ embedded = false }: { embedded?: boolean }) {
   const { user, refreshUser, hasRole } = useAuth();
   const { data: balance, isLoading, isError, error } = useWallet();
   const { data: referral } = useReferralLink();
+  const {
+    onePointDisplay,
+    onePointTwd,
+    pointUsdLabel,
+    isRegionTwd,
+    formatRegion,
+    formatTwd,
+  } = usePointsDisplayFx();
   const [txPage, setTxPage] = useState(1);
   const [txReason, setTxReason] = useState<WalletTxReason | "">("");
   const { data: txPageData, isLoading: txLoading } = useWalletTransactions({
@@ -362,6 +371,26 @@ function WalletInner({ embedded = false }: { embedded?: boolean }) {
               </p>
               <p className="text-xs text-mq-text-muted mt-1">{t("wallet.frozenHint")}</p>
             </div>
+          </div>
+
+          <div className="rounded-md border border-mq-border/70 bg-mq-surface/40 px-4 py-3 text-sm space-y-1">
+            <p className="text-mq-text-secondary">
+              {t("wallet.pointsExplainer", { usd: pointUsdLabel })}
+            </p>
+            {onePointDisplay != null ? (
+              <p className="text-xs text-mq-text-muted">
+                {t("wallet.pointsRateToday", {
+                  amount: formatRegion(onePointDisplay) ?? "",
+                })}
+              </p>
+            ) : null}
+            {!isRegionTwd && onePointTwd != null ? (
+              <p className="text-xs text-mq-text-muted">
+                {t("wallet.pointsRateTwd", {
+                  amount: formatTwd(onePointTwd) ?? "",
+                })}
+              </p>
+            ) : null}
           </div>
 
           {hasRole("SELLER") ? (

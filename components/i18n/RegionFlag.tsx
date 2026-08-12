@@ -73,6 +73,29 @@ export function RegionFlag({ regionId }: { regionId: GateRegionId }) {
     );
   }
 
+  if (regionId === "us") {
+    return (
+      <CircleFrame>
+        <svg viewBox="0 0 64 64" className="h-full w-full" preserveAspectRatio="xMidYMid slice">
+          <rect width="64" height="64" fill="#B22234" />
+          {Array.from({ length: 6 }).map((_, i) => (
+            <rect key={i} y={(i * 2 + 1) * (64 / 13)} width="64" height={64 / 13} fill="#fff" />
+          ))}
+          <rect width="28" height="28" fill="#3C3B6E" />
+          {Array.from({ length: 9 }).map((_, i) => (
+            <circle
+              key={i}
+              cx={4 + (i % 3) * 8}
+              cy={4 + Math.floor(i / 3) * 6}
+              r="1.2"
+              fill="#fff"
+            />
+          ))}
+        </svg>
+      </CircleFrame>
+    );
+  }
+
   // Singapore
   return (
     <CircleFrame>

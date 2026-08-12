@@ -44,6 +44,7 @@ function WalletPayoutDetailInner({ payoutId }: { payoutId: string }) {
     createdAt: t("admin.walletPayouts.createdAt"),
     updatedAt: t("admin.walletPayouts.updatedAt"),
     userId: t("admin.walletPayouts.userId"),
+    fiatLabel: t("wallet.fiatLabel"),
   };
 
   return (

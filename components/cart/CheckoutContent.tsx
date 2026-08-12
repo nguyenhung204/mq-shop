@@ -281,7 +281,13 @@ export function CheckoutContent() {
 
   const handleCrossBorderSwitchRegion = (regionId: GateRegionId) => {
     // Map region id to country code for shipping address
-    const countryMap: Record<GateRegionId, string> = { tw: "TW", my: "MY", vn: "VN", sg: "SG" };
+    const countryMap: Record<GateRegionId, string> = {
+      tw: "TW",
+      my: "MY",
+      vn: "VN",
+      sg: "SG",
+      us: "US",
+    };
     const newCountry = countryMap[regionId] || "VN";
     setValue("shippingAddress.country", newCountry, { shouldValidate: true });
     setRegion(regionId);

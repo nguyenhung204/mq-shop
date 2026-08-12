@@ -48,6 +48,13 @@ function CommissionsPanel({ embedded = false }: { embedded?: boolean }) {
     <div className="space-y-5">
       <WalletBonusGuide />
 
+      <p className="text-sm text-mq-text-muted leading-relaxed">
+        {t("wallet.commissionsIntro")}
+      </p>
+      <p className="text-xs text-mq-text-muted -mt-3">
+        {t("wallet.commissionsPayoutNote")}
+      </p>
+
       <WalletRankProgress />
 
       {showRank ? (
@@ -117,9 +124,12 @@ function CommissionsPanel({ embedded = false }: { embedded?: boolean }) {
               {t("wallet.commissionBase")}: {formatMoney(row.baseAmount)}
             </p>
           </div>
-          <span className="tabular-nums font-medium">
-            {formatPoints(row.payoutAmount)}
-          </span>
+          <div className="text-right shrink-0">
+            <p className="text-[11px] uppercase tracking-wide text-mq-text-muted">
+              {t("wallet.commissionPayout")}
+            </p>
+            <p className="tabular-nums font-medium">{formatPoints(row.payoutAmount)}</p>
+          </div>
         </div>
       ))}
 

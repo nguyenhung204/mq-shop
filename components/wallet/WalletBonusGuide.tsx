@@ -4,6 +4,7 @@ import { useSellerMlmRankConfigs } from "@/lib/queries/wallet";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { formatPercent } from "@/lib/api/utils";
+import { usePointsDisplayFx } from "@/lib/hooks/usePointsDisplayFx";
 
 type Pillar = {
   type: "REFERRAL" | "TEAM" | "LOYALTY" | "GLOBAL";
@@ -38,6 +39,7 @@ export function WalletBonusGuide({ className = "" }: { className?: string }) {
   const { t } = useLanguage();
   const { hasRole } = useAuth();
   const { data: ranks } = useSellerMlmRankConfigs({ enabled: hasRole("SELLER") });
+  const { onePointDisplay, formatRegion } = usePointsDisplayFx();
 
   // Only show to SELLER
   if (!hasRole("SELLER")) return null;
@@ -49,13 +51,23 @@ export function WalletBonusGuide({ className = "" }: { className?: string }) {
     <section
       className={`rounded-[var(--mq-radius-md)] border border-mq-border bg-mq-surface p-4 md:p-6 space-y-5 ${className}`}
     >
-      <div>
+      <div className="space-y-2">
         <h3 className="text-base md:text-lg font-semibold text-mq-text">
           {t("wallet.bonusGuide.title")}
         </h3>
-        <p className="text-sm text-mq-text-muted mt-1.5 leading-relaxed">
+        <p className="text-sm text-mq-text-muted leading-relaxed">
           {t("wallet.bonusGuide.intro")}
         </p>
+        <div className="rounded-md border border-mq-border/70 bg-mq-surface-subtle px-3 py-2.5 text-sm space-y-1">
+          <p className="text-mq-text-secondary">{t("wallet.bonusGuide.pointsFlow")}</p>
+          {onePointDisplay != null ? (
+            <p className="text-xs text-mq-text-muted">
+              {t("wallet.bonusGuide.pointsRateToday", {
+                amount: formatRegion(onePointDisplay) ?? "",
+              })}
+            </p>
+          ) : null}
+        </div>
       </div>
 
       <div className="grid gap-4">

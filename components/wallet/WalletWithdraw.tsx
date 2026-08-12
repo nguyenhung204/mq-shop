@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import type { PayoutRequestStatus } from "@/lib/api/wallet";
 import { formatPoints } from "@/lib/api/utils";
 import {
@@ -19,6 +19,7 @@ import {
   formatWalletPayoutWhen,
   walletPayoutStatusBadgeClass,
 } from "@/components/wallet/walletPayoutUi";
+import { usePointsDisplayFx } from "@/lib/hooks/usePointsDisplayFx";
 
 const STATUSES: Array<PayoutRequestStatus | ""> = [
   "",
@@ -41,6 +42,17 @@ function WithdrawPanel({
   const { t, locale } = useLanguage();
   const { user } = useAuth();
   const withdraw = useWalletWithdraw();
+  const {
+    displayCurrency,
+    onePointDisplay,
+    onePointTwd,
+    pointUsdLabel,
+    isRegionTwd,
+    estimateWithdraw,
+    formatRegion,
+    formatTwd,
+    formatTwdAsRegion,
+  } = usePointsDisplayFx();
 
   const [amount, setAmount] = useState("");
   const [pin, setPin] = useState("");
@@ -60,6 +72,12 @@ function WithdrawPanel({
   const meta = data?.meta;
 
   const needsPin = user ? user.hasWalletPin === false : false;
+
+  const amountNum = Number(amount);
+  const fiatEstimate = useMemo(
+    () => estimateWithdraw(amountNum),
+    [amountNum, estimateWithdraw],
+  );
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -98,7 +116,26 @@ function WithdrawPanel({
         </div>
       ) : null}
       {localError ? <div className="mq-alert mq-alert-error">{localError}</div> : null}
-      <p className="text-sm text-mq-text-muted">{t("wallet.withdrawHint")}</p>
+      <div className="rounded-md border border-mq-border/70 bg-mq-surface/40 px-4 py-3 text-sm space-y-1">
+        <p className="text-mq-text-secondary">
+          {t("wallet.pointsExplainer", { usd: pointUsdLabel })}
+        </p>
+        {onePointDisplay != null ? (
+          <p className="text-xs text-mq-text-muted">
+            {t("wallet.pointsRateToday", {
+              amount: formatRegion(onePointDisplay) ?? "",
+            })}
+          </p>
+        ) : null}
+        {!isRegionTwd && onePointTwd != null ? (
+          <p className="text-xs text-mq-text-muted">
+            {t("wallet.pointsRateTwd", {
+              amount: formatTwd(onePointTwd) ?? "",
+            })}
+          </p>
+        ) : null}
+        <p className="text-xs text-mq-text-muted">{t("wallet.withdrawHint")}</p>
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-2 items-start">
         <form className="mq-card p-6 space-y-3" onSubmit={(e) => void onSubmit(e)}>
@@ -116,6 +153,23 @@ function WithdrawPanel({
               disabled={needsPin}
             />
           </label>
+          {fiatEstimate.twd != null ? (
+            <div className="text-sm text-mq-text-secondary -mt-1 space-y-0.5">
+              <p>
+                {t("wallet.withdrawFiatEstimate", {
+                  amount: formatTwd(fiatEstimate.twd) ?? "",
+                })}
+              </p>
+              {!isRegionTwd && fiatEstimate.display != null ? (
+                <p className="text-xs text-mq-text-muted">
+                  {t("wallet.withdrawRegionApprox", {
+                    amount: formatRegion(fiatEstimate.display) ?? "",
+                    currency: displayCurrency,
+                  })}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
           <label className="block text-sm">
             <span className="text-xs text-mq-text-muted">{t("wallet.pin")}</span>
             <input
@@ -224,6 +278,23 @@ function WithdrawPanel({
               >
                 <div className="space-y-1 min-w-0 flex-1">
                   <p className="tabular-nums font-medium">{formatPoints(w.amount)}</p>
+                  {w.fiatAmount ? (
+                    <div className="text-xs text-mq-text-muted space-y-0.5">
+                      <p>
+                        {t("wallet.fiatApprox", {
+                          amount: formatTwd(w.fiatAmount) ?? "",
+                        })}
+                      </p>
+                      {!isRegionTwd ? (
+                        <p>
+                          {t("wallet.fiatApproxRegion", {
+                            amount: formatTwdAsRegion(w.fiatAmount) ?? "",
+                            currency: displayCurrency,
+                          })}
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : null}
                   <p className="text-xs text-mq-text-muted">
                     {formatWalletPayoutWhen(w.createdAt)}
                   </p>

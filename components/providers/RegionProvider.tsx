@@ -9,17 +9,14 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { type GateRegionId, GATE_REGIONS } from "@/lib/i18n/regions";
+import {
+  type GateRegionId,
+  GATE_REGIONS,
+  isValidRegion,
+  REGION_TO_COUNTRY,
+} from "@/lib/i18n/regions";
 
 const REGION_STORAGE_KEY = "mq-region";
-
-/** Map lowercase region id → ISO country code */
-const REGION_TO_COUNTRY: Record<GateRegionId, string> = {
-  tw: "TW",
-  my: "MY",
-  vn: "VN",
-  sg: "SG",
-};
 
 export type RegionContextValue = {
   /** Current selected region id (null = not yet selected) */
@@ -41,10 +38,6 @@ export type RegionContextValue = {
 };
 
 const RegionContext = createContext<RegionContextValue | null>(null);
-
-function isValidRegion(value: string | null): value is GateRegionId {
-  return value !== null && ["tw", "my", "vn", "sg"].includes(value);
-}
 
 export function RegionProvider({
   children,
