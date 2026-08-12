@@ -5,6 +5,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { formatPercent } from "@/lib/api/utils";
 import { usePointsDisplayFx } from "@/lib/hooks/usePointsDisplayFx";
+import { mlmRankLabel } from "@/lib/i18n/mlm-rank";
 
 type Pillar = {
   type: "REFERRAL" | "TEAM" | "LOYALTY" | "GLOBAL";
@@ -36,7 +37,7 @@ const PILLARS: Pillar[] = [
 ];
 
 export function WalletBonusGuide({ className = "" }: { className?: string }) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { hasRole } = useAuth();
   const { data: ranks } = useSellerMlmRankConfigs({ enabled: hasRole("SELLER") });
   const { onePointDisplay, formatRegion } = usePointsDisplayFx();
@@ -46,6 +47,12 @@ export function WalletBonusGuide({ className = "" }: { className?: string }) {
 
   const activeRanks = (ranks ?? []).filter((r) => r.isActive);
   const globalTiers = activeRanks.filter((r) => r.globalFundTier != null);
+
+  const rankName = (
+    rank: number,
+    fallback?: string,
+    nameI18n?: Record<string, string>,
+  ) => mlmRankLabel(t, rank, fallback, { nameI18n, locale });
 
   return (
     <section
@@ -100,7 +107,8 @@ export function WalletBonusGuide({ className = "" }: { className?: string }) {
                       className="flex items-center justify-between gap-2 rounded-md bg-mq-surface px-2.5 py-2"
                     >
                       <span>
-                        {r.name} <span className="text-mq-text-muted">(R{r.rank})</span>
+                        {rankName(r.rank, r.name, r.nameI18n)}{" "}
+                        <span className="text-mq-text-muted">(R{r.rank})</span>
                       </span>
                       <span className="tabular-nums font-semibold text-mq-text">
                         {formatPercent(r.referralPercent)}
@@ -128,7 +136,8 @@ export function WalletBonusGuide({ className = "" }: { className?: string }) {
                         className="flex items-center justify-between gap-2 rounded-md bg-mq-surface px-2.5 py-2"
                       >
                         <span>
-                          {r.name} <span className="text-mq-text-muted">(R{r.rank})</span>
+                          {rankName(r.rank, r.name, r.nameI18n)}{" "}
+                          <span className="text-mq-text-muted">(R{r.rank})</span>
                         </span>
                         <span className="tabular-nums font-semibold text-mq-text">
                           {formatPercent(r.teamPercent)}
@@ -148,14 +157,22 @@ export function WalletBonusGuide({ className = "" }: { className?: string }) {
                   {t("wallet.bonusGuide.globalTiersTitle")}
                 </p>
                 <ul className="flex flex-wrap gap-2">
-                  {globalTiers.map((r) => (
-                    <li
-                      key={r.rank}
-                      className="rounded-full border border-mq-border bg-mq-surface px-3 py-1.5 text-sm text-mq-text"
-                    >
-                      ≥ R{r.globalFundTier} · {r.name}
-                    </li>
-                  ))}
+                  {globalTiers.map((r) => {
+                    const tierKey = `wallet.bonusGuide.globalTiers.${r.globalFundTier}`;
+                    const tierLabel = t(tierKey);
+                    const label =
+                      tierLabel !== tierKey
+                        ? tierLabel
+                        : `≥ R${r.globalFundTier} · ${rankName(r.rank, r.name, r.nameI18n)}`;
+                    return (
+                      <li
+                        key={r.rank}
+                        className="rounded-full border border-mq-border bg-mq-surface px-3 py-1.5 text-sm text-mq-text"
+                      >
+                        {label}
+                      </li>
+                    );
+                  })}
                 </ul>
                 <p className="text-sm text-mq-text-muted leading-relaxed">
                   {t("wallet.bonusGuide.globalNote")}
