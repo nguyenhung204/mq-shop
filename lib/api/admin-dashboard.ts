@@ -184,6 +184,10 @@ export interface CronJobInfo {
   description: string;
   cronExpression: string;
   schedule: string;
+  /** IANA zone for next-run (e.g. Asia/Taipei) */
+  timezone: string;
+  /** Display label (e.g. GMT+8) */
+  timezoneLabel: string;
   nextRunAt: string;
   nextRunInMs: number;
 }

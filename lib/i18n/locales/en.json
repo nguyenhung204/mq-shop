@@ -792,7 +792,7 @@
       "range90d": "90 days",
       "noChartData": "No data available.",
       "cronJobs": "Cron Jobs",
-      "cronJobsDesc": "Scheduled automated tasks",
+      "cronJobsDesc": "Scheduled tasks (wall clock GMT+8 / Asia/Taipei)",
       "nextRun": "Next run",
       "schedule": "Schedule",
       "noCronJobs": "No cron jobs found.",
@@ -807,11 +807,15 @@
         },
         "monthly-commission": {
           "name": "Monthly Commission",
-          "description": "Compute TEAM, LOYALTY, and GLOBAL fund commissions for the previous calendar month."
+          "description": "Compute TEAM, LOYALTY, and GLOBAL fund commissions for the previous GMT+8 calendar month."
         },
         "rank-reconcile": {
           "name": "Rank Reconcile",
           "description": "Scan all active users and promote eligible MLM ranks missed by realtime events."
+        },
+        "audit-cleanup": {
+          "name": "Audit Log Cleanup",
+          "description": "Purge audit_logs older than 90 days."
         }
       }
     },
@@ -1442,9 +1446,9 @@
       "rankName": "Name",
       "payoutHoldBanner": "Payout hold may keep new commissions as PENDING until COMMISSION_PAYOUT_HOLD is off and flush runs.",
       "runMonthlyTitle": "Run monthly commission",
-      "runMonthlyHint": "Pick a UTC month (half-open [monthStart, nextMonthStart)) with delivered volume, then run team, loyalty, and global. Requests send Idempotency-Key; re-runs are safe (batch lock + ledger). Prefer months marked “Run”.",
+      "runMonthlyHint": "Pick a GMT+8 month (Asia/Taipei; half-open [monthStart, nextMonthStart)) with delivered volume, then run team, loyalty, and global. Requests send Idempotency-Key; re-runs are safe (batch lock + ledger). Prefer months marked “Run”.",
       "runMonthly": "Run monthly commission",
-      "runMonthlyDone": "Monthly job finished for {yearMonth} (timezone {timezone}). UTC half-open period [{periodStart}, {periodEnd}). Batch: {batchId}. Status: {status}.",
+      "runMonthlyDone": "Monthly job finished for {yearMonth} (timezone {timezone}). GMT+8 half-open period [{periodStart}, {periodEnd}). Batch: {batchId}. Status: {status}.",
       "yearMonth": "Year-month",
       "yearMonthInvalid": "Use YYYY-MM (e.g. 2026-06).",
       "overviewEmpty": "No months with delivered orders in the last 12 months — add demo data or wait for volume.",

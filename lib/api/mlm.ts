@@ -283,14 +283,15 @@ export const adminMlmApi = {
     api.get<MonthlyCommissionOverview>("/admin/mlm/commissions/monthly-overview", {
       query: { monthsBack: query?.monthsBack ?? 12 },
     }),
-  /** Demo/ops: run TEAM / LOYALTY / GLOBAL for a period (default = previous UTC month). */
+  /** Demo/ops: run TEAM / LOYALTY / GLOBAL for a period (default = previous GMT+8 month). */
   runMonthly: (
     body: { yearMonth?: string } | undefined,
     idempotencyKey: string,
   ) =>
     api.post<{
       yearMonth: string;
-      timezone: "UTC";
+      timezone: "GMT+8";
+      ianaTimezone?: "Asia/Taipei";
       policyKey: string;
       periodStart: string;
       periodEnd: string;
@@ -310,7 +311,7 @@ export const adminMlmApi = {
       body ?? {},
     ),
 
-  /** Monthly commission audit report. Defaults to previous UTC month. */
+  /** Monthly commission audit report. Defaults to previous GMT+8 month. */
   commissionReport: (query?: { yearMonth?: string }) =>
     api.get<CommissionReport>("/admin/mlm/commissions/report", { query }),
 

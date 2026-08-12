@@ -587,7 +587,7 @@ export function useRunMonthlyCommissions() {
       toast.success(
         tt("toast.mlmMonthlyRan", {
           yearMonth: data?.yearMonth ?? "",
-          timezone: data?.timezone ?? "UTC",
+          timezone: data?.timezone ?? "GMT+8",
           periodStart,
           periodEnd,
           batchId: data?.batchId ?? "—",

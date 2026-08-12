@@ -792,7 +792,7 @@
       "range90d": "90 ngày",
       "noChartData": "Chưa có dữ liệu.",
       "cronJobs": "Cron Jobs",
-      "cronJobsDesc": "Tác vụ tự động theo lịch",
+      "cronJobsDesc": "Tác vụ lịch (giờ tường GMT+8 / Asia/Taipei)",
       "nextRun": "Lần chạy tiếp",
       "schedule": "Lịch",
       "noCronJobs": "Không có cron job nào.",
@@ -807,11 +807,15 @@
         },
         "monthly-commission": {
           "name": "Hoa hồng tháng",
-          "description": "Tính hoa hồng TEAM, LOYALTY và quỹ GLOBAL cho tháng trước."
+          "description": "Tính hoa hồng TEAM, LOYALTY và quỹ GLOBAL cho tháng lịch GMT+8 trước."
         },
         "rank-reconcile": {
           "name": "Đối soát xếp hạng",
           "description": "Quét tất cả người dùng đang hoạt động và thăng hạng MLM bị bỏ sót bởi sự kiện thời gian thực."
+        },
+        "audit-cleanup": {
+          "name": "Dọn audit log",
+          "description": "Xóa audit_logs cũ hơn 90 ngày."
         }
       }
     },
@@ -1442,9 +1446,9 @@
       "rankName": "Tên",
       "payoutHoldBanner": "Payout hold có thể giữ hoa hồng ở PENDING cho đến khi tắt COMMISSION_PAYOUT_HOLD và chạy flush.",
       "runMonthlyTitle": "Chạy thưởng tháng",
-      "runMonthlyHint": "Chọn tháng UTC (nửa-mở [đầu tháng, đầu tháng sau)) có đơn đã giao, rồi chạy thưởng team, loyalty và global. Request gửi Idempotency-Key; chạy lại cùng tháng an toàn (batch lock + ledger). Ưu tiên tháng ghi “Chạy”.",
+      "runMonthlyHint": "Chọn tháng GMT+8 (Asia/Taipei; nửa-mở [đầu tháng, đầu tháng sau)) có đơn đã giao, rồi chạy thưởng team, loyalty và global. Request gửi Idempotency-Key; chạy lại cùng tháng an toàn (batch lock + ledger). Ưu tiên tháng ghi “Chạy”.",
       "runMonthly": "Chạy thưởng tháng",
-      "runMonthlyDone": "Job tháng {yearMonth} xong (múi giờ {timezone}). Kỳ UTC nửa-mở [{periodStart}, {periodEnd}). Batch: {batchId}. Trạng thái: {status}.",
+      "runMonthlyDone": "Job tháng {yearMonth} xong (múi giờ {timezone}). Kỳ GMT+8 nửa-mở [{periodStart}, {periodEnd}). Batch: {batchId}. Trạng thái: {status}.",
       "yearMonth": "Năm-tháng",
       "yearMonthInvalid": "Dùng YYYY-MM (vd. 2026-06).",
       "overviewEmpty": "Không có tháng nào có đơn đã giao trong 12 tháng gần đây — thêm dữ liệu demo hoặc chờ có doanh số.",

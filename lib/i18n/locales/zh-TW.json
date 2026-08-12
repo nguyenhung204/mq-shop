@@ -792,7 +792,7 @@
       "range90d": "90 天",
       "noChartData": "尚無資料。",
       "cronJobs": "定時任務",
-      "cronJobsDesc": "排程自動執行任務",
+      "cronJobsDesc": "排程任務（牆上時間 GMT+8 / Asia/Taipei）",
       "nextRun": "下次執行",
       "schedule": "排程",
       "noCronJobs": "目前沒有定時任務。",
@@ -807,11 +807,15 @@
         },
         "monthly-commission": {
           "name": "月度佣金",
-          "description": "計算上個月的 TEAM、LOYALTY 及 GLOBAL 基金佣金。"
+          "description": "計算上一個 GMT+8 月的 TEAM、LOYALTY 及 GLOBAL 基金佣金。"
         },
         "rank-reconcile": {
           "name": "等級校正",
           "description": "掃描所有活躍使用者，補升被即時事件遺漏的 MLM 等級。"
+        },
+        "audit-cleanup": {
+          "name": "稽核日誌清理",
+          "description": "清除超過 90 天的 audit_logs。"
         }
       }
     },
@@ -1442,9 +1446,9 @@
       "rankName": "名稱",
       "payoutHoldBanner": "發放鎖定期間，新佣金可能維持 PENDING，需關閉 COMMISSION_PAYOUT_HOLD 並執行 flush。",
       "runMonthlyTitle": "執行月結獎金",
-      "runMonthlyHint": "選擇 UTC 月份（半開區間 [月初, 下月初)）且有已配達業績，再執行團隊、忠誠與全球獎金。請求會帶 Idempotency-Key；重跑同月安全（batch lock + ledger）。優先選擇標示「執行」的月份。",
+      "runMonthlyHint": "選擇 GMT+8 月份（Asia/Taipei；半開區間 [月初, 下月初)）且有已配達業績，再執行團隊、忠誠與全球獎金。請求會帶 Idempotency-Key；重跑同月安全（batch lock + ledger）。優先選擇標示「執行」的月份。",
       "runMonthly": "執行月結獎金",
-      "runMonthlyDone": "月結完成：{yearMonth}（時區 {timezone}）。UTC 半開區間 [{periodStart}, {periodEnd})。Batch：{batchId}。狀態：{status}。",
+      "runMonthlyDone": "月結完成：{yearMonth}（時區 {timezone}）。GMT+8 半開區間 [{periodStart}, {periodEnd})。Batch：{batchId}。狀態：{status}。",
       "yearMonth": "年月",
       "yearMonthInvalid": "請用 YYYY-MM（例如 2026-06）。",
       "overviewEmpty": "近 12 個月沒有已配達訂單的月份 — 請加入示範資料或等待有業績。",

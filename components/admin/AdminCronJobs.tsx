@@ -5,6 +5,7 @@ import { Clock, Timer } from "lucide-react";
 import type { CronJobInfo } from "@/lib/api/admin-dashboard";
 import { useAdminCronJobs } from "@/lib/queries/admin";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { toIntlLocale } from "@/lib/i18n/locale-format";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 // ---------------------------------------------------------------------------
@@ -14,10 +15,12 @@ import { Skeleton } from "@/components/ui/Skeleton";
 function formatCountdown(ms: number): string {
   if (ms <= 0) return "00:00:00";
   const totalSec = Math.floor(ms / 1000);
-  const h = Math.floor(totalSec / 3600);
+  const d = Math.floor(totalSec / 86400);
+  const h = Math.floor((totalSec % 86400) / 3600);
   const m = Math.floor((totalSec % 3600) / 60);
   const s = totalSec % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  const hms = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  return d > 0 ? `${d}d ${hms}` : hms;
 }
 
 function getUrgencyClass(ms: number): string {
@@ -25,6 +28,24 @@ function getUrgencyClass(ms: number): string {
   if (ms < 5 * 60_000) return "text-red-500 animate-pulse";
   if (ms < 30 * 60_000) return "text-orange-500";
   return "text-emerald-600";
+}
+
+function formatNextRunAt(
+  iso: string,
+  timeZone: string,
+  locale: string | null | undefined,
+): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  try {
+    return new Intl.DateTimeFormat(toIntlLocale(locale), {
+      timeZone: timeZone || "Asia/Taipei",
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(d);
+  } catch {
+    return d.toISOString();
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -35,16 +56,18 @@ function useCountdowns(jobs: CronJobInfo[], serverTime: string) {
   const [remaining, setRemaining] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    const serverNow = new Date(serverTime).getTime();
-    const clientNow = Date.now();
-    const drift = clientNow - serverNow;
+    // Align client tick to server clock: remaining = nextRunAt - serverNow_estimated
+    const serverAtFetch = new Date(serverTime).getTime();
+    const clientAtFetch = Date.now();
+    const skew = clientAtFetch - serverAtFetch; // client ahead of server ⇒ positive
 
     function computeAll() {
-      const now = Date.now();
+      const clientNow = Date.now();
+      const serverNowApprox = clientNow - skew;
       const map: Record<string, number> = {};
       for (const job of jobs) {
-        const nextRunClient = new Date(job.nextRunAt).getTime() + drift;
-        map[job.id] = Math.max(0, nextRunClient - now);
+        const next = new Date(job.nextRunAt).getTime();
+        map[job.id] = Math.max(0, next - serverNowApprox);
       }
       return map;
     }
@@ -121,7 +144,7 @@ function CronJobList({
   jobs: CronJobInfo[];
   serverTime: string;
 }) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const remaining = useCountdowns(jobs, serverTime);
 
   return (
@@ -132,6 +155,12 @@ function CronJobList({
         const descKey = `admin.overview.jobs.${job.id}.description`;
         const name = t(nameKey) !== nameKey ? t(nameKey) : job.name;
         const description = t(descKey) !== descKey ? t(descKey) : job.description;
+        const tzLabel = job.timezoneLabel || job.timezone || "GMT+8";
+        const nextLocal = formatNextRunAt(
+          job.nextRunAt,
+          job.timezone || "Asia/Taipei",
+          locale,
+        );
         return (
           <div
             key={job.id}
@@ -156,6 +185,9 @@ function CronJobList({
               </p>
               <p className="text-[11px] text-mq-text-muted mt-1">
                 {t("admin.overview.schedule")}: {job.schedule}
+              </p>
+              <p className="text-[11px] text-mq-text-muted mt-0.5">
+                {t("admin.overview.nextRun")}: {nextLocal} ({tzLabel})
               </p>
             </div>
           </div>

@@ -487,7 +487,7 @@ function MlmAdminInner() {
       setMonthlyOk(
         t("admin.mlm.runMonthlyDone", {
           yearMonth: res.yearMonth || yearMonth,
-          timezone: res.timezone || "UTC",
+          timezone: res.timezone || "GMT+8",
           periodStart,
           periodEnd,
           batchId: res.batchId || "—",
