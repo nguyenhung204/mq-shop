@@ -80,6 +80,8 @@ function orderErrorMessage(e: unknown, fallback: string): string {
         return tt("toast.checkoutIdempotencyMismatch");
       case "IDEMPOTENCY_REQUEST_IN_PROGRESS":
         return tt("toast.checkoutInProgress");
+      case "FX_RATE_CHANGED":
+        return tt("toast.fxRateChanged");
       default:
         break;
     }

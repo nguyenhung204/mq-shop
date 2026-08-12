@@ -22,6 +22,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 
 const STATUSES: Array<PayoutStatus | ""> = ["", "PENDING", "COMPLETED", "REJECTED"];
 
@@ -188,6 +189,8 @@ function PayoutsInner() {
           </button>
         }
       />
+
+      <LedgerTwdNote className="mb-2" />
 
       <div className="space-y-5">
         <div className="mq-card p-4 space-y-2">

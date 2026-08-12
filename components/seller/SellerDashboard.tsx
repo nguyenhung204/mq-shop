@@ -17,6 +17,7 @@ import type { DashboardSummary, LowStockItem } from "@/lib/api/seller-dashboard"
 import { useSellerDashboard } from "@/lib/queries/seller";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 import { getErrorMessage } from "@/lib/queries/utils";
 
 // ---------------------------------------------------------------------------
@@ -271,9 +272,12 @@ export function SellerDashboard() {
   return (
     <section className="space-y-4">
       <div className="flex items-baseline justify-between">
-        <h2 className="text-sm font-semibold text-mq-text">
-          {t("seller.dashboard.title")}
-        </h2>
+        <div>
+          <h2 className="text-sm font-semibold text-mq-text">
+            {t("seller.dashboard.title")}
+          </h2>
+          <LedgerTwdNote className="mt-1" />
+        </div>
         {generatedAt && (
           <p className="text-[11px] text-mq-text-muted">
             {t("seller.dashboard.updatedAt", {

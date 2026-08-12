@@ -11,6 +11,7 @@ import { translateStatus } from "@/lib/i18n/status";
 import { OrderListSkeleton } from "@/components/ui/Skeleton";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 
 const STATUSES: Array<SettlementStatus | ""> = [
   "",
@@ -48,6 +49,7 @@ function SellerSettlementsInner() {
 
   return (
     <div className="space-y-4">
+      <LedgerTwdNote />
       <p className="text-sm text-mq-text-muted">{t("seller.settlementsPage.intro")}</p>
 
       <label className="block text-sm max-w-xs">

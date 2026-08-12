@@ -11,6 +11,7 @@ import {
   useRejectSellerPayout,
 } from "@/lib/queries/finance";
 import { useAdminShops } from "@/lib/queries/admin";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
@@ -65,6 +66,8 @@ function PayoutDetailInner({ payoutId }: { payoutId: string }) {
           </Link>
         }
       />
+
+      <LedgerTwdNote className="mb-4" />
 
       <div className="space-y-5">
         {isLoading && <AdminCardListSkeleton count={3} />}

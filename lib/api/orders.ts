@@ -65,7 +65,7 @@ export type ShippingQuoteView = {
   shopId: string;
   itemCount: number;
   shippingFee: number;
-  currency: "USD";
+  currency: "TWD";
 };
 
 export type CheckoutRequest = {
@@ -73,6 +73,9 @@ export type CheckoutRequest = {
   shippingAddress: ShippingAddress;
   paymentMethod: PaymentMethod;
   note?: string;
+  displayCurrency?: string;
+  /** asOf from GET /fx/rates at checkout confirm */
+  fxAsOf?: string;
 };
 
 export type AdminCheckoutRequest = CheckoutRequest & {
@@ -154,7 +157,11 @@ export type OrderView = {
   subtotal: number;
   shippingFee: number;
   total: number;
-  currency: "USD";
+  currency: "TWD";
+  displayCurrency?: string | null;
+  fxRate?: number | null;
+  fxAsOf?: string | null;
+  displayTotal?: number | null;
   paymentMethod: PaymentMethod;
   /** Buyer-uploaded bank-transfer proof (OFF_PLATFORM / legacy COD). */
   paymentProofUrl?: string | null;

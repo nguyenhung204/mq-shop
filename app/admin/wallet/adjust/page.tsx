@@ -13,6 +13,7 @@ import {
   SearchableSelect,
   type SearchableSelectOption,
 } from "@/components/ui/SearchableSelect";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 
 function userLabel(u: AuthUser): string {
   const name = u.fullName?.trim();
@@ -94,6 +95,8 @@ function WalletAdjustInner() {
         title={t("admin.walletAdjust.title")}
         description={t("admin.walletAdjust.description")}
       />
+
+      <LedgerTwdNote className="mb-2" />
 
       <div className="space-y-4 max-w-lg">
         <p className="text-sm text-mq-text-muted">{t("admin.walletAdjust.hint")}</p>

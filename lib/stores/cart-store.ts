@@ -5,7 +5,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { toast } from "sonner";
 import { tt } from "@/lib/i18n/tt";
-import { Product, formatPrice } from "@/lib/data/products";
+import { Product } from "@/lib/data/products";
 
 export type CartLine = {
   variantId: string;
@@ -213,7 +213,7 @@ export function useCart() {
     shopId,
     shopIds,
     selectedShopIds,
-    formatSubtotal: () => formatPrice(subtotal),
+    formatSubtotal: () => String(subtotal),
     checkoutItems: () =>
       items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
     /** Returns only the selected lines mapped to checkout payload shape. */

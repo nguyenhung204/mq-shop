@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowLeft, Package, RotateCcw, ShoppingBag, User } from "lucide-react";
 import { useCsCustomerDetail, useCsCustomerOrders } from "@/lib/queries/cs";
 import { formatMoneyLocale } from "@/lib/i18n/locale-format";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -135,6 +136,7 @@ function CustomerDetailInner() {
             <h3 className="text-sm font-semibold text-mq-text">
               {t("admin.customersPage.allOrders")}
             </h3>
+            <LedgerTwdNote className="mt-1" />
           </div>
           {ordersLoading ? (
             <div className="p-4">

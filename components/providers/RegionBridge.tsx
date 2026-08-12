@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { RegionProvider } from "@/components/providers/RegionProvider";
+import { DisplayMoneyProvider } from "@/components/providers/DisplayMoneyProvider";
 import { RegionSelectionModal } from "@/components/i18n/RegionSelectionModal";
 
 /**
@@ -15,8 +16,10 @@ export function RegionBridge({ children }: { children: ReactNode }) {
 
   return (
     <RegionProvider isAuthenticated={isAuthenticated}>
-      {children}
-      <RegionSelectionModal />
+      <DisplayMoneyProvider>
+        {children}
+        <RegionSelectionModal />
+      </DisplayMoneyProvider>
     </RegionProvider>
   );
 }

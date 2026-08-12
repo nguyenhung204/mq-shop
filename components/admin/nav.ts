@@ -245,6 +245,14 @@ export const adminNavItems: AdminNavItem[] = [
     group: "commerce",
   },
   {
+    href: "/admin/fx-rates",
+    labelKey: "admin.nav.fxRates",
+    icon: Percent,
+    permissions: ["CONFIG_SYS"],
+    sa: true,
+    group: "system",
+  },
+  {
     href: "/admin/promotions",
     labelKey: "admin.nav.promotions",
     icon: BadgePercent,

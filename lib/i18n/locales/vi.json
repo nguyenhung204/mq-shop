@@ -11,11 +11,15 @@
     "terms": "Điều khoản dịch vụ",
     "privacy": "Chính sách bảo mật",
     "cookies": "Cài đặt cookie",
-    "copyright": "© 2024 MQ Shop. Bảo lưu mọi quyền."
+    "copyright": "© 2024 MQ Shop. Bảo lưu mọi quyền.",
+    "ledgerNote": "Giá hiển thị theo tiền tệ khu vực; thanh toán và sổ cái dùng TWD."
+  },
+  "ledger": {
+    "twdNote": "Mọi số tiền trên trang này là TWD (sổ cái)."
   },
   "topBar": {
-    "promo": "Miễn phí vận chuyển đơn từ NT$75 — Khám phá Bộ sưu tập MQ",
-    "promoShort": "Freeship từ NT$75"
+    "promo": "Khám phá bộ sưu tập MQ — phí ship hiện tại checkout (TWD)",
+    "promoShort": "Phí ship TWD tại checkout"
   },
   "nav": {
     "aboutUs": "Về chúng tôi",
@@ -165,8 +169,8 @@
     "shipsFrom": "Giao từ",
     "searchPlaceholder": "Tìm trong gian hàng…",
     "priceRange": "Khoảng giá (TWD)",
-    "minPrice": "Từ",
-    "maxPrice": "Đến",
+    "minPrice": "Từ (TWD)",
+    "maxPrice": "Đến (TWD)",
     "applyPrice": "Áp dụng giá",
     "clearFilters": "Xóa bộ lọc",
     "loading": "Đang tải gian hàng…",
@@ -190,7 +194,7 @@
     "quantity": "Số lượng",
     "shipping": "Vận chuyển",
     "free": "Miễn phí",
-    "freeShippingHint": "Mua thêm {amount} để được freeship",
+    "freeShippingHint": "Freeship khi có khuyến mãi miễn phí vận chuyển đang hiệu lực",
     "total": "Tổng cộng",
     "proceedCheckout": "Thanh toán",
     "continueShopping": "Tiếp tục mua sắm",
@@ -314,7 +318,10 @@
     "paymentOffPlatform": "Chuyển khoản trực tiếp cho seller",
     "paymentMock": "MOCK (PAID ngay — dev)",
     "paymentCod": "COD (PENDING đến khi trả)",
-    "paymentHint": "Chuyển khoản vào tài khoản seller, rồi tải ảnh chứng từ trên trang đơn hàng.",
+    "paymentHint": "Chuyển khoản vào tài khoản seller, rồi tải ảnh chứng từ trên trang đơn hàng. Thanh toán ghi sổ bằng TWD; giá hiển thị theo tiền tệ khu vực.",
+    "displayCurrencyNote": "Bạn thanh toán {amount} TWD. Hiển thị: {currency}.",
+    "fxRateChanged": "Tỷ giá đã được cập nhật. Vui lòng xem lại giá hiển thị và đặt hàng lại.",
+    "fxUnavailable": "Không thể tải tỷ giá. Thanh toán theo tiền khu vực tạm khóa. Thử lại sau hoặc chuyển sang Taiwan (TWD).",
     "paymentStubNote": "Thanh toán stub (COD → PENDING, MOCK → PAID). Không redirect PSP.",
     "paySellerDirectly": "Thanh toán trực tiếp cho seller qua chuyển khoản. Sau khi đặt hàng, tải lên chứng từ để seller xác nhận.",
     "sellerPaymentProfile": "Thông tin ngân hàng seller",
@@ -341,7 +348,7 @@
     "compare": "So sánh",
     "askUs": "Hỏi chúng tôi",
     "deliveryEstimate": "Giao hàng dự kiến: 3–5 ngày làm việc",
-    "freeShippingNote": "Freeship cho đơn từ NT$75",
+    "freeShippingNote": "Phí ship báo tại checkout (TWD); miễn phí khi có promo free-ship",
     "secureCheckout": "Thanh toán an toàn và bảo mật",
     "tabDescription": "Mô tả",
     "tabAdditional": "Thông tin thêm",
@@ -673,6 +680,7 @@
       "landingCost": "Chi phí landing",
       "finance": "Tài chính (cũ)",
       "financeConfigs": "Cấu hình phí",
+      "fxRates": "Tỷ giá FX",
       "promotions": "Khuyến mãi",
       "banners": "Banner",
       "marketing": "Marketing",
@@ -781,7 +789,7 @@
       "snapshot": {
         "ordersToday": "Đơn hôm nay",
         "ordersThisWeek": "Đơn tuần này",
-        "gmvDeliveredThisMonthUsd": "Doanh thu đã giao (tháng này)",
+        "gmvDeliveredThisMonth": "Doanh thu đã giao (tháng này)",
         "activeShops": "Shop đang hoạt động",
         "activeProducts": "Sản phẩm đang bán",
         "suspendedShops": "Shop bị đình chỉ"
@@ -876,9 +884,9 @@
       "name": "Tên",
       "type": "Loại",
       "discountPct": "Giảm %",
-      "discountAmt": "Số tiền giảm",
+      "discountAmt": "Số tiền giảm (TWD)",
       "voucherCode": "Mã voucher",
-      "budget": "Ngân sách (tuỳ chọn)",
+      "budget": "Ngân sách (TWD, tuỳ chọn)",
       "start": "Bắt đầu",
       "end": "Kết thúc",
       "skus": "SKU (cách nhau bằng dấu phẩy hoặc khoảng trắng)",
@@ -1200,12 +1208,28 @@
       "loadFailed": "Không tải được tỷ giá",
       "baseCurrency": "Tiền gốc: TWD (sổ cái). Tỷ giá TWD → quote."
     },
+    "fx": {
+      "title": "Tỷ giá hiển thị",
+      "subtitle": "Tỷ giá toàn hệ thống: 1 TWD = rate × quote. Chỉ ảnh hưởng hiển thị storefront.",
+      "ledgerNote": "Sổ cái, ví, hoa hồng và thanh toán vẫn là TWD.",
+      "asOf": "Hiệu lực",
+      "source": "Nguồn",
+      "formTitle": "Cập nhật tỷ giá",
+      "formHint": "Mỗi lần lưu thêm dòng mới (giữ lịch sử). TWD luôn = 1.",
+      "note": "Ghi chú (tuỳ chọn)",
+      "save": "Lưu tỷ giá",
+      "saved": "Đã cập nhật tỷ giá",
+      "saveFailed": "Không lưu được tỷ giá",
+      "loadFailed": "Không tải được tỷ giá",
+      "baseCurrency": "Tiền gốc: TWD (sổ cái). Tỷ giá TWD → quote."
+    },
     "productsPage": {
       "pendingReview": "Chờ duyệt",
       "empty": "Không có sản phẩm trong bộ lọc này.",
       "rejectTitle": "Từ chối sản phẩm",
       "stock": "tồn {n}",
-      "qty": "sl {n}"
+      "qty": "sl {n}",
+      "priceTwd": "Giá (TWD)"
     },
     "inventoryPage": {
       "slips": "Phiếu",
@@ -1290,7 +1314,8 @@
       "forcePaidTitle": "Đánh dấu đã thanh toán",
       "forcePaidDesc": "Xác nhận thanh toán cho “{name}”? Đơn sẽ chuyển PAID mà không cần seller xác nhận.",
       "escalatedPayments": "Thanh toán escalated",
-      "rejectPaymentDesc": "Từ chối chứng từ thanh toán của “{name}”? Buyer có thể tải chứng từ mới."
+      "rejectPaymentDesc": "Từ chối chứng từ thanh toán của “{name}”? Buyer có thể tải chứng từ mới.",
+      "ledgerCheckoutNote": "Đơn admin luôn tính và ghi sổ TWD. Không áp dụng FX hiển thị."
     },
     "rmaPage": {
       "pending": "Chờ duyệt",
@@ -1692,6 +1717,7 @@
     }
   },
   "seller": {
+    "priceTwdHint": "Nhập giá bằng Đài tệ (TWD). Khách xem theo khu vực sẽ thấy quy đổi (MYR/VND/SGD/USD) theo tỷ giá hệ thống.",
     "brand": "Kênh Seller",
     "warehouseBrand": "Kho",
     "applyBrand": "Mở gian hàng",
@@ -1766,9 +1792,9 @@
       "name": "Tên",
       "type": "Loại",
       "discountPct": "Giảm %",
-      "discountAmt": "Số tiền giảm",
+      "discountAmt": "Số tiền giảm (TWD)",
       "voucherCode": "Mã voucher",
-      "budget": "Ngân sách (tuỳ chọn)",
+      "budget": "Ngân sách (TWD, tuỳ chọn)",
       "start": "Bắt đầu",
       "end": "Kết thúc",
       "skus": "SKU (biến thể shop)",
@@ -1924,7 +1950,9 @@
       "title": "Tiêu đề",
       "description": "Mô tả",
       "sku": "SKU",
-      "sellPrice": "Giá bán",
+      "sellPrice": "Giá bán (TWD)",
+      "sellPricePlaceholder": "vd. 1990",
+      "priceTwd": "Giá (TWD)",
       "options": "Tuỳ chọn (tuỳ chọn), vd. size=M, color=black",
       "variants": "Biến thể (SKU + giá bán)",
       "gallery": "Ảnh gallery",
@@ -1971,7 +1999,9 @@
       "addSku": "Thêm SKU",
       "createSku": "Tạo SKU",
       "noSkus": "Chưa có SKU.",
-      "sellPrice": "Giá bán",
+      "sellPrice": "Giá bán (TWD)",
+      "sellPricePlaceholder": "vd. 1990",
+      "priceTwd": "Giá (TWD)",
       "available": "Khả dụng",
       "reserved": "Đang giữ",
       "reservedCount": "Đang giữ {count}",
@@ -2081,19 +2111,19 @@
     "itemsHeading": "Dòng hàng",
     "addLine": "Thêm dòng",
     "removeLine": "Xóa dòng",
-    "unitPrice": "Đơn giá",
+    "unitPrice": "Đơn giá (TWD)",
     "quantity": "SL",
-    "lineDiscount": "Giảm theo dòng",
-    "shippingFee": "Vận chuyển",
-    "vatAmount": "VAT",
-    "packagingFee": "Đóng gói",
-    "promoDiscount": "Giảm promo",
+    "lineDiscount": "Giảm theo dòng (TWD)",
+    "shippingFee": "Vận chuyển (TWD)",
+    "vatAmount": "VAT (TWD)",
+    "packagingFee": "Đóng gói (TWD)",
+    "promoDiscount": "Giảm promo (TWD)",
     "calculate": "Tính",
     "calculating": "Đang tính…",
     "formError": "Số phải ≥ 0. Số lượng phải là số nguyên ≥ 1.",
     "resultHeading": "Kết quả",
     "itemsSubtotal": "Tạm tính hàng",
-    "finalAmount": "Tổng cuối"
+    "finalAmount": "Tổng cuối (TWD)"
   },
   "transactions": {
     "title": "Giao dịch",
@@ -2523,6 +2553,7 @@
     "checkoutIdempotencyKeyRequired": "Thiếu khoá idempotency khi thanh toán. Vui lòng thử lại.",
     "checkoutIdempotencyMismatch": "Dữ liệu thanh toán đã thay đổi với khoá dùng lại. Vui lòng đặt đơn lại.",
     "checkoutInProgress": "Đơn hàng này đang được đặt. Vui lòng đợi trong chốc lát.",
+    "fxRateChanged": "Tỷ giá đã cập nhật. Vui lòng xem lại giá và thử lại.",
     "affiliateCopied": "Đã copy link affiliate",
     "invalidImageType": "Loại ảnh không hợp lệ. Dùng JPEG, PNG, WebP hoặc GIF.",
     "imageTooLarge": "Ảnh phải ≤ 5MB.",
@@ -2938,7 +2969,7 @@
     "q1": "Chính sách đổi trả như thế nào?",
     "a1": "Chúng tôi hỗ trợ đổi trả miễn phí trong 14 ngày kể từ ngày giao hàng. Sản phẩm phải chưa qua sử dụng và còn nguyên bao bì. Liên hệ đội hỗ trợ để bắt đầu quy trình đổi trả.",
     "q2": "Thời gian vận chuyển mất bao lâu?",
-    "a2": "Vận chuyển tiêu chuẩn mất 3–5 ngày làm việc. Giao hàng nhanh (1–2 ngày) có tại trang thanh toán. Miễn phí vận chuyển cho đơn từ NT$75.",
+    "a2": "Vận chuyển tiêu chuẩn thường 3–5 ngày làm việc. Phí ship báo tại checkout bằng TWD (stub hiện tại NT$5). Freeship khi có khuyến mãi miễn phí vận chuyển.",
     "q3": "Có giao hàng quốc tế không?",
     "a3": "Có, chúng tôi giao đến hơn 40 quốc gia. Phí vận chuyển quốc tế và thời gian giao hàng khác nhau tuỳ theo điểm đến.",
     "q4": "Làm sao để theo dõi đơn hàng?",
@@ -3003,7 +3034,7 @@
   "iconBoxPage": {
     "title": "Icon Box",
     "freeShipping": "Miễn phí vận chuyển",
-    "freeShippingDesc": "Miễn phí vận chuyển cho đơn từ NT$75. Giao hàng nhanh chóng và đáng tin cậy.",
+    "freeShippingDesc": "Phí ship báo tại checkout (TWD). Freeship khi có khuyến mãi miễn phí vận chuyển.",
     "securePayment": "Thanh toán an toàn",
     "securePaymentDesc": "Thông tin thanh toán được mã hoá và xử lý qua các cổng thanh toán uy tín.",
     "easyReturns": "Đổi trả dễ dàng",
@@ -3022,7 +3053,7 @@
     "detailsLabel": "Chi tiết",
     "detailsContent": "Chất liệu: Cao cấp. Nguồn gốc: Thu mua có đạo đức. Bảo hành: 1 năm từ nhà sản xuất cho sản phẩm công nghệ. Bảo quản: Xem trang sản phẩm.",
     "shippingLabel": "Vận chuyển",
-    "shippingContent": "Tiêu chuẩn: 3–5 ngày (NT$5.99). Nhanh: 1–2 ngày (NT$12.99). Miễn phí vận chuyển đơn từ NT$75. Phí quốc tế khác nhau.",
+    "shippingContent": "Tiêu chuẩn: thường 3–5 ngày. Phí từ shipping-quote (stub hiện tại NT$5, TWD). Freeship khi có promo free-ship. Phí quốc tế có thể khác.",
     "reviewsLabel": "Đánh giá",
     "reviewsContent": "Khách hàng yêu thích MQ. Đánh giá trung bình: 4.8/5 sao trên hơn 2,000 đánh giá. \"Trải nghiệm mua sắm online tuyệt vời nhất.\" — Người mua đã xác minh"
   },

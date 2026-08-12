@@ -96,7 +96,7 @@ export function RegionFlag({ regionId }: { regionId: GateRegionId }) {
     );
   }
 
-  // Singapore
+  // Singapore / fallback
   return (
     <CircleFrame>
       <svg viewBox="0 0 64 64" className="h-full w-full" preserveAspectRatio="xMidYMid slice">

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api/client";
 import type { ApiProduct, PageMeta } from "@/lib/api/types";
-import { parsePage } from "@/lib/api/utils";
+import { formatMoney, parsePage } from "@/lib/api/utils";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { InventoryShopPicker } from "@/components/admin/InventoryShopPicker";
@@ -72,7 +72,7 @@ function ProductsViewInner() {
                       </span>
                     </td>
                     <td className="p-3 tabular-nums">{p.stock ?? 0}</td>
-                    <td className="p-3 tabular-nums">{p.price ?? "—"}</td>
+                    <td className="p-3 tabular-nums">{p.price != null ? formatMoney(p.price) : "—"}</td>
                   </tr>
                 ))}
               </tbody>

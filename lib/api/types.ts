@@ -181,7 +181,6 @@ export type ApiProduct = {
   price?: number;
   minPrice?: number;
   maxPrice?: number;
-  priceUsd?: string | number;
   /** Derived: sum(variant.availableStock). */
   stock?: number;
   /** @deprecated prefer variants[].sku */

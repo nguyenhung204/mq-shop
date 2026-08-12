@@ -19,21 +19,15 @@ import {
 const REGION_STORAGE_KEY = "mq-region";
 
 export type RegionContextValue = {
-  /** Current selected region id (null = not yet selected) */
   region: GateRegionId | null;
-  /** ISO country code uppercase (null if no region) */
   regionCode: string | null;
-  /** True when user is authenticated but hasn't picked a shopping region yet */
+  /** Display currency for current region gate */
+  currency: string | null;
   needsRegionSelection: boolean;
-  /** Whether the region picker modal is open */
   regionPickerOpen: boolean;
-  /** Set the shopping region and persist it */
   setRegion: (id: GateRegionId) => void;
-  /** Open the region picker modal */
   showRegionPicker: () => void;
-  /** Close the region picker modal */
   hideRegionPicker: () => void;
-  /** Get the GateRegion object for the current region */
   currentRegion: (typeof GATE_REGIONS)[number] | null;
 };
 
@@ -50,7 +44,6 @@ export function RegionProvider({
   const [ready, setReady] = useState(false);
   const [regionPickerOpen, setRegionPickerOpen] = useState(false);
 
-  // Hydrate from localStorage
   useEffect(() => {
     const saved = localStorage.getItem(REGION_STORAGE_KEY);
     if (isValidRegion(saved)) {
@@ -58,7 +51,6 @@ export function RegionProvider({
     }
     setReady(true);
 
-    // Listen for region changes from LanguageGate (same-tab localStorage write)
     const onRegionSync = () => {
       const val = localStorage.getItem(REGION_STORAGE_KEY);
       if (isValidRegion(val)) {
@@ -69,7 +61,6 @@ export function RegionProvider({
     return () => window.removeEventListener("mq:region-sync", onRegionSync);
   }, []);
 
-  // Auto-show region picker after login if no region selected
   useEffect(() => {
     if (ready && isAuthenticated && region === null) {
       setRegionPickerOpen(true);
@@ -89,11 +80,13 @@ export function RegionProvider({
   const currentRegion = region
     ? GATE_REGIONS.find((r) => r.id === region) ?? null
     : null;
+  const currency = currentRegion?.currency ?? null;
 
   const value = useMemo<RegionContextValue>(
     () => ({
       region,
       regionCode,
+      currency,
       needsRegionSelection: ready && isAuthenticated && region === null,
       regionPickerOpen,
       setRegion,
@@ -104,6 +97,7 @@ export function RegionProvider({
     [
       region,
       regionCode,
+      currency,
       ready,
       isAuthenticated,
       regionPickerOpen,
@@ -124,3 +118,5 @@ export function useRegion() {
   if (!ctx) throw new Error("useRegion must be used within RegionProvider");
   return ctx;
 }
+
+export { REGION_TO_COUNTRY, isValidRegion };

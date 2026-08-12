@@ -2,7 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { AlertTriangle, ArrowRightLeft, Package, Truck } from "lucide-react";
-import { type GateRegionId, countryCodeToRegionId, countryCodeLabel } from "@/lib/i18n/regions";
+import {
+  type GateRegionId,
+  countryCodeToRegionId,
+  countryCodeLabel,
+} from "@/lib/i18n/regions";
 import { useRegion } from "@/components/providers/RegionProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import type { CartLine } from "@/lib/stores/cart-store";

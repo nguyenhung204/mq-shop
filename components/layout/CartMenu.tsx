@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
-import { formatPrice } from "@/lib/data/products";
+import { useDisplayMoney } from "@/components/providers/DisplayMoneyProvider";
 import { useCart } from "@/components/providers/CartProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { QuantityStepper } from "@/components/ui/QuantityStepper";
@@ -12,7 +12,8 @@ const PREVIEW_LIMIT = 5;
 
 export function CartMenu({ onNavigate }: { onNavigate?: () => void }) {
   const { t } = useLanguage();
-  const { items, itemCount, formatSubtotal, updateQuantity } = useCart();
+  const { items, itemCount, subtotal, updateQuantity } = useCart();
+  const { formatDisplay } = useDisplayMoney();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
@@ -85,7 +86,7 @@ export function CartMenu({ onNavigate }: { onNavigate?: () => void }) {
                 {itemCount} {itemCount === 1 ? t("cart.item") : t("cart.items")}
               </p>
               <p className="mq-cart-menu-subtotal">
-                {t("cart.subtotal")}: <strong>{formatSubtotal()}</strong>
+                {t("cart.subtotal")}: <strong>{formatDisplay(subtotal)}</strong>
               </p>
             </div>
             <ul className="mq-cart-menu-list">
@@ -110,7 +111,7 @@ export function CartMenu({ onNavigate }: { onNavigate?: () => void }) {
                       <span className="mq-cart-menu-sku">{item.sku}</span>
                     </span>
                     <span className="mq-cart-menu-price">
-                      {formatPrice(item.unitPrice * item.quantity)}
+                      {formatDisplay(item.unitPrice * item.quantity)}
                     </span>
                   </Link>
                   <div className="mq-cart-menu-qty">

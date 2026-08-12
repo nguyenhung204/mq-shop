@@ -13,6 +13,7 @@ import { translateStatus } from "@/lib/i18n/status";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 
 const STATUSES: Array<SettlementStatus | ""> = [
   "",
@@ -66,6 +67,7 @@ function SettlementsInner() {
         }
       />
       <div className="space-y-4">
+        <LedgerTwdNote />
         <div className="flex flex-wrap gap-3 items-end">
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-mq-text-muted text-xs">{t("admin.common.filterStatus")}</span>

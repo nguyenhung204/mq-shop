@@ -6,8 +6,10 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { formatPrice } from "@/lib/data/products";
+import { ApiError } from "@/lib/api/client";
 import { splitStoredPhone, toE164 } from "@/lib/data/phone";
+import { formatMoney } from "@/lib/api/utils";
+import { useDisplayMoney } from "@/components/providers/DisplayMoneyProvider";
 import { getErrorMessage } from "@/lib/queries/utils";
 import {
   checkoutSchema,
@@ -31,11 +33,15 @@ import {
   detectCrossBorderItems,
 } from "@/components/cart/CrossBorderWarningModal";
 import type { GateRegionId } from "@/lib/i18n/regions";
+import { regionIdToCountryCode } from "@/lib/i18n/regions";
 
 export function CheckoutContent() {
   const { t, locale } = useLanguage();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
-  const { regionCode, setRegion } = useRegion();
+  const { regionCode, setRegion, currency: regionCurrency } = useRegion();
+  const shipCountryDefault = regionCode ?? "VN";
+  const { formatDisplay, currency: displayCurrency, refetchRates, asOf: fxAsOf, isFallback, isRatesReady } =
+    useDisplayMoney();
   const {
     items,
     selectedItems,
@@ -57,7 +63,7 @@ export function CheckoutContent() {
   const [shippingFee, setShippingFee] = useState<number | null>(null);
   const [profileSeeded, setProfileSeeded] = useState(false);
   const [nationalPhone, setNationalPhone] = useState("");
-  const [dialCountry, setDialCountry] = useState("VN");
+  const [dialCountry, setDialCountry] = useState(shipCountryDefault);
   const [submitError, setSubmitError] = useState<unknown>(null);
   const [dialTouched, setDialTouched] = useState(false);
   const [crossBorderOpen, setCrossBorderOpen] = useState(false);
@@ -83,7 +89,7 @@ export function CheckoutContent() {
         city: "",
         district: "",
         postalCode: "",
-        country: "VN",
+        country: shipCountryDefault,
       },
       paymentMethod: "OFF_PLATFORM",
       note: "",
@@ -95,10 +101,16 @@ export function CheckoutContent() {
     return useCartStore.persist.onFinishHydration(() => setCartReady(true));
   }, []);
 
+  useEffect(() => {
+    if (profileSeeded || !regionCode) return;
+    setDialCountry(regionCode);
+    setValue("shippingAddress.country", regionCode);
+  }, [regionCode, profileSeeded, setValue]);
+
   // Prefill contact fields from the signed-in profile once.
   useEffect(() => {
     if (!user || profileSeeded) return;
-    const shipCountry = "VN";
+    const shipCountry = regionCode ?? "VN";
     const national = splitStoredPhone(user.phone, shipCountry);
     setDialCountry(shipCountry);
     setNationalPhone(national);
@@ -117,7 +129,7 @@ export function CheckoutContent() {
       note: "",
     });
     setProfileSeeded(true);
-  }, [user, profileSeeded, reset]);
+  }, [user, profileSeeded, reset, regionCode]);
 
   const address = watch("shippingAddress");
   const lineItems = useMemo(() => checkoutSelectedItems(), [selectedItems]);
@@ -141,6 +153,12 @@ export function CheckoutContent() {
   };
 
   useEffect(() => {
+    if (isAuthenticated && itemCount > 0) {
+      void refetchRates();
+    }
+  }, [isAuthenticated, itemCount, refetchRates]);
+
+  useEffect(() => {
     if (!isAuthenticated || lineItems.length === 0) return;
     if (!address?.fullName || !address.phone || !address.line1 || !address.city) {
       setShippingFee(null);
@@ -152,7 +170,7 @@ export function CheckoutContent() {
           items: lineItems,
           shippingAddress: {
             ...address,
-            country: address.country || "VN",
+            country: address.country || shipCountryDefault,
           },
         })
         .then((q) => setShippingFee(q.shippingFee))
@@ -217,8 +235,9 @@ export function CheckoutContent() {
         <Container className="py-16 text-center max-w-lg mx-auto">
           <h2 className="text-2xl text-mq-text mb-3">{t("checkout.thankYou")}</h2>
           <p className="text-mq-text-secondary mb-2">
-            {t("checkout.orderLabel")} <strong>{placed.displayName}</strong> · {formatPrice(placed.total)}{" "}
-            USD
+            {t("checkout.orderLabel")} <strong>{placed.displayName}</strong> ·{" "}
+            {formatDisplay(placed.total)}{" "}
+            <span className="text-mq-text-muted text-sm">({formatMoney(placed.total)})</span>
           </p>
           <p className="text-sm text-mq-text-muted mb-8">{t("checkout.paySellerDirectly")}</p>
           <div className="flex flex-wrap gap-3 justify-center">
@@ -235,6 +254,8 @@ export function CheckoutContent() {
   }
 
   const previewTotal = selectedSubtotal + (shippingFee ?? 0);
+  const fxCheckoutBlocked =
+    displayCurrency !== "TWD" && (isFallback || !isRatesReady || !fxAsOf.trim());
 
   const onSubmit = async (values: CheckoutFormValues) => {
     // Check for cross-border items before placing order
@@ -252,22 +273,36 @@ export function CheckoutContent() {
         dialCountry,
         nationalPhone || values.shippingAddress.phone,
       );
+      const currency = displayCurrency || regionCurrency || "TWD";
+      const freshFx = await refetchRates();
       const order = await checkout.mutateAsync({
         items: checkoutSelectedItems(),
         shippingAddress: {
           ...values.shippingAddress,
           phone,
-          country: values.shippingAddress.country || "VN",
+          country: values.shippingAddress.country || shipCountryDefault,
         },
         paymentMethod: values.paymentMethod,
         note: values.note || undefined,
+        displayCurrency: currency,
+        fxAsOf: currency !== "TWD" ? freshFx.asOf || undefined : undefined,
       });
       clearCart();
-      setPlaced({ id: order.id, code: order.code, displayName: order.displayName, total: order.total });
+      setPlaced({
+        id: order.id,
+        code: order.code,
+        displayName: order.displayName,
+        total: order.total,
+      });
       toast.success(t("checkout.orderPlaced"), {
         description: order.displayName,
       });
     } catch (err) {
+      if (err instanceof ApiError && err.code === "FX_RATE_CHANGED") {
+        await refetchRates();
+        toast.warning(t("checkout.fxRateChanged"));
+        return;
+      }
       setSubmitError(err);
     }
   };
@@ -280,15 +315,7 @@ export function CheckoutContent() {
   };
 
   const handleCrossBorderSwitchRegion = (regionId: GateRegionId) => {
-    // Map region id to country code for shipping address
-    const countryMap: Record<GateRegionId, string> = {
-      tw: "TW",
-      my: "MY",
-      vn: "VN",
-      sg: "SG",
-      us: "US",
-    };
-    const newCountry = countryMap[regionId] || "VN";
+    const newCountry = regionIdToCountryCode(regionId);
     setValue("shippingAddress.country", newCountry, { shouldValidate: true });
     setRegion(regionId);
     setCrossBorderOpen(false);
@@ -385,7 +412,7 @@ export function CheckoutContent() {
                     id="country"
                     {...register("shippingAddress.country", {
                       onChange: (e) => {
-                        const next = String(e.target.value || "VN").toUpperCase();
+                        const next = String(e.target.value || shipCountryDefault).toUpperCase();
                         // Soft-default dial to shipping country until user picks a dial manually.
                         if (!dialTouched) {
                           setDialCountry(next);
@@ -430,7 +457,7 @@ export function CheckoutContent() {
                 </div>
 
                 <AddressRegionFields
-                  countryCode={address?.country || "VN"}
+                  countryCode={address?.country || shipCountryDefault}
                   city={address?.city || ""}
                   district={address?.district || ""}
                   onCityChange={(next) =>
@@ -574,7 +601,7 @@ export function CheckoutContent() {
                         <p className="text-mq-text-muted text-xs">{item.sku}</p>
                       </div>
                       <span className="shrink-0 tabular-nums">
-                        {formatPrice(item.unitPrice * item.quantity)}
+                        {formatDisplay(item.unitPrice * item.quantity)}
                       </span>
                     </div>
                     <QuantityStepper
@@ -590,7 +617,7 @@ export function CheckoutContent() {
             <div className="space-y-2 text-sm border-t border-mq-border pt-4">
               <div className="flex justify-between">
                 <span>{t("cart.subtotal")}</span>
-                <span>{formatPrice(selectedSubtotal)}</span>
+                <span>{formatDisplay(selectedSubtotal)}</span>
               </div>
               <div className="flex justify-between text-mq-text-muted text-xs">
                 <span>{t("cart.quantity")}</span>
@@ -605,18 +632,31 @@ export function CheckoutContent() {
                     ? quote.isPending
                       ? "…"
                       : t("checkout.shippingPending")
-                    : formatPrice(shippingFee)}
+                    : formatDisplay(shippingFee)}
                 </span>
               </div>
               <div className="flex justify-between font-medium text-base pt-2">
                 <span>{t("cart.total")}</span>
-                <span>{formatPrice(previewTotal)}</span>
+                <span>{formatDisplay(previewTotal)}</span>
               </div>
+              {displayCurrency !== "TWD" ? (
+                <p className="text-xs text-mq-text-muted mt-2">
+                  {t("checkout.displayCurrencyNote", {
+                    currency: displayCurrency,
+                    amount: formatMoney(previewTotal),
+                  })}
+                </p>
+              ) : null}
+              {fxCheckoutBlocked ? (
+                <div className="mq-alert mq-alert-warn text-xs mt-3">
+                  {t("checkout.fxUnavailable")}
+                </div>
+              ) : null}
             </div>
             <button
               type="submit"
               className="mq-btn mq-btn-primary w-full mt-6"
-              disabled={isSubmitting || checkout.isPending}
+              disabled={isSubmitting || checkout.isPending || fxCheckoutBlocked}
             >
               {isSubmitting || checkout.isPending
                 ? t("checkout.placing")

@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Check, ChevronLeft, ChevronRight, Heart } from "lucide-react";
-import { Product, formatPrice } from "@/lib/data/products";
+import { Product } from "@/lib/data/products";
+import { useDisplayMoney } from "@/components/providers/DisplayMoneyProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useWishlist } from "@/components/providers/WishlistProvider";
 import { useFlyToCart } from "@/components/cart/FlyToCartProvider";
@@ -72,6 +73,7 @@ export function ProductPageContent({
   related: Product[];
 }) {
   const { t } = useLanguage();
+  const { formatDisplay } = useDisplayMoney();
   const { toggleItem, isInWishlist } = useWishlist();
   const { flyToWishlist } = useFlyToCart();
   const wished = isInWishlist(product.id);
@@ -239,10 +241,10 @@ export function ProductPageContent({
               </span>
             </button>
             <div className="flex items-center gap-3 mb-6">
-              <span className="text-2xl font-medium">{formatPrice(displayPrice)}</span>
+              <span className="text-2xl font-medium">{formatDisplay(displayPrice)}</span>
               {product.originalPrice && (
                 <span className="text-lg text-mq-text-muted line-through">
-                  {formatPrice(product.originalPrice)}
+                  {formatDisplay(product.originalPrice)}
                 </span>
               )}
             </div>

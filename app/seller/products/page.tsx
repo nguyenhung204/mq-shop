@@ -34,6 +34,7 @@ import { TableSkeleton } from "@/components/ui/Skeleton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { categoryLabel } from "@/lib/api/categoryLabel";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { productCountryOptions } from "@/lib/i18n/regions";
 
 type ProductVisibilityAction = { kind: "hide" | "unhide"; id: string };
 
@@ -124,12 +125,12 @@ function statusBadgeClass(status: ApiProduct["status"]): string {
 }
 
 function priceLabel(p: ApiProduct): string {
-  const min = p.minPrice ?? p.price ?? Number(p.priceUsd);
-  const max = p.maxPrice ?? p.price ?? Number(p.priceUsd);
+  const min = p.minPrice ?? p.price;
+  const max = p.maxPrice ?? p.price;
   if (min != null && max != null && !Number.isNaN(min) && !Number.isNaN(max) && min !== max) {
     return `${formatMoney(min)} – ${formatMoney(max)}`;
   }
-  return formatMoney(min ?? p.priceUsd);
+  return formatMoney(min);
 }
 
 function variantsOf(p: ApiProduct): ProductVariant[] {
@@ -189,7 +190,7 @@ function ProductsInner() {
     countryCodes: [shopCountryCode] as string[],
   });
   const [variants, setVariants] = useState<VariantDraft[]>([
-    { key: crypto.randomUUID(), sku: "", sellingPrice: "19.99", optionsText: "" },
+    { key: crypto.randomUUID(), sku: "", sellingPrice: "", optionsText: "" },
   ]);
   const [visibilityAction, setVisibilityAction] = useState<ProductVisibilityAction | null>(
     null,
@@ -204,7 +205,7 @@ function ProductsInner() {
     setNewFiles([]);
     setForm({ categoryId: "", title: "", description: "", attributesText: "", countryCodes: [shopCountryCode] });
     setVariants([
-      { key: crypto.randomUUID(), sku: "", sellingPrice: "19.99", optionsText: "" },
+      { key: crypto.randomUUID(), sku: "", sellingPrice: "", optionsText: "" },
     ]);
   };
 
@@ -216,7 +217,7 @@ function ProductsInner() {
     setNewFiles([]);
     setForm({ categoryId: "", title: "", description: "", attributesText: "", countryCodes: [shopCountryCode] });
     setVariants([
-      { key: crypto.randomUUID(), sku: "", sellingPrice: "19.99", optionsText: "" },
+      { key: crypto.randomUUID(), sku: "", sellingPrice: "", optionsText: "" },
     ]);
     setShowForm(true);
   };
@@ -236,7 +237,7 @@ function ProductsInner() {
       ),
       countryCodes: Array.isArray((p as any).countryCodes) && (p as any).countryCodes.length
         ? (p as any).countryCodes
-        : ["VN"],
+        : [shopCountryCode],
     });
     setVariants(draftFromVariants(variantsOf(p)));
     setShowForm(true);
@@ -627,12 +628,7 @@ function ProductsInner() {
               {t("seller.productsPage.countryCodesHint")}
             </p>
             <div className="flex flex-wrap gap-3">
-              {[
-                { code: "VN", label: "🇻🇳 Việt Nam" },
-                { code: "TW", label: "🇹🇼 台灣" },
-                { code: "MY", label: "🇲🇾 Malaysia" },
-                { code: "SG", label: "🇸🇬 Singapore" },
-              ].map(({ code, label }) => (
+              {productCountryOptions().map(({ code, label }) => (
                 <label
                   key={code}
                   className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors ${
@@ -679,6 +675,9 @@ function ProductsInner() {
               </Link>
               .
             </p>
+            <p className="text-xs text-mq-text-muted mb-3">
+              {t("seller.priceTwdHint")}
+            </p>
             <div className="space-y-4">
               {variants.map((v) => (
                 <div
@@ -700,7 +699,7 @@ function ProductsInner() {
                       type="number"
                       step="0.01"
                       min="0"
-                      placeholder={t("seller.productsPage.sellPrice")}
+                      placeholder={t("seller.productsPage.sellPricePlaceholder")}
                       value={v.sellingPrice}
                       onChange={(e) =>
                         updateVariantDraft(v.key, { sellingPrice: e.target.value })
@@ -888,7 +887,7 @@ function ProductsInner() {
                 <thead className="bg-mq-surface-subtle text-left">
                   <tr>
                     <th className="p-3">{t("seller.productsPage.title")}</th>
-                    <th className="p-3">{t("seller.productsPage.price")}</th>
+                    <th className="p-3">{t("seller.productsPage.priceTwd")}</th>
                     <th className="p-3">{t("seller.productsPage.stock")}</th>
                     <th className="p-3">{t("seller.productsPage.sku")}</th>
                     <th className="p-3">{t("seller.productsPage.status")}</th>

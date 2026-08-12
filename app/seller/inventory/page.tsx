@@ -485,6 +485,7 @@ function VariantsTab() {
 
       {showForm ? (
         <form className="mq-card p-4 grid sm:grid-cols-2 gap-3" onSubmit={(e) => void onSubmit(e)}>
+          <p className="text-xs text-mq-text-muted sm:col-span-2">{t("seller.priceTwdHint")}</p>
           <select
             className="mq-input sm:col-span-2"
             value={productId}
@@ -511,7 +512,8 @@ function VariantsTab() {
             type="number"
             min="0"
             step="0.01"
-            placeholder={t("seller.inventoryPage.sellPrice")}
+            aria-label={t("seller.inventoryPage.sellPrice")}
+            placeholder={t("seller.productsPage.sellPricePlaceholder")}
             value={sellingPrice}
             onChange={(e) => setSellingPrice(e.target.value)}
             required
