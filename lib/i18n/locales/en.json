@@ -669,7 +669,7 @@
       "rma": "RMA",
       "settlements": "Settlements",
       "transactions": "Transactions",
-      "payouts": "Seller payouts",
+      "payouts": "Shop reconciliation",
       "landingCost": "Landing cost",
       "finance": "Finance (legacy)",
       "financeConfigs": "Fee config",
@@ -770,7 +770,7 @@
         "ordersPending": "Orders needing action",
         "rmaPending": "Return requests (RMA)",
         "settlementsPendingReconcile": "Settlements to reconcile",
-        "sellerPayoutsPending": "Seller payouts pending",
+        "sellerPayoutsPending": "Shop reconciliations pending",
         "walletPayoutsPending": "Wallet withdrawals pending",
         "promotionsPending": "Promotions pending",
         "dsarSubmitted": "Data erasure requests submitted",
@@ -795,16 +795,16 @@
         "audit": "Trace admin actions across the platform",
         "orders": "Cross-shop inbox, cancel, create on behalf of buyers",
         "rma": "Decide return and refund requests",
-        "settlements": "Track settlements from reconcile through payout",
+        "settlements": "Track settlements: pending reconcile → reconciled",
         "transactions": "Browse ORDER and PAYOUT rows; export reports",
-        "payouts": "Create and approve seller payout slips",
+        "payouts": "Create and mark shop reconciliation slips (no wallet credit)",
         "landingCost": "Calculate landing cost from line items and fees",
         "financeConfigs": "Dual-control fee config + display FX rates (SA)",
         "finance": "Legacy wallet withdraws, batches, and gateway reviews",
         "promotions": "Approve seller campaigns and create platform promos",
         "banners": "Homepage and promo CMS creatives",
         "marketing": "Upload seller marketing kits and assets",
-        "walletPayouts": "Approve personal wallet withdraw requests (≠ seller payouts)",
+        "walletPayouts": "Approve personal wallet withdrawals (≠ shop reconciliation)",
         "walletAdjust": "Credit or debit personal wallet balance (ADJUST_POINTS)",
         "mlm": "Manage ranks, referrers, and referral rates; look up distribution networks"
       },
@@ -1083,7 +1083,7 @@
     },
     "settlements": {
       "title": "Settlements",
-      "description": "Track shop settlements from pending reconcile through payout."
+      "description": "Track shop settlements from pending reconcile through reconciled."
     },
     "landingCost": {
       "title": "Landing cost",
@@ -1094,19 +1094,19 @@
       "description": "Browse ORDER and PAYOUT rows, then export CSV/XLSX reports."
     },
     "payouts": {
-      "title": "Seller payouts",
-      "description": "Bundle pending settlements into a payout slip, then approve (stub gateway) or reject.",
+      "title": "Shop reconciliation",
+      "description": "Bundle delivered-order settlements for a shop period. Approve = accounting only — buyers already paid sellers off-platform; no wallet credit.",
       "activeFee": "Active platform fee",
-      "noActiveFee": "No ACTIVE fee config — create payouts will fail until one is approved.",
+      "noActiveFee": "No ACTIVE fee config — creating reconciliation slips will fail until one is approved.",
       "openFeeConfig": "Open fee config",
       "platformFee": "Platform fee",
       "commission": "Global Fund (% of GMV)",
-      "createNew": "Create payout",
-      "createHeading": "Create seller payout",
-      "createHint": "Select a shop and period. Settlements with status PENDING_RECONCILE in that window are bundled.",
+      "createNew": "Create slip",
+      "createHeading": "Create shop reconciliation slip",
+      "createHint": "Select a shop and period. Settlements PENDING_RECONCILE in that window are bundled for review.",
       "formError": "Shop and period are required.",
       "periodInvalid": "Period end must be on or after period start.",
-      "needActiveConfig": "An ACTIVE finance config is required before creating a payout.",
+      "needActiveConfig": "An ACTIVE finance config is required before creating a reconciliation slip.",
       "noSettlements": "No pending settlements in this period for the selected shop.",
       "selectShop": "Select a shop",
       "periodStart": "Period start",
@@ -1119,20 +1119,20 @@
       "net": "Net",
       "estimatedFee": "Estimated fee ({pct}%): {amount}",
       "shippingAfterCreate": "Shipping and final net are calculated by the server on create.",
-      "createBtn": "Create payout slip",
+      "createBtn": "Create reconciliation slip",
       "creating": "Creating…",
-      "empty": "No payouts in this filter.",
+      "empty": "No reconciliation slips in this filter.",
       "gatewayRef": "Gateway ref",
       "rejectionReason": "Rejected: {reason}",
-      "rejectTitle": "Reject seller payout",
-      "rejectDesc": "Reject payout with net {net}. Settlements return to PENDING_RECONCILE.",
-      "rejectBtn": "Reject payout",
-      "detailTitle": "Payout detail",
-      "detailDescription": "Net breakdown and settlement line items.",
-      "backToList": "Back to payouts",
+      "rejectTitle": "Reject shop reconciliation",
+      "rejectDesc": "Reject slip with net {net}. Settlements return to PENDING_RECONCILE.",
+      "rejectBtn": "Reject slip",
+      "detailTitle": "Reconciliation detail",
+      "detailDescription": "Fee breakdown and settlement line items. Approve records books only — no money transfer in app.",
+      "backToList": "Back to reconciliations",
       "completedAt": "Completed {when}",
       "itemsTitle": "Line items ({count})",
-      "itemsEmpty": "No line items on this payout.",
+      "itemsEmpty": "No line items on this slip.",
       "settlementId": "Settlement",
       "status": {
         "PENDING": "Pending",
@@ -1142,7 +1142,7 @@
     },
     "finance": {
       "title": "Finance (legacy)",
-      "description": "Wallet withdraws, payout batches, and gateway reviews. Prefer Seller payouts for 007."
+      "description": "Legacy wallet/gateway tools. Prefer Shop reconciliation for order fee books."
     },
     "financeConfigs": {
       "title": "Fee configuration",
@@ -1327,8 +1327,8 @@
       "invalid": "Invalid",
       "createBatch": "Create batch",
       "markCompletedHint": "Mark completed = paid outside the system. No bank API.",
-      "legacyHint": "This page is legacy (wallet / batches / gateway review). Seller payout slips live under Seller payouts.",
-      "openSellerPayouts": "Open seller payouts"
+      "legacyHint": "This page is legacy (wallet / batches / gateway review). Shop reconciliation slips live under Shop reconciliation.",
+      "openSellerPayouts": "Open shop reconciliation"
     },
     "categoriesPage": {
       "create": "Create category",
@@ -1377,17 +1377,17 @@
     "settlementsPage": {
       "empty": "No settlements for this filter.",
       "pendingTotal": "Pending reconcile total",
-      "openPayouts": "Seller payouts",
+      "openPayouts": "Shop reconciliation",
       "status": {
         "PENDING_RECONCILE": "Pending reconcile",
-        "INCLUDED_IN_PAYOUT": "Included in payout",
-        "PAID_OUT": "Paid out"
+        "INCLUDED_IN_PAYOUT": "On reconciliation slip",
+        "PAID_OUT": "Reconciled"
       }
     },
     "walletPayouts": {
       "title": "Wallet payouts",
       "description": "Personal withdraw queue — approve, reject, or process stub bank payouts.",
-      "hint": "Not the same as Seller payouts under Finance. These freeze/release the user wallet.",
+      "hint": "Not the same as Shop reconciliation under Finance. These freeze/release the user points wallet.",
       "userId": "User ID",
       "search": "Search",
       "searchPlaceholder": "Search by name or email…",
@@ -2049,11 +2049,11 @@
     "settlementsPage": {
       "pendingTotal": "Pending reconcile total",
       "empty": "No settlements for this filter.",
-      "intro": "Revenue from delivered orders — pending, in a payout slip, or paid out.",
+      "intro": "Revenue from delivered orders — pending reconcile, on a reconciliation slip, or marked reconciled.",
       "status": {
         "PENDING_RECONCILE": "Pending reconcile",
-        "INCLUDED_IN_PAYOUT": "Included in payout",
-        "PAID_OUT": "Paid out"
+        "INCLUDED_IN_PAYOUT": "On reconciliation slip",
+        "PAID_OUT": "Reconciled"
       }
     },
     "rmaPage": {
@@ -2114,7 +2114,7 @@
     "types": {
       "ALL": "All types",
       "ORDER": "Orders",
-      "PAYOUT": "Payouts"
+      "PAYOUT": "Shop reconcile"
     }
   },
   "wallet": {
@@ -2171,7 +2171,7 @@
       "GLOBAL": "Global",
       "LOYALTY": "Loyalty",
       "ADJUST": "Adjustment",
-      "SELLER_PAYOUT": "Seller Payout"
+      "SELLER_PAYOUT": "Shop reconciliation"
     },
     "pinRequiredBanner": "Set your wallet PIN before continuing.",
     "p2pEmail": "Recipient email",
@@ -2409,8 +2409,8 @@
     "productApproved": "Product approved",
     "productRejected": "Product rejected",
     "payoutBatchCreated": "Payout batch created",
-    "payoutApproved": "Payout approved",
-    "payoutRejected": "Payout rejected",
+    "payoutApproved": "Shop reconciliation recorded (no wallet credit)",
+    "payoutRejected": "Shop reconciliation rejected",
     "payoutCompleted": "Payout marked completed",
     "withdrawApproved": "Withdraw approved",
     "withdrawRejected": "Withdraw rejected",
@@ -2533,16 +2533,16 @@
     "financeConfigApproveFailed": "Failed to approve finance config",
     "financeConfigRejected": "Finance config rejected",
     "financeConfigRejectFailed": "Failed to reject finance config",
-    "payoutNotFound": "Payout not found.",
-    "payoutNotPending": "Only pending payouts can be approved or rejected.",
+    "payoutNotFound": "Reconciliation slip not found.",
+    "payoutNotPending": "Only pending reconciliation slips can be approved or rejected.",
     "payoutNoSettlements": "No pending settlements in this period for the shop.",
     "shopNotFound": "Shop not found.",
     "shopAlreadyExists": "You already have a shop and cannot submit another application.",
-    "payoutCreated": "Seller payout created",
-    "payoutCreateFailed": "Failed to create payout",
-    "payoutApproveFailed": "Failed to approve payout",
-    "payoutRejectFailed": "Failed to reject payout",
-    "payoutApprovedWithRef": "Payout approved — gateway ref {ref}",
+    "payoutCreated": "Shop reconciliation slip created",
+    "payoutCreateFailed": "Failed to create reconciliation slip",
+    "payoutApproveFailed": "Failed to approve reconciliation",
+    "payoutRejectFailed": "Failed to reject reconciliation",
+    "payoutApprovedWithRef": "Reconciliation recorded — ref {ref}",
     "landingCostFailed": "Failed to calculate landing cost",
     "financeExportReady": "Export ready ({count} rows)",
     "financeExportFailed": "Failed to export finance report",
@@ -2585,7 +2585,7 @@
     "idempotencyKeyReuseMismatch": "Request data changed with a reused key. Please try again.",
     "idempotencyRequestInProgress": "This request is already in progress. Please wait a moment.",
     "validationError": "Invalid data. Please check the fields and try again.",
-    "payoutShopNoBankInfo": "Shop has not set up bank info. Please ask the seller to update before creating a payout.",
+    "payoutShopNoBankInfo": "Shop has no bank info yet. Ask the seller to update STK for buyer transfers (not for app payout).",
     "promotionRuleRankNotFound": "Rank does not exist in configuration. Create the rank first.",
     "promotionRuleInvalidRankOrder": "Target rank must be greater than source rank.",
     "promotionRuleDuplicate": "An active rule already exists for this rank. Deactivate or delete it first.",
@@ -2704,8 +2704,8 @@
     },
     "settlement": {
       "PENDING_RECONCILE": "Pending reconcile",
-      "INCLUDED_IN_PAYOUT": "Included in payout",
-      "PAID_OUT": "Paid out"
+      "INCLUDED_IN_PAYOUT": "On reconciliation slip",
+      "PAID_OUT": "Reconciled"
     },
     "review": {
       "VISIBLE": "Visible",

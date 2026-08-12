@@ -52,6 +52,7 @@ export const financeKeys = {
       params.startDate ?? "",
       params.endDate ?? "",
       params.type ?? "ALL",
+      params.view ?? "",
       params.shopId ?? "",
       params.page ?? 1,
       params.pageSize ?? 20,

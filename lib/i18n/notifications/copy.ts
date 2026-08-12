@@ -58,19 +58,19 @@ export const NOTIFICATION_TYPE_COPY: Record<
     },
     SHOP_BANK_INFO_SETUP: {
       title: "Set up your bank account",
-      body: "Your shop was approved. Please add bank info to receive payouts.",
+      body: "Your shop was approved. Please add bank info so buyers can transfer payment off-platform.",
     },
     SHOP_BANK_INFO_REMINDER: {
-      title: "Bank info required for payouts",
-      body: "An order was delivered but your shop has no bank info. Update now to receive payouts.",
+      title: "Bank info required for buyer transfers",
+      body: "An order was delivered but your shop has no bank info. Update now so buyers can pay you off-platform.",
     },
     SELLER_PAYOUT_COMPLETED: {
-      title: "Payout reconciled",
-      body: "Seller payout {amount} has been completed in accounting. No wallet credit was created.",
+      title: "Shop reconciliation recorded",
+      body: "Shop reconciliation {amount} was marked complete in accounting. No wallet credit was created.",
     },
     SELLER_PAYOUT_REJECTED: {
-      title: "Payout rejected",
-      body: "Your payout of {amount} was rejected.{reason}",
+      title: "Shop reconciliation rejected",
+      body: "Your shop reconciliation of {amount} was rejected.{reason}",
     },
     PRODUCT_APPROVED: {
       title: "Product approved",
@@ -344,19 +344,19 @@ export const NOTIFICATION_TYPE_COPY: Record<
     },
     SHOP_BANK_INFO_SETUP: {
       title: "Thiết lập tài khoản ngân hàng",
-      body: "Shop đã được duyệt. Vui lòng thêm thông tin ngân hàng để nhận thanh toán.",
+      body: "Shop đã được duyệt. Vui lòng thêm STK để buyer chuyển khoản ngoài app.",
     },
     SHOP_BANK_INFO_REMINDER: {
-      title: "Cần cập nhật thông tin ngân hàng để nhận chi trả",
-      body: "Đơn hàng đã giao nhưng shop chưa có thông tin ngân hàng. Cập nhật ngay để nhận thanh toán.",
+      title: "Cần cập nhật STK để buyer chuyển khoản",
+      body: "Đơn hàng đã giao nhưng shop chưa có thông tin ngân hàng. Cập nhật ngay để buyer thanh toán ngoài app.",
     },
     SELLER_PAYOUT_COMPLETED: {
-      title: "Đã đối soát chi trả",
-      body: "Khoản chi trả seller {amount} đã hoàn tất ở kế toán. Không ghi có vào ví.",
+      title: "Đã ghi đối soát shop",
+      body: "Phiếu đối soát shop {amount} đã hoàn tất ở kế toán. Không ghi có vào ví.",
     },
     SELLER_PAYOUT_REJECTED: {
-      title: "Chi trả bị từ chối",
-      body: "Khoản chi trả {amount} đã bị từ chối.{reason}",
+      title: "Đối soát shop bị từ chối",
+      body: "Phiếu đối soát shop {amount} đã bị từ chối.{reason}",
     },
     PRODUCT_APPROVED: {
       title: "Sản phẩm đã duyệt",
@@ -630,19 +630,19 @@ export const NOTIFICATION_TYPE_COPY: Record<
     },
     SHOP_BANK_INFO_SETUP: {
       title: "請設定銀行帳戶",
-      body: "商店已核准。請新增銀行資料以接收撥款。",
+      body: "商店已核准。請新增銀行資料供買家站外轉帳。",
     },
     SHOP_BANK_INFO_REMINDER: {
-      title: "撥款需要銀行資料",
-      body: "訂單已送達但商店尚無銀行資料。請立即更新以接收撥款。",
+      title: "買家轉帳需要銀行資料",
+      body: "訂單已送達但商店尚無銀行資料。請立即更新供買家站外付款。",
     },
     SELLER_PAYOUT_COMPLETED: {
-      title: "撥款已對帳",
-      body: "賣家撥款 {amount} 已於會計完成處理，未入帳至錢包。",
+      title: "商店對帳已記錄",
+      body: "商店對帳 {amount} 已於會計完成標記，未入帳至錢包。",
     },
     SELLER_PAYOUT_REJECTED: {
-      title: "撥款被拒絕",
-      body: "您的撥款 {amount} 已被拒絕。{reason}",
+      title: "商店對帳被拒絕",
+      body: "您的商店對帳 {amount} 已被拒絕。{reason}",
     },
     PRODUCT_APPROVED: {
       title: "商品已核准",

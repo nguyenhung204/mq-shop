@@ -138,6 +138,8 @@ export type ListFinanceTransactionsParams = {
   startDate?: string;
   endDate?: string;
   type?: FinanceTransactionType;
+  /** Dual-role: buyer purchases vs shop sales. */
+  view?: "buyer" | "shop";
   shopId?: string;
   page?: number;
   pageSize?: number;

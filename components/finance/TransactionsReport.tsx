@@ -32,6 +32,16 @@ function monthBounds(): { start: string; end: string } {
   };
 }
 
+/** Buyer history defaults to last 12 months so older orders still appear. */
+function buyerDefaultBounds(): { start: string; end: string } {
+  const end = new Date();
+  const start = new Date(end);
+  start.setFullYear(start.getFullYear() - 1);
+  const fmt = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  return { start: fmt(start), end: fmt(end) };
+}
+
 function toPeriodStart(date: string): string {
   return new Date(`${date}T00:00:00.000`).toISOString();
 }
@@ -60,6 +70,8 @@ type TransactionsReportProps = {
    * (Buyer has VIEW_TRANSACT but not EXPORT_REPORT).
    */
   buyerMode?: boolean;
+  /** Force BE inbox scope for dual-role users. */
+  view?: "buyer" | "shop";
   /** Link payout rows to admin payout detail. */
   payoutDetailHref?: (id: string) => string;
 };
@@ -67,6 +79,7 @@ type TransactionsReportProps = {
 export function TransactionsReport({
   showShopFilter = false,
   buyerMode = false,
+  view,
   payoutDetailHref,
 }: TransactionsReportProps) {
   const { t } = useLanguage();
@@ -82,11 +95,14 @@ export function TransactionsReport({
   const typeOptions: FinanceTransactionType[] = buyerMode
     ? ["ALL", "ORDER"]
     : TYPES;
-  const bounds = monthBounds();
+  const bounds = buyerMode ? buyerDefaultBounds() : monthBounds();
+  const scopeView = view ?? (buyerMode ? "buyer" : undefined);
 
   const [startDate, setStartDate] = useState(bounds.start);
   const [endDate, setEndDate] = useState(bounds.end);
-  const [type, setType] = useState<FinanceTransactionType>("ALL");
+  const [type, setType] = useState<FinanceTransactionType>(
+    buyerMode ? "ORDER" : "ALL",
+  );
   const [shopId, setShopId] = useState("");
   const [format, setFormat] = useState<FinanceExportFormat>("CSV");
   const [page, setPage] = useState(1);
@@ -112,6 +128,7 @@ export function TransactionsReport({
     startDate: startIso,
     endDate: endIso,
     type,
+    view: scopeView,
     shopId: showShopFilter && shopId ? shopId : undefined,
     page,
     pageSize: 20,

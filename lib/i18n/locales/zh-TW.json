@@ -669,7 +669,7 @@
       "rma": "RMA",
       "settlements": "結算",
       "transactions": "交易",
-      "payouts": "賣家撥款",
+      "payouts": "商店對帳",
       "landingCost": "落地成本",
       "finance": "財務（舊版）",
       "financeConfigs": "費用設定",
@@ -770,7 +770,7 @@
         "ordersPending": "待處理訂單",
         "rmaPending": "退換貨申請（RMA）",
         "settlementsPendingReconcile": "待對帳結算",
-        "sellerPayoutsPending": "待審賣家撥款",
+        "sellerPayoutsPending": "待審商店對帳",
         "walletPayoutsPending": "待審錢包提領",
         "promotionsPending": "待審促銷",
         "dsarSubmitted": "資料刪除請求已提交",
@@ -795,16 +795,16 @@
         "audit": "追蹤後台操作紀錄",
         "orders": "跨店訂單匣、取消、代客下單",
         "rma": "處理退換貨／退款申請",
-        "settlements": "追蹤結算：待對帳到已撥款",
+        "settlements": "追蹤結算：待對帳 → 已對帳",
         "transactions": "瀏覽 ORDER／PAYOUT；匯出報表",
-        "payouts": "建立並核准賣家撥款單",
+        "payouts": "建立並標記商店對帳單（不入帳錢包）",
         "landingCost": "依行項目與費用計算落地成本",
         "financeConfigs": "雙重控管費用設定 + 顯示匯率 FX（SA）",
         "finance": "舊版：錢包提領、批次與金流審核",
         "promotions": "審核賣家活動並建立平台促銷",
         "banners": "首頁／促銷 CMS 橫幅",
         "marketing": "上傳賣家行銷素材包",
-        "walletPayouts": "核准個人錢包提領（≠ 賣家撥款）",
+        "walletPayouts": "核准個人錢包點數提領（≠ 商店對帳）",
         "walletAdjust": "加減個人錢包餘額（ADJUST_POINTS）",
         "mlm": "管理等級、推薦人與推薦比率；查詢分銷網絡"
       },
@@ -1083,7 +1083,7 @@
     },
     "settlements": {
       "title": "結算",
-      "description": "追蹤商店結算：待對帳、撥款中、已撥款。"
+      "description": "追蹤商店結算：待對帳到已對帳。"
     },
     "landingCost": {
       "title": "落地成本",
@@ -1094,19 +1094,19 @@
       "description": "瀏覽 ORDER 與 PAYOUT，並匯出 CSV/XLSX 報表。"
     },
     "payouts": {
-      "title": "賣家撥款",
-      "description": "將待對帳結算彙總為撥款單，再核准（stub gateway）或拒絕。",
+      "title": "商店對帳",
+      "description": "依商店／期間彙總已出貨結算。核准＝僅記帳 — 買家已在站外付款給賣家；不入帳錢包。",
       "activeFee": "啟用中的平台費",
-      "noActiveFee": "尚無 ACTIVE 費用設定 — 核准前建立撥款會失敗。",
+      "noActiveFee": "尚無 ACTIVE 費用設定 — 核准前建立對帳單會失敗。",
       "openFeeConfig": "開啟費用設定",
       "platformFee": "平台費",
       "commission": "全球基金（佔 GMV %）",
-      "createNew": "建立撥款",
-      "createHeading": "建立賣家撥款",
-      "createHint": "選擇商店與期間。該期間內 PENDING_RECONCILE 的結算會被彙總。",
+      "createNew": "建立對帳單",
+      "createHeading": "建立商店對帳單",
+      "createHint": "選擇商店與期間。該期間內 PENDING_RECONCILE 的結算會被彙總以供對帳。",
       "formError": "必須選擇商店與期間。",
       "periodInvalid": "結束日必須晚於或等於開始日。",
-      "needActiveConfig": "建立撥款前需要 ACTIVE 財務設定。",
+      "needActiveConfig": "建立對帳單前需要 ACTIVE 財務設定。",
       "noSettlements": "此商店在該期間沒有待對帳結算。",
       "periodStart": "期間開始",
       "selectShop": "選擇商店",
@@ -1119,20 +1119,20 @@
       "net": "淨額",
       "estimatedFee": "預估費用（{pct}%）：{amount}",
       "shippingAfterCreate": "運費與最終淨額由伺服器在建立時計算。",
-      "createBtn": "建立撥款單",
+      "createBtn": "建立對帳單",
       "creating": "建立中…",
-      "empty": "此篩選條件無撥款單。",
+      "empty": "此篩選條件無對帳單。",
       "gatewayRef": "Gateway ref",
       "rejectionReason": "已拒絕：{reason}",
-      "rejectTitle": "拒絕賣家撥款",
-      "rejectDesc": "拒絕淨額 {net} 的撥款。結算將回到 PENDING_RECONCILE。",
-      "rejectBtn": "拒絕撥款",
-      "detailTitle": "撥款詳情",
-      "detailDescription": "淨額明細與結算行項目。",
-      "backToList": "返回列表",
+      "rejectTitle": "拒絕商店對帳",
+      "rejectDesc": "拒絕淨額 {net} 的對帳單。結算將回到 PENDING_RECONCILE。",
+      "rejectBtn": "拒絕對帳單",
+      "detailTitle": "對帳詳情",
+      "detailDescription": "費用明細與結算行。核准僅記帳 — App 內不轉帳。",
+      "backToList": "返回對帳列表",
       "completedAt": "完成於 {when}",
       "itemsTitle": "行項目（{count}）",
-      "itemsEmpty": "此撥款沒有行項目。",
+      "itemsEmpty": "此對帳單沒有行項目。",
       "settlementId": "結算",
       "status": {
         "PENDING": "待處理",
@@ -1142,7 +1142,7 @@
     },
     "finance": {
       "title": "財務（舊版）",
-      "description": "錢包提領、撥款批次與金流審核。007 請改用賣家撥款。"
+      "description": "舊版錢包／金流工具。訂單費用請改用商店對帳。"
     },
     "financeConfigs": {
       "title": "費用設定",
@@ -1327,8 +1327,8 @@
       "invalid": "無效",
       "createBatch": "建立批次",
       "markCompletedHint": "標記完成 = 已在系統外付款。無銀行 API。",
-      "legacyHint": "此為舊版頁面（錢包／批次／金流審核）。賣家撥款單請至賣家撥款。",
-      "openSellerPayouts": "開啟賣家撥款"
+      "legacyHint": "此為舊版頁面（錢包／批次／金流審核）。商店對帳單請至商店對帳。",
+      "openSellerPayouts": "開啟商店對帳"
     },
     "categoriesPage": {
       "create": "建立分類",
@@ -1377,17 +1377,17 @@
     "settlementsPage": {
       "empty": "此篩選條件無結算。",
       "pendingTotal": "待對帳總額",
-      "openPayouts": "賣家撥款",
+      "openPayouts": "商店對帳",
       "status": {
         "PENDING_RECONCILE": "待對帳",
-        "INCLUDED_IN_PAYOUT": "已納入撥款單",
-        "PAID_OUT": "已撥款"
+        "INCLUDED_IN_PAYOUT": "已入對帳單",
+        "PAID_OUT": "已對帳"
       }
     },
     "walletPayouts": {
       "title": "錢包提領",
       "description": "個人提領佇列 — 核准、拒絕或處理 stub bank。",
-      "hint": "與賣家撥款不同。這些申請會凍結／釋放使用者錢包。",
+      "hint": "與財務中的商店對帳不同。此處凍結／釋放使用者點數錢包。",
       "userId": "使用者 ID",
       "search": "搜尋",
       "searchPlaceholder": "依姓名或 email 搜尋…",
@@ -2049,11 +2049,11 @@
     "settlementsPage": {
       "pendingTotal": "待對帳總額",
       "empty": "此篩選條件無結算。",
-      "intro": "已配達訂單營收 — 待對帳、撥款中或已撥款。",
+      "intro": "已出貨訂單營收 — 待對帳、已入對帳單、或已完成對帳。",
       "status": {
         "PENDING_RECONCILE": "待對帳",
-        "INCLUDED_IN_PAYOUT": "已納入撥款單",
-        "PAID_OUT": "已撥款"
+        "INCLUDED_IN_PAYOUT": "已入對帳單",
+        "PAID_OUT": "已對帳"
       }
     },
     "rmaPage": {
@@ -2114,7 +2114,7 @@
     "types": {
       "ALL": "全部",
       "ORDER": "訂單",
-      "PAYOUT": "撥款"
+      "PAYOUT": "商店對帳"
     }
   },
   "wallet": {
@@ -2171,7 +2171,7 @@
       "GLOBAL": "全球",
       "LOYALTY": "忠誠",
       "ADJUST": "調整",
-      "SELLER_PAYOUT": "賣家撥款"
+      "SELLER_PAYOUT": "商店對帳"
     },
     "pinRequiredBanner": "請先設定錢包 PIN 再繼續。",
     "p2pEmail": "收款人電子郵件",
@@ -2409,8 +2409,8 @@
     "productApproved": "已核准商品",
     "productRejected": "已拒絕商品",
     "payoutBatchCreated": "已建立撥款批次",
-    "payoutApproved": "已核准撥款",
-    "payoutRejected": "已拒絕撥款",
+    "payoutApproved": "已記錄商店對帳（不入帳錢包）",
+    "payoutRejected": "已拒絕商店對帳",
     "payoutCompleted": "已標記撥款完成",
     "withdrawApproved": "已核准提領",
     "withdrawRejected": "已拒絕提領",
@@ -2533,16 +2533,16 @@
     "financeConfigApproveFailed": "核准財務設定失敗",
     "financeConfigRejected": "財務設定已拒絕",
     "financeConfigRejectFailed": "拒絕財務設定失敗",
-    "payoutNotFound": "找不到撥款單。",
-    "payoutNotPending": "僅待處理的撥款單可核准或拒絕。",
-    "payoutNoSettlements": "此商店在該期間沒有待對帳的結算。",
+    "payoutNotFound": "找不到對帳單。",
+    "payoutNotPending": "僅待處理的對帳單可核准或拒絕。",
+    "payoutNoSettlements": "此商店在該期間沒有待對帳結算。",
     "shopNotFound": "找不到商店。",
     "shopAlreadyExists": "您已經有商店，無法再次提交申請。",
-    "payoutCreated": "已建立賣家撥款單",
-    "payoutCreateFailed": "建立撥款單失敗",
-    "payoutApproveFailed": "核准撥款單失敗",
-    "payoutRejectFailed": "拒絕撥款單失敗",
-    "payoutApprovedWithRef": "撥款已核准 — gateway ref {ref}",
+    "payoutCreated": "已建立商店對帳單",
+    "payoutCreateFailed": "建立對帳單失敗",
+    "payoutApproveFailed": "核准對帳失敗",
+    "payoutRejectFailed": "拒絕對帳失敗",
+    "payoutApprovedWithRef": "已記錄對帳 — ref {ref}",
     "landingCostFailed": "計算落地成本失敗",
     "financeExportReady": "匯出就緒（{count} 列）",
     "financeExportFailed": "匯出財務報表失敗",
@@ -2585,7 +2585,7 @@
     "idempotencyKeyReuseMismatch": "請求內容已變更但重用舊 key，請重試。",
     "idempotencyRequestInProgress": "此請求處理中，請稍候。",
     "validationError": "資料無效，請檢查欄位後重試。",
-    "payoutShopNoBankInfo": "商店尚未設定銀行資料，請要求賣家先更新後再建立撥款。",
+    "payoutShopNoBankInfo": "商店尚未設定銀行資料。請賣家更新帳號供買家轉帳（非 App 內撥款）。",
     "promotionRuleRankNotFound": "等級不存在於配置中，請先建立該等級。",
     "promotionRuleInvalidRankOrder": "目標等級必須大於來源等級。",
     "promotionRuleDuplicate": "此等級已有啟用中的規則，請先停用或刪除舊規則。",
@@ -2704,8 +2704,8 @@
     },
     "settlement": {
       "PENDING_RECONCILE": "待對帳",
-      "INCLUDED_IN_PAYOUT": "已納入撥款單",
-      "PAID_OUT": "已撥款"
+      "INCLUDED_IN_PAYOUT": "已入對帳單",
+      "PAID_OUT": "已對帳"
     },
     "review": {
       "VISIBLE": "顯示中",
