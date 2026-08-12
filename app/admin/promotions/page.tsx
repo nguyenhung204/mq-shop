@@ -227,6 +227,9 @@ function PromotionsInner() {
           <form className="mq-card p-5 space-y-4" onSubmit={(e) => void onSubmit(e)}>
             <h3 className="font-semibold">{t("admin.promotions.createHeading")}</h3>
             {formError && <div className="mq-alert mq-alert-error">{formError}</div>}
+            {(form.type === "FIXED" || form.type === "VOUCHER") && (
+              <p className="text-xs text-mq-text-muted">{t("seller.priceTwdHint")}</p>
+            )}
 
             <div className="flex flex-wrap gap-4 text-sm">
               <label className="flex items-center gap-2">

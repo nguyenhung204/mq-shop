@@ -21,7 +21,7 @@ export const ADMIN_DASHBOARD_QUEUE_I18N: Record<keyof AdminDashboardQueues, stri
 export const ADMIN_DASHBOARD_SNAPSHOT_I18N: Record<keyof AdminDashboardSnapshot, string> = {
   ordersToday: "admin.overview.snapshot.ordersToday",
   ordersThisWeek: "admin.overview.snapshot.ordersThisWeek",
-  gmvDeliveredThisMonthUsd: "admin.overview.snapshot.gmvDeliveredThisMonthUsd",
+  gmvDeliveredThisMonth: "admin.overview.snapshot.gmvDeliveredThisMonth",
   activeShops: "admin.overview.snapshot.activeShops",
   activeProducts: "admin.overview.snapshot.activeProducts",
   suspendedShops: "admin.overview.snapshot.suspendedShops",

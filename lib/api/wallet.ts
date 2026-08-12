@@ -6,7 +6,7 @@ export type Wallet = {
   userId: string;
   availableBalance: string;
   frozenBalance: string;
-  currency: "USD" | string;
+  currency: "TWD" | string;
   updatedAt: string;
 };
 

@@ -3,7 +3,7 @@ import { api } from "./client";
 export type DashboardCountTile = {
   count: number;
   href?: string;
-  amountUsd?: string;
+  amount?: string;
 };
 
 export type AdminDashboardQueues = {
@@ -24,7 +24,7 @@ export type AdminDashboardQueues = {
 export type AdminDashboardSnapshot = {
   ordersToday?: number;
   ordersThisWeek?: number;
-  gmvDeliveredThisMonthUsd?: string;
+  gmvDeliveredThisMonth?: string;
   activeShops?: number;
   activeProducts?: number;
   suspendedShops?: number;
@@ -80,7 +80,7 @@ export const ADMIN_DASHBOARD_QUEUE_ORDER: (keyof AdminDashboardQueues)[] = [
 export const ADMIN_DASHBOARD_SNAPSHOT_ORDER: (keyof AdminDashboardSnapshot)[] = [
   "ordersToday",
   "ordersThisWeek",
-  "gmvDeliveredThisMonthUsd",
+  "gmvDeliveredThisMonth",
   "activeShops",
   "activeProducts",
   "suspendedShops",

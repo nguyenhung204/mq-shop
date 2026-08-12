@@ -6,6 +6,7 @@ import type { CronJobInfo } from "@/lib/api/admin-dashboard";
 import { useAdminCronJobs } from "@/lib/queries/admin";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { toIntlLocale } from "@/lib/i18n/locale-format";
+import type { Locale } from "@/lib/i18n/types";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 // ---------------------------------------------------------------------------
@@ -33,7 +34,7 @@ function getUrgencyClass(ms: number): string {
 function formatNextRunAt(
   iso: string,
   timeZone: string,
-  locale: string | null | undefined,
+  locale: Locale | null | undefined,
 ): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;

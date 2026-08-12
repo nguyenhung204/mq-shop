@@ -21,6 +21,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { formatMoney, formatPercent } from "@/lib/api/utils";
 import { mlmRankLabel } from "@/lib/i18n/mlm-rank";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 import type {
   CommissionReportBatchStatus,
   CommissionTypeSummary,
@@ -758,6 +759,8 @@ function CommissionReportInner() {
           </Link>
         }
       />
+
+      <LedgerTwdNote className="mb-2" />
 
       <div className="space-y-5 max-w-6xl">
 

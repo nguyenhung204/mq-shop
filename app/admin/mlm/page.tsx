@@ -25,6 +25,7 @@ import {
 } from "@/lib/queries/wallet";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { mlmRankLabel } from "@/lib/i18n/mlm-rank";
@@ -505,6 +506,7 @@ function MlmAdminInner() {
         title={t("admin.mlm.title")}
         description={t("admin.mlm.description")}
       />
+      <LedgerTwdNote className="mb-4" />
 
       <div className="space-y-6 w-full">
         <p className="text-sm text-mq-text-muted">{t("admin.mlm.hint")}</p>
