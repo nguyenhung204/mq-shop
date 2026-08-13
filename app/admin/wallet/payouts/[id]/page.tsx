@@ -43,7 +43,6 @@ function WalletPayoutDetailInner({ payoutId }: { payoutId: string }) {
     gatewayRef: t("admin.walletPayouts.gatewayRef"),
     createdAt: t("admin.walletPayouts.createdAt"),
     updatedAt: t("admin.walletPayouts.updatedAt"),
-    userId: t("admin.walletPayouts.userId"),
     fiatLabel: t("wallet.fiatLabel"),
   };
 
@@ -75,7 +74,6 @@ function WalletPayoutDetailInner({ payoutId }: { payoutId: string }) {
           <WalletPayoutDetailFields
             payout={payout}
             labels={labels}
-            showUserId
             actions={
               payout.status === "PENDING" ? (
                 <AdminActions>

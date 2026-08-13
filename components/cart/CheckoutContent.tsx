@@ -12,6 +12,7 @@ import { splitStoredPhone, toE164 } from "@/lib/data/phone";
 import { formatMoney } from "@/lib/api/utils";
 import { useDisplayMoney } from "@/components/providers/DisplayMoneyProvider";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { suppressNotificationToasts } from "@/lib/notifications/suppress-toast";
 import {
   checkoutSchema,
   type CheckoutFormValues,
@@ -339,8 +340,8 @@ export function CheckoutContent() {
                       t("toast.paymentProofUploadFailed"),
                       locale,
                     );
+                    // Inline on the success screen — avoid a second error toast.
                     setPlaced({ ...placed, proofError: msg });
-                    toast.error(msg);
                   } finally {
                     setProofRetrying(false);
                   }
@@ -386,7 +387,6 @@ export function CheckoutContent() {
       const proofErr = validateProofFile(proofFile);
       if (proofErr) {
         setProofFieldError(proofErr);
-        toast.warning(proofErr);
         return;
       }
     }
@@ -419,12 +419,12 @@ export function CheckoutContent() {
           await orderApi.uploadPaymentProof(order.id, proofFile);
           proofUploaded = true;
         } catch (e) {
+          // Shown inline on the placed-order screen — do not also toast.
           proofError = getErrorMessage(
             e,
             t("toast.paymentProofUploadFailed"),
             locale,
           );
-          toast.error(proofError);
         }
       }
 
@@ -438,12 +438,11 @@ export function CheckoutContent() {
         proofUploaded,
         proofError,
       });
+      // One toast for the whole checkout; proof success is already an on-page alert.
+      suppressNotificationToasts();
       toast.success(t("checkout.orderPlaced"), {
         description: order.displayName,
       });
-      if (proofUploaded) {
-        toast.success(t("toast.paymentProofUploaded"));
-      }
     } catch (err) {
       if (err instanceof ApiError && err.code === "FX_RATE_CHANGED") {
         await refetchRates();
@@ -777,7 +776,9 @@ export function CheckoutContent() {
                         >
                           {item.name}
                         </Link>
-                        <p className="text-mq-text-muted text-xs">{item.sku}</p>
+                        {item.sku ? (
+                          <p className="text-mq-text-muted text-xs">{item.sku}</p>
+                        ) : null}
                       </div>
                       <span className="shrink-0 tabular-nums">
                         {formatDisplay(item.unitPrice * item.quantity)}

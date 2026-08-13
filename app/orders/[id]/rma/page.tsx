@@ -59,7 +59,7 @@ function CreateRmaInner() {
         title={t("orders.rma.title")}
         breadcrumb={[
           { label: t("orders.rma.breadcrumbOrders"), href: "/orders" },
-          { label: id.slice(0, 8), href: `/orders/${id}` },
+          { label: order?.code || order?.displayName || t("orders.detail.title"), href: `/orders/${id}` },
           { label: t("orders.rma.breadcrumbRma") },
         ]}
       />

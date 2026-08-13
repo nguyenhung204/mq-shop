@@ -115,7 +115,7 @@ function SellerSettlementsInner() {
           <div className="min-w-0">
             <Link href={`/orders/${s.orderId}`} className="hover:underline">
               <span className="font-mono font-medium">
-                {s.orderCode ?? s.orderId.slice(0, 8)}
+                {s.orderCode ?? t("orders.detail.title")}
               </span>
             </Link>
             <span className={`${statusBadgeClass(s.status)} ml-2`}>{translateStatus(t, "settlement", s.status)}</span>

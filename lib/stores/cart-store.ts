@@ -62,7 +62,7 @@ function resolveLine(product: Product, quantity: number): CartLine | null {
     productId: product.id,
     shopId,
     shopName: product.shop?.name,
-    sku: variant?.sku || product.id.slice(0, 8),
+    sku: variant?.sku || "",
     name: product.name,
     unitPrice: variant?.price ?? product.price,
     originalPrice: product.originalPrice,

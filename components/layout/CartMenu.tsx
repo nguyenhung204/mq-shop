@@ -108,7 +108,9 @@ export function CartMenu({ onNavigate }: { onNavigate?: () => void }) {
                     </span>
                     <span className="mq-cart-menu-meta">
                       <span className="mq-cart-menu-name">{item.name}</span>
-                      <span className="mq-cart-menu-sku">{item.sku}</span>
+                      {item.sku ? (
+                        <span className="mq-cart-menu-sku">{item.sku}</span>
+                      ) : null}
                     </span>
                     <span className="mq-cart-menu-price">
                       {formatDisplay(item.unitPrice * item.quantity)}

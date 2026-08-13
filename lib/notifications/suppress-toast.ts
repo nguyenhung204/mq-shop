@@ -8,6 +8,10 @@ export function suppressNotificationToasts(ms = 2500): void {
 export function shouldSuppressNotificationToast(type?: string | null): boolean {
   if (Date.now() >= suppressUntilMs) return false;
   const t = (type || "").toUpperCase();
-  // Only mute echoes of action flows we already toasted (RMA / order).
-  return t.startsWith("RMA_") || t.startsWith("ORDER_");
+  // Mute echoes of actions that already showed a mutation success toast.
+  return (
+    t.startsWith("RMA_") ||
+    t.startsWith("ORDER_") ||
+    t.startsWith("WALLET_")
+  );
 }

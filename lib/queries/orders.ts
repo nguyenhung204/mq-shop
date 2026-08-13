@@ -155,6 +155,7 @@ export function useCancelOrder(orderId: string) {
     onSuccess: (order) => {
       queryClient.setQueryData(orderKeys.detail(orderId), order);
       void queryClient.invalidateQueries({ queryKey: orderKeys.all });
+      suppressNotificationToasts();
       toast.success(tt("toast.orderCancelled"));
     },
     onError: (e) => toast.error(orderErrorMessage(e, tt("toast.cancelFailed"))),
@@ -180,6 +181,7 @@ export function useUpdateOrderStatus() {
         void queryClient.invalidateQueries({ queryKey: ["wallet"] });
         void queryClient.invalidateQueries({ queryKey: ["mlm"] });
       }
+      suppressNotificationToasts();
       toast.success(
         tt("toast.orderStatus", {
           status: statusLabel(currentLocale(), "order", order.status),
@@ -616,6 +618,7 @@ export function useUploadPaymentProof(orderId: string) {
     onSuccess: (order) => {
       queryClient.setQueryData(orderKeys.detail(orderId), order);
       invalidateOrder(queryClient, orderId);
+      suppressNotificationToasts();
       toast.success(tt("toast.paymentProofUploaded"));
     },
     onError: (e) => toast.error(orderErrorMessage(e, tt("toast.paymentProofUploadFailed"))),
@@ -629,6 +632,7 @@ export function useConfirmPayment() {
     onSuccess: (order) => {
       queryClient.setQueryData(orderKeys.detail(order.id), order);
       invalidateOrder(queryClient, order.id);
+      suppressNotificationToasts();
       toast.success(tt("toast.paymentConfirmed"));
     },
     onError: (e) => toast.error(orderErrorMessage(e, tt("toast.paymentConfirmFailed"))),
@@ -643,6 +647,7 @@ export function useRejectPayment() {
     onSuccess: (order) => {
       queryClient.setQueryData(orderKeys.detail(order.id), order);
       invalidateOrder(queryClient, order.id);
+      suppressNotificationToasts();
       toast.success(tt("toast.paymentRejected"));
     },
     onError: (e) => toast.error(orderErrorMessage(e, tt("toast.paymentRejectFailed"))),
@@ -657,6 +662,7 @@ export function useAdminForcePaid() {
     onSuccess: (order) => {
       queryClient.setQueryData(orderKeys.detail(order.id), order);
       invalidateOrder(queryClient, order.id);
+      suppressNotificationToasts();
       toast.success(tt("toast.paymentForcePaid"));
     },
     onError: (e) => toast.error(orderErrorMessage(e, tt("toast.paymentForcePaidFailed"))),
@@ -671,6 +677,7 @@ export function useAdminRejectPayment() {
     onSuccess: (order) => {
       queryClient.setQueryData(orderKeys.detail(order.id), order);
       invalidateOrder(queryClient, order.id);
+      suppressNotificationToasts();
       toast.success(tt("toast.paymentRejected"));
     },
     onError: (e) => toast.error(orderErrorMessage(e, tt("toast.paymentRejectFailed"))),

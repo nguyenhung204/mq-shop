@@ -164,9 +164,6 @@ function WalletPayoutsInner() {
                   </span>
                 ) : null}
               </div>
-              <p className="text-xs text-mq-text-muted font-mono truncate">
-                {row.id} · user {row.userId.slice(0, 8)}…
-              </p>
               <p className="text-xs text-mq-text-muted">{formatWhen(row.createdAt)}</p>
               {row.bankInfo ? (
                 <p className="text-xs text-mq-text-muted">

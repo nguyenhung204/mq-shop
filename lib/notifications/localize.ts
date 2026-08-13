@@ -119,18 +119,10 @@ function buildVars(
     if (metaNames.userName) vars.userId = metaNames.userName;
   }
 
-  // For any remaining UUID-shaped values not covered by metaNames, shorten them.
-  for (const idKey of [
-    "orderId",
-    "shopId",
-    "productId",
-    "rmaId",
-    "payoutId",
-    "promotionId",
-  ] as const) {
-    const raw = vars[idKey];
-    if (raw && /^[0-9a-f]{8}-[0-9a-f]{4}-/.test(raw)) {
-      vars[idKey] = `${raw.slice(0, 8)}…`;
+  // Never surface raw UUIDs in notification copy.
+  for (const [key, raw] of Object.entries(vars)) {
+    if (raw && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(raw)) {
+      vars[key] = "—";
     }
   }
 

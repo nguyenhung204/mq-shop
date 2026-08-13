@@ -69,7 +69,6 @@ function ShopDetailInner({ id }: { id: string }) {
             <div className="flex flex-wrap justify-between gap-3">
               <div>
                 <h2 className="text-lg font-medium text-mq-text">{shop.name}</h2>
-                <p className="text-xs text-mq-text-muted mt-1 font-mono">{shop.id}</p>
               </div>
               <div className="flex flex-wrap gap-1.5 h-fit">
                 <span className="mq-badge mq-badge-cyan">
@@ -95,7 +94,7 @@ function ShopDetailInner({ id }: { id: string }) {
                 <dd>
                   {shop.ownerName || shop.ownerEmail
                     ? <span>{shop.ownerName ?? "—"}{shop.ownerEmail ? <span className="text-mq-text-muted ml-1">({shop.ownerEmail})</span> : null}</span>
-                    : <span className="font-mono text-xs">{shop.ownerId || "—"}</span>
+                    : "—"
                   }
                 </dd>
               </div>

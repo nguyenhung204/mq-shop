@@ -79,7 +79,7 @@ function WalletAdjustInner() {
       setOkMsg(
         t("admin.walletAdjust.success", {
           amount: formatPoints(n),
-          email: selected?.email ?? userId.slice(0, 8),
+          email: selected?.email ?? "—",
         }),
       );
       setAmount("");
@@ -129,9 +129,6 @@ function WalletAdjustInner() {
               {selected.fullName ? (
                 <p className="truncate text-mq-text-muted">{selected.email}</p>
               ) : null}
-              <p className="truncate font-mono text-mq-text-muted" title={selected.id}>
-                {selected.id}
-              </p>
             </div>
           ) : null}
           <label className="block text-sm">

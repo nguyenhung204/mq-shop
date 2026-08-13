@@ -248,7 +248,7 @@ function RmaDetailInner({ id }: { id: string }) {
                       href={`/orders/${rma.orderId}`}
                       className="hover:text-mq-gold transition-colors"
                     >
-                      {rma.orderName ?? rma.orderCode ?? rma.orderId.slice(0, 8)}
+                      {rma.orderName ?? rma.orderCode ?? t("orders.detail.title")}
                     </Link>
                   ) : (
                     "—"
@@ -263,9 +263,7 @@ function RmaDetailInner({ id }: { id: string }) {
                 <div>
                   <dt className="text-xs text-mq-text-muted">{t("admin.rmaPage.buyer")}</dt>
                   <dd>
-                    {rma.buyerName ?? (
-                      <span className="font-mono text-xs">{rma.buyerId.slice(0, 8)}…</span>
-                    )}
+                    {rma.buyerName ?? "—"}
                   </dd>
                 </div>
               ) : null}
@@ -273,9 +271,7 @@ function RmaDetailInner({ id }: { id: string }) {
                 <div>
                   <dt className="text-xs text-mq-text-muted">{t("admin.rmaPage.shop")}</dt>
                   <dd>
-                    {rma.shopName ?? (
-                      <span className="font-mono text-xs">{rma.shopId.slice(0, 8)}…</span>
-                    )}
+                    {rma.shopName ?? "—"}
                   </dd>
                 </div>
               ) : null}

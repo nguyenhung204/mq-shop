@@ -1245,11 +1245,11 @@
         "REJECTED": "已拒絕"
       },
       "markFeeCollectedTitle": "標記已收取費用",
-      "markFeeCollectedHint": "在系統外收取平台費後，輸入商店 ID 與會計期間。",
-      "shopIdPlaceholder": "商店 ID",
+      "markFeeCollectedHint": "在系統外收取平台費後，請選擇商店與會計期間。",
+      "shopIdPlaceholder": "選擇商店",
       "yearMonth": "YYYY-MM",
       "markFeeCollected": "標記已收取",
-      "periodMarkError": "請輸入商店 ID 與有效的 YYYY-MM 期間。"
+      "periodMarkError": "請選擇商店與有效的 YYYY-MM 期間。"
     },
     "fx": {
       "title": "顯示匯率",

@@ -21,6 +21,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
+import { useAdminShops } from "@/lib/queries/admin";
 import { getErrorMessage } from "@/lib/queries/utils";
 
 const STATUSES: Array<FinanceConfigStatus | ""> = [
@@ -112,6 +113,11 @@ function FinanceConfigsInner() {
   const [feeYearMonth, setFeeYearMonth] = useState("");
   const [feeError, setFeeError] = useState("");
 
+  const { data: shopsPage } = useAdminShops("APPROVED", 1, 100, {
+    enabled: canMarkFeeCollected,
+  });
+  const shops = shopsPage?.items ?? [];
+
   const { data: active, isLoading: activeLoading } = useActiveFinanceConfig();
   const { data, isLoading, isError, error } = useFinanceConfigs({
     status: status || undefined,
@@ -201,13 +207,19 @@ function FinanceConfigsInner() {
                 <span className="text-xs text-mq-text-muted">
                   {t("admin.common.shop")}
                 </span>
-                <input
+                <select
                   className="mq-input mt-1"
                   value={feeShopId}
                   onChange={(e) => setFeeShopId(e.target.value)}
-                  placeholder={t("admin.financeConfigs.shopIdPlaceholder")}
                   required
-                />
+                >
+                  <option value="">{t("admin.financeConfigs.shopIdPlaceholder")}</option>
+                  {shops.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
               </label>
               <label className="block text-sm">
                 <span className="text-xs text-mq-text-muted">
@@ -400,9 +412,6 @@ function FinanceConfigsInner() {
                 <div className="flex flex-wrap items-center gap-2">
                   <span className={statusBadgeClass(cfg.status)}>
                     {t(`admin.financeConfigs.status.${cfg.status}`)}
-                  </span>
-                  <span className="font-mono text-xs text-mq-text-muted">
-                    {cfg.id.slice(0, 8)}…
                   </span>
                 </div>
                 <p>

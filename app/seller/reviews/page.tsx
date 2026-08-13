@@ -52,7 +52,6 @@ function SellerProductReviews({
     <section className="mq-card p-4 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-mq-text truncate">{productTitle}</h2>
-        <span className="text-[11px] font-mono text-mq-text-muted">{productId.slice(0, 8)}…</span>
       </div>
       {isError ? (
         <div className="mq-alert mq-alert-error text-sm">

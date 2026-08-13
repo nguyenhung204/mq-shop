@@ -153,7 +153,6 @@ function DsarInner() {
             <table className="w-full text-sm">
               <thead className="bg-mq-surface-subtle text-left">
                 <tr>
-                  <th className="p-3">{t("admin.dsar.id")}</th>
                   <th className="p-3">{t("admin.dsar.target")}</th>
                   <th className="p-3">{t("admin.common.status")}</th>
                   <th className="p-3">{t("admin.dsar.note")}</th>
@@ -164,14 +163,8 @@ function DsarInner() {
               <tbody>
                 {items.map((r) => (
                   <tr key={r.id} className="border-t border-mq-border">
-                    <td className="p-3 font-mono text-xs">{r.id.slice(0, 8)}…</td>
                     <td className="p-3 text-xs">
                       <div>{r.targetEmail || r.targetName || "—"}</div>
-                      {r.targetUserId ? (
-                        <div className="font-mono text-mq-text-muted mt-0.5">
-                          {r.targetUserId.slice(0, 8)}…
-                        </div>
-                      ) : null}
                     </td>
                     <td className="p-3">
                       <span className={statusBadgeClass(r.status)}>{translateStatus(t, "dsar", r.status)}</span>

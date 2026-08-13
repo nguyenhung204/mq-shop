@@ -121,7 +121,7 @@ function CategoriesInner() {
             <FormAlerts error={formAlerts.error} />
           </div>
           <h2 className="text-lg">
-            {editing ? `${t("admin.common.edit")} ${editing.id}` : t("admin.categoriesPage.create")}
+            {editing ? `${t("admin.common.edit")} ${editing.name}` : t("admin.categoriesPage.create")}
           </h2>
 
           {/* Name fields with translate buttons */}
@@ -245,7 +245,6 @@ function CategoriesInner() {
             <table className="w-full text-sm">
               <thead className="bg-mq-surface-subtle text-left">
                 <tr>
-                  <th className="p-3">ID</th>
                   <th className="p-3">{t("admin.categoriesPage.nameEn")}</th>
                   <th className="p-3">{t("admin.categoriesPage.nameVi")}</th>
                   <th className="p-3">{t("admin.categoriesPage.nameTw")}</th>
@@ -257,12 +256,17 @@ function CategoriesInner() {
               <tbody>
                 {categories.map((c) => (
                   <tr key={c.id} className="border-t border-mq-border">
-                    <td className="p-3 font-mono text-xs">{c.id}</td>
                     <td className="p-3">{c.name}</td>
                     <td className="p-3 text-mq-text-muted">{c.nameVi || "—"}</td>
                     <td className="p-3 text-mq-text-muted">{c.nameTw || "—"}</td>
                     <td className="p-3">{c.slug}</td>
-                    <td className="p-3">{c.parentId || "—"}</td>
+                    <td className="p-3">
+                      {c.parentId
+                        ? categories.find((p) => p.id === c.parentId)?.name ||
+                          categories.find((p) => p.id === c.parentId)?.slug ||
+                          "—"
+                        : "—"}
+                    </td>
                     <td className="p-3">
                       <AdminIconButton
                         label={t("admin.common.edit")}

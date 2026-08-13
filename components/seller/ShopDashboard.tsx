@@ -260,10 +260,6 @@ export function ShopDashboard({ initialSection }: Props) {
           </header>
           <dl className="mq-shop-dl">
             <div>
-              <dt>{t("seller.shop.shopId")}</dt>
-              <dd className="font-mono text-xs">{shop.id}</dd>
-            </div>
-            <div>
               <dt>{t("seller.common.status")}</dt>
               <dd>{translateStatus(t, "shop", shop.status)}</dd>
             </div>

@@ -39,6 +39,7 @@ import { ApiError } from "@/lib/api/client";
 import { createIdempotencyKeyStore } from "@/lib/api/idempotency";
 import { asArray, parsePage } from "@/lib/api/utils";
 import { tt } from "@/lib/i18n/tt";
+import { suppressNotificationToasts } from "@/lib/notifications/suppress-toast";
 import { getErrorMessage } from "@/lib/queries/utils";
 
 export const walletKeys = {
@@ -271,6 +272,8 @@ export function useRequestWalletPinOtp() {
   return useMutation({
     mutationFn: () => walletApi.requestPinOtp(),
     onSuccess: () => toast.success(tt("toast.walletPinOtpSent")),
+    // Form catches mutateAsync and shows mq-alert — silence QueryProvider.
+    onError: () => {},
   });
 }
 
@@ -279,9 +282,11 @@ export function useConfirmWalletPin() {
   return useMutation({
     mutationFn: (body: ConfirmWalletPinBody) => walletApi.confirmPin(body),
     onSuccess: () => {
+      suppressNotificationToasts();
       toast.success(tt("toast.walletPinSet"));
       void qc.invalidateQueries({ queryKey: walletKeys.all });
     },
+    onError: () => {},
   });
 }
 
@@ -316,6 +321,7 @@ export function useWalletTransfer() {
       walletApi.transfer(body, idempotency.keyFor(body)),
     onSuccess: () => {
       idempotency.invalidate();
+      suppressNotificationToasts();
       toast.success(tt("toast.walletTransferOk"));
       void qc.invalidateQueries({ queryKey: walletKeys.all });
     },
@@ -333,6 +339,7 @@ export function useWalletWithdraw() {
       walletApi.withdraw(body, idempotency.keyFor(body)),
     onSuccess: () => {
       idempotency.invalidate();
+      suppressNotificationToasts();
       toast.success(tt("toast.walletWithdrawSubmitted"));
       void qc.invalidateQueries({ queryKey: walletKeys.all });
     },
@@ -387,6 +394,7 @@ export function useApproveWalletPayout() {
   return useMutation({
     mutationFn: (id: string) => adminWalletPayoutApi.approve(id),
     onSuccess: () => {
+      suppressNotificationToasts();
       toast.success(tt("toast.walletPayoutApproved"));
       void qc.invalidateQueries({ queryKey: adminWalletKeys.all });
     },
@@ -400,7 +408,8 @@ export function useAdjustWalletBalance() {
   return useMutation({
     mutationFn: (body: AdjustWalletBody) => adminWalletApi.adjust(body),
     onSuccess: () => {
-      toast.success(tt("toast.walletAdjustOk"));
+      // Page shows a detailed inline success alert — skip toast.
+      suppressNotificationToasts();
       void qc.invalidateQueries({ queryKey: walletKeys.all });
       void qc.invalidateQueries({ queryKey: adminWalletKeys.all });
     },
@@ -415,6 +424,7 @@ export function useRejectWalletPayout() {
     mutationFn: ({ id, reason }: { id: string; reason: string }) =>
       adminWalletPayoutApi.reject(id, { reason }),
     onSuccess: () => {
+      suppressNotificationToasts();
       toast.success(tt("toast.walletPayoutRejected"));
       void qc.invalidateQueries({ queryKey: adminWalletKeys.all });
     },
@@ -434,6 +444,7 @@ export function useProcessWalletPayout() {
       ),
     onSuccess: () => {
       idempotency.invalidate();
+      suppressNotificationToasts();
       toast.success(tt("toast.walletPayoutProcessed"));
       void qc.invalidateQueries({ queryKey: adminWalletKeys.all });
     },
@@ -482,7 +493,7 @@ export function useSetMlmRank() {
     mutationFn: ({ userId, body }: { userId: string; body: SetMlmRankBody }) =>
       adminMlmApi.setUserRank(userId, body),
     onSuccess: () => {
-      toast.success(tt("toast.mlmRankUpdated"));
+      // Admin MLM form shows okMsg inline — skip toast.
       void qc.invalidateQueries({ queryKey: mlmKeys.all });
       void qc.invalidateQueries({ queryKey: ["admin", "users"] });
     },
@@ -609,26 +620,8 @@ export function useReconcileMlmRanks() {
   return useMutation({
     mutationFn: (body?: { userId?: string; limit?: number }) =>
       adminMlmApi.reconcileRanks(body),
-    onSuccess: (data) => {
-      if (data && "checked" in data) {
-        toast.success(
-          tt("toast.mlmReconcileBatch", {
-            checked: String(data.checked),
-            promoted: String(data.promotedUsers?.length ?? 0),
-          }),
-        );
-      } else if (data && "promoted" in data) {
-        toast.success(
-          data.promoted
-            ? tt("toast.mlmReconcilePromoted", {
-                from: String(data.fromRank),
-                to: String(data.toRank),
-              })
-            : tt("toast.mlmReconcileNoChange"),
-        );
-      } else {
-        toast.success(tt("toast.mlmReconcileDone"));
-      }
+    onSuccess: () => {
+      // Admin MLM page renders reconcileOk inline — skip toast.
       void qc.invalidateQueries({ queryKey: mlmKeys.all });
       void qc.invalidateQueries({ queryKey: ["admin", "users"] });
     },
@@ -648,7 +641,7 @@ export function useSetMlmReferrer() {
       body: SetMlmReferrerBody;
     }) => adminMlmApi.setUserReferrer(userId, body),
     onSuccess: () => {
-      toast.success(tt("toast.mlmReferrerUpdated"));
+      // Admin MLM form shows referrerOk inline — skip toast.
       void qc.invalidateQueries({ queryKey: mlmKeys.all });
       void qc.invalidateQueries({ queryKey: ["admin", "users"] });
     },

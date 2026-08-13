@@ -37,7 +37,6 @@ type Labels = {
   gatewayRef?: string;
   createdAt?: string;
   updatedAt?: string;
-  userId?: string;
   fiatLabel?: string;
   /** Optional region approx line under bank TWD. */
   regionApprox?: string | null;
@@ -47,12 +46,10 @@ type Labels = {
 export function WalletPayoutDetailFields({
   payout,
   labels,
-  showUserId = false,
   actions,
 }: {
   payout: UserPayoutRequest;
   labels: Labels;
-  showUserId?: boolean;
   /** Rendered bottom-right inside the card (e.g. approve / reject). */
   actions?: ReactNode;
 }) {
@@ -72,7 +69,6 @@ export function WalletPayoutDetailFields({
               ) : null}
             </div>
           ) : null}
-          <p className="text-xs text-mq-text-muted font-mono break-all">{payout.id}</p>
         </div>
         <span className={walletPayoutStatusBadgeClass(payout.status)}>
           {labels.status(payout.status)}
@@ -80,12 +76,6 @@ export function WalletPayoutDetailFields({
       </div>
 
       <dl className="grid sm:grid-cols-2 gap-x-6 gap-y-3 border-t border-mq-border/60 pt-4">
-        {showUserId && labels.userId ? (
-          <div>
-            <dt className="text-xs text-mq-text-muted">{labels.userId}</dt>
-            <dd className="font-mono text-xs break-all mt-0.5">{payout.userId}</dd>
-          </div>
-        ) : null}
         {labels.createdAt ? (
           <div>
             <dt className="text-xs text-mq-text-muted">{labels.createdAt}</dt>

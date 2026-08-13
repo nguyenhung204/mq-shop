@@ -115,6 +115,8 @@ export function useCreateFinanceConfig() {
       void qc.invalidateQueries({ queryKey: financeKeys.all });
       toast.success(tt("toast.financeConfigSubmitted"));
     },
+    // Form catches mutateAsync and shows mq-alert.
+    onError: () => {},
   });
 }
 

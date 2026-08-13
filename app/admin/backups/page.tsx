@@ -93,7 +93,6 @@ function BackupsInner() {
             <table className="w-full text-sm">
               <thead className="bg-mq-surface-subtle text-left">
                 <tr>
-                  <th className="p-3">{t("admin.backups.id")}</th>
                   <th className="p-3">{t("admin.common.status")}</th>
                   <th className="p-3">{t("admin.backups.progress")}</th>
                   <th className="p-3">{t("admin.backups.size")}</th>
@@ -104,7 +103,6 @@ function BackupsInner() {
               <tbody>
                 {items.map((b) => (
                   <tr key={b.id} className="border-t border-mq-border">
-                    <td className="p-3 font-mono text-xs">{b.id.slice(0, 8)}…</td>
                     <td className="p-3">
                       <span className={statusBadgeClass(b.status)}>{translateStatus(t, "backup", b.status)}</span>
                       {b.errorMessage ? (

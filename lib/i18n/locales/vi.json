@@ -1245,11 +1245,11 @@
         "REJECTED": "Từ chối"
       },
       "markFeeCollectedTitle": "Đánh dấu đã thu phí",
-      "markFeeCollectedHint": "Nhập shop ID và kỳ kế toán sau khi đã thu phí nền tảng ngoài hệ thống.",
-      "shopIdPlaceholder": "Shop ID",
+      "markFeeCollectedHint": "Chọn shop và kỳ kế toán sau khi đã thu phí nền tảng ngoài hệ thống.",
+      "shopIdPlaceholder": "Chọn shop",
       "yearMonth": "YYYY-MM",
       "markFeeCollected": "Đánh dấu đã thu",
-      "periodMarkError": "Nhập shop ID và kỳ YYYY-MM hợp lệ."
+      "periodMarkError": "Chọn shop và kỳ YYYY-MM hợp lệ."
     },
     "fx": {
       "title": "Tỷ giá hiển thị",

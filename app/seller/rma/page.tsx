@@ -74,7 +74,7 @@ function SellerRmaInner() {
           <div className="min-w-0 space-y-1">
             <div className="flex flex-wrap items-center gap-2">
               <Link href={`/orders/${r.orderId}`} className="font-medium hover:underline">
-                {r.orderName ?? r.orderId.slice(0, 8)}
+                {r.orderName ?? t("orders.detail.title")}
               </Link>
               <span className="mq-badge mq-badge-pink">
                 {translateStatus(t, "rma", r.status)}

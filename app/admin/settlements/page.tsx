@@ -45,7 +45,7 @@ function SettlementsInner() {
   const [page, setPage] = useState(1);
   const { data: shopsPage } = useAdminShops("APPROVED", 1, 100);
   const shops = shopsPage?.items ?? [];
-  const shopName = (id: string) => shops.find((s) => s.id === id)?.name ?? `${id.slice(0, 8)}…`;
+  const shopName = (id: string) => shops.find((s) => s.id === id)?.name ?? t("admin.common.shop");
 
   const { data, isLoading, isError, error } = useAdminSettlements({
     status: status || undefined,
@@ -152,7 +152,7 @@ function SettlementsInner() {
             <div className="min-w-0">
               <Link href={`/orders/${s.orderId}`} className="hover:underline">
                 <span className="font-mono font-medium">
-                  {s.orderCode ?? s.orderId.slice(0, 8)}
+                  {s.orderCode ?? t("orders.detail.title")}
                 </span>
               </Link>
               <span className={`${statusBadgeClass(s.status)} ml-2`}>{translateStatus(t, "settlement", s.status)}</span>

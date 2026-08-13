@@ -1245,11 +1245,11 @@
         "REJECTED": "Rejected"
       },
       "markFeeCollectedTitle": "Mark fee collected",
-      "markFeeCollectedHint": "Enter a shop ID and accounting period after collecting the platform fee outside the system.",
-      "shopIdPlaceholder": "Shop ID",
+      "markFeeCollectedHint": "Select a shop and accounting period after collecting the platform fee outside the system.",
+      "shopIdPlaceholder": "Select shop",
       "yearMonth": "YYYY-MM",
       "markFeeCollected": "Mark fee collected",
-      "periodMarkError": "Enter a shop ID and a valid YYYY-MM period."
+      "periodMarkError": "Select a shop and a valid YYYY-MM period."
     },
     "fx": {
       "title": "Display FX rates",

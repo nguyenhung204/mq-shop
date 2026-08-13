@@ -263,7 +263,7 @@ function OrderDetailInner() {
         title={t("orders.detail.title")}
         breadcrumb={[
           { label: t("orders.detail.breadcrumbOrders"), href: "/orders" },
-          { label: id.slice(0, 8) },
+          { label: order?.code || order?.displayName || t("orders.detail.title") },
         ]}
       />
       <Container className="py-10 md:py-14 max-w-3xl mx-auto space-y-6">
@@ -888,13 +888,12 @@ function OrderDetailInner() {
                       {item.titleSnapshot || item.sku}
                     </Link>
                     <p className="text-xs text-mq-text-muted mt-0.5">
-                      {item.sku} × {item.quantity}
+                      {item.sku ? `${item.sku} × ${item.quantity}` : `× ${item.quantity}`}
                       {canFulfill && item.warehouseId ? (
                         <span className="ml-2 text-mq-text-secondary">
                           {t("orders.detail.shipFromWarehouse", {
                             warehouse:
-                              warehouseCodeById.get(item.warehouseId) ||
-                              item.warehouseId.slice(0, 8) + "…",
+                              warehouseCodeById.get(item.warehouseId) || "—",
                           })}
                         </span>
                       ) : null}

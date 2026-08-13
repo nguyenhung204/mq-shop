@@ -56,7 +56,7 @@ function variantOptionLabel(v: ProductVariant): string {
       : null;
   const stock = typeof v.availableStock === "number" ? ` · stock ${v.availableStock}` : "";
   const bits = [v.sku, opts, formatMoney(v.sellingPrice)].filter(Boolean);
-  return `${bits.join(" · ")}${stock} · ${v.id.slice(0, 8)}`;
+  return `${bits.join(" · ")}${stock}`;
 }
 
 function OrdersInner() {
@@ -424,7 +424,7 @@ function OrdersInner() {
               </Link>
               <span className="mq-badge mq-badge-cyan ml-2">{translateStatus(t, "order", o.status)}</span>
               <p className="text-xs text-mq-text-muted mt-1">
-                {o.shopName ?? `Shop ${o.shopId.slice(0, 8)}…`} · {o.buyerName ?? `Buyer ${o.buyerId.slice(0, 8)}…`} ·{" "}
+                {o.shopName ?? t("admin.common.shop")} · {o.buyerName ?? t("admin.ordersPage.buyer")} ·{" "}
                 {formatMoney(o.total)} {o.currency}
               </p>
             </div>

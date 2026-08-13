@@ -117,7 +117,7 @@ export function TransactionsReport({
     const map = new Map(shops.map((s) => [s.id, s.name]));
     return (id: string | null) => {
       if (!id) return "—";
-      return map.get(id) ?? `${id.slice(0, 8)}…`;
+      return map.get(id) ?? "—";
     };
   }, [shops]);
 
@@ -282,21 +282,21 @@ export function TransactionsReport({
       ) : null}
 
       {items.map((row) => {
-        const refLabel = row.ref ?? row.id.slice(0, 8);
+        const refLabel = row.ref ?? (row.type === "ORDER" ? t("orders.detail.title") : t("admin.payouts.title"));
         const detail =
           row.type === "ORDER" ? (
-            <Link href={`/orders/${row.id}`} className="font-mono hover:underline">
+            <Link href={`/orders/${row.id}`} className="hover:underline">
               {refLabel}
             </Link>
           ) : payoutDetailHref ? (
             <Link
               href={payoutDetailHref(row.id)}
-              className="font-mono hover:underline"
+              className="hover:underline"
             >
               {refLabel}
             </Link>
           ) : (
-            <span className="font-mono">{refLabel}</span>
+            <span>{refLabel}</span>
           );
 
         return (

@@ -298,7 +298,6 @@ function WithdrawPanel({
                   <p className="text-xs text-mq-text-muted">
                     {formatWalletPayoutWhen(w.createdAt)}
                   </p>
-                  <p className="text-xs text-mq-text-muted font-mono truncate">{w.id}</p>
                 </div>
                 <span className={`${walletPayoutStatusBadgeClass(w.status)} shrink-0`}>
                   {t(`wallet.payoutStatus.${w.status}`)}

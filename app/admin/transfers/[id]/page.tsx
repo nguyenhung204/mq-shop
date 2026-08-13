@@ -118,7 +118,7 @@ function TransferDetailInner() {
     <>
       <AdminPageHeader
         title={t("seller.transfers.detail")}
-        description={transfer.code || transfer.id}
+        description={transfer.code || t("seller.transfers.detail")}
         actions={
           <Link href="/admin/transfers" className="mq-admin-btn mq-admin-btn-secondary">
             <ArrowLeft size={16} /> {t("admin.common.back")}

@@ -48,7 +48,7 @@ function PayoutDetailInner({ payoutId }: { payoutId: string }) {
   const { data: shopsPage } = useAdminShops("APPROVED", 1, 100);
   const shops = shopsPage?.items ?? [];
   const shopName =
-    shops.find((s) => s.id === payout?.shopId)?.name ?? payout?.shopId.slice(0, 8);
+    shops.find((s) => s.id === payout?.shopId)?.name ?? t("admin.common.shop");
 
   const approvePayout = useApproveSellerPayout();
   const rejectPayout = useRejectSellerPayout();
@@ -82,7 +82,7 @@ function PayoutDetailInner({ payoutId }: { payoutId: string }) {
             <div className="mq-card p-5 space-y-3 text-sm">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-mono font-medium">{payout.id}</span>
+                  <span className="font-medium">{shopName}</span>
                   <span className={statusBadgeClass(payout.status)}>
                     {t(`admin.payouts.status.${payout.status}`)}
                   </span>
@@ -166,13 +166,10 @@ function PayoutDetailInner({ payoutId }: { payoutId: string }) {
                     <div>
                       <Link
                         href={`/orders/${item.orderId}`}
-                        className="font-mono hover:underline"
+                        className="hover:underline"
                       >
-                        {item.orderCode || item.orderId.slice(0, 8) + "…"}
+                        {item.orderCode || t("orders.detail.title")}
                       </Link>
-                      <p className="text-xs text-mq-text-muted mt-1">
-                        {t("admin.payouts.settlementId")}: {item.settlementId.slice(0, 8)}…
-                      </p>
                     </div>
                     <span className="tabular-nums font-medium">
                       {formatMoney(item.amount)}

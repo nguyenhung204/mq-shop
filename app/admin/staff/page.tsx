@@ -153,6 +153,7 @@ function StaffInner() {
           email: res.user.email,
           temporaryPassword: res.temporaryPassword,
         });
+        toast.success(t("toast.staffCreated"));
       } else if (hasPendingStaffChange(res.user)) {
         // Admin assigned existing buyer → pending dual-control
         setPendingNotice(true);
@@ -185,7 +186,7 @@ function StaffInner() {
       if (roleFilter === "BUYER") setRoleFilter(assignRole);
       if (hasPendingStaffChange(user) || (!isSuperAdmin && user.status === "PENDING")) {
         setPendingNotice(true);
-        toast.message(t("admin.staffPage.pendingNotice"));
+        // Hook already toasts "roles updated"; banner is enough for pending.
       }
     } catch (err) {
       assignAlerts.setErrorFromApi(err);

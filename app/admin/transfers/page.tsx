@@ -294,7 +294,7 @@ function TransfersInner() {
                 {items.map((tr) => (
                   <tr key={tr.id} className="border-t border-mq-border">
                     <td className="p-3 font-mono text-xs">
-                      {tr.code || `${tr.id.slice(0, 8)}…`}
+                      {tr.code || t("seller.inventoryPage.code")}
                     </td>
                     <td className="p-3 text-xs">
                       {formatWarehouseLabel(

@@ -1035,12 +1035,6 @@ function MlmAdminInner() {
                     {selectedUser.fullName ? (
                       <p className="truncate text-mq-text-muted">{selectedUser.email}</p>
                     ) : null}
-                    <p
-                      className="truncate font-mono text-mq-text-muted"
-                      title={selectedUser.id}
-                    >
-                      {selectedUser.id}
-                    </p>
                     {selectedUser.mlmRank != null ? (
                       <p className="text-mq-text-muted">
                         {t("wallet.rank")} {selectedUser.mlmRank}
@@ -1113,12 +1107,6 @@ function MlmAdminInner() {
                     {treeUser.fullName ? (
                       <p className="truncate text-mq-text-muted">{treeUser.email}</p>
                     ) : null}
-                    <p
-                      className="truncate font-mono text-mq-text-muted"
-                      title={treeUser.id}
-                    >
-                      {treeUser.id}
-                    </p>
                   </div>
                 ) : null}
                 <button
@@ -1246,14 +1234,11 @@ function MlmAdminInner() {
                     <p className="truncate font-medium">
                       {referrerTarget.fullName || referrerTarget.email}
                     </p>
-                    <p className="truncate font-mono text-mq-text-muted" title={referrerTarget.id}>
-                      {referrerTarget.id}
-                    </p>
                     <p className="text-mq-text-muted">
                       {t("admin.mlm.currentReferrer")}:{" "}
                       {referrerTarget.referrerId
                         ? users.find((u) => u.id === referrerTarget.referrerId)
-                            ?.email ?? referrerTarget.referrerId.slice(0, 8)
+                            ?.email ?? "—"
                         : "—"}
                     </p>
                   </div>

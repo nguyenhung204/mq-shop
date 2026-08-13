@@ -175,11 +175,11 @@ function SlipsTab({ initialSlipId }: { initialSlipId?: string | null }) {
                 {s.locationNote ? (
                   <p className="text-xs text-mq-text-muted">{s.locationNote}</p>
                 ) : null}
-                <p className="text-xs text-mq-text-muted font-mono">
-                  {t("admin.common.shop")} {s.shopName || s.shopId.slice(0, 8) + "…"}
+                <p className="text-xs text-mq-text-muted">
+                  {t("admin.common.shop")} {s.shopName || "—"}
                 </p>
                 <p className="text-xs text-mq-text-muted">
-                  {t("admin.inventoryPage.createdBy")} {s.createdByName || s.createdByUserId.slice(0, 8) + "…"}
+                  {t("admin.inventoryPage.createdBy")} {s.createdByName || "—"}
                 </p>
                 <p className="text-xs text-mq-text-muted">
                   {t("admin.inventoryPage.created")} {formatWhen(s.createdAt)}
@@ -359,9 +359,7 @@ function LedgerTab() {
                       {formatWhen(row.recordedAt)}
                     </td>
                     <td className="py-2.5 pr-3 text-xs font-medium">
-                      {warehouseCodeById.get(row.warehouseId) ||
-                        row.warehouseId?.slice(0, 8) ||
-                        "—"}
+                      {warehouseCodeById.get(row.warehouseId) || "—"}
                     </td>
                     <td className="py-2.5 pr-3 font-medium">{row.sku}</td>
                     <td className="py-2.5 pr-3 text-xs">{slipTypeLabel(row.type, t)}</td>

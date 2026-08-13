@@ -130,7 +130,7 @@ function TransferDetailInner() {
         <div className="flex flex-wrap gap-4 text-sm">
           <div>
             <span className="text-xs text-mq-text-muted">{t("seller.inventoryPage.code")}</span>
-            <p className="font-mono text-xs">{transfer.code || transfer.id}</p>
+            <p className="font-mono text-xs">{transfer.code || "—"}</p>
           </div>
           <div>
             <span className="text-xs text-mq-text-muted">{t("admin.common.status")}</span>

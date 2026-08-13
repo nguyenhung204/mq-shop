@@ -86,7 +86,7 @@ function RmaInner() {
                 href={`/admin/rma/${r.id}`}
                 className="font-medium hover:text-mq-gold transition-colors"
               >
-                {t("admin.rmaPage.order")} {r.orderName ?? r.orderId.slice(0, 8)}
+                {t("admin.rmaPage.order")} {r.orderName ?? t("orders.detail.title")}
               </Link>
               <span className="mq-badge mq-badge-pink ml-2">
                 {translateStatus(t, "rma", r.status)}
