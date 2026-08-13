@@ -41,6 +41,8 @@ function RmaInner() {
             <option value="DISPUTED">{translateStatus(t, "rma", "DISPUTED")}</option>
             <option value="REFUND_PENDING">{translateStatus(t, "rma", "REFUND_PENDING")}</option>
             <option value="REFUND_SENT">{translateStatus(t, "rma", "REFUND_SENT")}</option>
+            <option value="GOODS_RETURN_PENDING">{translateStatus(t, "rma", "GOODS_RETURN_PENDING")}</option>
+            <option value="GOODS_RETURN_SHIPPED">{translateStatus(t, "rma", "GOODS_RETURN_SHIPPED")}</option>
             <option value="COMPLETED">{translateStatus(t, "rma", "COMPLETED")}</option>
             <option value="REJECTED">{translateStatus(t, "rma", "REJECTED")}</option>
             <option value="CLOSED">{translateStatus(t, "rma", "CLOSED")}</option>

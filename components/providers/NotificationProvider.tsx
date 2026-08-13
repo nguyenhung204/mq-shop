@@ -21,6 +21,7 @@ import type { ApiNotification, PageMeta, Role } from "@/lib/api/types";
 import { normalizeNotification } from "@/lib/notifications/normalize";
 import { localizeNotification } from "@/lib/notifications/localize";
 import { resolveNotificationRoute } from "@/lib/notifications/routes";
+import { shouldSuppressNotificationToast } from "@/lib/notifications/suppress-toast";
 import { adminWalletKeys, mlmKeys, walletKeys } from "@/lib/queries/wallet";
 import { financeKeys } from "@/lib/queries/finance";
 import { sellerKeys } from "@/lib/queries/seller";
@@ -122,6 +123,10 @@ const NOTIFY_INVALIDATION_MAP: Partial<Record<string, readonly (readonly unknown
   RMA_DISPUTED: [orderKeys.all],
   RMA_REFUND_PENDING: [orderKeys.all],
   RMA_REFUND_SENT: [orderKeys.all],
+  RMA_GOODS_RETURN_PENDING: [orderKeys.all],
+  RMA_GOODS_RETURN_SHIPPED: [orderKeys.all],
+  RMA_GOODS_RETURN_ISSUE: [orderKeys.all],
+  RMA_CLOSED: [orderKeys.all],
   RMA_ESCALATED: [orderKeys.all],
   REVIEW_NEW: [reviewKeys.all],
   REVIEW_SELLER_REPLIED: [reviewKeys.all],
@@ -239,6 +244,12 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         for (const key of invalidateKeys) {
           void queryClient.invalidateQueries({ queryKey: key });
         }
+      }
+
+      // Skip toast when the actor already got a mutation success toast for the
+      // same action (avoids “random info toast then success” flicker).
+      if (shouldSuppressNotificationToast(incoming.type)) {
+        return;
       }
 
       const href = resolveNotificationRoute(incoming, {

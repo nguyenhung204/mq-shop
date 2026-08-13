@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { X } from "lucide-react";
+import { toast } from "sonner";
 import { useCreateRma, useOrder } from "@/lib/queries/orders";
 import { canRequestRma, hasBlockingRma } from "@/lib/api/orders";
 import { AuthGuard } from "@/components/guards/AuthGuard";
@@ -11,6 +12,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Container, PageHero } from "@/components/ui/shared";
 import { translateStatus } from "@/lib/i18n/status";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { suppressNotificationToasts } from "@/lib/notifications/suppress-toast";
 
 function CreateRmaInner() {
   const { id } = useParams<{ id: string }>();
@@ -44,6 +46,8 @@ function CreateRmaInner() {
         evidence: files.length ? files.slice(0, 5) : undefined,
       });
       router.push(`/orders/${id}`);
+      suppressNotificationToasts();
+      toast.success(t("toast.rmaSubmitted"));
     } catch (err) {
       setError(getErrorMessage(err, t("toast.rmaFailed"), locale));
     }

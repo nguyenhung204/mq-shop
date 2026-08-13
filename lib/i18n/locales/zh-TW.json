@@ -496,7 +496,22 @@
       "refundProofUpload": "上傳匯款單／收據",
       "refundProofHint": "請先匯款至買家帳戶，上傳憑證後再標記已匯退款。",
       "refundProofRequired": "請先上傳退款憑證。",
-      "refundProofUploadedAt": "已於 {date} 上傳"
+      "refundProofUploadedAt": "已於 {date} 上傳",
+      "goodsReturnTrackingLabel": "退回買家運單",
+      "goodsReturnShipHint": "不退款 — 請將拒收商品寄回買家並填運單，等待買家確認。",
+      "goodsReturnTrackingPlaceholder": "寄回買家運單號（必填）",
+      "confirmGoodsHint": "確認已從賣家收到退回商品。",
+      "confirmGoodsReceived": "我已收到退回商品",
+      "reportGoodsIssue": "未收到／運單有誤",
+      "reportGoodsIssueTitle": "回報寄回問題",
+      "reportGoodsIssueDesc": "說明問題（未收到、運單錯誤、包裹損壞…）。客服與賣家會收到通知。",
+      "reportGoodsIssueHint": "運單有誤或包裹未到時請立即回報 — 不必等 7 天 SLA。",
+      "shopContactEmailLabel": "聯絡賣家（店主信箱）",
+      "shopContactEmailSubject": "訂單 {code} — 寄回問題",
+      "goodsReturnIssueLabel": "買家問題回報",
+      "goodsReturnUpdateTrackingHint": "若運單填錯或更換物流，可在此更新。",
+      "goodsReturnFixTrackingHint": "買家已回報問題 — 請更正運單以便其收貨。",
+      "goodsReturnPendingBuyerHint": "不退款。賣家須將商品寄回 — 收到後請確認。"
     }
   },
   "wishlist": {
@@ -1233,21 +1248,6 @@
     },
     "fx": {
       "title": "顯示匯率",
-      "subtitle": "錢包持有點數（PTS）。FX 將佣金 TWD → PTS；訂單 GMV 仍為 TWD。",
-      "ledgerNote": "訂單 GMV 與商品總額仍為 TWD。錢包餘額與佣金入帳為點數（PTS）。",
-      "asOf": "生效時間",
-      "source": "來源",
-      "formTitle": "更新匯率",
-      "formHint": "每次儲存新增一筆（保留歷史）。TWD 恆為 1。",
-      "note": "備註（選填）",
-      "save": "儲存匯率",
-      "saved": "已更新匯率",
-      "saveFailed": "無法儲存匯率",
-      "loadFailed": "無法載入匯率",
-      "baseCurrency": "基準幣別：TWD（帳本）。匯率為 TWD → 報價幣。"
-    },
-    "fx": {
-      "title": "顯示匯率",
       "subtitle": "全系統匯率：1 TWD = rate × 報價幣別。僅影響前台顯示。",
       "ledgerNote": "帳本、錢包、佣金與結帳仍為 TWD。",
       "asOf": "生效時間",
@@ -1387,7 +1387,7 @@
       "sideBuyer": "支持買家",
       "upholdReject": "維持拒絕",
       "upholdRejectTitle": "維持賣家拒絕",
-      "upholdRejectDesc": "依賣家退貨驗收拒絕結案爭議。",
+      "upholdRejectDesc": "維持賣家驗收拒絕。賣家必須將商品寄回買家（不退款）。買家確認後訂單恢復為已配達。",
       "tracking": "退貨追蹤",
       "inspectionNote": "驗貨備註",
       "forceCloseAbandoned": "關閉（買家未寄回）",
@@ -1401,7 +1401,8 @@
       "reopenDisputeTitle": "重新開啟退貨爭議",
       "reopenDisputeDesc": "在驗收拒絕或自動結案後重新開啟，供客服／管理員再次處理。",
       "refundProofTitle": "退款匯款憑證",
-      "refundProofAlt": "退款匯款憑證"
+      "refundProofAlt": "退款匯款憑證",
+      "forceCloseGoodsReturned": "強制結案（已退回商品）"
     },
     "financePage": {
       "payoutBatches": "撥款批次",
@@ -2165,7 +2166,9 @@
       "markRefundSent": "標記已匯退款",
       "uploadRefundProof": "上傳退款憑證",
       "openOrder": "開啟訂單",
-      "escalatedOnly": "僅逾期"
+      "escalatedOnly": "僅逾期",
+      "shipGoodsToBuyer": "寄回商品給買家",
+      "updateGoodsReturnTracking": "更新寄回運單"
     },
     "reviews": {
       "empty": "尚無商品。上架商品後即可查看評價。",
@@ -2802,7 +2805,9 @@
       "REFUND_PENDING": "待退款",
       "REFUND_SENT": "已匯退款",
       "CLOSED": "已結案",
-      "COMPLETED": "已完成"
+      "COMPLETED": "已完成",
+      "GOODS_RETURN_PENDING": "待寄回買家",
+      "GOODS_RETURN_SHIPPED": "已寄回買家"
     },
     "rmaMessage": {
       "PENDING": "退貨申請待賣家審核",
@@ -2818,7 +2823,9 @@
       "CLOSED": "退貨已結案",
       "COMPLETED": "退貨已完成",
       "REFUND_APPROVED": "退款已核准 — 等待賣家於系統外撥款。",
-      "REFUNDED": "退款已完成"
+      "REFUNDED": "退款已完成",
+      "GOODS_RETURN_PENDING": "不退款 — 等待賣家寄回商品",
+      "GOODS_RETURN_SHIPPED": "賣家已寄回 — 收到後請確認"
     },
     "shop": {
       "PENDING": "待審核",

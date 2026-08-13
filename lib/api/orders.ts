@@ -39,6 +39,8 @@ export type RmaStatus =
   | "DISPUTED"
   | "REFUND_PENDING"
   | "REFUND_SENT"
+  | "GOODS_RETURN_PENDING"
+  | "GOODS_RETURN_SHIPPED"
   | "CLOSED"
   | "COMPLETED";
 
@@ -140,6 +142,12 @@ export type RmaView = {
   escalatedAt?: string | null;
   refundProofUrl?: string | null;
   refundProofUploadedAt?: string | null;
+  goodsReturnTrackingCode?: string | null;
+  goodsReturnCarrier?: string | null;
+  goodsReturnShippedAt?: string | null;
+  goodsReturnConfirmedAt?: string | null;
+  goodsReturnIssueNote?: string | null;
+  goodsReturnIssueAt?: string | null;
   createdAt: string;
   updatedAt?: string;
 };
@@ -168,6 +176,8 @@ export type OrderView = {
   buyerEmail?: string | null;
   shopId: string;
   shopName?: string | null;
+  /** Present on order detail when RMA is on goods-return path. */
+  shopOwnerEmail?: string | null;
   status: OrderStatus;
   subtotal: number;
   shippingFee: number;
@@ -298,6 +308,22 @@ export const orderApi = {
   confirmRmaCompleted: (rmaId: string, body?: { note?: string }) =>
     api.post<RmaView>(`/rma/${rmaId}/confirm-completed`, body ?? {}),
 
+  shipGoodsToBuyer: (
+    rmaId: string,
+    body: { trackingCode: string; carrier?: string; note?: string },
+  ) => api.post<RmaView>(`/rma/${rmaId}/goods-return-shipped`, body),
+
+  updateGoodsReturnTracking: (
+    rmaId: string,
+    body: { trackingCode: string; carrier?: string; note?: string },
+  ) => api.post<RmaView>(`/rma/${rmaId}/goods-return-tracking`, body),
+
+  reportGoodsReturnIssue: (rmaId: string, body: { reason: string }) =>
+    api.post<RmaView>(`/rma/${rmaId}/goods-return-issue`, body),
+
+  confirmGoodsReceived: (rmaId: string, body?: { note?: string }) =>
+    api.post<RmaView>(`/rma/${rmaId}/confirm-goods-received`, body ?? {}),
+
   /** Multipart field `proof` — buyer payment bill for OFF_PLATFORM/COD. */
   uploadPaymentProof: (orderId: string, file: File) => {
     const fd = new FormData();
@@ -368,6 +394,9 @@ export const adminOrdersApi = {
 
   forceCloseAbandoned: (rmaId: string, body?: { note?: string }) =>
     api.post<RmaView>(`/admin/rma/${rmaId}/force-close-abandoned`, body ?? {}),
+
+  forceCloseGoodsReturned: (rmaId: string, body?: { note?: string }) =>
+    api.post<RmaView>(`/admin/rma/${rmaId}/force-close-goods-returned`, body ?? {}),
 
   /** Legacy alias → force-complete */
   markRmaRefunded: (rmaId: string, body?: { note?: string }) =>
@@ -463,6 +492,8 @@ const BLOCKING_RMA_STATUSES: RmaStatus[] = [
   "DISPUTED",
   "REFUND_PENDING",
   "REFUND_SENT",
+  "GOODS_RETURN_PENDING",
+  "GOODS_RETURN_SHIPPED",
 ];
 
 /** Hide Request return when an in-flight RMA exists. REJECTED / CLOSED / COMPLETED may retry if order still DELIVERED. */

@@ -31,6 +31,7 @@ type ForceKind =
   | "forceRefundSent"
   | "forceComplete"
   | "forceCloseAbandoned"
+  | "forceCloseGoodsReturned"
   | null;
 
 function RmaDetailInner({ id }: { id: string }) {
@@ -211,7 +212,10 @@ function RmaDetailInner({ id }: { id: string }) {
                       </button>
                     </>
                   ) : null}
-                  {rma.status === "REFUND_SENT" || rma.status === "DISPUTED" ? (
+                  {rma.status === "REFUND_SENT" ||
+                  rma.status === "DISPUTED" ||
+                  rma.status === "GOODS_RETURN_PENDING" ||
+                  rma.status === "GOODS_RETURN_SHIPPED" ? (
                     <button
                       type="button"
                       className="mq-btn mq-btn-primary text-xs"
@@ -219,6 +223,17 @@ function RmaDetailInner({ id }: { id: string }) {
                       onClick={() => setForceKind("forceComplete")}
                     >
                       {t("admin.rmaPage.forceComplete")}
+                    </button>
+                  ) : null}
+                  {rma.status === "GOODS_RETURN_PENDING" ||
+                  rma.status === "GOODS_RETURN_SHIPPED" ? (
+                    <button
+                      type="button"
+                      className="mq-btn mq-btn-outline text-xs"
+                      disabled={busy}
+                      onClick={() => setForceKind("forceCloseGoodsReturned")}
+                    >
+                      {t("admin.rmaPage.forceCloseGoodsReturned")}
                     </button>
                   ) : null}
                 </div>
@@ -271,6 +286,30 @@ function RmaDetailInner({ id }: { id: string }) {
                   <dd>
                     {rma.returnCarrier ? `${rma.returnCarrier} · ` : ""}
                     {rma.returnTrackingCode}
+                  </dd>
+                </div>
+              ) : null}
+              {rma.goodsReturnTrackingCode ? (
+                <div>
+                  <dt className="text-xs text-mq-text-muted">
+                    {t("orders.rma.goodsReturnTrackingLabel")}
+                  </dt>
+                  <dd>
+                    {rma.goodsReturnCarrier ? `${rma.goodsReturnCarrier} · ` : ""}
+                    {rma.goodsReturnTrackingCode}
+                  </dd>
+                </div>
+              ) : null}
+              {rma.goodsReturnIssueNote ? (
+                <div>
+                  <dt className="text-xs text-mq-text-muted">
+                    {t("orders.rma.goodsReturnIssueLabel")}
+                  </dt>
+                  <dd className="text-mq-accent-orange whitespace-pre-wrap">
+                    {rma.goodsReturnIssueNote}
+                    {rma.goodsReturnIssueAt
+                      ? ` · ${new Date(rma.goodsReturnIssueAt).toLocaleString()}`
+                      : ""}
                   </dd>
                 </div>
               ) : null}
@@ -441,7 +480,11 @@ function RmaDetailInner({ id }: { id: string }) {
         title={t("admin.rmaPage.forceNoteTitle")}
         description={t("admin.rmaPage.forceNoteDesc")}
         confirmLabel={t("admin.common.confirm")}
-        required={forceKind === "forceRefundSent" || forceKind === "forceComplete"}
+        required={
+          forceKind === "forceRefundSent" ||
+          forceKind === "forceComplete" ||
+          forceKind === "forceCloseGoodsReturned"
+        }
         maxLength={500}
         busy={busy}
         onClose={() => setForceKind(null)}

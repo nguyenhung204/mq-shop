@@ -21,6 +21,7 @@ import {
 import { parsePage } from "@/lib/api/utils";
 import { currentLocale, tt } from "@/lib/i18n/tt";
 import { statusLabel } from "@/lib/i18n/status";
+import { suppressNotificationToasts } from "@/lib/notifications/suppress-toast";
 import { getErrorMessage } from "@/lib/queries/utils";
 
 export const orderKeys = {
@@ -207,7 +208,7 @@ export function useCreateRma(orderId: string) {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: orderKeys.detail(orderId) });
-      toast.success(tt("toast.rmaSubmitted"));
+      // Page shows toast after navigate to avoid jump during route change.
     },
   });
 }
@@ -219,6 +220,7 @@ export function useRemoveRmaEvidence(orderId?: string) {
       orderApi.removeRmaEvidence(rmaId, urls),
     onSuccess: (rma) => {
       invalidateRmaQueries(queryClient, rma.id, orderId ?? rma.orderId);
+      suppressNotificationToasts();
       toast.success(tt("toast.rmaUpdated"));
     },
     onError: (e) => toast.error(orderErrorMessage(e, tt("toast.rmaActionFailed"))),
@@ -232,6 +234,7 @@ export function useUploadRmaEvidence(orderId?: string) {
       orderApi.uploadRmaEvidence(rmaId, files),
     onSuccess: (rma) => {
       invalidateRmaQueries(queryClient, rma.id, orderId ?? rma.orderId);
+      suppressNotificationToasts();
       toast.success(tt("toast.rmaUpdated"));
     },
     onError: (e) => toast.error(orderErrorMessage(e, tt("toast.rmaActionFailed"))),
@@ -245,6 +248,7 @@ export function useUploadRefundProof(orderId?: string) {
       orderApi.uploadRefundProof(rmaId, file),
     onSuccess: (rma) => {
       invalidateRmaQueries(queryClient, rma.id, orderId ?? rma.orderId);
+      suppressNotificationToasts();
       toast.success(tt("toast.rmaRefundProofUploaded"));
     },
     onError: (e) =>
@@ -361,9 +365,13 @@ export function useShopRmaAction() {
         | "returnReceived"
         | "acceptReturn"
         | "rejectReturn"
-        | "refundSent";
+        | "refundSent"
+        | "shipGoodsToBuyer"
+        | "updateGoodsReturnTracking";
       note?: string;
       orderId?: string;
+      trackingCode?: string;
+      carrier?: string;
     }) => {
       const { id, action, note } = input;
       switch (action) {
@@ -379,10 +387,23 @@ export function useShopRmaAction() {
           return orderApi.rejectReturn(id, { note: note || "Return rejected" });
         case "refundSent":
           return orderApi.markRefundSent(id, note ? { note } : {});
+        case "shipGoodsToBuyer":
+          return orderApi.shipGoodsToBuyer(id, {
+            trackingCode: input.trackingCode || "",
+            carrier: input.carrier,
+            note,
+          });
+        case "updateGoodsReturnTracking":
+          return orderApi.updateGoodsReturnTracking(id, {
+            trackingCode: input.trackingCode || "",
+            carrier: input.carrier,
+            note,
+          });
       }
     },
     onSuccess: (rma, vars) => {
       invalidateRmaQueries(queryClient, vars.id, vars.orderId ?? rma.orderId);
+      suppressNotificationToasts();
       toast.success(tt("toast.rmaUpdated"));
     },
     onError: (e) => toast.error(orderErrorMessage(e, tt("toast.rmaActionFailed"))),
@@ -395,7 +416,12 @@ export function useBuyerRmaAction() {
     mutationFn: async (input: {
       id: string;
       orderId: string;
-      action: "ship" | "dispute" | "confirmCompleted";
+      action:
+        | "ship"
+        | "dispute"
+        | "confirmCompleted"
+        | "confirmGoodsReceived"
+        | "reportGoodsReturnIssue";
       trackingCode?: string;
       carrier?: string;
       reason?: string;
@@ -412,10 +438,22 @@ export function useBuyerRmaAction() {
       if (action === "dispute") {
         return orderApi.openDispute(id, { reason: input.reason || "Dispute" });
       }
+      if (action === "confirmGoodsReceived") {
+        return orderApi.confirmGoodsReceived(
+          id,
+          input.note ? { note: input.note } : {},
+        );
+      }
+      if (action === "reportGoodsReturnIssue") {
+        return orderApi.reportGoodsReturnIssue(id, {
+          reason: input.reason || "Not received / wrong tracking",
+        });
+      }
       return orderApi.confirmRmaCompleted(id, input.note ? { note: input.note } : {});
     },
     onSuccess: (_rma, vars) => {
       invalidateRmaQueries(queryClient, vars.id, vars.orderId);
+      suppressNotificationToasts();
       toast.success(tt("toast.rmaUpdated"));
     },
     onError: (e) => toast.error(orderErrorMessage(e, tt("toast.rmaActionFailed"))),
@@ -464,6 +502,7 @@ export function useAdminRmaDecision() {
     },
     onSuccess: (_d, vars) => {
       invalidateRmaQueries(queryClient, vars.id);
+      suppressNotificationToasts();
       toast.success(
         vars.decision === "APPROVED" ? tt("toast.rmaApproved") : tt("toast.rmaRejected"),
       );
@@ -486,6 +525,7 @@ export function useAdminResolveDispute() {
     }) => adminOrdersApi.resolveDispute(id, { decision, note }),
     onSuccess: (_d, vars) => {
       invalidateRmaQueries(queryClient, vars.id);
+      suppressNotificationToasts();
       toast.success(tt("toast.rmaDisputeResolved"));
     },
     onError: (e) => toast.error(orderErrorMessage(e, tt("toast.rmaActionFailed"))),
@@ -499,6 +539,7 @@ export function useAdminReopenDispute() {
       adminOrdersApi.reopenDispute(id, { reason }),
     onSuccess: (_d, vars) => {
       invalidateRmaQueries(queryClient, vars.id);
+      suppressNotificationToasts();
       toast.success(tt("toast.rmaDisputeReopened"));
     },
     onError: (e) => toast.error(orderErrorMessage(e, tt("toast.rmaActionFailed"))),
@@ -519,7 +560,8 @@ export function useAdminRmaForceAction() {
         | "forceAccept"
         | "forceRefundSent"
         | "forceComplete"
-        | "forceCloseAbandoned";
+        | "forceCloseAbandoned"
+        | "forceCloseGoodsReturned";
       note?: string;
     }) => {
       const body = note ? { note } : {};
@@ -534,10 +576,13 @@ export function useAdminRmaForceAction() {
           return adminOrdersApi.forceCompleteRma(id, body);
         case "forceCloseAbandoned":
           return adminOrdersApi.forceCloseAbandoned(id, body);
+        case "forceCloseGoodsReturned":
+          return adminOrdersApi.forceCloseGoodsReturned(id, body);
       }
     },
     onSuccess: (_d, vars) => {
       invalidateRmaQueries(queryClient, vars.id);
+      suppressNotificationToasts();
       toast.success(tt("toast.rmaForceDone"));
     },
     onError: (e) => toast.error(orderErrorMessage(e, tt("toast.rmaActionFailed"))),
@@ -552,6 +597,7 @@ export function useAdminRmaMarkRefunded() {
       adminOrdersApi.forceCompleteRma(id, note ? { note } : {}),
     onSuccess: (_d, vars) => {
       invalidateRmaQueries(queryClient, vars.id);
+      suppressNotificationToasts();
       toast.success(tt("toast.markedRefunded"));
     },
     onError: (e) => toast.error(orderErrorMessage(e, tt("toast.markRefundedFailed"))),

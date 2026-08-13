@@ -135,6 +135,10 @@ export function resolveNotificationRoute(
     case "RMA_DISPUTED":
     case "RMA_REFUND_PENDING":
     case "RMA_REFUND_SENT":
+    case "RMA_GOODS_RETURN_PENDING":
+    case "RMA_GOODS_RETURN_SHIPPED":
+    case "RMA_GOODS_RETURN_ISSUE":
+    case "RMA_CLOSED":
     case "RMA_ESCALATED": {
       const orderId = metaStr(meta, "orderId");
       const rmaId = metaStr(meta, "rmaId");

@@ -496,7 +496,22 @@
       "refundProofUpload": "Upload transfer bill / receipt",
       "refundProofHint": "Transfer the refund to the buyer’s bank account, then upload proof before marking refund sent.",
       "refundProofRequired": "Upload refund proof first.",
-      "refundProofUploadedAt": "Uploaded {date}"
+      "refundProofUploadedAt": "Uploaded {date}",
+      "goodsReturnTrackingLabel": "Goods return tracking",
+      "goodsReturnShipHint": "No refund — ship the rejected goods back to the buyer with tracking, then wait for their confirmation.",
+      "goodsReturnTrackingPlaceholder": "Return-to-buyer tracking (required)",
+      "confirmGoodsHint": "Confirm once you have received the goods back from the seller.",
+      "confirmGoodsReceived": "I received my goods back",
+      "reportGoodsIssue": "Not received / wrong tracking",
+      "reportGoodsIssueTitle": "Report goods return issue",
+      "reportGoodsIssueDesc": "Describe the problem (not received, wrong tracking, damaged package…). CS and the seller will be notified.",
+      "reportGoodsIssueHint": "Use this if tracking looks wrong or the package never arrived — do not wait for the 7-day SLA.",
+      "shopContactEmailLabel": "Contact shop (owner email)",
+      "shopContactEmailSubject": "Order {code} — goods return issue",
+      "goodsReturnIssueLabel": "Buyer issue report",
+      "goodsReturnUpdateTrackingHint": "Update tracking if you entered the wrong code or changed carrier.",
+      "goodsReturnFixTrackingHint": "Buyer reported a problem — correct the tracking so they can receive the goods.",
+      "goodsReturnPendingBuyerHint": "No refund. The seller must ship your items back — you will confirm when they arrive."
     }
   },
   "wishlist": {
@@ -1233,21 +1248,6 @@
     },
     "fx": {
       "title": "Display FX rates",
-      "subtitle": "Wallet holds POINTS (PTS). FX converts commission TWD → PTS; order GMV stays TWD.",
-      "ledgerNote": "Order GMV and product totals remain TWD. Wallet balances and commission credits are POINTS (PTS).",
-      "asOf": "Effective",
-      "source": "Source",
-      "formTitle": "Update rates",
-      "formHint": "Each save inserts a new effective row (history kept). TWD is always 1.",
-      "note": "Note (optional)",
-      "save": "Save rates",
-      "saved": "FX rates updated",
-      "saveFailed": "Could not save FX rates",
-      "loadFailed": "Could not load FX rates",
-      "baseCurrency": "Base currency: TWD (ledger). Rates are TWD → quote."
-    },
-    "fx": {
-      "title": "Display FX rates",
       "subtitle": "System-wide rates: 1 TWD = rate × quote currency. Affects storefront display only.",
       "ledgerNote": "Ledger, wallet, commission, and checkout charges remain TWD.",
       "asOf": "Effective",
@@ -1387,7 +1387,7 @@
       "sideBuyer": "Side with buyer",
       "upholdReject": "Uphold reject",
       "upholdRejectTitle": "Uphold seller reject",
-      "upholdRejectDesc": "Close the dispute in favor of the seller’s return rejection.",
+      "upholdRejectDesc": "Uphold the seller’s inspection reject. Seller must ship the goods back to the buyer (no refund). Order returns to Delivered after buyer confirms.",
       "tracking": "Return tracking",
       "inspectionNote": "Inspection note",
       "forceCloseAbandoned": "Close (buyer never shipped)",
@@ -1401,7 +1401,8 @@
       "reopenDisputeTitle": "Reopen return dispute",
       "reopenDisputeDesc": "Reopen after inspection reject or auto-close so Admin/CS can resolve again.",
       "refundProofTitle": "Refund transfer proof",
-      "refundProofAlt": "Refund transfer proof"
+      "refundProofAlt": "Refund transfer proof",
+      "forceCloseGoodsReturned": "Force close (goods returned)"
     },
     "financePage": {
       "payoutBatches": "Payout batches",
@@ -2165,7 +2166,9 @@
       "markRefundSent": "Mark refund sent",
       "uploadRefundProof": "Upload refund proof",
       "openOrder": "Open order",
-      "escalatedOnly": "Overdue only"
+      "escalatedOnly": "Overdue only",
+      "shipGoodsToBuyer": "Ship goods back to buyer",
+      "updateGoodsReturnTracking": "Update return tracking"
     },
     "reviews": {
       "empty": "No products yet. Publish a product to see reviews.",
@@ -2802,7 +2805,9 @@
       "REFUND_PENDING": "Refund pending",
       "REFUND_SENT": "Refund sent",
       "CLOSED": "Closed",
-      "COMPLETED": "Completed"
+      "COMPLETED": "Completed",
+      "GOODS_RETURN_PENDING": "Goods return pending",
+      "GOODS_RETURN_SHIPPED": "Goods return shipped"
     },
     "rmaMessage": {
       "PENDING": "Return pending seller review",
@@ -2818,7 +2823,9 @@
       "CLOSED": "Return closed",
       "COMPLETED": "Return completed",
       "REFUND_APPROVED": "Refund approved — waiting for seller payout outside the system.",
-      "REFUNDED": "Refund completed"
+      "REFUNDED": "Refund completed",
+      "GOODS_RETURN_PENDING": "No refund — waiting for seller to ship goods back to you",
+      "GOODS_RETURN_SHIPPED": "Seller shipped goods back — confirm when received"
     },
     "shop": {
       "PENDING": "Pending",

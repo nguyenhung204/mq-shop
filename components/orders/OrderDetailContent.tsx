@@ -167,6 +167,7 @@ function OrderDetailInner() {
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [disputeModalOpen, setDisputeModalOpen] = useState(false);
+  const [goodsReturnIssueOpen, setGoodsReturnIssueOpen] = useState(false);
   const [sellerRejectOpen, setSellerRejectOpen] = useState<
     null | "reject" | "rejectReturn"
   >(null);
@@ -505,6 +506,21 @@ function OrderDetailInner() {
                   </div>
                 ) : null}
 
+                {order.rma?.goodsReturnTrackingCode ? (
+                  <p className="text-sm text-mq-text-secondary">
+                    {t("orders.rma.goodsReturnTrackingLabel")}:{" "}
+                    {order.rma.goodsReturnCarrier
+                      ? `${order.rma.goodsReturnCarrier} · `
+                      : ""}
+                    {order.rma.goodsReturnTrackingCode}
+                  </p>
+                ) : null}
+                {order.rma?.goodsReturnIssueNote ? (
+                  <p className="text-sm text-mq-accent-orange">
+                    {t("orders.rma.goodsReturnIssueLabel")}: {order.rma.goodsReturnIssueNote}
+                  </p>
+                ) : null}
+
                 {isBuyer && order.rma?.status === "REFUND_SENT" ? (
                   <div className="pt-2 border-t border-mq-border space-y-2">
                     <p className="text-xs text-mq-text-muted">{t("orders.rma.confirmHint")}</p>
@@ -523,6 +539,62 @@ function OrderDetailInner() {
                       {t("orders.rma.confirmReceived")}
                     </button>
                   </div>
+                ) : null}
+
+                {isBuyer && order.rma?.status === "GOODS_RETURN_SHIPPED" ? (
+                  <div className="pt-2 border-t border-mq-border space-y-2">
+                    <p className="text-xs text-mq-text-muted">
+                      {t("orders.rma.confirmGoodsHint")}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        className="mq-btn mq-btn-primary"
+                        disabled={buyerRma.isPending}
+                        onClick={() =>
+                          void buyerRma.mutateAsync({
+                            id: order.rma!.id,
+                            orderId: order.id,
+                            action: "confirmGoodsReceived",
+                          })
+                        }
+                      >
+                        {t("orders.rma.confirmGoodsReceived")}
+                      </button>
+                      <button
+                        type="button"
+                        className="mq-btn mq-btn-outline"
+                        disabled={buyerRma.isPending}
+                        onClick={() => setGoodsReturnIssueOpen(true)}
+                      >
+                        {t("orders.rma.reportGoodsIssue")}
+                      </button>
+                    </div>
+                    <p className="text-xs text-mq-text-muted">
+                      {t("orders.rma.reportGoodsIssueHint")}
+                    </p>
+                    {order.shopOwnerEmail ? (
+                      <p className="text-sm text-mq-text-secondary">
+                        {t("orders.rma.shopContactEmailLabel")}:{" "}
+                        <a
+                          className="text-mq-accent underline break-all"
+                          href={`mailto:${order.shopOwnerEmail}?subject=${encodeURIComponent(
+                            t("orders.rma.shopContactEmailSubject", {
+                              code: order.code,
+                            }),
+                          )}`}
+                        >
+                          {order.shopOwnerEmail}
+                        </a>
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
+
+                {isBuyer && order.rma?.status === "GOODS_RETURN_PENDING" ? (
+                  <p className="text-xs text-mq-text-muted pt-2 border-t border-mq-border">
+                    {t("orders.rma.goodsReturnPendingBuyerHint")}
+                  </p>
                 ) : null}
 
                 {isShopOrder && order.rma ? (
@@ -645,6 +717,82 @@ function OrderDetailInner() {
                             {t("orders.rma.refundProofRequired")}
                           </p>
                         ) : null}
+                      </div>
+                    ) : null}
+                    {order.rma.status === "GOODS_RETURN_PENDING" ? (
+                      <div className="space-y-2 w-full">
+                        <p className="text-xs text-mq-text-muted">
+                          {t("orders.rma.goodsReturnShipHint")}
+                        </p>
+                        <input
+                          className="mq-input"
+                          placeholder={t("orders.rma.goodsReturnTrackingPlaceholder")}
+                          value={trackingCode}
+                          onChange={(e) => setTrackingCode(e.target.value)}
+                        />
+                        <input
+                          className="mq-input"
+                          placeholder={t("orders.rma.carrierPlaceholder")}
+                          value={carrier}
+                          onChange={(e) => setCarrier(e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          className="mq-btn mq-btn-primary text-xs"
+                          disabled={
+                            shopRma.isPending || trackingCode.trim().length < 3
+                          }
+                          onClick={() =>
+                            void shopRma.mutateAsync({
+                              id: order.rma!.id,
+                              action: "shipGoodsToBuyer",
+                              orderId: order.id,
+                              trackingCode: trackingCode.trim(),
+                              carrier: carrier.trim() || undefined,
+                            })
+                          }
+                        >
+                          {t("seller.rmaPage.shipGoodsToBuyer")}
+                        </button>
+                      </div>
+                    ) : null}
+                    {order.rma.status === "GOODS_RETURN_SHIPPED" ? (
+                      <div className="space-y-2 w-full">
+                        <p className="text-xs text-mq-text-muted">
+                          {order.rma.goodsReturnIssueNote
+                            ? t("orders.rma.goodsReturnFixTrackingHint")
+                            : t("orders.rma.goodsReturnUpdateTrackingHint")}
+                        </p>
+                        <input
+                          className="mq-input"
+                          placeholder={t("orders.rma.goodsReturnTrackingPlaceholder")}
+                          value={trackingCode}
+                          onChange={(e) => setTrackingCode(e.target.value)}
+                        />
+                        <input
+                          className="mq-input"
+                          placeholder={t("orders.rma.carrierPlaceholder")}
+                          value={carrier}
+                          onChange={(e) => setCarrier(e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          className="mq-btn mq-btn-primary text-xs"
+                          disabled={
+                            shopRma.isPending || trackingCode.trim().length < 3
+                          }
+                          onClick={() =>
+                            void shopRma.mutateAsync({
+                              id: order.rma!.id,
+                              action: "updateGoodsReturnTracking",
+                              orderId: order.id,
+                              trackingCode: trackingCode.trim(),
+                              carrier: carrier.trim() || undefined,
+                            })
+                          }
+                        >
+                          {t("seller.rmaPage.updateGoodsReturnTracking")}
+                        </button>
                       </div>
                     ) : null}
                   </div>
@@ -968,6 +1116,26 @@ function OrderDetailInner() {
               reason,
             })
             .then(() => setDisputeModalOpen(false));
+        }}
+      />
+      <AdminReasonModal
+        open={goodsReturnIssueOpen}
+        title={t("orders.rma.reportGoodsIssueTitle")}
+        description={t("orders.rma.reportGoodsIssueDesc")}
+        confirmLabel={t("orders.rma.reportGoodsIssue")}
+        maxLength={500}
+        busy={buyerRma.isPending}
+        onClose={() => setGoodsReturnIssueOpen(false)}
+        onConfirm={(reason) => {
+          if (!order?.rma) return;
+          void buyerRma
+            .mutateAsync({
+              id: order.rma.id,
+              orderId: order.id,
+              action: "reportGoodsReturnIssue",
+              reason,
+            })
+            .then(() => setGoodsReturnIssueOpen(false));
         }}
       />
       <AdminReasonModal

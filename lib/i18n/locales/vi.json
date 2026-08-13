@@ -496,7 +496,22 @@
       "refundProofUpload": "Tải biên lai / bill chuyển khoản",
       "refundProofHint": "Chuyển hoàn vào STK người mua, rồi tải minh chứng trước khi đánh dấu đã chuyển.",
       "refundProofRequired": "Cần tải minh chứng chuyển hoàn trước.",
-      "refundProofUploadedAt": "Đã tải {date}"
+      "refundProofUploadedAt": "Đã tải {date}",
+      "goodsReturnTrackingLabel": "Mã vận đơn trả hàng lại",
+      "goodsReturnShipHint": "Không hoàn tiền — gửi hàng đã từ chối về cho người mua kèm mã vận đơn, rồi chờ họ xác nhận.",
+      "goodsReturnTrackingPlaceholder": "Mã vận đơn trả lại buyer (bắt buộc)",
+      "confirmGoodsHint": "Xác nhận khi bạn đã nhận lại hàng từ người bán.",
+      "confirmGoodsReceived": "Tôi đã nhận lại hàng",
+      "reportGoodsIssue": "Chưa nhận / sai thông tin",
+      "reportGoodsIssueTitle": "Báo lỗi trả hàng lại",
+      "reportGoodsIssueDesc": "Mô tả vấn đề (chưa nhận, sai mã vận đơn, kiện hỏng…). CS và người bán sẽ được thông báo.",
+      "reportGoodsIssueHint": "Dùng khi mã vận đơn sai hoặc hàng không tới — không cần chờ SLA 7 ngày.",
+      "shopContactEmailLabel": "Liên hệ shop (email chủ shop)",
+      "shopContactEmailSubject": "Đơn {code} — lỗi trả hàng lại",
+      "goodsReturnIssueLabel": "Buyer báo lỗi",
+      "goodsReturnUpdateTrackingHint": "Cập nhật mã vận đơn nếu nhập sai hoặc đổi đơn vị vận chuyển.",
+      "goodsReturnFixTrackingHint": "Buyer đã báo lỗi — hãy sửa mã vận đơn để họ nhận được hàng.",
+      "goodsReturnPendingBuyerHint": "Không hoàn tiền. Người bán phải gửi lại hàng — bạn xác nhận khi nhận được."
     }
   },
   "wishlist": {
@@ -1233,21 +1248,6 @@
     },
     "fx": {
       "title": "Tỷ giá hiển thị",
-      "subtitle": "Ví giữ ĐIỂM (PTS). FX quy đổi hoa hồng TWD → PTS; GMV đơn hàng vẫn là TWD.",
-      "ledgerNote": "GMV đơn hàng và giá sản phẩm vẫn là TWD. Số dư ví và hoa hồng ghi có là ĐIỂM (PTS).",
-      "asOf": "Hiệu lực",
-      "source": "Nguồn",
-      "formTitle": "Cập nhật tỷ giá",
-      "formHint": "Mỗi lần lưu thêm dòng mới (giữ lịch sử). TWD luôn = 1.",
-      "note": "Ghi chú (tuỳ chọn)",
-      "save": "Lưu tỷ giá",
-      "saved": "Đã cập nhật tỷ giá",
-      "saveFailed": "Không lưu được tỷ giá",
-      "loadFailed": "Không tải được tỷ giá",
-      "baseCurrency": "Tiền gốc: TWD (sổ cái). Tỷ giá TWD → quote."
-    },
-    "fx": {
-      "title": "Tỷ giá hiển thị",
       "subtitle": "Tỷ giá toàn hệ thống: 1 TWD = rate × quote. Chỉ ảnh hưởng hiển thị storefront.",
       "ledgerNote": "Sổ cái, ví, hoa hồng và thanh toán vẫn là TWD.",
       "asOf": "Hiệu lực",
@@ -1387,7 +1387,7 @@
       "sideBuyer": "Ủng hộ người mua",
       "upholdReject": "Giữ từ chối",
       "upholdRejectTitle": "Giữ từ chối của seller",
-      "upholdRejectDesc": "Đóng khiếu nại theo hướng ủng hộ seller từ chối hàng hoàn.",
+      "upholdRejectDesc": "Giữ từ chối kiểm hàng của seller. Seller phải gửi hàng về lại buyer (không hoàn tiền). Đơn về Delivered sau khi buyer xác nhận.",
       "tracking": "Mã vận đơn hoàn",
       "inspectionNote": "Ghi chú kiểm hàng",
       "forceCloseAbandoned": "Đóng (buyer không gửi hàng)",
@@ -1401,7 +1401,8 @@
       "reopenDisputeTitle": "Mở lại khiếu nại đổi trả",
       "reopenDisputeDesc": "Mở lại sau từ chối kiểm hàng hoặc auto-close để CS/Admin xử lý lại.",
       "refundProofTitle": "Minh chứng chuyển hoàn",
-      "refundProofAlt": "Minh chứng chuyển hoàn"
+      "refundProofAlt": "Minh chứng chuyển hoàn",
+      "forceCloseGoodsReturned": "Force đóng (đã trả hàng)"
     },
     "financePage": {
       "payoutBatches": "Lô chi trả",
@@ -2165,7 +2166,9 @@
       "markRefundSent": "Đã chuyển hoàn tiền",
       "uploadRefundProof": "Tải minh chứng hoàn",
       "openOrder": "Mở đơn",
-      "escalatedOnly": "Chỉ quá hạn"
+      "escalatedOnly": "Chỉ quá hạn",
+      "shipGoodsToBuyer": "Gửi hàng lại cho buyer",
+      "updateGoodsReturnTracking": "Cập nhật mã vận đơn trả lại"
     },
     "reviews": {
       "empty": "Chưa có sản phẩm. Đăng sản phẩm để xem đánh giá.",
@@ -2802,7 +2805,9 @@
       "REFUND_PENDING": "Chờ hoàn tiền",
       "REFUND_SENT": "Đã chuyển hoàn",
       "CLOSED": "Đã đóng",
-      "COMPLETED": "Hoàn tất"
+      "COMPLETED": "Hoàn tất",
+      "GOODS_RETURN_PENDING": "Chờ trả hàng lại buyer",
+      "GOODS_RETURN_SHIPPED": "Đã gửi hàng lại buyer"
     },
     "rmaMessage": {
       "PENDING": "Đổi trả đang chờ người bán duyệt",
@@ -2818,7 +2823,9 @@
       "CLOSED": "Đổi trả đã đóng",
       "COMPLETED": "Đổi trả hoàn tất",
       "REFUND_APPROVED": "Đã duyệt hoàn — chờ người bán chi ngoài hệ thống.",
-      "REFUNDED": "Đã hoàn tiền xong"
+      "REFUNDED": "Đã hoàn tiền xong",
+      "GOODS_RETURN_PENDING": "Không hoàn tiền — chờ người bán gửi hàng về lại",
+      "GOODS_RETURN_SHIPPED": "Người bán đã gửi hàng lại — xác nhận khi nhận được"
     },
     "shop": {
       "PENDING": "Chờ duyệt",

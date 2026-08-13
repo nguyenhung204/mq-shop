@@ -50,6 +50,8 @@ function SellerRmaInner() {
         <option value="RETURN_RECEIVED">{translateStatus(t, "rma", "RETURN_RECEIVED")}</option>
         <option value="REFUND_PENDING">{translateStatus(t, "rma", "REFUND_PENDING")}</option>
         <option value="REFUND_SENT">{translateStatus(t, "rma", "REFUND_SENT")}</option>
+        <option value="GOODS_RETURN_PENDING">{translateStatus(t, "rma", "GOODS_RETURN_PENDING")}</option>
+        <option value="GOODS_RETURN_SHIPPED">{translateStatus(t, "rma", "GOODS_RETURN_SHIPPED")}</option>
         <option value="RETURN_REJECTED">{translateStatus(t, "rma", "RETURN_REJECTED")}</option>
         <option value="DISPUTED">{translateStatus(t, "rma", "DISPUTED")}</option>
         <option value="COMPLETED">{translateStatus(t, "rma", "COMPLETED")}</option>
@@ -165,6 +167,16 @@ function SellerRmaInner() {
                 {r.refundProofUrl
                   ? t("seller.rmaPage.markRefundSent")
                   : t("seller.rmaPage.uploadRefundProof")}
+              </Link>
+            ) : null}
+            {r.status === "GOODS_RETURN_PENDING" ? (
+              <Link href={`/orders/${r.orderId}`} className="mq-btn mq-btn-primary text-xs">
+                {t("seller.rmaPage.shipGoodsToBuyer")}
+              </Link>
+            ) : null}
+            {r.status === "GOODS_RETURN_SHIPPED" ? (
+              <Link href={`/orders/${r.orderId}`} className="mq-btn mq-btn-primary text-xs">
+                {t("seller.rmaPage.updateGoodsReturnTracking")}
               </Link>
             ) : null}
             <Link href={`/orders/${r.orderId}`} className="mq-btn mq-btn-outline text-xs">

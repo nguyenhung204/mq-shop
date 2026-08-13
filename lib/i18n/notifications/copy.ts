@@ -164,6 +164,22 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "Refund sent",
       body: "Seller marked refund sent for {rmaId}. Confirm when received.",
     },
+    RMA_GOODS_RETURN_PENDING: {
+      title: "Goods will be returned",
+      body: "No refund for {rmaId}. Seller must ship your items back.",
+    },
+    RMA_GOODS_RETURN_SHIPPED: {
+      title: "Goods shipped back",
+      body: "Seller shipped items back for {rmaId}. Confirm when received.",
+    },
+    RMA_GOODS_RETURN_ISSUE: {
+      title: "Goods return issue",
+      body: "Buyer reported a problem receiving goods for {rmaId}. Check tracking / CS.",
+    },
+    RMA_CLOSED: {
+      title: "Return closed",
+      body: "Return {rmaId} closed — goods returned, no refund.",
+    },
     RMA_ESCALATED: {
       title: "Return overdue",
       body: "Return {rmaId} missed an SLA step and needs attention.",
@@ -478,6 +494,22 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "Đã chuyển hoàn",
       body: "Người bán đánh dấu đã chuyển hoàn {rmaId}. Xác nhận khi nhận tiền.",
     },
+    RMA_GOODS_RETURN_PENDING: {
+      title: "Hàng sẽ được trả lại",
+      body: "Không hoàn tiền cho {rmaId}. Người bán phải gửi lại hàng.",
+    },
+    RMA_GOODS_RETURN_SHIPPED: {
+      title: "Đã gửi hàng lại",
+      body: "Người bán đã gửi hàng lại cho {rmaId}. Xác nhận khi nhận được.",
+    },
+    RMA_GOODS_RETURN_ISSUE: {
+      title: "Lỗi trả hàng lại",
+      body: "Buyer báo chưa nhận / sai vận đơn cho {rmaId}. Kiểm tra mã / CS.",
+    },
+    RMA_CLOSED: {
+      title: "Đổi trả đã đóng",
+      body: "Đổi trả {rmaId} đã đóng — hàng đã trả lại, không hoàn tiền.",
+    },
     RMA_ESCALATED: {
       title: "Đổi trả quá hạn",
       body: "Yêu cầu {rmaId} bỏ lỡ SLA và cần xử lý.",
@@ -791,6 +823,22 @@ export const NOTIFICATION_TYPE_COPY: Record<
     RMA_REFUND_SENT: {
       title: "已匯退款",
       body: "賣家已標記退貨 {rmaId} 已匯款，收到後請確認。",
+    },
+    RMA_GOODS_RETURN_PENDING: {
+      title: "商品將寄回",
+      body: "{rmaId} 不退款。賣家須將商品寄回。",
+    },
+    RMA_GOODS_RETURN_SHIPPED: {
+      title: "商品已寄回",
+      body: "賣家已將 {rmaId} 商品寄回。收到後請確認。",
+    },
+    RMA_GOODS_RETURN_ISSUE: {
+      title: "寄回問題",
+      body: "買家回報 {rmaId} 未收到／運單有誤。請檢查運單或客服。",
+    },
+    RMA_CLOSED: {
+      title: "退貨已結案",
+      body: "退貨 {rmaId} 已結案 — 商品已退回，不退款。",
     },
     RMA_ESCALATED: {
       title: "退貨已逾期",
