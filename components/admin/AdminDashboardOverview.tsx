@@ -63,7 +63,7 @@ function formatSnapshotValue(
   value: number | string,
   locale: Locale | null,
 ): string {
-  if (key === "gmvDeliveredThisMonthUsd") {
+  if (key === "gmvDeliveredThisMonth" || key === "gmvPlatformTotal") {
     return formatMoneyLocale(value, locale);
   }
   return String(value);
@@ -92,8 +92,8 @@ function QueueTile({ tileKey, tile, label, locale, onNavigate }: QueueTileProps)
       </span>
       <span className="mq-admin-queue-body">
         <span className="mq-admin-queue-label">{label}</span>
-        {tile.amountUsd ? (
-          <span className="mq-admin-queue-sub">{formatMoneyLocale(tile.amountUsd, locale)}</span>
+        {tile.amount ? (
+          <span className="mq-admin-queue-sub">{formatMoneyLocale(tile.amount, locale)}</span>
         ) : null}
       </span>
       <span className="mq-admin-queue-count">{tile.count}</span>

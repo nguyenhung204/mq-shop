@@ -251,7 +251,7 @@ function OrdersInner() {
                 required
                 aria-label={t("admin.ordersPage.buyer")}
                 placeholder={t("admin.ordersPage.searchBuyer")}
-                searchPlaceholder="Name or email…"
+                searchPlaceholder={t("admin.ordersPage.searchBuyer")}
                 onChange={(id) => {
                   setBuyerId(id);
                   const user = buyers.find((u) => u.id === id);
@@ -268,8 +268,8 @@ function OrdersInner() {
                 value={variantId}
                 required
                 aria-label={t("admin.ordersPage.productVariant")}
-                placeholder="Search product, SKU, or variant…"
-                searchPlaceholder="Product, SKU, options…"
+                placeholder={t("admin.ordersPage.searchProduct")}
+                searchPlaceholder={t("admin.ordersPage.searchProductHint")}
                 onChange={setVariantId}
               />
             </div>
@@ -286,11 +286,11 @@ function OrdersInner() {
             className="mq-input"
             value={paymentMethod}
             onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-            aria-label="Payment method"
+            aria-label={t("checkout.paymentMethod")}
           >
-            <option value="MOCK">MOCK</option>
-            <option value="OFF_PLATFORM">OFF_PLATFORM</option>
-            <option value="COD">COD</option>
+            <option value="OFF_PLATFORM">{t("checkout.paymentOffPlatform")}</option>
+            <option value="MOCK">{t("checkout.paymentMock")}</option>
+            <option value="COD">{t("checkout.paymentCod")}</option>
           </select>
           <input
             className="mq-input"

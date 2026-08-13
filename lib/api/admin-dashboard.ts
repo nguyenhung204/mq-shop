@@ -3,7 +3,17 @@ import { api } from "./client";
 export type DashboardCountTile = {
   count: number;
   href?: string;
-  amountUsd?: string;
+  amount?: string;
+};
+
+export type AdminDashboardSnapshot = {
+  ordersToday?: number;
+  ordersThisWeek?: number;
+  gmvPlatformTotal?: string;
+  gmvDeliveredThisMonth?: string;
+  activeShops?: number;
+  activeProducts?: number;
+  suspendedShops?: number;
 };
 
 export type AdminDashboardQueues = {
@@ -20,16 +30,6 @@ export type AdminDashboardQueues = {
   staffPending?: DashboardCountTile;
   financeConfigsPending?: DashboardCountTile;
 };
-
-export type AdminDashboardSnapshot = {
-  ordersToday?: number;
-  ordersThisWeek?: number;
-  gmvDeliveredThisMonthUsd?: string;
-  activeShops?: number;
-  activeProducts?: number;
-  suspendedShops?: number;
-};
-
 export type AdminDashboardPayload = {
   queues?: AdminDashboardQueues;
   snapshot?: Partial<AdminDashboardSnapshot>;
@@ -78,9 +78,10 @@ export const ADMIN_DASHBOARD_QUEUE_ORDER: (keyof AdminDashboardQueues)[] = [
 ];
 
 export const ADMIN_DASHBOARD_SNAPSHOT_ORDER: (keyof AdminDashboardSnapshot)[] = [
+  "gmvPlatformTotal",
+  "gmvDeliveredThisMonth",
   "ordersToday",
   "ordersThisWeek",
-  "gmvDeliveredThisMonthUsd",
   "activeShops",
   "activeProducts",
   "suspendedShops",
