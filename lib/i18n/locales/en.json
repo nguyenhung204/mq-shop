@@ -419,6 +419,8 @@
       "shipTo": "Ship to",
       "shipFromWarehouse": "· ships from {warehouse}",
       "delivered": "Delivered {date}",
+      "salesNotEligibleYet": "Sales not confirmed yet — commission and shop reconciliation wait until the 7-day return window ends with no open return.",
+      "salesEligible": "Sales confirmed {date} (eligible for commission & reconciliation)",
       "markStatus": "Mark {status}",
       "updating": "Updating…",
       "cancelOrderTitle": "Cancel order",
@@ -1468,7 +1470,8 @@
       "status": {
         "PENDING_RECONCILE": "Pending reconcile",
         "INCLUDED_IN_PAYOUT": "On reconciliation slip",
-        "PAID_OUT": "Reconciled"
+        "PAID_OUT": "Reconciled",
+        "VOIDED": "Voided (refunded)"
       }
     },
     "walletPayouts": {
@@ -2145,7 +2148,8 @@
       "status": {
         "PENDING_RECONCILE": "Pending reconcile",
         "INCLUDED_IN_PAYOUT": "On reconciliation slip",
-        "PAID_OUT": "Reconciled"
+        "PAID_OUT": "Reconciled",
+        "VOIDED": "Voided (refunded)"
       }
     },
     "rmaPage": {
@@ -2854,7 +2858,8 @@
     "settlement": {
       "PENDING_RECONCILE": "Pending reconcile",
       "INCLUDED_IN_PAYOUT": "On reconciliation slip",
-      "PAID_OUT": "Reconciled"
+      "PAID_OUT": "Reconciled",
+      "VOIDED": "Voided (refunded)"
     },
     "review": {
       "VISIBLE": "Visible",

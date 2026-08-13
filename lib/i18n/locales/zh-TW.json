@@ -419,6 +419,8 @@
       "shipTo": "收件地址",
       "shipFromWarehouse": "· 出貨倉庫 {warehouse}",
       "delivered": "已於 {date} 送達",
+      "salesNotEligibleYet": "營業額尚未確認 — 佣金與店家對帳須待 7 天退貨期結束且無進行中退貨。",
+      "salesEligible": "營業額已於 {date} 確認（可計佣金與對帳）",
       "markStatus": "標記為 {status}",
       "updating": "更新中…",
       "cancelOrderTitle": "取消訂單",
@@ -1468,7 +1470,8 @@
       "status": {
         "PENDING_RECONCILE": "待對帳",
         "INCLUDED_IN_PAYOUT": "已入對帳單",
-        "PAID_OUT": "已對帳"
+        "PAID_OUT": "已對帳",
+        "VOIDED": "已作廢（退款）"
       }
     },
     "walletPayouts": {
@@ -2145,7 +2148,8 @@
       "status": {
         "PENDING_RECONCILE": "待對帳",
         "INCLUDED_IN_PAYOUT": "已入對帳單",
-        "PAID_OUT": "已對帳"
+        "PAID_OUT": "已對帳",
+        "VOIDED": "已作廢（退款）"
       }
     },
     "rmaPage": {
@@ -2854,7 +2858,8 @@
     "settlement": {
       "PENDING_RECONCILE": "待對帳",
       "INCLUDED_IN_PAYOUT": "已入對帳單",
-      "PAID_OUT": "已對帳"
+      "PAID_OUT": "已對帳",
+      "VOIDED": "已作廢（退款）"
     },
     "review": {
       "VISIBLE": "顯示中",

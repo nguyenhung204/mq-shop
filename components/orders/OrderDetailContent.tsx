@@ -845,6 +845,18 @@ function OrderDetailInner() {
                 })}
               </p>
             ) : null}
+            {order.status === "DELIVERED" && !order.salesEligibleAt ? (
+              <p className="text-xs text-mq-accent-orange">
+                {t("orders.detail.salesNotEligibleYet")}
+              </p>
+            ) : null}
+            {order.salesEligibleAt ? (
+              <p className="text-xs text-mq-text-muted">
+                {t("orders.detail.salesEligible", {
+                  date: new Date(order.salesEligibleAt).toLocaleString(),
+                })}
+              </p>
+            ) : null}
             <ul className="divide-y divide-mq-border">
               {(order.items || []).map((item) => (
                 <li key={item.id} className="py-3 flex items-start gap-3 text-sm">

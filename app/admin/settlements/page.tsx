@@ -20,6 +20,7 @@ const STATUSES: Array<SettlementStatus | ""> = [
   "PENDING_RECONCILE",
   "INCLUDED_IN_PAYOUT",
   "PAID_OUT",
+  "VOIDED",
 ];
 
 function statusBadgeClass(status: SettlementStatus): string {
@@ -30,6 +31,8 @@ function statusBadgeClass(status: SettlementStatus): string {
       return "mq-badge mq-badge-orange";
     case "PAID_OUT":
       return "mq-badge mq-badge-teal";
+    case "VOIDED":
+      return "mq-badge mq-badge-muted";
     default:
       return "mq-badge mq-badge-muted";
   }

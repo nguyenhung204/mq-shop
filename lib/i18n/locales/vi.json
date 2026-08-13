@@ -419,6 +419,8 @@
       "shipTo": "Giao đến",
       "shipFromWarehouse": "· xuất từ kho {warehouse}",
       "delivered": "Đã giao {date}",
+      "salesNotEligibleYet": "Doanh số chưa chốt — hoa hồng và đối soát shop chờ hết 7 ngày đổi trả và không còn RMA mở.",
+      "salesEligible": "Doanh số đã chốt {date} (đủ điều kiện hoa hồng & đối soát)",
       "markStatus": "Chuyển sang {status}",
       "updating": "Đang cập nhật…",
       "cancelOrderTitle": "Huỷ đơn hàng",
@@ -1468,7 +1470,8 @@
       "status": {
         "PENDING_RECONCILE": "Chờ đối soát",
         "INCLUDED_IN_PAYOUT": "Trong phiếu đối soát",
-        "PAID_OUT": "Đã đối soát"
+        "PAID_OUT": "Đã đối soát",
+        "VOIDED": "Đã hủy (hoàn tiền)"
       }
     },
     "walletPayouts": {
@@ -2145,7 +2148,8 @@
       "status": {
         "PENDING_RECONCILE": "Chờ đối soát",
         "INCLUDED_IN_PAYOUT": "Trong phiếu đối soát",
-        "PAID_OUT": "Đã đối soát"
+        "PAID_OUT": "Đã đối soát",
+        "VOIDED": "Đã hủy (hoàn tiền)"
       }
     },
     "rmaPage": {
@@ -2854,7 +2858,8 @@
     "settlement": {
       "PENDING_RECONCILE": "Chờ đối soát",
       "INCLUDED_IN_PAYOUT": "Trong phiếu đối soát",
-      "PAID_OUT": "Đã đối soát"
+      "PAID_OUT": "Đã đối soát",
+      "VOIDED": "Đã hủy (hoàn tiền)"
     },
     "review": {
       "VISIBLE": "Hiển thị",

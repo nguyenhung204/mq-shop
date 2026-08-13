@@ -201,6 +201,8 @@ export type OrderView = {
   cancelReason: string | null;
   paidAt: string | null;
   deliveredAt: string | null;
+  /** Set when sales volume is confirmed (RMA window + no active return). */
+  salesEligibleAt?: string | null;
   /** Latest RMA for this order when BE includes it; null/undefined if none. */
   rma?: RmaView | null;
   createdAt: string;
