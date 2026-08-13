@@ -11,6 +11,7 @@ export interface RmaRateResult {
 }
 
 export interface DashboardSummary {
+  revenueIncurredThisMonth?: string;
   revenueThisMonth: string;
   revenueLastMonth: string;
   revenueGrowthPercent: number | null;

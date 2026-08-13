@@ -63,7 +63,11 @@ function formatSnapshotValue(
   value: number | string,
   locale: Locale | null,
 ): string {
-  if (key === "gmvDeliveredThisMonth" || key === "gmvPlatformTotal") {
+  if (
+    key === "gmvIncurredThisMonth" ||
+    key === "gmvDeliveredThisMonth" ||
+    key === "gmvPlatformTotal"
+  ) {
     return formatMoneyLocale(value, locale);
   }
   return String(value);

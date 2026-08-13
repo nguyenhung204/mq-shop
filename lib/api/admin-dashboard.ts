@@ -9,6 +9,7 @@ export type DashboardCountTile = {
 export type AdminDashboardSnapshot = {
   ordersToday?: number;
   ordersThisWeek?: number;
+  gmvIncurredThisMonth?: string;
   gmvPlatformTotal?: string;
   gmvDeliveredThisMonth?: string;
   activeShops?: number;
@@ -78,8 +79,9 @@ export const ADMIN_DASHBOARD_QUEUE_ORDER: (keyof AdminDashboardQueues)[] = [
 ];
 
 export const ADMIN_DASHBOARD_SNAPSHOT_ORDER: (keyof AdminDashboardSnapshot)[] = [
-  "gmvPlatformTotal",
+  "gmvIncurredThisMonth",
   "gmvDeliveredThisMonth",
+  "gmvPlatformTotal",
   "ordersToday",
   "ordersThisWeek",
   "activeShops",

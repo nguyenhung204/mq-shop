@@ -19,6 +19,7 @@ export const ADMIN_DASHBOARD_QUEUE_I18N: Record<keyof AdminDashboardQueues, stri
 };
 
 export const ADMIN_DASHBOARD_SNAPSHOT_I18N: Record<keyof AdminDashboardSnapshot, string> = {
+  gmvIncurredThisMonth: "admin.overview.snapshot.gmvIncurredThisMonth",
   gmvPlatformTotal: "admin.overview.snapshot.gmvPlatformTotal",
   gmvDeliveredThisMonth: "admin.overview.snapshot.gmvDeliveredThisMonth",
   ordersToday: "admin.overview.snapshot.ordersToday",

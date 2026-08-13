@@ -65,6 +65,15 @@ export function WalletBonusGuide({ className = "" }: { className?: string }) {
         <p className="text-sm text-mq-text-muted leading-relaxed">
           {t("wallet.bonusGuide.intro")}
         </p>
+        <div className="rounded-md border border-mq-accent-orange/30 bg-mq-accent-orange/5 px-3 py-2.5 text-sm space-y-2">
+          <p className="font-medium text-mq-text">{t("wallet.bonusGuide.policyTitle")}</p>
+          <p className="text-mq-text-secondary leading-relaxed">
+            {t("wallet.bonusGuide.policyEligible")}
+          </p>
+          <p className="text-mq-text-secondary leading-relaxed">
+            {t("wallet.bonusGuide.policyPeriod")}
+          </p>
+        </div>
         <div className="rounded-md border border-mq-border/70 bg-mq-surface-subtle px-3 py-2.5 text-sm space-y-1">
           <p className="text-mq-text-secondary">{t("wallet.bonusGuide.pointsFlow")}</p>
           {onePointDisplay != null ? (

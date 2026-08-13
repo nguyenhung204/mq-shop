@@ -200,6 +200,12 @@ function OrderDetailInner() {
   const myShopId = user?.shopId || shop?.id || null;
   const isBuyer = Boolean(order && user && order.buyerId === user.id);
   const isShopOrder = Boolean(order && myShopId && order.shopId === myShopId);
+  const isPlatformAdmin =
+    roles.includes("ADMIN") || roles.includes("SUPER_ADMIN");
+  /** Commission / shop settlement copy — not for the buyer view. */
+  const showSalesRecognition = Boolean(
+    order && !isBuyer && (isShopOrder || isPlatformAdmin),
+  );
   const canFulfill =
     isShopOrder &&
     (roles.includes("SELLER") ||
@@ -845,12 +851,14 @@ function OrderDetailInner() {
                 })}
               </p>
             ) : null}
-            {order.status === "DELIVERED" && !order.salesEligibleAt ? (
+            {showSalesRecognition &&
+            order.status === "DELIVERED" &&
+            !order.salesEligibleAt ? (
               <p className="text-xs text-mq-accent-orange">
                 {t("orders.detail.salesNotEligibleYet")}
               </p>
             ) : null}
-            {order.salesEligibleAt ? (
+            {showSalesRecognition && order.salesEligibleAt ? (
               <p className="text-xs text-mq-text-muted">
                 {t("orders.detail.salesEligible", {
                   date: new Date(order.salesEligibleAt).toLocaleString(),
