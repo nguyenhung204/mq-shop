@@ -10,7 +10,6 @@ import {
   useWallet,
   useWalletTransfer,
 } from "@/lib/queries/wallet";
-import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -203,7 +202,6 @@ function P2pPanel({
       {done ? <div className="mq-alert mq-alert-success">{t("wallet.p2pSuccess")}</div> : null}
 
       <div className="mq-card p-6 space-y-4">
-        <LedgerTwdNote />
         {needsPin ? (
           <p className="text-sm text-mq-text-muted">{t("wallet.pinRequiredBanner")}</p>
         ) : !preview ? (

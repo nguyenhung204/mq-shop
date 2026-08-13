@@ -33,7 +33,7 @@ export function convertTwdToDisplay(
   return roundMoney(amountTwd * rate, decimalPlaces);
 }
 
-/** PTS → region display currency (via TWD bridge). */
+/** PTS → region display currency (via TWD bridge; same 2dp as withdraw). */
 export function convertPointsToDisplay(
   points: number,
   rateTwdToUsd: number,
@@ -41,7 +41,7 @@ export function convertPointsToDisplay(
   rates: Record<string, number> | null | undefined,
   decimalPlaces = 2,
 ): number {
-  const twd = convertPointsToTwd(points, rateTwdToUsd, 6);
+  const twd = convertPointsToTwd(points, rateTwdToUsd, decimalPlaces);
   return convertTwdToDisplay(twd, displayCurrency, rates, decimalPlaces);
 }
 

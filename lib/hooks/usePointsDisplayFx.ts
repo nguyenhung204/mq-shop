@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo } from "react";
 import { useRegion } from "@/components/providers/RegionProvider";
-import { useFxRates } from "@/lib/queries/fx";
+import { useFxRates } from "@/lib/fx/useFxRates";
 import {
   convertPointsToDisplay,
   convertPointsToTwd,
@@ -15,12 +15,11 @@ import {
 /** Region currency + FX helpers for PTS value notes and withdraw estimates. */
 export function usePointsDisplayFx() {
   const { currentRegion } = useRegion();
-  const { data: fx } = useFxRates("TWD");
+  const { rates, isRatesReady } = useFxRates();
 
   const displayCurrency = (
     currentRegion?.currency || FX_BASE_CURRENCY
   ).toUpperCase();
-  const rates = fx?.rates;
   const rateTwdToUsd = rates?.USD;
 
   const onePointDisplay = useMemo(() => {
@@ -82,6 +81,7 @@ export function usePointsDisplayFx() {
     displayCurrency,
     rateTwdToUsd,
     rates,
+    isRatesReady,
     onePointDisplay,
     onePointTwd,
     pointUsdLabel: formatPointUsdValue(),

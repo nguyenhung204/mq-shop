@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/client";
+import { orderApi } from "@/lib/api/orders";
 import { splitStoredPhone, toE164 } from "@/lib/data/phone";
 import { formatMoney } from "@/lib/api/utils";
 import { useDisplayMoney } from "@/components/providers/DisplayMoneyProvider";
@@ -35,6 +36,18 @@ import {
 import type { GateRegionId } from "@/lib/i18n/regions";
 import { regionIdToCountryCode } from "@/lib/i18n/regions";
 
+const PROOF_ACCEPT = "image/jpeg,image/png,image/webp,image/gif";
+const PROOF_MAX_BYTES = 5 * 1024 * 1024;
+
+type PlacedOrder = {
+  id: string;
+  code: string;
+  displayName: string;
+  total: number;
+  proofUploaded: boolean;
+  proofError: string | null;
+};
+
 export function CheckoutContent() {
   const { t, locale } = useLanguage();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
@@ -57,9 +70,7 @@ export function CheckoutContent() {
   const [cartReady, setCartReady] = useState(() =>
     typeof window === "undefined" ? false : useCartStore.persist.hasHydrated(),
   );
-  const [placed, setPlaced] = useState<{ id: string; code: string; displayName: string; total: number } | null>(
-    null,
-  );
+  const [placed, setPlaced] = useState<PlacedOrder | null>(null);
   const [shippingFee, setShippingFee] = useState<number | null>(null);
   const [profileSeeded, setProfileSeeded] = useState(false);
   const [nationalPhone, setNationalPhone] = useState("");
@@ -68,6 +79,10 @@ export function CheckoutContent() {
   const [dialTouched, setDialTouched] = useState(false);
   const [crossBorderOpen, setCrossBorderOpen] = useState(false);
   const [crossBorderBypassed, setCrossBorderBypassed] = useState(false);
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [proofPreviewUrl, setProofPreviewUrl] = useState<string | null>(null);
+  const [proofFieldError, setProofFieldError] = useState<string | null>(null);
+  const [proofRetrying, setProofRetrying] = useState(false);
   const quote = useShippingQuote();
   const checkout = useCheckout();
 
@@ -159,6 +174,32 @@ export function CheckoutContent() {
   }, [isAuthenticated, itemCount, refetchRates]);
 
   useEffect(() => {
+    if (!proofFile) {
+      setProofPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(proofFile);
+    setProofPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [proofFile]);
+
+  const validateProofFile = (file: File | null): string | null => {
+    if (!file) return t("checkout.paymentProofRequired");
+    if (!PROOF_ACCEPT.split(",").includes(file.type)) {
+      return t("checkout.paymentProofInvalidType");
+    }
+    if (file.size > PROOF_MAX_BYTES) {
+      return t("checkout.paymentProofTooLarge");
+    }
+    return null;
+  };
+
+  const onProofFileChange = (file: File | null) => {
+    setProofFile(file);
+    setProofFieldError(file ? validateProofFile(file) : null);
+  };
+
+  useEffect(() => {
     if (!isAuthenticated || lineItems.length === 0) return;
     if (!address?.fullName || !address.phone || !address.line1 || !address.city) {
       setShippingFee(null);
@@ -232,14 +273,86 @@ export function CheckoutContent() {
     return (
       <>
         <PageHero title={t("checkout.orderPlaced")} breadcrumb={[{ label: t("checkout.title") }]} />
-        <Container className="py-16 text-center max-w-lg mx-auto">
-          <h2 className="text-2xl text-mq-text mb-3">{t("checkout.thankYou")}</h2>
-          <p className="text-mq-text-secondary mb-2">
-            {t("checkout.orderLabel")} <strong>{placed.displayName}</strong> ·{" "}
-            {formatDisplay(placed.total)}{" "}
-            <span className="text-mq-text-muted text-sm">({formatMoney(placed.total)})</span>
-          </p>
-          <p className="text-sm text-mq-text-muted mb-8">{t("checkout.paySellerDirectly")}</p>
+        <Container className="py-16 text-center max-w-lg mx-auto space-y-6">
+          <div>
+            <h2 className="text-2xl text-mq-text mb-3">{t("checkout.thankYou")}</h2>
+            <p className="text-mq-text-secondary mb-2">
+              {t("checkout.orderLabel")} <strong>{placed.displayName}</strong> ·{" "}
+              {formatDisplay(placed.total)}{" "}
+              <span className="text-mq-text-muted text-sm">({formatMoney(placed.total)})</span>
+            </p>
+          </div>
+
+          {placed.proofUploaded ? (
+            <div className="mq-alert mq-alert-success text-sm text-left">
+              {t("checkout.paymentProofUploadedNote")}
+            </div>
+          ) : (
+            <div className="rounded-[var(--mq-radius-lg)] border border-mq-border bg-mq-surface p-5 text-left space-y-3">
+              <p className="text-sm font-medium text-mq-text">
+                {t("checkout.paymentProofStillNeeded")}
+              </p>
+              {placed.proofError ? (
+                <p className="text-xs text-mq-accent-orange">{placed.proofError}</p>
+              ) : null}
+              <label className="block text-sm" htmlFor="checkout-proof-retry">
+                {t("checkout.paymentProofLabel")}
+              </label>
+              <input
+                id="checkout-proof-retry"
+                type="file"
+                accept={PROOF_ACCEPT}
+                className="mq-input"
+                onChange={(e) => onProofFileChange(e.target.files?.[0] ?? null)}
+              />
+              {proofPreviewUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={proofPreviewUrl}
+                  alt={t("orders.payment.proofAlt")}
+                  className="max-h-40 w-auto rounded border border-mq-border object-contain bg-white"
+                />
+              ) : null}
+              <button
+                type="button"
+                className="mq-btn mq-btn-primary w-full"
+                disabled={!proofFile || proofRetrying}
+                onClick={async () => {
+                  const err = validateProofFile(proofFile);
+                  if (err || !proofFile) {
+                    setProofFieldError(err);
+                    return;
+                  }
+                  setProofRetrying(true);
+                  try {
+                    await orderApi.uploadPaymentProof(placed.id, proofFile);
+                    setPlaced({
+                      ...placed,
+                      proofUploaded: true,
+                      proofError: null,
+                    });
+                    setProofFile(null);
+                    toast.success(t("toast.paymentProofUploaded"));
+                  } catch (e) {
+                    const msg = getErrorMessage(
+                      e,
+                      t("toast.paymentProofUploadFailed"),
+                      locale,
+                    );
+                    setPlaced({ ...placed, proofError: msg });
+                    toast.error(msg);
+                  } finally {
+                    setProofRetrying(false);
+                  }
+                }}
+              >
+                {proofRetrying
+                  ? t("checkout.uploadingProof")
+                  : t("checkout.uploadProofNow")}
+              </button>
+            </div>
+          )}
+
           <div className="flex flex-wrap gap-3 justify-center">
             <Link href={`/orders/${placed.id}`} className="mq-btn mq-btn-primary">
               {t("checkout.viewOrder")}
@@ -267,6 +380,17 @@ export function CheckoutContent() {
       return;
     }
 
+    const needsProof =
+      values.paymentMethod === "OFF_PLATFORM" || values.paymentMethod === "COD";
+    if (needsProof) {
+      const proofErr = validateProofFile(proofFile);
+      if (proofErr) {
+        setProofFieldError(proofErr);
+        toast.warning(proofErr);
+        return;
+      }
+    }
+
     setSubmitError(null);
     try {
       const phone = toE164(
@@ -287,16 +411,39 @@ export function CheckoutContent() {
         displayCurrency: currency,
         fxAsOf: currency !== "TWD" ? freshFx.asOf || undefined : undefined,
       });
+
+      let proofUploaded = false;
+      let proofError: string | null = null;
+      if (needsProof && proofFile) {
+        try {
+          await orderApi.uploadPaymentProof(order.id, proofFile);
+          proofUploaded = true;
+        } catch (e) {
+          proofError = getErrorMessage(
+            e,
+            t("toast.paymentProofUploadFailed"),
+            locale,
+          );
+          toast.error(proofError);
+        }
+      }
+
       clearCart();
+      setProofFile(null);
       setPlaced({
         id: order.id,
         code: order.code,
         displayName: order.displayName,
         total: order.total,
+        proofUploaded,
+        proofError,
       });
       toast.success(t("checkout.orderPlaced"), {
         description: order.displayName,
       });
+      if (proofUploaded) {
+        toast.success(t("toast.paymentProofUploaded"));
+      }
     } catch (err) {
       if (err instanceof ApiError && err.code === "FX_RATE_CHANGED") {
         await refetchRates();
@@ -556,6 +703,38 @@ export function CheckoutContent() {
                 ) : checkoutShopId ? (
                   <p className="text-xs text-mq-text-muted">{t("checkout.loadingPaymentProfile")}</p>
                 ) : null}
+
+                <div className="space-y-2 rounded-[var(--mq-radius-sm)] border border-dashed border-mq-border bg-mq-surface-subtle p-4">
+                  <label className="block text-sm font-medium" htmlFor="checkout-payment-proof">
+                    {t("checkout.paymentProofLabel")}{" "}
+                    <span className="text-mq-accent-orange">*</span>
+                  </label>
+                  <p className="text-xs text-mq-text-muted">{t("checkout.paymentProofHint")}</p>
+                  <input
+                    id="checkout-payment-proof"
+                    type="file"
+                    accept={PROOF_ACCEPT}
+                    className="mq-input"
+                    onChange={(e) => onProofFileChange(e.target.files?.[0] ?? null)}
+                  />
+                  {proofPreviewUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={proofPreviewUrl}
+                      alt={t("orders.payment.proofAlt")}
+                      className="max-h-40 w-auto rounded border border-mq-border object-contain bg-white"
+                    />
+                  ) : null}
+                  {proofFile ? (
+                    <p className="text-xs text-mq-text-secondary">
+                      {proofFile.name} · {(proofFile.size / 1024).toFixed(0)} KB
+                    </p>
+                  ) : null}
+                  {proofFieldError ? (
+                    <p className="text-xs text-mq-accent-orange">{proofFieldError}</p>
+                  ) : null}
+                </div>
+
                 <div>
                   <label className="block text-sm mb-1.5" htmlFor="note">
                     {t("checkout.note")}
@@ -656,7 +835,12 @@ export function CheckoutContent() {
             <button
               type="submit"
               className="mq-btn mq-btn-primary w-full mt-6"
-              disabled={isSubmitting || checkout.isPending || fxCheckoutBlocked}
+              disabled={
+                isSubmitting ||
+                checkout.isPending ||
+                fxCheckoutBlocked ||
+                !proofFile
+              }
             >
               {isSubmitting || checkout.isPending
                 ? t("checkout.placing")
