@@ -45,8 +45,12 @@ export const orderKeys = {
       params.page ?? 1,
       params.pageSize ?? 20,
     ] as const,
-  adminRma: (status?: string) => [...orderKeys.all, "admin-rma", status ?? ""] as const,
+  adminRma: (status?: string, escalated?: boolean) =>
+    [...orderKeys.all, "admin-rma", status ?? "", escalated ? "escalated" : ""] as const,
   adminRmaDetail: (id: string) => [...orderKeys.all, "admin-rma-detail", id] as const,
+  shopRma: (status?: string, escalated?: boolean) =>
+    [...orderKeys.all, "shop-rma", status ?? "", escalated ? "escalated" : ""] as const,
+  myRma: (status?: string) => [...orderKeys.all, "my-rma", status ?? ""] as const,
 };
 
 function orderErrorMessage(e: unknown, fallback: string): string {
@@ -208,6 +212,46 @@ export function useCreateRma(orderId: string) {
   });
 }
 
+export function useRemoveRmaEvidence(orderId?: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ rmaId, urls }: { rmaId: string; urls: string[] }) =>
+      orderApi.removeRmaEvidence(rmaId, urls),
+    onSuccess: (rma) => {
+      invalidateRmaQueries(queryClient, rma.id, orderId ?? rma.orderId);
+      toast.success(tt("toast.rmaUpdated"));
+    },
+    onError: (e) => toast.error(orderErrorMessage(e, tt("toast.rmaActionFailed"))),
+  });
+}
+
+export function useUploadRmaEvidence(orderId?: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ rmaId, files }: { rmaId: string; files: File[] }) =>
+      orderApi.uploadRmaEvidence(rmaId, files),
+    onSuccess: (rma) => {
+      invalidateRmaQueries(queryClient, rma.id, orderId ?? rma.orderId);
+      toast.success(tt("toast.rmaUpdated"));
+    },
+    onError: (e) => toast.error(orderErrorMessage(e, tt("toast.rmaActionFailed"))),
+  });
+}
+
+export function useUploadRefundProof(orderId?: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ rmaId, file }: { rmaId: string; file: File }) =>
+      orderApi.uploadRefundProof(rmaId, file),
+    onSuccess: (rma) => {
+      invalidateRmaQueries(queryClient, rma.id, orderId ?? rma.orderId);
+      toast.success(tt("toast.rmaRefundProofUploaded"));
+    },
+    onError: (e) =>
+      toast.error(orderErrorMessage(e, tt("toast.rmaRefundProofFailed"))),
+  });
+}
+
 export function useAdminOrders(params: AdminListOrdersParams = {}) {
   const page = params.page ?? 1;
   const pageSize = params.pageSize ?? 20;
@@ -263,13 +307,129 @@ export function useAdminShippingQuote() {
   });
 }
 
-export function useAdminRma(status?: string) {
+export function useShopRma(status?: string, escalated?: boolean) {
   return useQuery({
-    queryKey: orderKeys.adminRma(status),
+    queryKey: orderKeys.shopRma(status, escalated),
+    queryFn: async () =>
+      parsePage<RmaView>(
+        await orderApi.listShopRma({
+          status: status as RmaView["status"] | undefined,
+          escalated: escalated || undefined,
+          page: 1,
+          pageSize: 50,
+        }),
+      ),
+  });
+}
+
+export function useMyRma(status?: string) {
+  return useQuery({
+    queryKey: orderKeys.myRma(status),
+    queryFn: async () =>
+      parsePage<RmaView>(
+        await orderApi.listMyRma({
+          status: status as RmaView["status"] | undefined,
+          page: 1,
+          pageSize: 50,
+        }),
+      ),
+  });
+}
+
+function invalidateRmaQueries(
+  queryClient: ReturnType<typeof useQueryClient>,
+  rmaId?: string,
+  orderId?: string,
+) {
+  void queryClient.invalidateQueries({ queryKey: orderKeys.all });
+  if (rmaId) {
+    void queryClient.invalidateQueries({ queryKey: orderKeys.adminRmaDetail(rmaId) });
+  }
+  if (orderId) {
+    void queryClient.invalidateQueries({ queryKey: orderKeys.detail(orderId) });
+  }
+}
+
+export function useShopRmaAction() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      id: string;
+      action:
+        | "approve"
+        | "reject"
+        | "returnReceived"
+        | "acceptReturn"
+        | "rejectReturn"
+        | "refundSent";
+      note?: string;
+      orderId?: string;
+    }) => {
+      const { id, action, note } = input;
+      switch (action) {
+        case "approve":
+          return orderApi.approveRma(id, note ? { note } : {});
+        case "reject":
+          return orderApi.rejectRma(id, { note: note || "Rejected" });
+        case "returnReceived":
+          return orderApi.markReturnReceived(id, note ? { note } : {});
+        case "acceptReturn":
+          return orderApi.acceptReturn(id, note ? { note } : {});
+        case "rejectReturn":
+          return orderApi.rejectReturn(id, { note: note || "Return rejected" });
+        case "refundSent":
+          return orderApi.markRefundSent(id, note ? { note } : {});
+      }
+    },
+    onSuccess: (rma, vars) => {
+      invalidateRmaQueries(queryClient, vars.id, vars.orderId ?? rma.orderId);
+      toast.success(tt("toast.rmaUpdated"));
+    },
+    onError: (e) => toast.error(orderErrorMessage(e, tt("toast.rmaActionFailed"))),
+  });
+}
+
+export function useBuyerRmaAction() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      id: string;
+      orderId: string;
+      action: "ship" | "dispute" | "confirmCompleted";
+      trackingCode?: string;
+      carrier?: string;
+      reason?: string;
+      note?: string;
+    }) => {
+      const { id, action } = input;
+      if (action === "ship") {
+        return orderApi.markReturnShipped(id, {
+          trackingCode: input.trackingCode || "",
+          carrier: input.carrier,
+          note: input.note,
+        });
+      }
+      if (action === "dispute") {
+        return orderApi.openDispute(id, { reason: input.reason || "Dispute" });
+      }
+      return orderApi.confirmRmaCompleted(id, input.note ? { note: input.note } : {});
+    },
+    onSuccess: (_rma, vars) => {
+      invalidateRmaQueries(queryClient, vars.id, vars.orderId);
+      toast.success(tt("toast.rmaUpdated"));
+    },
+    onError: (e) => toast.error(orderErrorMessage(e, tt("toast.rmaActionFailed"))),
+  });
+}
+
+export function useAdminRma(status?: string, escalated?: boolean) {
+  return useQuery({
+    queryKey: orderKeys.adminRma(status, escalated),
     queryFn: async () =>
       parsePage<RmaView>(
         await adminOrdersApi.listRma({
           status: status as RmaView["status"] | undefined,
+          escalated: escalated || undefined,
           page: 1,
           pageSize: 50,
         }),
@@ -303,10 +463,7 @@ export function useAdminRmaDecision() {
       return adminOrdersApi.rejectRma(id, { note: note || "Rejected" });
     },
     onSuccess: (_d, vars) => {
-      void queryClient.invalidateQueries({ queryKey: orderKeys.all });
-      void queryClient.invalidateQueries({
-        queryKey: orderKeys.adminRmaDetail(vars.id),
-      });
+      invalidateRmaQueries(queryClient, vars.id);
       toast.success(
         vars.decision === "APPROVED" ? tt("toast.rmaApproved") : tt("toast.rmaRejected"),
       );
@@ -315,16 +472,86 @@ export function useAdminRmaDecision() {
   });
 }
 
+export function useAdminResolveDispute() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      decision,
+      note,
+    }: {
+      id: string;
+      decision: "REFUND_PENDING" | "CLOSED";
+      note?: string;
+    }) => adminOrdersApi.resolveDispute(id, { decision, note }),
+    onSuccess: (_d, vars) => {
+      invalidateRmaQueries(queryClient, vars.id);
+      toast.success(tt("toast.rmaDisputeResolved"));
+    },
+    onError: (e) => toast.error(orderErrorMessage(e, tt("toast.rmaActionFailed"))),
+  });
+}
+
+export function useAdminReopenDispute() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) =>
+      adminOrdersApi.reopenDispute(id, { reason }),
+    onSuccess: (_d, vars) => {
+      invalidateRmaQueries(queryClient, vars.id);
+      toast.success(tt("toast.rmaDisputeReopened"));
+    },
+    onError: (e) => toast.error(orderErrorMessage(e, tt("toast.rmaActionFailed"))),
+  });
+}
+
+export function useAdminRmaForceAction() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      action,
+      note,
+    }: {
+      id: string;
+      action:
+        | "forceReceive"
+        | "forceAccept"
+        | "forceRefundSent"
+        | "forceComplete"
+        | "forceCloseAbandoned";
+      note?: string;
+    }) => {
+      const body = note ? { note } : {};
+      switch (action) {
+        case "forceReceive":
+          return adminOrdersApi.forceReceive(id, body);
+        case "forceAccept":
+          return adminOrdersApi.forceAcceptReturn(id, body);
+        case "forceRefundSent":
+          return adminOrdersApi.forceRefundSent(id, body);
+        case "forceComplete":
+          return adminOrdersApi.forceCompleteRma(id, body);
+        case "forceCloseAbandoned":
+          return adminOrdersApi.forceCloseAbandoned(id, body);
+      }
+    },
+    onSuccess: (_d, vars) => {
+      invalidateRmaQueries(queryClient, vars.id);
+      toast.success(tt("toast.rmaForceDone"));
+    },
+    onError: (e) => toast.error(orderErrorMessage(e, tt("toast.rmaActionFailed"))),
+  });
+}
+
+/** @deprecated Prefer useAdminRmaForceAction({ action: "forceComplete" }) */
 export function useAdminRmaMarkRefunded() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, note }: { id: string; note?: string }) =>
-      adminOrdersApi.markRmaRefunded(id, note ? { note } : {}),
+      adminOrdersApi.forceCompleteRma(id, note ? { note } : {}),
     onSuccess: (_d, vars) => {
-      void queryClient.invalidateQueries({ queryKey: orderKeys.all });
-      void queryClient.invalidateQueries({
-        queryKey: orderKeys.adminRmaDetail(vars.id),
-      });
+      invalidateRmaQueries(queryClient, vars.id);
       toast.success(tt("toast.markedRefunded"));
     },
     onError: (e) => toast.error(orderErrorMessage(e, tt("toast.markRefundedFailed"))),

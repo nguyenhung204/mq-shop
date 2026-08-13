@@ -119,20 +119,33 @@ export function resolveNotificationRoute(
     case "RMA_NEW": {
       const m = requireMeta(meta, ["rmaId"]);
       if (admin && m) return `/admin/rma/${m.rmaId}`;
+      if (seller && !buyerOnly) return "/seller/rma";
       const orderId = metaStr(meta, "orderId");
-      if (orderId) return `/orders/${orderId}/rma`;
+      if (orderId) return `/orders/${orderId}`;
       return admin ? "/admin/rma" : "/rma";
     }
 
     case "RMA_APPROVED":
     case "RMA_REJECTED":
     case "RMA_REFUND_COMPLETED":
-    case "RMA_APPROVED_EXTERNAL_REFUND": {
+    case "RMA_APPROVED_EXTERNAL_REFUND":
+    case "RMA_RETURN_SHIPPED":
+    case "RMA_RETURN_RECEIVED":
+    case "RMA_RETURN_REJECTED":
+    case "RMA_DISPUTED":
+    case "RMA_REFUND_PENDING":
+    case "RMA_REFUND_SENT":
+    case "RMA_ESCALATED": {
       const orderId = metaStr(meta, "orderId");
       const rmaId = metaStr(meta, "rmaId");
       if (admin && rmaId) return `/admin/rma/${rmaId}`;
-      if (orderId) return `/orders/${orderId}/rma`;
-      return admin ? "/admin/rma" : "/rma";
+      if (admin) return "/admin/rma";
+      if (seller && !buyerOnly) {
+        if (rmaId) return "/seller/rma";
+        return "/seller/rma";
+      }
+      if (orderId) return `/orders/${orderId}`;
+      return "/rma";
     }
 
     case "REVIEW_NEW":

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { X } from "lucide-react";
 import { useCreateRma, useOrder } from "@/lib/queries/orders";
 import { canRequestRma, hasBlockingRma } from "@/lib/api/orders";
 import { AuthGuard } from "@/components/guards/AuthGuard";
@@ -118,8 +119,34 @@ function CreateRmaInner() {
                 type="file"
                 accept="image/jpeg,image/png,image/webp,image/gif"
                 multiple
-                onChange={(e) => setFiles(Array.from(e.target.files ?? []).slice(0, 5))}
+                onChange={(e) => {
+                  const next = Array.from(e.target.files ?? []);
+                  setFiles((prev) => [...prev, ...next].slice(0, 5));
+                  e.target.value = "";
+                }}
               />
+              {files.length > 0 ? (
+                <ul className="mt-2 space-y-1">
+                  {files.map((file, idx) => (
+                    <li
+                      key={`${file.name}-${file.size}-${idx}`}
+                      className="flex items-center justify-between gap-2 text-xs text-mq-text-secondary"
+                    >
+                      <span className="truncate">{file.name}</span>
+                      <button
+                        type="button"
+                        className="mq-admin-icon-btn shrink-0"
+                        aria-label={t("orders.rma.removeEvidence")}
+                        onClick={() =>
+                          setFiles((prev) => prev.filter((_, i) => i !== idx))
+                        }
+                      >
+                        <X size={12} />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </div>
             <button className="mq-btn mq-btn-primary w-full" disabled={createRma.isPending}>
               {createRma.isPending ? t("orders.rma.submitting") : t("orders.rma.submitBtn")}

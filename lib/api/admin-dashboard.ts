@@ -42,7 +42,7 @@ const QUEUE_HREF_FALLBACKS: Record<keyof AdminDashboardQueues, string> = {
   shopsPending: "/admin/shops?status=PENDING",
   productsPending: "/admin/products?status=PENDING",
   ordersPending: "/admin/orders",
-  rmaPending: "/admin/rma?status=PENDING",
+  rmaPending: "/admin/rma?status=REQUESTED",
   settlementsPendingReconcile: "/admin/settlements?status=PENDING_RECONCILE",
   sellerPayoutsPending: "/admin/payouts?status=PENDING",
   walletPayoutsPending: "/admin/wallet/payouts?status=PENDING",

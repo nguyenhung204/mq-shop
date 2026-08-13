@@ -35,6 +35,8 @@ export type RmaStatus =
   | "REJECTED"
   | "RETURN_SHIPPED"
   | "RETURN_RECEIVED"
+  | "RETURN_REJECTED"
+  | "DISPUTED"
   | "REFUND_PENDING"
   | "REFUND_SENT"
   | "CLOSED"
@@ -117,7 +119,9 @@ export type RmaView = {
   /** Human-readable order name (e.g. "ORD-20260801-E249"). Use for display instead of orderId. */
   orderName?: string | null;
   buyerId?: string;
+  buyerName?: string | null;
   shopId?: string;
+  shopName?: string | null;
   status: RmaStatus;
   reason: string;
   evidenceUrls: string[];
@@ -125,6 +129,17 @@ export type RmaView = {
   reviewerId?: string | null;
   reviewNote: string | null;
   decidedAt: string | null;
+  returnTrackingCode?: string | null;
+  returnCarrier?: string | null;
+  returnShippedAt?: string | null;
+  returnReceivedAt?: string | null;
+  inspectionNote?: string | null;
+  disputeReason?: string | null;
+  disputedAt?: string | null;
+  statusChangedAt?: string | null;
+  escalatedAt?: string | null;
+  refundProofUrl?: string | null;
+  refundProofUploadedAt?: string | null;
   createdAt: string;
   updatedAt?: string;
 };
@@ -236,6 +251,53 @@ export const orderApi = {
   removeRmaEvidence: (rmaId: string, urls: string[]) =>
     api.delete<RmaView>(`/rma/${rmaId}/evidence`, { body: { urls } }),
 
+  listShopRma: (query?: {
+    status?: RmaStatus;
+    escalated?: boolean;
+    page?: number;
+    pageSize?: number;
+  }) => api.get<PageEnvelope<RmaView>>("/rma", { query, withMeta: true }),
+
+  listMyRma: (query?: { status?: RmaStatus; page?: number; pageSize?: number }) =>
+    api.get<PageEnvelope<RmaView>>("/rma/mine", { query, withMeta: true }),
+
+  getRma: (rmaId: string) => api.get<AdminRmaDetailView>(`/rma/${rmaId}`),
+
+  approveRma: (rmaId: string, body?: { note?: string }) =>
+    api.post<RmaView>(`/rma/${rmaId}/approve`, body ?? {}),
+
+  rejectRma: (rmaId: string, body: { note: string }) =>
+    api.post<RmaView>(`/rma/${rmaId}/reject`, body),
+
+  markReturnShipped: (
+    rmaId: string,
+    body: { trackingCode: string; carrier?: string; note?: string },
+  ) => api.post<RmaView>(`/rma/${rmaId}/return-shipped`, body),
+
+  markReturnReceived: (rmaId: string, body?: { note?: string }) =>
+    api.post<RmaView>(`/rma/${rmaId}/return-received`, body ?? {}),
+
+  acceptReturn: (rmaId: string, body?: { note?: string }) =>
+    api.post<RmaView>(`/rma/${rmaId}/accept-return`, body ?? {}),
+
+  rejectReturn: (rmaId: string, body: { note: string }) =>
+    api.post<RmaView>(`/rma/${rmaId}/reject-return`, body),
+
+  openDispute: (rmaId: string, body: { reason: string }) =>
+    api.post<RmaView>(`/rma/${rmaId}/dispute`, body),
+
+  markRefundSent: (rmaId: string, body?: { note?: string }) =>
+    api.post<RmaView>(`/rma/${rmaId}/refund-sent`, body ?? {}),
+
+  uploadRefundProof: (rmaId: string, file: File) => {
+    const fd = new FormData();
+    fd.append("proof", file);
+    return api.postForm<RmaView>(`/rma/${rmaId}/refund-proof`, fd);
+  },
+
+  confirmRmaCompleted: (rmaId: string, body?: { note?: string }) =>
+    api.post<RmaView>(`/rma/${rmaId}/confirm-completed`, body ?? {}),
+
   /** Multipart field `proof` — buyer payment bill for OFF_PLATFORM/COD. */
   uploadPaymentProof: (orderId: string, file: File) => {
     const fd = new FormData();
@@ -268,8 +330,12 @@ export const adminOrdersApi = {
   cancel: (orderId: string, body: { reason: string }) =>
     api.post<OrderView>(`/admin/orders/${orderId}/cancel`, body),
 
-  listRma: (query?: { status?: RmaStatus; page?: number; pageSize?: number }) =>
-    api.get<PageEnvelope<RmaView>>("/admin/rma", { query, withMeta: true }),
+  listRma: (query?: {
+    status?: RmaStatus;
+    escalated?: boolean;
+    page?: number;
+    pageSize?: number;
+  }) => api.get<PageEnvelope<RmaView>>("/admin/rma", { query, withMeta: true }),
 
   getRma: (rmaId: string) =>
     api.get<AdminRmaDetailView>(`/admin/rma/${rmaId}`),
@@ -280,7 +346,30 @@ export const adminOrdersApi = {
   rejectRma: (rmaId: string, body: { note: string }) =>
     api.post<RmaView>(`/admin/rma/${rmaId}/reject`, body),
 
-  /** Accountant: RMA APPROVED + order REFUND_APPROVED → order REFUNDED, RMA CLOSED. */
+  resolveDispute: (
+    rmaId: string,
+    body: { decision: "REFUND_PENDING" | "CLOSED"; note?: string },
+  ) => api.post<RmaView>(`/admin/rma/${rmaId}/resolve-dispute`, body),
+
+  reopenDispute: (rmaId: string, body: { reason: string }) =>
+    api.post<RmaView>(`/admin/rma/${rmaId}/reopen-dispute`, body),
+
+  forceReceive: (rmaId: string, body?: { note?: string }) =>
+    api.post<RmaView>(`/admin/rma/${rmaId}/force-receive`, body ?? {}),
+
+  forceAcceptReturn: (rmaId: string, body?: { note?: string }) =>
+    api.post<RmaView>(`/admin/rma/${rmaId}/force-accept-return`, body ?? {}),
+
+  forceRefundSent: (rmaId: string, body?: { note?: string }) =>
+    api.post<RmaView>(`/admin/rma/${rmaId}/force-refund-sent`, body ?? {}),
+
+  forceCompleteRma: (rmaId: string, body?: { note?: string }) =>
+    api.post<AdminRmaDetailView>(`/admin/rma/${rmaId}/force-complete`, body ?? {}),
+
+  forceCloseAbandoned: (rmaId: string, body?: { note?: string }) =>
+    api.post<RmaView>(`/admin/rma/${rmaId}/force-close-abandoned`, body ?? {}),
+
+  /** Legacy alias → force-complete */
   markRmaRefunded: (rmaId: string, body?: { note?: string }) =>
     api.post<AdminRmaDetailView>(`/admin/rma/${rmaId}/mark-refunded`, body ?? {}),
 
@@ -364,9 +453,19 @@ export function canCancelOrder(status: OrderStatus): boolean {
   );
 }
 
-const BLOCKING_RMA_STATUSES: RmaStatus[] = ["PENDING", "APPROVED", "CLOSED"];
+const BLOCKING_RMA_STATUSES: RmaStatus[] = [
+  "PENDING",
+  "REQUESTED",
+  "APPROVED",
+  "RETURN_SHIPPED",
+  "RETURN_RECEIVED",
+  "RETURN_REJECTED",
+  "DISPUTED",
+  "REFUND_PENDING",
+  "REFUND_SENT",
+];
 
-/** Hide Request return when RMA is PENDING | APPROVED | CLOSED. REJECTED may retry. */
+/** Hide Request return when an in-flight RMA exists. REJECTED / CLOSED / COMPLETED may retry if order still DELIVERED. */
 export function hasBlockingRma(order: Pick<OrderView, "rma">): boolean {
   const status = order.rma?.status;
   return Boolean(status && BLOCKING_RMA_STATUSES.includes(status));
@@ -376,7 +475,6 @@ export function hasBlockingRma(order: Pick<OrderView, "rma">): boolean {
 export function canRequestRma(
   order: Pick<OrderView, "status" | "deliveredAt" | "rma">,
 ): boolean {
-  // REJECTED does not block; PENDING|APPROVED|CLOSED does.
   if (hasBlockingRma(order)) return false;
   if (order.status !== "DELIVERED" || !order.deliveredAt) return false;
   const delivered = new Date(order.deliveredAt).getTime();

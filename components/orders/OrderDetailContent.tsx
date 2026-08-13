@@ -23,10 +23,15 @@ import {
   useCancelOrder,
   useConfirmPayment,
   useCreateFulfillmentComplaint,
+  useBuyerRmaAction,
   useOrder,
   useRejectPayment,
+  useRemoveRmaEvidence,
+  useShopRmaAction,
   useUpdateOrderStatus,
   useUploadPaymentProof,
+  useUploadRefundProof,
+  useUploadRmaEvidence,
 } from "@/lib/queries/orders";
 import { useSellerShop, useShopPaymentProfile } from "@/lib/queries/seller";
 import { useWarehouses } from "@/lib/queries/inventory";
@@ -153,10 +158,21 @@ function OrderDetailInner() {
   const confirmPayment = useConfirmPayment();
   const rejectPayment = useRejectPayment();
   const fulfillmentComplaint = useCreateFulfillmentComplaint();
+  const buyerRma = useBuyerRmaAction();
+  const shopRma = useShopRmaAction();
+  const removeEvidence = useRemoveRmaEvidence(id);
+  const uploadEvidence = useUploadRmaEvidence(id);
+  const uploadRefundProof = useUploadRefundProof(id);
   const [complaintModalOpen, setComplaintModalOpen] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [disputeModalOpen, setDisputeModalOpen] = useState(false);
+  const [sellerRejectOpen, setSellerRejectOpen] = useState<
+    null | "reject" | "rejectReturn"
+  >(null);
   const [proofFile, setProofFile] = useState<File | null>(null);
+  const [trackingCode, setTrackingCode] = useState("");
+  const [carrier, setCarrier] = useState("");
 
   const formatOrderAmount = (twd: number, field: "total" | "subtotal" | "shippingFee" = "total") => {
     if (!order) return formatMoney(twd);
@@ -262,10 +278,15 @@ function OrderDetailInner() {
               ) : null}
             </div>
             {rmaInfo ? (
-              <div className="rounded-[var(--mq-radius-sm)] border border-mq-border bg-mq-surface-subtle p-4 space-y-1.5 text-sm">
+              <div className="rounded-[var(--mq-radius-sm)] border border-mq-border bg-mq-surface-subtle p-4 space-y-2 text-sm">
                 <p className="font-medium">
                   {translateStatus(t, "rmaMessage", rmaInfo.status)}
                 </p>
+                {order.rma?.escalatedAt ? (
+                  <p className="text-xs text-mq-accent-orange font-medium">
+                    {t("orders.rma.escalatedBanner")}
+                  </p>
+                ) : null}
                 {rmaInfo.reason ? (
                   <p className="text-mq-text-secondary">
                     {t("orders.detail.reasonLabel", { reason: rmaInfo.reason })}
@@ -276,10 +297,357 @@ function OrderDetailInner() {
                     {t("orders.detail.noteLabel", { note: rmaInfo.note })}
                   </p>
                 ) : null}
+                {order.rma?.returnTrackingCode ? (
+                  <p className="text-xs text-mq-text-muted">
+                    {t("orders.rma.trackingLabel")}:{" "}
+                    {order.rma.returnCarrier ? `${order.rma.returnCarrier} · ` : ""}
+                    {order.rma.returnTrackingCode}
+                  </p>
+                ) : null}
+                {order.rma?.disputeReason ? (
+                  <p className="text-xs text-mq-text-muted">
+                    {t("orders.rma.disputeLabel")}: {order.rma.disputeReason}
+                  </p>
+                ) : null}
                 {hasBlockingRma(order) && !showRma ? (
                   <p className="text-xs text-mq-text-muted pt-1">
                     {t("orders.detail.blockingRmaHint")}
                   </p>
+                ) : null}
+
+                {order.rma?.bankInfo ? (
+                  <div className="pt-2 border-t border-mq-border space-y-1.5">
+                    <p className="text-xs font-medium text-mq-text-muted uppercase tracking-wide">
+                      {t("orders.rma.bankInfoTitle")}
+                    </p>
+                    <dl className="grid gap-1 text-mq-text-secondary">
+                      <div className="flex flex-wrap gap-x-2">
+                        <dt className="text-mq-text-muted">{t("orders.rma.bankName")}:</dt>
+                        <dd>{order.rma.bankInfo.bankName}</dd>
+                      </div>
+                      <div className="flex flex-wrap gap-x-2">
+                        <dt className="text-mq-text-muted">{t("orders.rma.accountNumber")}:</dt>
+                        <dd className="font-mono">{order.rma.bankInfo.accountNumber}</dd>
+                      </div>
+                      <div className="flex flex-wrap gap-x-2">
+                        <dt className="text-mq-text-muted">{t("orders.rma.accountName")}:</dt>
+                        <dd>{order.rma.bankInfo.accountName}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                ) : null}
+
+                {isShopOrder && order.rma && (order.rma.evidenceUrls?.length ?? 0) > 0 ? (
+                  <div className="pt-2 border-t border-mq-border space-y-2">
+                    <p className="text-xs font-medium text-mq-text-muted uppercase tracking-wide">
+                      {t("orders.rma.evidenceTitle", {
+                        count: String(order.rma.evidenceUrls.length),
+                      })}
+                    </p>
+                    <ul className="flex flex-wrap gap-2">
+                      {order.rma.evidenceUrls.map((url) => (
+                        <li key={url}>
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="relative block h-20 w-20 overflow-hidden rounded border border-mq-border mq-product-image-bg"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={url}
+                              alt={t("orders.rma.evidenceAlt")}
+                              className="h-full w-full object-cover"
+                            />
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+
+                {isShopOrder &&
+                order.rma &&
+                (order.rma.evidenceUrls?.length ?? 0) === 0 ? (
+                  <p className="text-xs text-mq-text-muted pt-2 border-t border-mq-border">
+                    {t("orders.rma.noEvidence")}
+                  </p>
+                ) : null}
+
+                {isBuyer &&
+                (order.rma?.status === "REQUESTED" || order.rma?.status === "PENDING") ? (
+                  <div className="pt-2 border-t border-mq-border space-y-2">
+                    <p className="text-xs text-mq-text-muted">{t("orders.rma.evidenceManage")}</p>
+                    {(order.rma.evidenceUrls?.length ?? 0) > 0 ? (
+                      <ul className="flex flex-wrap gap-2">
+                        {order.rma.evidenceUrls.map((url) => (
+                          <li key={url} className="relative">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={url}
+                              alt={t("orders.rma.evidenceAlt")}
+                              className="h-16 w-16 rounded object-cover border border-mq-border"
+                            />
+                            <button
+                              type="button"
+                              className="absolute -top-1 -right-1 mq-admin-icon-btn"
+                              disabled={removeEvidence.isPending}
+                              aria-label={t("orders.rma.removeEvidence")}
+                              onClick={() =>
+                                void removeEvidence.mutateAsync({
+                                  rmaId: order.rma!.id,
+                                  urls: [url],
+                                })
+                              }
+                            >
+                              <X size={12} />
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                    {(order.rma.evidenceUrls?.length ?? 0) < 5 ? (
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        multiple
+                        className="mq-input"
+                        disabled={uploadEvidence.isPending}
+                        onChange={(e) => {
+                          const files = Array.from(e.target.files ?? []).slice(
+                            0,
+                            5 - (order.rma?.evidenceUrls?.length ?? 0),
+                          );
+                          e.target.value = "";
+                          if (!files.length || !order.rma) return;
+                          void uploadEvidence.mutateAsync({
+                            rmaId: order.rma.id,
+                            files,
+                          });
+                        }}
+                      />
+                    ) : null}
+                  </div>
+                ) : null}
+
+                {isBuyer && order.rma?.status === "APPROVED" ? (
+                  <div className="pt-2 space-y-2 border-t border-mq-border">
+                    <p className="text-xs text-mq-text-muted">{t("orders.rma.shipHint")}</p>
+                    <input
+                      className="mq-input"
+                      placeholder={t("orders.rma.trackingPlaceholder")}
+                      value={trackingCode}
+                      onChange={(e) => setTrackingCode(e.target.value)}
+                    />
+                    <input
+                      className="mq-input"
+                      placeholder={t("orders.rma.carrierPlaceholder")}
+                      value={carrier}
+                      onChange={(e) => setCarrier(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="mq-btn mq-btn-primary"
+                      disabled={buyerRma.isPending || trackingCode.trim().length < 3}
+                      onClick={() =>
+                        void buyerRma.mutateAsync({
+                          id: order.rma!.id,
+                          orderId: order.id,
+                          action: "ship",
+                          trackingCode: trackingCode.trim(),
+                          carrier: carrier.trim() || undefined,
+                        })
+                      }
+                    >
+                      {t("orders.rma.markShipped")}
+                    </button>
+                  </div>
+                ) : null}
+
+                {isBuyer && order.rma?.status === "RETURN_REJECTED" ? (
+                  <div className="pt-2 border-t border-mq-border">
+                    <button
+                      type="button"
+                      className="mq-btn mq-btn-outline"
+                      disabled={buyerRma.isPending}
+                      onClick={() => setDisputeModalOpen(true)}
+                    >
+                      {t("orders.rma.openDispute")}
+                    </button>
+                  </div>
+                ) : null}
+
+                {order.rma?.refundProofUrl ? (
+                  <div className="pt-2 border-t border-mq-border space-y-2">
+                    <p className="text-xs font-medium text-mq-text-muted uppercase tracking-wide">
+                      {t("orders.rma.refundProofTitle")}
+                    </p>
+                    <a
+                      href={order.rma.refundProofUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-block"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={order.rma.refundProofUrl}
+                        alt={t("orders.rma.refundProofAlt")}
+                        className="max-h-48 w-auto rounded border border-mq-border object-contain bg-white"
+                      />
+                    </a>
+                    {order.rma.refundProofUploadedAt ? (
+                      <p className="text-xs text-mq-text-muted">
+                        {t("orders.rma.refundProofUploadedAt", {
+                          date: new Date(order.rma.refundProofUploadedAt).toLocaleString(),
+                        })}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
+
+                {isBuyer && order.rma?.status === "REFUND_SENT" ? (
+                  <div className="pt-2 border-t border-mq-border space-y-2">
+                    <p className="text-xs text-mq-text-muted">{t("orders.rma.confirmHint")}</p>
+                    <button
+                      type="button"
+                      className="mq-btn mq-btn-primary"
+                      disabled={buyerRma.isPending}
+                      onClick={() =>
+                        void buyerRma.mutateAsync({
+                          id: order.rma!.id,
+                          orderId: order.id,
+                          action: "confirmCompleted",
+                        })
+                      }
+                    >
+                      {t("orders.rma.confirmReceived")}
+                    </button>
+                  </div>
+                ) : null}
+
+                {isShopOrder && order.rma ? (
+                  <div className="pt-2 border-t border-mq-border space-y-3">
+                    <div className="flex flex-wrap gap-2">
+                    {(order.rma.status === "REQUESTED" ||
+                      order.rma.status === "PENDING") && (
+                      <>
+                        <button
+                          type="button"
+                          className="mq-btn mq-btn-primary text-xs"
+                          disabled={shopRma.isPending}
+                          onClick={() =>
+                            void shopRma.mutateAsync({
+                              id: order.rma!.id,
+                              action: "approve",
+                              orderId: order.id,
+                            })
+                          }
+                        >
+                          {t("seller.rmaPage.approve")}
+                        </button>
+                        <button
+                          type="button"
+                          className="mq-btn mq-btn-outline text-xs"
+                          disabled={shopRma.isPending}
+                          onClick={() => setSellerRejectOpen("reject")}
+                        >
+                          {t("seller.rmaPage.reject")}
+                        </button>
+                      </>
+                    )}
+                    {order.rma.status === "RETURN_SHIPPED" ? (
+                      <button
+                        type="button"
+                        className="mq-btn mq-btn-primary text-xs"
+                        disabled={shopRma.isPending}
+                        onClick={() =>
+                          void shopRma.mutateAsync({
+                            id: order.rma!.id,
+                            action: "returnReceived",
+                            orderId: order.id,
+                          })
+                        }
+                      >
+                        {t("seller.rmaPage.markReceived")}
+                      </button>
+                    ) : null}
+                    {order.rma.status === "RETURN_RECEIVED" ? (
+                      <>
+                        <button
+                          type="button"
+                          className="mq-btn mq-btn-primary text-xs"
+                          disabled={shopRma.isPending}
+                          onClick={() =>
+                            void shopRma.mutateAsync({
+                              id: order.rma!.id,
+                              action: "acceptReturn",
+                              orderId: order.id,
+                            })
+                          }
+                        >
+                          {t("seller.rmaPage.acceptReturn")}
+                        </button>
+                        <button
+                          type="button"
+                          className="mq-btn mq-btn-outline text-xs"
+                          disabled={shopRma.isPending}
+                          onClick={() => setSellerRejectOpen("rejectReturn")}
+                        >
+                          {t("seller.rmaPage.rejectReturn")}
+                        </button>
+                      </>
+                    ) : null}
+                    </div>
+                    {order.rma.status === "REFUND_PENDING" ? (
+                      <div className="space-y-2">
+                        <p className="text-xs text-mq-text-muted">
+                          {t("orders.rma.refundProofHint")}
+                        </p>
+                        <label className="block text-sm" htmlFor="refund-proof">
+                          {t("orders.rma.refundProofUpload")}
+                        </label>
+                        <input
+                          id="refund-proof"
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          className="mq-input"
+                          disabled={uploadRefundProof.isPending || shopRma.isPending}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            e.target.value = "";
+                            if (!file || !order.rma) return;
+                            void uploadRefundProof.mutateAsync({
+                              rmaId: order.rma.id,
+                              file,
+                            });
+                          }}
+                        />
+                        <button
+                          type="button"
+                          className="mq-btn mq-btn-primary text-xs"
+                          disabled={
+                            shopRma.isPending ||
+                            uploadRefundProof.isPending ||
+                            !order.rma.refundProofUrl
+                          }
+                          onClick={() =>
+                            void shopRma.mutateAsync({
+                              id: order.rma!.id,
+                              action: "refundSent",
+                              orderId: order.id,
+                            })
+                          }
+                        >
+                          {t("seller.rmaPage.markRefundSent")}
+                        </button>
+                        {!order.rma.refundProofUrl ? (
+                          <p className="text-xs text-mq-accent-orange">
+                            {t("orders.rma.refundProofRequired")}
+                          </p>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
                 ) : null}
               </div>
             ) : null}
@@ -580,6 +948,53 @@ function OrderDetailInner() {
           void fulfillmentComplaint
             .mutateAsync({ orderId: order.id, reason })
             .then(() => setComplaintModalOpen(false));
+        }}
+      />
+      <AdminReasonModal
+        open={disputeModalOpen}
+        title={t("orders.rma.disputeTitle")}
+        description={t("orders.rma.disputeDesc")}
+        confirmLabel={t("orders.rma.openDispute")}
+        maxLength={500}
+        busy={buyerRma.isPending}
+        onClose={() => setDisputeModalOpen(false)}
+        onConfirm={(reason) => {
+          if (!order?.rma) return;
+          void buyerRma
+            .mutateAsync({
+              id: order.rma.id,
+              orderId: order.id,
+              action: "dispute",
+              reason,
+            })
+            .then(() => setDisputeModalOpen(false));
+        }}
+      />
+      <AdminReasonModal
+        open={Boolean(sellerRejectOpen)}
+        title={
+          sellerRejectOpen === "rejectReturn"
+            ? t("seller.rmaPage.rejectReturnTitle")
+            : t("seller.rmaPage.rejectTitle")
+        }
+        description={
+          sellerRejectOpen === "rejectReturn"
+            ? t("seller.rmaPage.rejectReturnDesc")
+            : t("seller.rmaPage.rejectDesc")
+        }
+        confirmLabel={t("seller.rmaPage.reject")}
+        maxLength={500}
+        busy={shopRma.isPending}
+        onClose={() => setSellerRejectOpen(null)}
+        onConfirm={async (note) => {
+          if (!order?.rma || !sellerRejectOpen) return;
+          await shopRma.mutateAsync({
+            id: order.rma.id,
+            orderId: order.id,
+            action: sellerRejectOpen === "rejectReturn" ? "rejectReturn" : "reject",
+            note,
+          });
+          setSellerRejectOpen(null);
         }}
       />
     </>

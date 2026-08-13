@@ -122,11 +122,11 @@ export const NOTIFICATION_TYPE_COPY: Record<
     },
     RMA_NEW: {
       title: "New return request",
-      body: "Return request {rmaId} needs review.",
+      body: "Return request {rmaId} needs seller review.",
     },
     RMA_APPROVED: {
       title: "Return approved",
-      body: "Return {rmaId} was approved.",
+      body: "Return {rmaId} was approved — ship the items back.",
     },
     RMA_REJECTED: {
       title: "Return rejected",
@@ -138,7 +138,35 @@ export const NOTIFICATION_TYPE_COPY: Record<
     },
     RMA_APPROVED_EXTERNAL_REFUND: {
       title: "Refund approved",
-      body: "Return {rmaId} approved — payout handled outside the system.",
+      body: "Return {rmaId} approved — payout handled outside the app.",
+    },
+    RMA_RETURN_SHIPPED: {
+      title: "Return shipped",
+      body: "Buyer shipped return {rmaId}. Confirm when you receive it.",
+    },
+    RMA_RETURN_RECEIVED: {
+      title: "Return received",
+      body: "Seller received return {rmaId}. Inspection is in progress.",
+    },
+    RMA_RETURN_REJECTED: {
+      title: "Returned goods rejected",
+      body: "Seller rejected return {rmaId}. You can open a dispute.",
+    },
+    RMA_DISPUTED: {
+      title: "Return dispute opened",
+      body: "Dispute opened for return {rmaId}.",
+    },
+    RMA_REFUND_PENDING: {
+      title: "Refund pending",
+      body: "Return {rmaId} awaits an off-platform refund transfer.",
+    },
+    RMA_REFUND_SENT: {
+      title: "Refund sent",
+      body: "Seller marked refund sent for {rmaId}. Confirm when received.",
+    },
+    RMA_ESCALATED: {
+      title: "Return overdue",
+      body: "Return {rmaId} missed an SLA step and needs attention.",
     },
     REVIEW_NEW: {
       title: "New product review",
@@ -408,11 +436,11 @@ export const NOTIFICATION_TYPE_COPY: Record<
     },
     RMA_NEW: {
       title: "Yêu cầu đổi trả mới",
-      body: "Yêu cầu {rmaId} cần duyệt.",
+      body: "Yêu cầu {rmaId} cần người bán duyệt.",
     },
     RMA_APPROVED: {
       title: "Đổi trả đã duyệt",
-      body: "Yêu cầu {rmaId} đã được duyệt.",
+      body: "Yêu cầu {rmaId} đã duyệt — hãy gửi hàng hoàn.",
     },
     RMA_REJECTED: {
       title: "Đổi trả bị từ chối",
@@ -424,7 +452,35 @@ export const NOTIFICATION_TYPE_COPY: Record<
     },
     RMA_APPROVED_EXTERNAL_REFUND: {
       title: "Đã duyệt hoàn",
-      body: "Yêu cầu {rmaId} đã duyệt — chi trả ngoài hệ thống.",
+      body: "Yêu cầu {rmaId} đã duyệt — hoàn tiền ngoài app.",
+    },
+    RMA_RETURN_SHIPPED: {
+      title: "Đã gửi hàng hoàn",
+      body: "Người mua đã gửi hoàn {rmaId}. Xác nhận khi nhận được.",
+    },
+    RMA_RETURN_RECEIVED: {
+      title: "Đã nhận hàng hoàn",
+      body: "Người bán đã nhận hoàn {rmaId}. Đang kiểm tra.",
+    },
+    RMA_RETURN_REJECTED: {
+      title: "Từ chối hàng hoàn",
+      body: "Người bán từ chối hàng hoàn {rmaId}. Bạn có thể mở khiếu nại.",
+    },
+    RMA_DISPUTED: {
+      title: "Khiếu nại đổi trả",
+      body: "Đã mở khiếu nại cho yêu cầu {rmaId}.",
+    },
+    RMA_REFUND_PENDING: {
+      title: "Chờ hoàn tiền",
+      body: "Yêu cầu {rmaId} chờ chuyển hoàn ngoài app.",
+    },
+    RMA_REFUND_SENT: {
+      title: "Đã chuyển hoàn",
+      body: "Người bán đánh dấu đã chuyển hoàn {rmaId}. Xác nhận khi nhận tiền.",
+    },
+    RMA_ESCALATED: {
+      title: "Đổi trả quá hạn",
+      body: "Yêu cầu {rmaId} bỏ lỡ SLA và cần xử lý.",
     },
     REVIEW_NEW: {
       title: "Đánh giá mới",
@@ -694,11 +750,11 @@ export const NOTIFICATION_TYPE_COPY: Record<
     },
     RMA_NEW: {
       title: "新退貨申請",
-      body: "退貨申請 {rmaId} 待審核。",
+      body: "退貨申請 {rmaId} 待賣家審核。",
     },
     RMA_APPROVED: {
       title: "退貨已核准",
-      body: "退貨 {rmaId} 已核准。",
+      body: "退貨 {rmaId} 已核准 — 請寄回商品。",
     },
     RMA_REJECTED: {
       title: "退貨已拒絕",
@@ -710,7 +766,35 @@ export const NOTIFICATION_TYPE_COPY: Record<
     },
     RMA_APPROVED_EXTERNAL_REFUND: {
       title: "退款已核准",
-      body: "退貨 {rmaId} 已核准 — 線下退款。",
+      body: "退貨 {rmaId} 已核准 — 於 App 外退款。",
+    },
+    RMA_RETURN_SHIPPED: {
+      title: "退貨已寄出",
+      body: "買家已寄出退貨 {rmaId}，請確認收貨。",
+    },
+    RMA_RETURN_RECEIVED: {
+      title: "退貨已收",
+      body: "賣家已收到退貨 {rmaId}，驗貨中。",
+    },
+    RMA_RETURN_REJECTED: {
+      title: "退貨驗收拒絕",
+      body: "賣家拒絕退貨 {rmaId}，您可提出爭議。",
+    },
+    RMA_DISPUTED: {
+      title: "退貨爭議已開啟",
+      body: "退貨 {rmaId} 已開啟爭議。",
+    },
+    RMA_REFUND_PENDING: {
+      title: "待退款",
+      body: "退貨 {rmaId} 等待賣家於 App 外匯款。",
+    },
+    RMA_REFUND_SENT: {
+      title: "已匯退款",
+      body: "賣家已標記退貨 {rmaId} 已匯款，收到後請確認。",
+    },
+    RMA_ESCALATED: {
+      title: "退貨已逾期",
+      body: "退貨 {rmaId} 錯過 SLA，需要處理。",
     },
     REVIEW_NEW: {
       title: "新商品評價",
