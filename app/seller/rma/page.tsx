@@ -82,12 +82,29 @@ function SellerRmaInner() {
               {r.escalatedAt ? (
                 <span className="mq-badge mq-badge-orange">{t("seller.rmaPage.overdue")}</span>
               ) : null}
+              {r.goodsReturnIssueNote ? (
+                <span className="mq-badge mq-badge-orange">
+                  {t("orders.rma.goodsReturnIssueLabel")}
+                </span>
+              ) : null}
             </div>
             <p className="text-xs text-mq-text-muted line-clamp-2">{r.reason}</p>
             {r.returnTrackingCode ? (
               <p className="text-xs text-mq-text-muted">
                 {t("seller.rmaPage.tracking")}: {r.returnCarrier ? `${r.returnCarrier} · ` : ""}
                 {r.returnTrackingCode}
+              </p>
+            ) : null}
+            {r.goodsReturnTrackingCode ? (
+              <p className="text-xs text-mq-text-muted">
+                {t("orders.rma.goodsReturnTrackingLabel")}:{" "}
+                {r.goodsReturnCarrier ? `${r.goodsReturnCarrier} · ` : ""}
+                {r.goodsReturnTrackingCode}
+              </p>
+            ) : null}
+            {r.goodsReturnIssueNote ? (
+              <p className="text-xs text-mq-accent-orange line-clamp-2">
+                {t("orders.rma.goodsReturnIssueLabel")}: {r.goodsReturnIssueNote}
               </p>
             ) : null}
             {r.bankInfo ? (

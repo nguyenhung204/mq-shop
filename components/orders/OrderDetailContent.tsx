@@ -567,7 +567,9 @@ function OrderDetailInner() {
                         disabled={buyerRma.isPending}
                         onClick={() => setGoodsReturnIssueOpen(true)}
                       >
-                        {t("orders.rma.reportGoodsIssue")}
+                        {order.rma.goodsReturnIssueNote
+                          ? t("orders.rma.updateGoodsIssue")
+                          : t("orders.rma.reportGoodsIssue")}
                       </button>
                     </div>
                     <p className="text-xs text-mq-text-muted">
@@ -592,9 +594,26 @@ function OrderDetailInner() {
                 ) : null}
 
                 {isBuyer && order.rma?.status === "GOODS_RETURN_PENDING" ? (
-                  <p className="text-xs text-mq-text-muted pt-2 border-t border-mq-border">
-                    {t("orders.rma.goodsReturnPendingBuyerHint")}
-                  </p>
+                  <div className="pt-2 border-t border-mq-border space-y-2">
+                    <p className="text-xs text-mq-text-muted">
+                      {t("orders.rma.goodsReturnPendingBuyerHint")}
+                    </p>
+                    {order.shopOwnerEmail ? (
+                      <p className="text-sm text-mq-text-secondary">
+                        {t("orders.rma.shopContactEmailLabel")}:{" "}
+                        <a
+                          className="text-mq-accent underline break-all"
+                          href={`mailto:${order.shopOwnerEmail}?subject=${encodeURIComponent(
+                            t("orders.rma.shopContactEmailSubject", {
+                              code: order.code,
+                            }),
+                          )}`}
+                        >
+                          {order.shopOwnerEmail}
+                        </a>
+                      </p>
+                    ) : null}
+                  </div>
                 ) : null}
 
                 {isShopOrder && order.rma ? (

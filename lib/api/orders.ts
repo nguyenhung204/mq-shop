@@ -271,8 +271,6 @@ export const orderApi = {
   listMyRma: (query?: { status?: RmaStatus; page?: number; pageSize?: number }) =>
     api.get<PageEnvelope<RmaView>>("/rma/mine", { query, withMeta: true }),
 
-  getRma: (rmaId: string) => api.get<AdminRmaDetailView>(`/rma/${rmaId}`),
-
   approveRma: (rmaId: string, body?: { note?: string }) =>
     api.post<RmaView>(`/rma/${rmaId}/approve`, body ?? {}),
 
@@ -374,7 +372,10 @@ export const adminOrdersApi = {
 
   resolveDispute: (
     rmaId: string,
-    body: { decision: "REFUND_PENDING" | "CLOSED"; note?: string },
+    body: {
+      decision: "REFUND_PENDING" | "GOODS_RETURN_PENDING" | "CLOSED";
+      note?: string;
+    },
   ) => api.post<RmaView>(`/admin/rma/${rmaId}/resolve-dispute`, body),
 
   reopenDispute: (rmaId: string, body: { reason: string }) =>

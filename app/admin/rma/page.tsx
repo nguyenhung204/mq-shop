@@ -191,7 +191,7 @@ function RmaInner() {
           if (!disputeCloseId) return;
           await resolveDispute.mutateAsync({
             id: disputeCloseId,
-            decision: "CLOSED",
+            decision: "GOODS_RETURN_PENDING",
             note,
           });
           setDisputeCloseId(null);

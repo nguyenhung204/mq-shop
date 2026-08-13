@@ -520,7 +520,7 @@ export function useAdminResolveDispute() {
       note,
     }: {
       id: string;
-      decision: "REFUND_PENDING" | "CLOSED";
+      decision: "REFUND_PENDING" | "GOODS_RETURN_PENDING" | "CLOSED";
       note?: string;
     }) => adminOrdersApi.resolveDispute(id, { decision, note }),
     onSuccess: (_d, vars) => {

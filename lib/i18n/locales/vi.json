@@ -503,6 +503,7 @@
       "confirmGoodsHint": "Xác nhận khi bạn đã nhận lại hàng từ người bán.",
       "confirmGoodsReceived": "Tôi đã nhận lại hàng",
       "reportGoodsIssue": "Chưa nhận / sai thông tin",
+      "updateGoodsIssue": "Cập nhật ghi chú lỗi",
       "reportGoodsIssueTitle": "Báo lỗi trả hàng lại",
       "reportGoodsIssueDesc": "Mô tả vấn đề (chưa nhận, sai mã vận đơn, kiện hỏng…). CS và người bán sẽ được thông báo.",
       "reportGoodsIssueHint": "Dùng khi mã vận đơn sai hoặc hàng không tới — không cần chờ SLA 7 ngày.",

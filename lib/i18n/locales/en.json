@@ -503,6 +503,7 @@
       "confirmGoodsHint": "Confirm once you have received the goods back from the seller.",
       "confirmGoodsReceived": "I received my goods back",
       "reportGoodsIssue": "Not received / wrong tracking",
+      "updateGoodsIssue": "Update issue note",
       "reportGoodsIssueTitle": "Report goods return issue",
       "reportGoodsIssueDesc": "Describe the problem (not received, wrong tracking, damaged package…). CS and the seller will be notified.",
       "reportGoodsIssueHint": "Use this if tracking looks wrong or the package never arrived — do not wait for the 7-day SLA.",

@@ -53,7 +53,9 @@ function RmaDetailInner({ id }: { id: string }) {
   const escalated = Boolean(rma?.escalatedAt);
   const canReopenDispute =
     rma?.status === "RETURN_REJECTED" ||
-    (rma?.status === "CLOSED" && Boolean(rma.inspectionNote));
+    (rma?.status === "CLOSED" &&
+      Boolean(rma.inspectionNote) &&
+      !rma.goodsReturnConfirmedAt);
 
   return (
     <>
@@ -212,10 +214,7 @@ function RmaDetailInner({ id }: { id: string }) {
                       </button>
                     </>
                   ) : null}
-                  {rma.status === "REFUND_SENT" ||
-                  rma.status === "DISPUTED" ||
-                  rma.status === "GOODS_RETURN_PENDING" ||
-                  rma.status === "GOODS_RETURN_SHIPPED" ? (
+                  {rma.status === "REFUND_SENT" || rma.status === "DISPUTED" ? (
                     <button
                       type="button"
                       className="mq-btn mq-btn-primary text-xs"
@@ -456,7 +455,11 @@ function RmaDetailInner({ id }: { id: string }) {
         busy={busy}
         onClose={() => setDisputeCloseOpen(false)}
         onConfirm={async (note) => {
-          await resolveDispute.mutateAsync({ id, decision: "CLOSED", note });
+          await resolveDispute.mutateAsync({
+            id,
+            decision: "GOODS_RETURN_PENDING",
+            note,
+          });
           setDisputeCloseOpen(false);
         }}
       />

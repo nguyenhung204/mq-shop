@@ -503,6 +503,7 @@
       "confirmGoodsHint": "確認已從賣家收到退回商品。",
       "confirmGoodsReceived": "我已收到退回商品",
       "reportGoodsIssue": "未收到／運單有誤",
+      "updateGoodsIssue": "更新問題說明",
       "reportGoodsIssueTitle": "回報寄回問題",
       "reportGoodsIssueDesc": "說明問題（未收到、運單錯誤、包裹損壞…）。客服與賣家會收到通知。",
       "reportGoodsIssueHint": "運單有誤或包裹未到時請立即回報 — 不必等 7 天 SLA。",
