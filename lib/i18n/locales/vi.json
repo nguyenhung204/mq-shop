@@ -813,7 +813,8 @@
       "confirm": "Xác nhận",
       "allShops": "Tất cả shop",
       "when": "Thời điểm",
-      "reasonPrefix": "Lý do: "
+      "reasonPrefix": "Lý do: ",
+      "retry": "Thử lại"
     },
     "overview": {
       "title": "Quản trị",
@@ -889,28 +890,72 @@
       "range12m": "12 tháng",
       "range90d": "90 ngày",
       "noChartData": "Chưa có dữ liệu.",
-      "cronJobs": "Cron Jobs",
-      "cronJobsDesc": "Tác vụ tự động theo lịch",
+      "cronJobs": "Lịch việc tự động",
+      "cronJobsDesc": "Các việc máy tự làm theo giờ đã hẹn — xếp theo lần sắp chạy gần nhất để dễ theo dõi",
       "nextRun": "Lần chạy tiếp",
-      "schedule": "Lịch",
-      "noCronJobs": "Không có cron job nào.",
+      "schedule": "Khi nào chạy",
+      "noCronJobs": "Chưa có việc tự động nào.",
       "jobs": {
         "order-expiry": {
-          "name": "Hết hạn đơn hàng",
-          "description": "Tự động huỷ đơn hàng PENDING chưa thanh toán sau 30 ngày. Xử lý tối đa 100 đơn mỗi lần chạy."
+          "name": "Hủy đơn chưa thanh toán",
+          "description": "Mỗi ngày: tự hủy đơn còn treo chưa trả tiền quá 3 ngày; nhắc các đơn thanh toán hoặc giao hàng bị chậm. Mỗi lần xử lý tối đa 100 đơn mỗi loại.",
+          "schedule": "Mỗi ngày lúc 03:00 (GMT+8)"
+        },
+        "order-sales-eligible": {
+          "name": "Ghi nhận đơn đủ điều kiện tính doanh số",
+          "description": "Mỗi giờ: với đơn đã giao xong và hết 7 ngày đổi trả (không còn yêu cầu đổi trả đang mở), hệ thống đánh dấu đủ điều kiện để tính hoa hồng và đối soát.",
+          "schedule": "Mỗi giờ (GMT+8)"
+        },
+        "rma-sla": {
+          "name": "Nhắc việc đổi trả quá hạn",
+          "description": "Mỗi giờ: đẩy bước đổi trả bị treo quá lâu; nếu người bán từ chối hoàn mà không tranh chấp, chuyển sang phải gửi hàng lại cho người mua.",
+          "schedule": "Mỗi giờ (GMT+8)"
+        },
+        "monthly-commission": {
+          "name": "Tính hoa hồng tháng trước",
+          "description": "Ngày 1 hàng tháng (giờ Đài Loan): tính hoa hồng nhóm và hoa hồng trung thành cho tháng vừa kết thúc. Thưởng toàn hệ thống tính riêng theo quý.",
+          "schedule": "Ngày 1 hàng tháng lúc 02:00 (GMT+8)"
+        },
+        "quarterly-global-rank-snapshot": {
+          "name": "Chốt cấp bậc cuối quý",
+          "description": "Ngày 1 tháng 1/4/7/10 lúc 0 giờ (giờ Đài Loan): lưu cấp bậc mọi thành viên ngay khi quý vừa đóng — dùng để chia thưởng quý, không đổi giữa chừng.",
+          "schedule": "1/1 · 1/4 · 1/7 · 1/10 lúc 00:00 (GMT+8)"
+        },
+        "quarterly-global-fund": {
+          "name": "Chi thưởng toàn hệ thống theo quý",
+          "description": "Ngày 1 tháng 1/4/7/10 lúc 2 giờ (giờ Đài Loan): chia thưởng quỹ toàn hệ thống cho quý vừa đóng, cộng điểm vào ví theo cấp bậc đã chốt và tỷ giá đã khóa.",
+          "schedule": "1/1 · 1/4 · 1/7 · 1/10 lúc 02:00 (GMT+8)"
+        },
+        "rank-reconcile": {
+          "name": "Rà soát thăng cấp bậc",
+          "description": "Mỗi ngày: kiểm tra lại thành viên đang hoạt động và thăng cấp nếu đủ điều kiện mà hệ thống chưa kịp cập nhật trước đó.",
+          "schedule": "Mỗi ngày lúc 04:00 (GMT+8)"
         },
         "promotion-expiry": {
           "name": "Hết hạn khuyến mãi",
-          "description": "Chuyển trạng thái các khuyến mãi ACTIVE đã qua ngày kết thúc sang EXPIRED."
+          "description": "Mỗi giờ: tự tắt khuyến mãi đã qua ngày kết thúc.",
+          "schedule": "Mỗi giờ (GMT+8)"
         },
-        "monthly-commission": {
-          "name": "Hoa hồng tháng",
-          "description": "Tính hoa hồng TEAM, LOYALTY và quỹ GLOBAL cho tháng trước."
-        },
-        "rank-reconcile": {
-          "name": "Đối soát xếp hạng",
-          "description": "Quét tất cả người dùng đang hoạt động và thăng hạng MLM bị bỏ sót bởi sự kiện thời gian thực."
+        "audit-cleanup": {
+          "name": "Xóa nhật ký cũ",
+          "description": "Mỗi ngày: xóa nhật ký thao tác cũ hơn 90 ngày để giữ hệ thống gọn.",
+          "schedule": "Mỗi ngày lúc 03:00 (GMT+8)"
         }
+      },
+      "cronSectionTitle": "Việc hệ thống tự chạy theo lịch",
+      "cronColName": "Việc cần làm",
+      "cronColCategory": "Nhóm",
+      "cronColExpression": "Mã lịch",
+      "cronColTimezone": "Giờ theo",
+      "cronColCountdown": "Còn lại",
+      "refreshCron": "Làm mới",
+      "cronJobsLoadError": "Không tải được danh sách lịch tự động",
+      "cronCategory": {
+        "orders": "Đơn hàng & đổi trả",
+        "commission": "Hoa hồng & thưởng",
+        "mlm": "Cấp bậc thành viên",
+        "marketing": "Khuyến mãi",
+        "compliance": "Lưu trữ nhật ký"
       }
     },
     "banners": {
@@ -1595,16 +1640,28 @@
       "rankName": "Tên",
       "payoutHoldBanner": "Payout hold có thể giữ hoa hồng ở PENDING cho đến khi tắt COMMISSION_PAYOUT_HOLD và chạy flush.",
       "runMonthlyTitle": "Chạy thưởng tháng",
-      "runMonthlyHint": "Chọn tháng UTC (nửa-mở [đầu tháng, đầu tháng sau)) có đơn đã giao, rồi chạy thưởng team, loyalty và global. Request gửi Idempotency-Key; chạy lại cùng tháng an toàn (batch lock + ledger). Ưu tiên tháng ghi “Chạy”.",
+      "runMonthlyHint": "Chọn tháng GMT+8 có doanh số đã ghi nhận, rồi chạy thưởng đội và trung thành. Quỹ toàn hệ thống là job quý riêng bên dưới. Chạy lại an toàn (batch lock + ledger).",
       "runMonthly": "Chạy thưởng tháng",
-      "runMonthlyDone": "Job tháng {yearMonth} xong (múi giờ {timezone}). Kỳ UTC nửa-mở [{periodStart}, {periodEnd}). Batch: {batchId}. Trạng thái: {status}.",
+      "runMonthlyDone": "Đã chạy thưởng tháng {yearMonth} thành công ({timezone}). Kỳ GMT+8 từ {periodStart} đến trước {periodEnd}.",
+      "runQuarterlyTitle": "Chạy quỹ toàn hệ thống theo quý",
+      "runQuarterlyHint": "GLOBAL chốt khi quý GMT+8 đã đóng (đầu quý mới: 1/1·4·7·10). Cron 02:00 tự chạy quý trước; nút admin cũng chỉ bật sau khi đóng quý để tránh trả thiếu. % từ Finance config; ghi PTS.",
+      "runQuarterly": "Chạy quỹ quý",
+      "runQuarterlyDone": "Đã chạy quỹ quý {periodKey} thành công ({timezone}). Kỳ GMT+8 từ {periodStart} đến trước {periodEnd}.",
+      "periodKey": "Quý",
+      "periodKeyInvalid": "Dùng YYYYQn (vd. 2026Q2).",
+      "periodKeyRequired": "Chọn quý từ bảng tổng quan.",
+      "periodKeyNoVolume": "Quý chưa đóng, không có GMV, hoặc đã chi theo tháng.",
+      "quarterlyEmpty": "Chưa có quý nào có GMV đã ghi nhận.",
+      "selectQuarter": "Chọn quý có GMV để chạy.",
+      "selectedQuarter": "Đang chọn: {periodKey}",
+      "quarterOpenHint": "Chạy từ ngày 1 tháng đầu quý sau",
       "yearMonth": "Năm-tháng",
       "yearMonthInvalid": "Dùng YYYY-MM (vd. 2026-06).",
       "overviewEmpty": "Không có tháng nào có đơn đã giao trong 12 tháng gần đây — thêm dữ liệu demo hoặc chờ có doanh số.",
       "gmv": "GMV",
       "orders": "Đơn",
       "globalFund": "Quỹ global / tier",
-      "credited": "Đã ghi nhận (đội / toàn cầu / trung thành)",
+      "credited": "Đã ghi nhận (đội / trung thành)",
       "creditedTeam": "Đội",
       "creditedGlobal": "Toàn cầu",
       "creditedLoyalty": "Trung thành",
@@ -1617,7 +1674,9 @@
       "action": {
         "RUN": "Chạy",
         "RE_RUN_IDEMPOTENT": "Chạy lại",
-        "NO_VOLUME": "Không doanh số"
+        "NO_VOLUME": "Không doanh số",
+        "SKIPPED_MONTHLY_PAID": "Đã chi theo tháng",
+        "QUARTER_OPEN": "Chưa đóng quý"
       },
       "poolPerTier": "Quỹ mỗi bậc",
       "totalPaidToUsers": "Đã trả user",
@@ -1625,6 +1684,28 @@
       "paidToUsers": "Đã trả",
       "companyKept": "Công ty giữ",
       "beneficiaries": "Người nhận",
+      "eligibleCount": "Số người đủ điều kiện",
+      "colMemberId": "Mã thành viên",
+      "colMember": "Thành viên",
+      "colRankAtCutoff": "Cấp bậc cuối quý",
+      "colAccountStatus": "TT tài khoản lúc chốt",
+      "rankSnapshotCaptured": "Chốt cấp bậc",
+      "rankSnapshotMembers": "{count} thành viên",
+      "rankSnapshotMissing": "Chưa có bản chụp cấp bậc",
+      "beneficiariesShown": "Đang hiện {shown}/{total}",
+      "showMoreBeneficiaries": "Xem thêm {count}",
+      "showLessBeneficiaries": "Thu gọn",
+      "fxLockTitle": "Bản chụp tỷ giá quý",
+      "fxLockMissing": "Chưa khóa tỷ giá quý",
+      "fxLockEmptyRates": "Chưa có cặp tỷ giá trong bản khóa",
+      "fxColPeriodKey": "Mã quý",
+      "fxColQuarterEnd": "Ngày kết thúc quý",
+      "fxColFxDate": "Ngày áp dụng tỷ giá",
+      "fxColBase": "Đồng nguồn",
+      "fxColQuote": "Đồng đích",
+      "fxColRate": "Giá trị tỷ giá",
+      "fxColSource": "Nguồn tỷ giá",
+      "fxColAsOf": "Thời điểm lấy tỷ giá",
       "tier": "Bậc",
       "unscopedPaid": "Đã trả nhưng không gắn bậc",
       "toggleGlobalFund": "Mở chi tiết quỹ toàn cầu",
@@ -1667,7 +1748,7 @@
       "reconcileBatchDone": "Đã kiểm {checked} user · thăng {promoted}.",
       "commissionReport": {
         "title": "Báo cáo hoa hồng",
-        "description": "Kiểm toán hàng tháng toàn bộ khoản hoa hồng — giới thiệu, đội nhóm, toàn cầu và trung thành.",
+        "description": "Đối soát tháng: giới thiệu, đội, trung thành; GLOBAL theo quý chứa tháng đó.",
         "yearMonthLabel": "Kỳ (YYYY-MM)",
         "yearMonthPlaceholder": "VD: 2026-07",
         "load": "Tải báo cáo",
@@ -1679,6 +1760,9 @@
         "sectionSummary": "Đối soát",
         "gmv": "GMV",
         "deliveredOrders": "Đơn đã giao",
+        "globalPeriod": "Quý GLOBAL",
+        "globalGmv": "GMV quỹ (quý)",
+        "globalFxAsOf": "Khóa tỷ giá (hiển thị)",
         "globalFundPercent": "% Global Fund",
         "globalPoolPerTier": "Quỹ mỗi Tier",
         "grandTotalPayout": "Tổng chi trả",
@@ -2391,6 +2475,7 @@
       "timingRealtime": "Có thể ở trạng thái Pending khi đang hold payout",
       "timingJoining": "Chỉ đơn gia nhập đã ghi nhận",
       "timingMonthEnd": "Chốt cuối tháng theo doanh số đã ghi nhận",
+      "timingQuarterEnd": "Chốt cuối quý theo doanh số đã ghi nhận",
       "referralBody": "Chỉ đơn gia nhập đầu tiên của người được mời (đã ghi nhận, ≥ NT$2.000) mới tính % giới thiệu. Đơn mua lại = 0. Bạn phải là người bán (shop được duyệt). % áp trên tiền hàng TWD (không gồm phí ship), rồi ghi có bằng PTS.",
       "referralRatesTitle": "% giới thiệu theo cấp của bạn",
       "referralNote": "% giới thiệu tối đa 10%. Rank càng cao, tỷ lệ càng tốt.",
@@ -2398,7 +2483,7 @@
       "teamNote": "Bạn nhận phần chênh lệch giữa % của bạn và % cao nhất đã có phía dưới trên nhánh (max-below), tính trên doanh số mạng đã ghi nhận.",
       "teamBody": "Cuối tháng bạn nhận phần chênh lệch giữa % đội nhóm của bạn và % cao nhất của downline trên cùng nhánh (max-below), trên doanh số mạng đã ghi nhận trong tháng (TWD). Đơn mua của chính bạn không tính. Kết quả TWD được ghi có thành PTS.",
       "loyaltyBody": "Mỗi tháng cần ít nhất một đơn đã ghi nhận ≥ NT$2.000 — không cộng dồn đơn nhỏ, và “đã giao” chưa đủ. Đủ 12 tháng liên tiếp nhận NT$28.000 TWD, ghi có thành PTS. Bỏ lỡ một tháng sẽ reset chuỗi; sau khi nhận, chu kỳ mới bắt đầu.",
-      "globalBody": "Mỗi tháng một phần GMV sàn đã ghi nhận (admin cấu hình) vào quỹ chung tính bằng TWD. Thành viên đủ cấp cao chia quỹ; cấp trống công ty giữ. Phần của bạn được ghi có thành PTS.",
+      "globalBody": "Mỗi quý một phần GMV sàn đã ghi nhận (% do admin cấu hình) vào các quỹ TWD cộng dồn. Thành viên đủ cấp cao chia từng quỹ; cấp trống công ty giữ. Phần của bạn được ghi có thành PTS.",
       "globalTiersTitle": "Ai được chia quỹ",
       "globalNote": "Cấp cao hơn có thể đủ điều kiện ở nhiều mức chia. Mức trống do công ty giữ.",
       "ranks": {
@@ -2751,8 +2836,10 @@
     "mlmReferrerUpdateFailed": "Cập nhật referrer thất bại",
     "mlmReferralRateUpdated": "Đã cập nhật override tỷ lệ referral",
     "mlmReferralRateUpdateFailed": "Cập nhật tỷ lệ referral thất bại",
-    "mlmMonthlyRan": "Đã chạy thưởng tháng {yearMonth} ({timezone}): [{periodStart}, {periodEnd}) · batch {batchId} · {status}",
+    "mlmMonthlyRan": "Đã chạy thưởng tháng {yearMonth} ({timezone}): từ {periodStart} đến trước {periodEnd}",
     "mlmMonthlyRunFailed": "Không chạy được thưởng tháng",
+    "mlmQuarterlyRan": "Đã chạy quỹ quý {periodKey} ({timezone}): từ {periodStart} đến trước {periodEnd}",
+    "mlmQuarterlyRunFailed": "Không chạy được quỹ GLOBAL quý",
     "mlmReconcileDone": "Reconcile rank xong",
     "mlmReconcilePromoted": "Reconcile: {from} → {to}",
     "mlmReconcileNoChange": "Reconcile xong — không đổi rank",

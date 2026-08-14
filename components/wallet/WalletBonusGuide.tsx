@@ -32,7 +32,7 @@ const PILLARS: Pillar[] = [
   {
     type: "GLOBAL",
     bodyKey: "wallet.bonusGuide.globalBody",
-    timingKey: "wallet.bonusGuide.timingMonthEnd",
+    timingKey: "wallet.bonusGuide.timingQuarterEnd",
   },
 ];
 

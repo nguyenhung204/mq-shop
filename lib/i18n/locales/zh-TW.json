@@ -813,7 +813,8 @@
       "confirm": "確認",
       "allShops": "全部商店",
       "when": "時間",
-      "reasonPrefix": "原因："
+      "reasonPrefix": "原因：",
+      "retry": "重試"
     },
     "overview": {
       "title": "管理後台",
@@ -889,28 +890,72 @@
       "range12m": "12 個月",
       "range90d": "90 天",
       "noChartData": "尚無資料。",
-      "cronJobs": "定時任務",
-      "cronJobsDesc": "排程自動執行任務",
+      "cronJobs": "自動排程",
+      "cronJobsDesc": "系統依固定時間自動執行的工作 — 依下次執行時間排序，方便監控",
       "nextRun": "下次執行",
-      "schedule": "排程",
-      "noCronJobs": "目前沒有定時任務。",
+      "schedule": "執行時間",
+      "noCronJobs": "尚無自動工作。",
       "jobs": {
         "order-expiry": {
-          "name": "訂單到期",
-          "description": "自動取消超過 30 天未付款的 PENDING 訂單，每次最多處理 100 筆。"
+          "name": "取消未付款訂單",
+          "description": "每日：自動取消超過 3 天仍未付款的訂單；標記付款或出貨過慢的案件。每次每類最多處理 100 筆。",
+          "schedule": "每日 03:00（GMT+8）"
         },
-        "promotion-expiry": {
-          "name": "促銷到期",
-          "description": "將已超過結束日期的 ACTIVE 促銷標記為 EXPIRED。"
+        "order-sales-eligible": {
+          "name": "標記可計入業績的訂單",
+          "description": "每小時：訂單已配達且超過 7 天退換貨期限（無進行中退換貨）時，標記為可計算佣金與對帳。",
+          "schedule": "每小時（GMT+8）"
+        },
+        "rma-sla": {
+          "name": "催辦逾期退換貨",
+          "description": "每小時：推進卡住過久的退換貨步驟；若賣家拒絕退款且無爭議，改為必須重新寄回給買家。",
+          "schedule": "每小時（GMT+8）"
         },
         "monthly-commission": {
-          "name": "月度佣金",
-          "description": "計算上個月的 TEAM、LOYALTY 及 GLOBAL 基金佣金。"
+          "name": "計算上月佣金",
+          "description": "每月 1 日（台灣時間）：計算剛結束月份的團隊與忠誠佣金。全站獎勵另按季處理。",
+          "schedule": "每月 1 日 02:00（GMT+8）"
+        },
+        "quarterly-global-rank-snapshot": {
+          "name": "季末鎖定會員等級",
+          "description": "1/4/7/10 月 1 日 0 時（台灣時間）：在季剛結束時保存全體會員等級，供季度獎勵使用，過程中不再變動。",
+          "schedule": "1/4/7/10 月 1 日 00:00（GMT+8）"
+        },
+        "quarterly-global-fund": {
+          "name": "發放季度全站獎勵",
+          "description": "1/4/7/10 月 1 日 2 時（台灣時間）：依已鎖定等級與匯率，將剛結束季度的全站獎勵點數記入錢包。",
+          "schedule": "1/4/7/10 月 1 日 02:00（GMT+8）"
         },
         "rank-reconcile": {
-          "name": "等級校正",
-          "description": "掃描所有活躍使用者，補升被即時事件遺漏的 MLM 等級。"
+          "name": "補查升級",
+          "description": "每日：再檢查活躍會員，補升符合條件但先前未更新的等級。",
+          "schedule": "每日 04:00（GMT+8）"
+        },
+        "promotion-expiry": {
+          "name": "結束已到期促銷",
+          "description": "每小時：自動關閉已過結束日的促銷。",
+          "schedule": "每小時（GMT+8）"
+        },
+        "audit-cleanup": {
+          "name": "清除舊操作紀錄",
+          "description": "每日：刪除超過 90 天的操作紀錄，保持系統精簡。",
+          "schedule": "每日 03:00（GMT+8）"
         }
+      },
+      "cronSectionTitle": "系統自動排程工作",
+      "cronColName": "工作項目",
+      "cronColCategory": "分類",
+      "cronColExpression": "排程代碼",
+      "cronColTimezone": "時鐘",
+      "cronColCountdown": "剩餘時間",
+      "refreshCron": "重新整理",
+      "cronJobsLoadError": "無法載入自動排程",
+      "cronCategory": {
+        "orders": "訂單與退換貨",
+        "commission": "佣金與獎勵",
+        "mlm": "會員等級",
+        "marketing": "促銷",
+        "compliance": "日誌保存"
       }
     },
     "banners": {
@@ -1595,16 +1640,28 @@
       "rankName": "名稱",
       "payoutHoldBanner": "發放鎖定期間，新佣金可能維持 PENDING，需關閉 COMMISSION_PAYOUT_HOLD 並執行 flush。",
       "runMonthlyTitle": "執行月結獎金",
-      "runMonthlyHint": "選擇 UTC 月份（半開區間 [月初, 下月初)）且有已配達業績，再執行團隊、忠誠與全球獎金。請求會帶 Idempotency-Key；重跑同月安全（batch lock + ledger）。優先選擇標示「執行」的月份。",
+      "runMonthlyHint": "選擇有已確認業績的 GMT+8 月份，再執行團隊與忠誠獎金。全球基金改為下方的季度作業。重跑安全（batch lock + ledger）。",
       "runMonthly": "執行月結獎金",
-      "runMonthlyDone": "月結完成：{yearMonth}（時區 {timezone}）。UTC 半開區間 [{periodStart}, {periodEnd})。Batch：{batchId}。狀態：{status}。",
+      "runMonthlyDone": "已完成 {yearMonth} 月結（{timezone}）。GMT+8 期間自 {periodStart} 至 {periodEnd}（不含當日）。",
+      "runQuarterlyTitle": "執行季度全球基金",
+      "runQuarterlyHint": "GLOBAL 僅在 GMT+8 季度結束後結算（1/1·4·7·10）。Cron 02:00 自動結上一季；管理後台按鈕也於季結束後才可按，避免季中少付。比例取自財務設定；入帳 PTS。",
+      "runQuarterly": "執行季度全球基金",
+      "runQuarterlyDone": "已完成 {periodKey} 季度 GLOBAL（{timezone}）。GMT+8 期間自 {periodStart} 至 {periodEnd}（不含當日）。",
+      "periodKey": "季度",
+      "periodKeyInvalid": "請用 YYYYQn（例如 2026Q2）。",
+      "periodKeyRequired": "請從總覽選擇季度。",
+      "periodKeyNoVolume": "季度尚未結束、沒有 GMV，或已依月結 GLOBAL 發放。",
+      "quarterlyEmpty": "尚無已確認 GMV 的季度。",
+      "selectQuarter": "請選擇有 GMV 的季度。",
+      "selectedQuarter": "已選：{periodKey}",
+      "quarterOpenHint": "請於下一季第 1 天再執行",
       "yearMonth": "年月",
       "yearMonthInvalid": "請用 YYYY-MM（例如 2026-06）。",
       "overviewEmpty": "近 12 個月沒有已配達訂單的月份 — 請加入示範資料或等待有業績。",
       "gmv": "GMV",
       "orders": "訂單",
       "globalFund": "全球池 / 層級",
-      "credited": "已入帳（團隊／全球／忠誠）",
+      "credited": "已入帳（團隊／忠誠）",
       "creditedTeam": "團隊",
       "creditedGlobal": "全球",
       "creditedLoyalty": "忠誠",
@@ -1617,7 +1674,9 @@
       "action": {
         "RUN": "執行",
         "RE_RUN_IDEMPOTENT": "重跑",
-        "NO_VOLUME": "無業績"
+        "NO_VOLUME": "無業績",
+        "SKIPPED_MONTHLY_PAID": "已依月結發放",
+        "QUARTER_OPEN": "季度尚未結束"
       },
       "poolPerTier": "每層配額",
       "totalPaidToUsers": "已付給用戶",
@@ -1625,6 +1684,28 @@
       "paidToUsers": "已付",
       "companyKept": "公司保留",
       "beneficiaries": "受益人",
+      "eligibleCount": "符合人數",
+      "colMemberId": "會員編號",
+      "colMember": "會員",
+      "colRankAtCutoff": "季末等級",
+      "colAccountStatus": "結算時帳戶狀態",
+      "rankSnapshotCaptured": "等級凍結",
+      "rankSnapshotMembers": "{count} 位會員",
+      "rankSnapshotMissing": "尚無等級快照",
+      "beneficiariesShown": "顯示 {shown}/{total}",
+      "showMoreBeneficiaries": "再顯示 {count} 筆",
+      "showLessBeneficiaries": "收合",
+      "fxLockTitle": "季度匯率快照",
+      "fxLockMissing": "尚未鎖定本季匯率",
+      "fxLockEmptyRates": "鎖定中尚無匯率配對",
+      "fxColPeriodKey": "季度代碼",
+      "fxColQuarterEnd": "季度結束日",
+      "fxColFxDate": "匯率適用日",
+      "fxColBase": "來源幣別",
+      "fxColQuote": "目標幣別",
+      "fxColRate": "匯率",
+      "fxColSource": "匯率來源",
+      "fxColAsOf": "取匯率時間",
       "tier": "層級",
       "unscopedPaid": "未綁層級入帳",
       "toggleGlobalFund": "展開全球基金明細",
@@ -1667,7 +1748,7 @@
       "reconcileBatchDone": "已檢查 {checked} 人 · 升級 {promoted} 人。",
       "commissionReport": {
         "title": "佣金報告",
-        "description": "每月全佣金稽核 — 推薦、團隊、全球與忠誠度。",
+        "description": "每月稽核推薦、團隊與忠誠；GLOBAL 為該月所屬日曆季。",
         "yearMonthLabel": "期間 (YYYY-MM)",
         "yearMonthPlaceholder": "例：2026-07",
         "load": "載入報告",
@@ -1679,6 +1760,9 @@
         "sectionSummary": "對帳摘要",
         "gmv": "GMV",
         "deliveredOrders": "已送達訂單",
+        "globalPeriod": "GLOBAL 季度",
+        "globalGmv": "GLOBAL GMV（季）",
+        "globalFxAsOf": "匯率鎖定（顯示）",
         "globalFundPercent": "全球基金 %",
         "globalPoolPerTier": "各階層獎金池",
         "grandTotalPayout": "總支付金額",
@@ -2391,6 +2475,7 @@
       "timingRealtime": "在發放鎖定期間可能維持 Pending",
       "timingJoining": "僅限首次已確認的加盟訂單",
       "timingMonthEnd": "月底依已確認營業額結算",
+      "timingQuarterEnd": "季底依已確認營業額結算",
       "referralBody": "僅被邀請人的第一筆加盟訂單（已確認且 ≥ NT$2,000）計推薦%。回購 = 0。您須為賣家（商店已核准）。% 以該筆商品小計（TWD，不含運費）計算後以 PTS 入帳。",
       "referralRatesTitle": "依您的等級對應推薦 %",
       "referralNote": "推薦抽成上限為 10%。等級越高，比例越好。",
@@ -2398,7 +2483,7 @@
       "teamNote": "您獲得您的 % 與同分支下線已有最高 %（max-below）之差額，乘以已確認網路業績。",
       "teamBody": "月底依您的團隊%與同支線下線最高%之差額（max-below），以該月已確認網路業績（TWD）計算。不含您本人消費。TWD 結果以 PTS 入帳。",
       "loyaltyBody": "每月至少一筆已確認訂單 ≥ NT$2,000 — 小單不累加，僅「已配達」仍不足。連續 12 個月可獲 NT$28,000 TWD，以 PTS 入帳。漏月重置；發放後新週期重新起算。",
-      "globalBody": "每月平台已確認 GMV 的一部分（管理員設定）進入 TWD 共用基金。符合高階者分攤；空階由公司保留。您的份額以 PTS 入帳。",
+      "globalBody": "每季平台已確認 GMV 的一部分（管理員設定比例）進入可疊加的 TWD 基金。符合高階者分攤各層；空階由公司保留。您的份額以 PTS 入帳。",
       "globalTiersTitle": "可參與分配的等級",
       "globalNote": "較高等級可能同時符合多個分配帶。空缺由公司保留。",
       "ranks": {
@@ -2751,8 +2836,10 @@
     "mlmReferrerUpdateFailed": "更新推薦人失敗",
     "mlmReferralRateUpdated": "已更新推薦比率覆寫",
     "mlmReferralRateUpdateFailed": "更新推薦比率失敗",
-    "mlmMonthlyRan": "已執行 {yearMonth} 月結（{timezone}）：[{periodStart}, {periodEnd}) · batch {batchId} · {status}",
+    "mlmMonthlyRan": "已執行 {yearMonth} 月結（{timezone}）：自 {periodStart} 至 {periodEnd}（不含）",
     "mlmMonthlyRunFailed": "無法執行月結獎金",
+    "mlmQuarterlyRan": "已執行 {periodKey} 季度 GLOBAL（{timezone}）：自 {periodStart} 至 {periodEnd}（不含）",
+    "mlmQuarterlyRunFailed": "無法執行季度 GLOBAL 基金",
     "mlmReconcileDone": "等級校正完成",
     "mlmReconcilePromoted": "校正完成：{from} → {to}",
     "mlmReconcileNoChange": "校正完成 — 等級未變",

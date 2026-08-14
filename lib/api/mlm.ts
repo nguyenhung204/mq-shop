@@ -190,6 +190,13 @@ export type MonthlyCommissionSuggestedAction =
   | "RE_RUN_IDEMPOTENT"
   | "NO_VOLUME";
 
+export type QuarterlyGlobalSuggestedAction =
+  | "RUN"
+  | "RE_RUN_IDEMPOTENT"
+  | "NO_VOLUME"
+  | "SKIPPED_MONTHLY_PAID"
+  | "QUARTER_OPEN";
+
 export type GlobalFundTierStatus = "PAID" | "COMPANY_KEPT" | "PENDING" | "NOT_RUN" | string;
 
 export type GlobalFundBeneficiary = {
@@ -198,6 +205,7 @@ export type GlobalFundBeneficiary = {
   fullName?: string | null;
   mlmRank: number;
   payoutAmount: string;
+  accountStatus?: string | null;
 };
 
 export type GlobalFundTierBreakdown = {
@@ -245,6 +253,39 @@ export type MonthlyCommissionOverview = {
   months: MonthlyCommissionOverviewRow[];
 };
 
+export type QuarterlyFxLockView = {
+  periodKey: string;
+  quarterEnd: string;
+  fxDate: string;
+  baseCurrency: string;
+  source: string;
+  asOf: string;
+  rates: Array<{ quoteCurrency: string; rate: number }>;
+};
+
+export type QuarterlyGlobalOverviewRow = {
+  periodKey: string;
+  deliveredOrderCount: number;
+  gmv: string;
+  globalFund?: GlobalFundOverview;
+  credited: {
+    globalCount: number;
+    globalPayoutTotal: string;
+  };
+  suggestedAction: QuarterlyGlobalSuggestedAction;
+  skippedReason: string | null;
+  fxAsOf: string | null;
+  rankSnapshot?: {
+    capturedAt: string;
+    memberCount: number;
+  } | null;
+  fxLock?: QuarterlyFxLockView | null;
+};
+
+export type QuarterlyGlobalOverview = {
+  quarters: QuarterlyGlobalOverviewRow[];
+};
+
 type CommissionListRes =
   | CommissionRow[]
   | { data: CommissionRow[]; meta?: PageMeta }
@@ -288,20 +329,45 @@ export const adminMlmApi = {
     api.get<MonthlyCommissionOverview>("/admin/mlm/commissions/monthly-overview", {
       query: { monthsBack: query?.monthsBack ?? 12 },
     }),
-  /** Demo/ops: run TEAM / LOYALTY / GLOBAL for a period (default = previous UTC month). */
+  quarterlyOverview: (query?: { quartersBack?: number }) =>
+    api.get<QuarterlyGlobalOverview>("/admin/mlm/commissions/quarterly-overview", {
+      query: { quartersBack: query?.quartersBack ?? 8 },
+    }),
+  /** Demo/ops: run TEAM / LOYALTY for a period (default = previous GMT+8 month). */
   runMonthly: (
     body: { yearMonth?: string } | undefined,
     idempotencyKey: string,
   ) =>
     api.post<{
       yearMonth: string;
-      timezone: "UTC";
+      timezone: string;
       policyKey: string;
       periodStart: string;
       periodEnd: string;
       batchId: string | null;
       status: "COMPLETED" | "SKIPPED_ALREADY_COMPLETED";
     }>("/admin/mlm/commissions/run-monthly", body ?? {}, {
+      headers: { "Idempotency-Key": idempotencyKey },
+    }),
+  runQuarterly: (
+    body: { periodKey?: string } | undefined,
+    idempotencyKey: string,
+  ) =>
+    api.post<{
+      periodKey: string;
+      timezone: string;
+      policyKey: string;
+      periodStart: string;
+      periodEnd: string;
+      batchId: string | null;
+      status:
+        | "COMPLETED"
+        | "SKIPPED_ALREADY_COMPLETED"
+        | "SKIPPED_MONTHLY_PAID"
+        | "SKIPPED_NO_VOLUME"
+        | "SKIPPED_QUARTER_OPEN";
+      skippedReason?: string;
+    }>("/admin/mlm/commissions/run-quarterly", body ?? {}, {
       headers: { "Idempotency-Key": idempotencyKey },
     }),
 
@@ -487,8 +553,12 @@ export type GlobalFundTierReport = {
 
 export type CommissionReport = {
   yearMonth: string;
+  globalPeriodKey?: string;
   gmv: string;
   deliveredOrderCount: number;
+  globalGmv?: string;
+  globalOrderCount?: number;
+  globalFxAsOf?: string | null;
   globalFundPercent: number;
   globalPoolPerTier: string;
   grandTotalPayout: string;

@@ -38,6 +38,7 @@ import {
 import { ApiError } from "@/lib/api/client";
 import { createIdempotencyKeyStore } from "@/lib/api/idempotency";
 import { asArray, parsePage } from "@/lib/api/utils";
+import { formatSettlementDayGmt8 } from "@/lib/i18n/locale-format";
 import { tt } from "@/lib/i18n/tt";
 import { suppressNotificationToasts } from "@/lib/notifications/suppress-toast";
 import { getErrorMessage } from "@/lib/queries/utils";
@@ -104,6 +105,8 @@ export const mlmKeys = {
   rankProgress: () => [...mlmKeys.all, "rank-progress"] as const,
   monthlyOverview: (monthsBack = 12) =>
     [...mlmKeys.all, "monthly-overview", monthsBack] as const,
+  quarterlyOverview: (quartersBack = 8) =>
+    [...mlmKeys.all, "quarterly-overview", quartersBack] as const,
   commissionReport: (yearMonth?: string) =>
     [...mlmKeys.all, "commission-report", yearMonth ?? ""] as const,
   loyaltyHistory: (userId: string, monthsBack = 12) =>
@@ -487,6 +490,21 @@ export function useMonthlyCommissionOverview(
   });
 }
 
+export function useQuarterlyGlobalOverview(
+  quartersBack = 8,
+  options?: { enabled?: boolean },
+) {
+  return useQuery({
+    queryKey: mlmKeys.quarterlyOverview(quartersBack),
+    queryFn: async () => {
+      const res = await adminMlmApi.quarterlyOverview({ quartersBack });
+      const quarters = Array.isArray(res?.quarters) ? res.quarters : [];
+      return { quarters };
+    },
+    enabled: options?.enabled ?? true,
+  });
+}
+
 export function useSetMlmRank() {
   const qc = useQueryClient();
   return useMutation({
@@ -589,20 +607,12 @@ export function useRunMonthlyCommissions() {
     },
     onSuccess: (data) => {
       idempotency.invalidate();
-      const periodStart = data?.periodStart
-        ? new Date(data.periodStart).toISOString().slice(0, 10)
-        : "";
-      const periodEnd = data?.periodEnd
-        ? new Date(data.periodEnd).toISOString().slice(0, 10)
-        : "";
       toast.success(
         tt("toast.mlmMonthlyRan", {
           yearMonth: data?.yearMonth ?? "",
-          timezone: data?.timezone ?? "UTC",
-          periodStart,
-          periodEnd,
-          batchId: data?.batchId ?? "—",
-          status: data?.status ?? "",
+          timezone: data?.timezone ?? "GMT+8",
+          periodStart: formatSettlementDayGmt8(data?.periodStart),
+          periodEnd: formatSettlementDayGmt8(data?.periodEnd),
         }),
       );
       void qc.invalidateQueries({ queryKey: mlmKeys.all });
@@ -611,6 +621,37 @@ export function useRunMonthlyCommissions() {
     onError: (e) => {
       onWalletIdempotencyError(e, idempotency);
       toast.error(walletErrorMessage(e, tt("toast.mlmMonthlyRunFailed")));
+    },
+  });
+}
+
+export function useRunQuarterlyGlobal() {
+  const qc = useQueryClient();
+  const idempotency = useMemo(() => createIdempotencyKeyStore(), []);
+  return useMutation({
+    mutationFn: (body?: { periodKey?: string }) => {
+      const payload = body ?? {};
+      return adminMlmApi.runQuarterly(
+        payload,
+        idempotency.keyFor({ action: "run-quarterly", ...payload }),
+      );
+    },
+    onSuccess: (data) => {
+      idempotency.invalidate();
+      toast.success(
+        tt("toast.mlmQuarterlyRan", {
+          periodKey: data?.periodKey ?? "",
+          timezone: data?.timezone ?? "GMT+8",
+          periodStart: formatSettlementDayGmt8(data?.periodStart),
+          periodEnd: formatSettlementDayGmt8(data?.periodEnd),
+        }),
+      );
+      void qc.invalidateQueries({ queryKey: mlmKeys.all });
+      void qc.invalidateQueries({ queryKey: walletKeys.all });
+    },
+    onError: (e) => {
+      onWalletIdempotencyError(e, idempotency);
+      toast.error(walletErrorMessage(e, tt("toast.mlmQuarterlyRunFailed")));
     },
   });
 }

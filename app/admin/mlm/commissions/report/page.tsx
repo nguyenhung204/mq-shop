@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState, type FormEvent } from "react";
+import { Fragment, useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -17,6 +17,7 @@ import {
   useCommissionReport,
   useLoyaltyHistory,
   useMarkCommissionPeriodPaid,
+  useMlmRanks,
 } from "@/lib/queries/wallet";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
@@ -24,6 +25,7 @@ import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { formatMoney, formatPercent } from "@/lib/api/utils";
 import { mlmRankLabel } from "@/lib/i18n/mlm-rank";
+import type { Locale } from "@/lib/i18n/types";
 import { getErrorMessage } from "@/lib/queries/utils";
 import type {
   CommissionReportBatchStatus,
@@ -31,6 +33,7 @@ import type {
   GlobalFundTierReport,
   GlobalFundTierStatus,
   LoyaltyCommissionEntry,
+  MlmRankConfig,
   ReferralCommissionEntry,
   TeamCommissionEntry,
 } from "@/lib/api/mlm";
@@ -451,10 +454,35 @@ function TeamSection({ summary }: { summary: CommissionTypeSummary<TeamCommissio
   );
 }
 
+function formatRankNameAndCode(
+  t: (key: string, vars?: Record<string, string>) => string,
+  mlmRank: number,
+  options?: {
+    rankName?: string | null;
+    ranksByNumber?: Map<number, MlmRankConfig>;
+    locale?: Locale | null;
+  },
+): string {
+  const cfg = options?.ranksByNumber?.get(mlmRank);
+  const name =
+    options?.rankName?.trim() ||
+    mlmRankLabel(t, mlmRank, cfg?.name, {
+      nameI18n: cfg?.nameI18n,
+      locale: options?.locale,
+    });
+  return `${name} - R${mlmRank}`;
+}
+
 // ─── Global fund section ──────────────────────────────────────────────────────
 
-function GlobalSection({ tiers }: { tiers: GlobalFundTierReport[] }) {
-  const { t } = useLanguage();
+function GlobalSection({
+  tiers,
+  ranksByNumber,
+}: {
+  tiers: GlobalFundTierReport[];
+  ranksByNumber: Map<number, MlmRankConfig>;
+}) {
+  const { t, locale } = useLanguage();
   const tr = (k: string) => t(`admin.mlm.commissionReport.${k}`);
   const [expandedTier, setExpandedTier] = useState<number | null>(null);
 
@@ -521,7 +549,7 @@ function GlobalSection({ tiers }: { tiers: GlobalFundTierReport[] }) {
                         <thead>
                           <tr>
                             <Th>{tr("colRecipient")}</Th>
-                            <Th>{tr("colRank")}</Th>
+                            <Th>{t("admin.mlm.colRankAtCutoff")}</Th>
                             <Th right>{tr("colPaid")}</Th>
                           </tr>
                         </thead>
@@ -532,7 +560,13 @@ function GlobalSection({ tiers }: { tiers: GlobalFundTierReport[] }) {
                                 <span className="font-medium">{u.fullName?.trim() || u.email}</span>
                                 <span className="block text-[11px] text-mq-text-muted">{u.email}</span>
                               </Td>
-                              <Td muted>{u.rankName || mlmRankLabel(t, u.mlmRank)}</Td>
+                              <Td muted>
+                                {formatRankNameAndCode(t, u.mlmRank, {
+                                  rankName: u.rankName,
+                                  ranksByNumber,
+                                  locale,
+                                })}
+                              </Td>
                               <Td right><span className="font-semibold">{formatMoney(u.totalPayout)}</span></Td>
                             </tr>
                           ))}
@@ -745,6 +779,12 @@ function CommissionReportInner() {
 
   const { data, isLoading, isError, error } = useCommissionReport(queryYm);
   const markPeriodPaid = useMarkCommissionPeriodPaid();
+  const { data: ranks } = useMlmRanks();
+  const ranksByNumber = useMemo(() => {
+    const map = new Map<number, MlmRankConfig>();
+    for (const r of ranks ?? []) map.set(r.rank, r);
+    return map;
+  }, [ranks]);
 
   function handleLoad() {
     const trimmed = inputYm.trim();
@@ -858,10 +898,18 @@ function CommissionReportInner() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
               <StatCard label={tr("gmv")} value={formatMoney(data.gmv)} />
               <StatCard label={tr("deliveredOrders")} value={(data.deliveredOrderCount ?? 0).toLocaleString()} />
+              <StatCard label={tr("globalPeriod")} value={data.globalPeriodKey ?? "—"} />
+              <StatCard label={tr("globalGmv")} value={formatMoney(data.globalGmv ?? data.gmv)} />
               <StatCard label={tr("globalFundPercent")} value={`${data.globalFundPercent ?? 0}%`} />
               <StatCard label={tr("globalPoolPerTier")} value={formatMoney(data.globalPoolPerTier ?? "0")} />
               <StatCard label={tr("grandTotalPayout")} value={formatMoney(data.grandTotalPayout ?? "0")} accent />
               <StatCard label={tr("companyKeptTotal")} value={formatMoney(data.kpi?.companyKeptTotal ?? "0")} />
+              {data.globalFxAsOf ? (
+                <StatCard
+                  label={tr("globalFxAsOf")}
+                  value={new Date(data.globalFxAsOf).toISOString().slice(0, 10)}
+                />
+              ) : null}
             </div>
 
             {/* Batch meta row */}
@@ -929,7 +977,12 @@ function CommissionReportInner() {
                 />
                 {activeSection === "referral" && <ReferralSection summary={data.referral} />}
                 {activeSection === "team" && <TeamSection summary={data.team} />}
-                {activeSection === "global" && <GlobalSection tiers={data.global?.tiers ?? []} />}
+                {activeSection === "global" && (
+                  <GlobalSection
+                    tiers={data.global?.tiers ?? []}
+                    ranksByNumber={ranksByNumber}
+                  />
+                )}
                 {activeSection === "loyalty" && <LoyaltySection summary={data.loyalty} />}
               </div>
             </SectionCard>
@@ -955,7 +1008,7 @@ function CommissionReportInner() {
 
 export default function CommissionReportPage() {
   return (
-    <AuthGuard roles={["SUPER_ADMIN", "ACCOUNTANT", "ADMIN"]}>
+    <AuthGuard roles={["SUPER_ADMIN", "ACCOUNTANT"]}>
       <CommissionReportInner />
     </AuthGuard>
   );

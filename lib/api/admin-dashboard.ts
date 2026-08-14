@@ -185,8 +185,11 @@ export interface CronJobInfo {
   id: string;
   name: string;
   description: string;
+  category?: "orders" | "commission" | "mlm" | "marketing" | "compliance" | string;
   cronExpression: string;
   schedule: string;
+  timezone?: string;
+  timezoneLabel?: string;
   nextRunAt: string;
   nextRunInMs: number;
 }
@@ -194,6 +197,7 @@ export interface CronJobInfo {
 export interface CronJobsPayload {
   jobs: CronJobInfo[];
   serverTime: string;
+  count?: number;
 }
 
 export const adminDashboardApi = {

@@ -256,13 +256,21 @@ export function AdminDashboardOverview({
               <AdminOrderStatusChart />
               <AdminTopShops />
               <AdminNewUsersChart />
-              <AdminCronJobs />
             </>
           ) : (
             <AdminOrderStatusChart />
           )}
         </div>
       </div>
+
+      {isFull ? (
+        <div>
+          <h2 className="text-sm font-semibold text-mq-text mb-3">
+            {t("admin.overview.cronSectionTitle")}
+          </h2>
+          <AdminCronJobs />
+        </div>
+      ) : null}
     </section>
   );
 }

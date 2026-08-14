@@ -813,7 +813,8 @@
       "confirm": "Confirm",
       "allShops": "All shops",
       "when": "When",
-      "reasonPrefix": "Reason: "
+      "reasonPrefix": "Reason: ",
+      "retry": "Retry"
     },
     "overview": {
       "title": "Admin",
@@ -889,28 +890,72 @@
       "range12m": "12 months",
       "range90d": "90 days",
       "noChartData": "No data available.",
-      "cronJobs": "Cron Jobs",
-      "cronJobsDesc": "Scheduled automated tasks",
+      "cronJobs": "Automatic schedule",
+      "cronJobsDesc": "Tasks the system runs on a set schedule — sorted by the soonest next run so you can monitor them",
       "nextRun": "Next run",
-      "schedule": "Schedule",
-      "noCronJobs": "No cron jobs found.",
+      "schedule": "When it runs",
+      "noCronJobs": "No automatic tasks yet.",
       "jobs": {
         "order-expiry": {
-          "name": "Order Expiry",
-          "description": "Auto-cancel PENDING orders unpaid for 30+ days. Processes up to 100 orders per run."
+          "name": "Cancel unpaid orders",
+          "description": "Daily: cancel orders still unpaid after 3 days; flag slow payment or shipping cases. Up to 100 orders per type each run.",
+          "schedule": "Every day at 03:00 (GMT+8)"
         },
-        "promotion-expiry": {
-          "name": "Promotion Expiry",
-          "description": "Mark ACTIVE promotions past their endDate as EXPIRED."
+        "order-sales-eligible": {
+          "name": "Mark orders ready for sales totals",
+          "description": "Hourly: after delivery and the 7-day return window (with no open return), mark the order ready for commissions and reconciliation.",
+          "schedule": "Every hour (GMT+8)"
+        },
+        "rma-sla": {
+          "name": "Nudge overdue returns",
+          "description": "Hourly: move return steps that are stuck too long; if the seller refuses a refund without a dispute, require them to ship the item back to the buyer.",
+          "schedule": "Every hour (GMT+8)"
         },
         "monthly-commission": {
-          "name": "Monthly Commission",
-          "description": "Compute TEAM, LOYALTY, and GLOBAL fund commissions for the previous calendar month."
+          "name": "Calculate last month’s commissions",
+          "description": "On the 1st each month (Taiwan time): calculate team and loyalty commissions for the month just ended. Platform-wide rewards are handled separately by quarter.",
+          "schedule": "1st of each month at 02:00 (GMT+8)"
+        },
+        "quarterly-global-rank-snapshot": {
+          "name": "Freeze ranks at quarter end",
+          "description": "On 1 Jan/Apr/Jul/Oct at midnight (Taiwan time): save every member’s rank right when the quarter closes — used for quarterly rewards and not changed mid-process.",
+          "schedule": "1 Jan / Apr / Jul / Oct at 00:00 (GMT+8)"
+        },
+        "quarterly-global-fund": {
+          "name": "Pay quarterly platform rewards",
+          "description": "On 1 Jan/Apr/Jul/Oct at 02:00 (Taiwan time): pay platform-wide rewards for the closed quarter into point wallets, using frozen ranks and the locked exchange rate.",
+          "schedule": "1 Jan / Apr / Jul / Oct at 02:00 (GMT+8)"
         },
         "rank-reconcile": {
-          "name": "Rank Reconcile",
-          "description": "Scan all active users and promote eligible MLM ranks missed by realtime events."
+          "name": "Catch missed rank promotions",
+          "description": "Daily: re-check active members and promote anyone who qualifies but was not updated earlier.",
+          "schedule": "Every day at 04:00 (GMT+8)"
+        },
+        "promotion-expiry": {
+          "name": "End expired promotions",
+          "description": "Hourly: turn off promotions past their end date.",
+          "schedule": "Every hour (GMT+8)"
+        },
+        "audit-cleanup": {
+          "name": "Delete old activity logs",
+          "description": "Daily: remove activity logs older than 90 days to keep storage tidy.",
+          "schedule": "Every day at 03:00 (GMT+8)"
         }
+      },
+      "cronSectionTitle": "Automatic scheduled tasks",
+      "cronColName": "Task",
+      "cronColCategory": "Group",
+      "cronColExpression": "Schedule code",
+      "cronColTimezone": "Clock",
+      "cronColCountdown": "Time left",
+      "refreshCron": "Refresh",
+      "cronJobsLoadError": "Could not load the automatic schedule",
+      "cronCategory": {
+        "orders": "Orders & returns",
+        "commission": "Commissions & rewards",
+        "mlm": "Member ranks",
+        "marketing": "Promotions",
+        "compliance": "Log retention"
       }
     },
     "banners": {
@@ -1595,16 +1640,28 @@
       "rankName": "Name",
       "payoutHoldBanner": "Payout hold may keep new commissions as PENDING until COMMISSION_PAYOUT_HOLD is off and flush runs.",
       "runMonthlyTitle": "Run monthly commission",
-      "runMonthlyHint": "Pick a UTC month (half-open [monthStart, nextMonthStart)) with delivered volume, then run team, loyalty, and global. Requests send Idempotency-Key; re-runs are safe (batch lock + ledger). Prefer months marked “Run”.",
+      "runMonthlyHint": "Pick a GMT+8 month with recognized sales, then run team and loyalty. Global fund is a separate quarterly job below. Re-runs are safe (batch lock + ledger).",
       "runMonthly": "Run monthly commission",
-      "runMonthlyDone": "Monthly job finished for {yearMonth} (timezone {timezone}). UTC half-open period [{periodStart}, {periodEnd}). Batch: {batchId}. Status: {status}.",
+      "runMonthlyDone": "Monthly commissions for {yearMonth} completed ({timezone}). GMT+8 period from {periodStart} until {periodEnd}.",
+      "runQuarterlyTitle": "Run quarterly global fund",
+      "runQuarterlyHint": "GLOBAL settles only after the GMT+8 quarter closes (1 Jan/Apr/Jul/Oct). Cron at 02:00 pays the prior quarter; the admin button unlocks then too so you do not underpay mid-quarter. Percent from Finance config; credits PTS.",
+      "runQuarterly": "Run quarterly global fund",
+      "runQuarterlyDone": "Quarterly GLOBAL for {periodKey} completed ({timezone}). GMT+8 period from {periodStart} until {periodEnd}.",
+      "periodKey": "Quarter",
+      "periodKeyInvalid": "Use YYYYQn (e.g. 2026Q2).",
+      "periodKeyRequired": "Select a quarter from the overview.",
+      "periodKeyNoVolume": "Quarter is still open, has no GMV, or was already paid monthly.",
+      "quarterlyEmpty": "No quarters with recognized GMV yet.",
+      "selectQuarter": "Select a quarter with GMV to run.",
+      "selectedQuarter": "Selected: {periodKey}",
+      "quarterOpenHint": "Run from the 1st day of the next quarter",
       "yearMonth": "Year-month",
       "yearMonthInvalid": "Use YYYY-MM (e.g. 2026-06).",
       "overviewEmpty": "No months with delivered orders in the last 12 months — add demo data or wait for volume.",
       "gmv": "GMV",
       "orders": "Orders",
       "globalFund": "Global pool / tier",
-      "credited": "Credited (team / global / loyalty)",
+      "credited": "Credited (team / loyalty)",
       "creditedTeam": "Team",
       "creditedGlobal": "Global",
       "creditedLoyalty": "Loyalty",
@@ -1617,7 +1674,9 @@
       "action": {
         "RUN": "Run",
         "RE_RUN_IDEMPOTENT": "Re-run",
-        "NO_VOLUME": "No sales"
+        "NO_VOLUME": "No sales",
+        "SKIPPED_MONTHLY_PAID": "Paid via monthly",
+        "QUARTER_OPEN": "Quarter still open"
       },
       "poolPerTier": "Pool per tier",
       "totalPaidToUsers": "Paid to users",
@@ -1625,6 +1684,28 @@
       "paidToUsers": "Paid",
       "companyKept": "Company kept",
       "beneficiaries": "Beneficiaries",
+      "eligibleCount": "Eligible members",
+      "colMemberId": "Member ID",
+      "colMember": "Member",
+      "colRankAtCutoff": "Rank at quarter end",
+      "colAccountStatus": "Account status at cutoff",
+      "rankSnapshotCaptured": "Rank freeze",
+      "rankSnapshotMembers": "{count} members",
+      "rankSnapshotMissing": "No rank snapshot yet",
+      "beneficiariesShown": "Showing {shown}/{total}",
+      "showMoreBeneficiaries": "Show {count} more",
+      "showLessBeneficiaries": "Show less",
+      "fxLockTitle": "Quarterly FX lock",
+      "fxLockMissing": "No FX lock for this quarter yet",
+      "fxLockEmptyRates": "No rate pairs in the lock",
+      "fxColPeriodKey": "Quarter",
+      "fxColQuarterEnd": "Quarter end",
+      "fxColFxDate": "FX application date",
+      "fxColBase": "Base currency",
+      "fxColQuote": "Quote currency",
+      "fxColRate": "Rate",
+      "fxColSource": "FX source",
+      "fxColAsOf": "Rate as-of",
       "tier": "Tier",
       "unscopedPaid": "Paid without a tier",
       "toggleGlobalFund": "Expand global fund breakdown",
@@ -1667,7 +1748,7 @@
       "reconcileBatchDone": "Checked {checked} users · promoted {promoted}.",
       "commissionReport": {
         "title": "Commission Report",
-        "description": "Monthly audit of all commission payouts — referral, team, global, and loyalty.",
+        "description": "Monthly audit of referral, team, and loyalty; GLOBAL is the calendar quarter containing the month.",
         "yearMonthLabel": "Period (YYYY-MM)",
         "yearMonthPlaceholder": "e.g. 2026-07",
         "load": "Load report",
@@ -1679,6 +1760,9 @@
         "sectionSummary": "Reconciliation Summary",
         "gmv": "GMV",
         "deliveredOrders": "Delivered Orders",
+        "globalPeriod": "Global quarter",
+        "globalGmv": "Global GMV (quarter)",
+        "globalFxAsOf": "FX lock (display)",
         "globalFundPercent": "Global Fund %",
         "globalPoolPerTier": "Global Pool / Tier",
         "grandTotalPayout": "Grand Total Payout",
@@ -2391,6 +2475,7 @@
       "timingRealtime": "May stay Pending until payout hold is released",
       "timingJoining": "First recognized joining order only",
       "timingMonthEnd": "Settled at month end on recognized sales",
+      "timingQuarterEnd": "Settled at quarter end on recognized sales",
       "referralBody": "Only the invitee’s first joining order that is recognized and ≥ NT$2,000 earns referral %. Reorders = 0. You must be a seller (approved shop). The % applies to that order’s product subtotal (TWD, excluding shipping), then credits as PTS.",
       "referralRatesTitle": "Referral % by your level",
       "referralNote": "Referral rate is capped at 10%. Higher rank, better rate.",
@@ -2398,7 +2483,7 @@
       "teamNote": "You earn the difference between your % and the highest % already present below you on the branch (max-below), applied to recognized network volume.",
       "teamBody": "At month end you earn the differential between your team % and the highest downline % on the same branch (max-below), on recognized network volume in TWD for that month. Your own purchases do not count. The TWD result is credited as PTS.",
       "loyaltyBody": "Each month you need at least one recognized order ≥ NT$2,000 — small orders do not stack, and “delivered” alone is not enough. After 12 consecutive months you earn NT$28,000 TWD, credited as PTS. Missing a month resets the streak; after payout a new cycle starts.",
-      "globalBody": "Each month a share of platform recognized GMV (admin-configured) funds a pool in TWD. Eligible high ranks split the pool; empty tiers stay with the company. Your share is credited as PTS.",
+      "globalBody": "Each quarter a share of platform recognized GMV (admin-configured percent) funds stacked pools in TWD. Eligible high ranks split each pool; empty tiers stay with the company. Your share is credited as PTS.",
       "globalTiersTitle": "Who can join the pool",
       "globalNote": "Higher levels can qualify for more than one share band. Empty bands are kept by the company.",
       "ranks": {
@@ -2751,8 +2836,10 @@
     "mlmReferrerUpdateFailed": "Failed to update referrer",
     "mlmReferralRateUpdated": "Referral rate override updated",
     "mlmReferralRateUpdateFailed": "Failed to update referral rate",
-    "mlmMonthlyRan": "Monthly commissions ran for {yearMonth} ({timezone}): [{periodStart}, {periodEnd}) · batch {batchId} · {status}",
+    "mlmMonthlyRan": "Monthly commissions ran for {yearMonth} ({timezone}): from {periodStart} until {periodEnd}",
     "mlmMonthlyRunFailed": "Could not run monthly commissions",
+    "mlmQuarterlyRan": "Quarterly GLOBAL ran for {periodKey} ({timezone}): from {periodStart} until {periodEnd}",
+    "mlmQuarterlyRunFailed": "Could not run quarterly GLOBAL fund",
     "mlmReconcileDone": "Rank reconcile completed",
     "mlmReconcilePromoted": "Rank reconciled: {from} → {to}",
     "mlmReconcileNoChange": "Reconcile done — no rank change",

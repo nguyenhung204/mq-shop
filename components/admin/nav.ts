@@ -210,7 +210,7 @@ export const adminNavItems: AdminNavItem[] = [
     href: "/admin/mlm",
     labelKey: "admin.nav.mlm",
     icon: Network,
-    permissions: ["CONFIG_MLM", "VIEW_MLM_TREE"],
+    permissions: ["CONFIG_MLM", "APPROVE_MLM", "VIEW_MLM_TREE"],
     roles: ["SUPER_ADMIN", "ACCOUNTANT", "ADMIN"],
     group: "commerce",
   },
@@ -218,7 +218,8 @@ export const adminNavItems: AdminNavItem[] = [
     href: "/admin/mlm/commissions/report",
     labelKey: "admin.nav.commissionReport",
     icon: FileBarChart2,
-    roles: ["SUPER_ADMIN"],
+    permissions: ["APPROVE_MLM", "VIEW_MLM_COMSN"],
+    roles: ["SUPER_ADMIN", "ACCOUNTANT"],
     group: "commerce",
   },
   {
@@ -243,14 +244,6 @@ export const adminNavItems: AdminNavItem[] = [
     permissions: ["CONFIG_FEE"],
     roles: ["SUPER_ADMIN", "ACCOUNTANT"],
     group: "commerce",
-  },
-  {
-    href: "/admin/fx-rates",
-    labelKey: "admin.nav.fxRates",
-    icon: Percent,
-    permissions: ["CONFIG_SYS"],
-    sa: true,
-    group: "system",
   },
   {
     href: "/admin/promotions",

@@ -11,14 +11,15 @@ import type {
   GlobalFundTierStatus,
   MlmRankConfig,
   MonthlyCommissionOverviewRow,
-  MonthlyCommissionSuggestedAction,
 } from "@/lib/api/mlm";
 import {
   useMlmRanks,
   useMonthlyCommissionOverview,
+  useQuarterlyGlobalOverview,
   useFullTree,
   useReconcileMlmRanks,
   useRunMonthlyCommissions,
+  useRunQuarterlyGlobal,
   useSetMlmRank,
   useSetMlmReferrer,
   useUpdateRankConfig,
@@ -27,7 +28,9 @@ import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { formatSettlementDayGmt8 } from "@/lib/i18n/locale-format";
 import { mlmRankLabel } from "@/lib/i18n/mlm-rank";
+import type { Locale } from "@/lib/i18n/types";
 import {
   SearchableSelect,
   type SearchableSelectOption,
@@ -53,9 +56,11 @@ function userLabel(u: AuthUser): string {
   return u.email;
 }
 
-function suggestedBadge(action: MonthlyCommissionSuggestedAction): string {
+function suggestedBadge(action: string): string {
   if (action === "RUN") return "mq-badge mq-badge-teal";
   if (action === "RE_RUN_IDEMPOTENT") return "mq-badge mq-badge-muted";
+  if (action === "SKIPPED_MONTHLY_PAID") return "mq-badge mq-badge-orange";
+  if (action === "QUARTER_OPEN") return "mq-badge mq-badge-muted";
   return "mq-badge mq-badge-orange";
 }
 
@@ -66,10 +71,6 @@ function tierStatusBadge(status: GlobalFundTierStatus): string {
   return "mq-badge mq-badge-orange";
 }
 
-function poolPerTier(row: MonthlyCommissionOverviewRow): string {
-  return row.globalFund?.poolPerTier ?? row.globalFundEstimate ?? "0";
-}
-
 function creditedSummary(
   row: MonthlyCommissionOverviewRow,
   t: (key: string, vars?: Record<string, string>) => string,
@@ -78,11 +79,6 @@ function creditedSummary(
   if (row.credited.teamCount > 0) {
     parts.push(
       `${t("admin.mlm.creditedTeam")} ${formatMoney(row.credited.teamPayoutTotal)}×${row.credited.teamCount}`,
-    );
-  }
-  if (row.credited.globalCount > 0) {
-    parts.push(
-      `${t("admin.mlm.creditedGlobal")} ${formatMoney(row.credited.globalPayoutTotal)}×${row.credited.globalCount}`,
     );
   }
   if (row.credited.loyaltyCount > 0) {
@@ -103,16 +99,165 @@ function beneficiaryLabel(b: {
   return `${name} (R${b.mlmRank}) ${formatMoney(b.payoutAmount)}`;
 }
 
+const BENEFICIARY_PAGE_SIZE = 20;
+
+function GlobalFundBeneficiaryTable({
+  tier,
+  beneficiaries,
+  ranksByNumber,
+  locale,
+  t,
+}: {
+  tier: number;
+  beneficiaries: GlobalFundOverview["tiers"][number]["beneficiaries"];
+  ranksByNumber: Map<number, MlmRankConfig>;
+  locale: Locale | null | undefined;
+  t: (key: string, vars?: Record<string, string>) => string;
+}) {
+  const [visible, setVisible] = useState(BENEFICIARY_PAGE_SIZE);
+  const total = beneficiaries.length;
+  const shown = beneficiaries.slice(0, Math.min(visible, total));
+  const remaining = Math.max(0, total - shown.length);
+
+  const rankAtCutoffLabel = (rank: number) => {
+    const cfg = ranksByNumber.get(rank);
+    const name = mlmRankLabel(t, rank, cfg?.name, {
+      nameI18n: cfg?.nameI18n,
+      locale,
+    });
+    return `${name} - R${rank}`;
+  };
+
+  return (
+    <div className="px-2 py-2 bg-mq-surface-subtle/40">
+      <table className="w-full text-[11px] tabular-nums">
+        <thead>
+          <tr className="text-left text-mq-text-muted">
+            <th className="px-2 py-1 font-medium">
+              {t("admin.mlm.colMemberId")}
+            </th>
+            <th className="px-2 py-1 font-medium">
+              {t("admin.mlm.colMember")}
+            </th>
+            <th className="px-2 py-1 font-medium">
+              {t("admin.mlm.colRankAtCutoff")}
+            </th>
+            <th className="px-2 py-1 font-medium">
+              {t("admin.mlm.colAccountStatus")}
+            </th>
+            <th className="px-2 py-1 font-medium text-right">
+              {t("admin.mlm.paidToUsers")}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {shown.map((b) => (
+            <tr
+              key={`${tier}-${b.userId}`}
+              className="border-t border-mq-border/60"
+            >
+              <td
+                className="px-2 py-1 font-mono text-[10px] text-mq-text-muted max-w-[9rem] truncate"
+                title={b.userId}
+              >
+                {b.userId}
+              </td>
+              <td
+                className="px-2 py-1 text-mq-text max-w-[14rem] truncate"
+                title={b.email}
+              >
+                {(b.fullName?.trim() || b.email) ?? "—"}
+                {b.fullName?.trim() ? (
+                  <span className="block text-[10px] text-mq-text-muted truncate">
+                    {b.email}
+                  </span>
+                ) : null}
+              </td>
+              <td
+                className="px-2 py-1 text-mq-text whitespace-nowrap"
+                title={rankAtCutoffLabel(b.mlmRank)}
+              >
+                {rankAtCutoffLabel(b.mlmRank)}
+              </td>
+              <td className="px-2 py-1 text-mq-text-muted whitespace-nowrap">
+                {b.accountStatus ?? "—"}
+              </td>
+              <td className="px-2 py-1 text-right text-mq-text font-medium whitespace-nowrap">
+                {formatMoney(b.payoutAmount)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {total > BENEFICIARY_PAGE_SIZE ? (
+        <div className="flex flex-wrap items-center gap-2 px-2 pt-2">
+          <span className="text-[10px] text-mq-text-muted">
+            {t("admin.mlm.beneficiariesShown", {
+              shown: String(shown.length),
+              total: String(total),
+            })}
+          </span>
+          {remaining > 0 ? (
+            <button
+              type="button"
+              className="text-[11px] font-medium text-mq-text underline-offset-2 hover:underline"
+              onClick={() =>
+                setVisible((n) =>
+                  Math.min(n + BENEFICIARY_PAGE_SIZE, total),
+                )
+              }
+            >
+              {t("admin.mlm.showMoreBeneficiaries", {
+                count: String(Math.min(BENEFICIARY_PAGE_SIZE, remaining)),
+              })}
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="text-[11px] font-medium text-mq-text underline-offset-2 hover:underline"
+              onClick={() => setVisible(BENEFICIARY_PAGE_SIZE)}
+            >
+              {t("admin.mlm.showLessBeneficiaries")}
+            </button>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function GlobalFundDetail({
   fund,
+  periodKey,
+  rankSnapshot,
+  fxLock,
+  ranksByNumber,
+  locale,
   t,
 }: {
   fund: GlobalFundOverview;
+  periodKey: string;
+  rankSnapshot?: { capturedAt: string; memberCount: number } | null;
+  fxLock?: {
+    periodKey: string;
+    quarterEnd: string;
+    fxDate: string;
+    baseCurrency: string;
+    source: string;
+    asOf: string;
+    rates: Array<{ quoteCurrency: string; rate: number }>;
+  } | null;
+  ranksByNumber: Map<number, MlmRankConfig>;
+  locale: Locale | null | undefined;
   t: (key: string, vars?: Record<string, string>) => string;
 }) {
   return (
     <div className="space-y-3 px-3 py-3 bg-mq-surface-subtle/50">
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-mq-text-muted">
+        <span>
+          {t("admin.mlm.periodKey")}:{" "}
+          <strong className="text-mq-text">{periodKey}</strong>
+        </span>
         <span>
           {t("admin.mlm.poolPerTier")}:{" "}
           <strong className="text-mq-text">{formatMoney(fund.poolPerTier)}</strong>
@@ -126,6 +271,107 @@ function GlobalFundDetail({
           {t("admin.mlm.totalCompanyKept")}:{" "}
           <strong className="text-mq-text">{formatMoney(fund.totalCompanyKept)}</strong>
         </span>
+        {rankSnapshot ? (
+          <span>
+            {t("admin.mlm.rankSnapshotCaptured")}:{" "}
+            <strong className="text-mq-text">
+              {formatSettlementDayGmt8(rankSnapshot.capturedAt)}
+            </strong>
+            {` · ${t("admin.mlm.rankSnapshotMembers", {
+              count: String(rankSnapshot.memberCount),
+            })}`}
+          </span>
+        ) : (
+          <span>{t("admin.mlm.rankSnapshotMissing")}</span>
+        )}
+      </div>
+
+      <div className="space-y-1.5">
+        <p className="text-[11px] font-medium text-mq-text">
+          {t("admin.mlm.fxLockTitle")}
+        </p>
+        {fxLock ? (
+          <div className="mq-table-wrap overflow-x-auto border border-mq-border rounded-[var(--mq-radius-sm)] bg-mq-surface">
+            <table className="w-full text-[11px] tabular-nums">
+              <thead>
+                <tr className="border-b border-mq-border bg-mq-surface-subtle text-left text-mq-text-muted">
+                  <th className="px-2 py-1.5 font-medium">
+                    {t("admin.mlm.fxColPeriodKey")}
+                  </th>
+                  <th className="px-2 py-1.5 font-medium">
+                    {t("admin.mlm.fxColQuarterEnd")}
+                  </th>
+                  <th className="px-2 py-1.5 font-medium">
+                    {t("admin.mlm.fxColFxDate")}
+                  </th>
+                  <th className="px-2 py-1.5 font-medium">
+                    {t("admin.mlm.fxColBase")}
+                  </th>
+                  <th className="px-2 py-1.5 font-medium">
+                    {t("admin.mlm.fxColQuote")}
+                  </th>
+                  <th className="px-2 py-1.5 font-medium text-right">
+                    {t("admin.mlm.fxColRate")}
+                  </th>
+                  <th className="px-2 py-1.5 font-medium">
+                    {t("admin.mlm.fxColSource")}
+                  </th>
+                  <th className="px-2 py-1.5 font-medium">
+                    {t("admin.mlm.fxColAsOf")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {fxLock.rates.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={8}
+                      className="px-2 py-2 text-mq-text-muted"
+                    >
+                      {t("admin.mlm.fxLockEmptyRates")}
+                    </td>
+                  </tr>
+                ) : (
+                  fxLock.rates.map((r) => (
+                    <tr
+                      key={`${fxLock.periodKey}-${r.quoteCurrency}`}
+                      className="border-b border-mq-border last:border-0"
+                    >
+                      <td className="px-2 py-1.5 font-semibold text-mq-text whitespace-nowrap">
+                        {fxLock.periodKey}
+                      </td>
+                      <td className="px-2 py-1.5 text-mq-text-muted whitespace-nowrap">
+                        {formatSettlementDayGmt8(fxLock.quarterEnd)}
+                      </td>
+                      <td className="px-2 py-1.5 text-mq-text whitespace-nowrap">
+                        {formatSettlementDayGmt8(fxLock.fxDate)}
+                      </td>
+                      <td className="px-2 py-1.5 text-mq-text whitespace-nowrap">
+                        {fxLock.baseCurrency}
+                      </td>
+                      <td className="px-2 py-1.5 text-mq-text whitespace-nowrap">
+                        {r.quoteCurrency}
+                      </td>
+                      <td className="px-2 py-1.5 text-right text-mq-text font-medium whitespace-nowrap">
+                        {r.rate}
+                      </td>
+                      <td className="px-2 py-1.5 text-mq-text-muted whitespace-nowrap">
+                        {fxLock.source}
+                      </td>
+                      <td className="px-2 py-1.5 text-mq-text-muted whitespace-nowrap">
+                        {formatSettlementDayGmt8(fxLock.asOf)}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-[11px] text-mq-text-muted">
+            {t("admin.mlm.fxLockMissing")}
+          </p>
+        )}
       </div>
 
       <div className="mq-table-wrap overflow-x-auto border border-mq-border rounded-[var(--mq-radius-sm)] bg-mq-surface">
@@ -135,53 +381,52 @@ function GlobalFundDetail({
               <th className="px-2 py-1.5 font-medium">{t("admin.mlm.tier")}</th>
               <th className="px-2 py-1.5 font-medium">{t("admin.common.status")}</th>
               <th className="px-2 py-1.5 font-medium text-right">
+                {t("admin.mlm.eligibleCount")}
+              </th>
+              <th className="px-2 py-1.5 font-medium text-right">
                 {t("admin.mlm.paidToUsers")}
               </th>
               <th className="px-2 py-1.5 font-medium text-right">
                 {t("admin.mlm.companyKept")}
               </th>
-              <th className="px-2 py-1.5 font-medium">
-                {t("admin.mlm.beneficiaries")}
-              </th>
             </tr>
           </thead>
           <tbody>
             {fund.tiers.map((tier) => (
-              <tr
-                key={tier.tier}
-                className="border-b border-mq-border last:border-0 align-top"
-              >
-                <td className="px-2 py-1.5 font-semibold text-mq-text whitespace-nowrap">
-                  ≥{tier.tier}
-                  <span className="ml-1 font-normal text-mq-text-muted">
-                    ({tier.eligibleCount})
-                  </span>
-                </td>
-                <td className="px-2 py-1.5">
-                  <span className={tierStatusBadge(tier.status)}>
-                    {t(`admin.mlm.tierStatus.${tier.status}`)}
-                  </span>
-                </td>
-                <td className="px-2 py-1.5 text-right text-mq-text">
-                  {formatMoney(tier.paidTotal)}
-                </td>
-                <td className="px-2 py-1.5 text-right text-mq-text-muted">
-                  {formatMoney(tier.companyKept)}
-                </td>
-                <td className="px-2 py-1.5 text-mq-text-muted">
-                  {tier.beneficiaries.length === 0 ? (
-                    "—"
-                  ) : (
-                    <ul className="space-y-0.5">
-                      {tier.beneficiaries.map((b) => (
-                        <li key={`${tier.tier}-${b.userId}`} className="truncate max-w-[28rem]" title={b.email}>
-                          {beneficiaryLabel(b)}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </td>
-              </tr>
+              <Fragment key={tier.tier}>
+                <tr className="border-b border-mq-border align-top">
+                  <td className="px-2 py-1.5 font-semibold text-mq-text whitespace-nowrap">
+                    ≥ R{tier.tier}
+                  </td>
+                  <td className="px-2 py-1.5">
+                    <span className={tierStatusBadge(tier.status)}>
+                      {t(`admin.mlm.tierStatus.${tier.status}`)}
+                    </span>
+                  </td>
+                  <td className="px-2 py-1.5 text-right text-mq-text-muted">
+                    {tier.eligibleCount}
+                  </td>
+                  <td className="px-2 py-1.5 text-right text-mq-text">
+                    {formatMoney(tier.paidTotal)}
+                  </td>
+                  <td className="px-2 py-1.5 text-right text-mq-text-muted">
+                    {formatMoney(tier.companyKept)}
+                  </td>
+                </tr>
+                {tier.beneficiaries.length > 0 ? (
+                  <tr className="border-b border-mq-border last:border-0">
+                    <td colSpan={5} className="p-0">
+                      <GlobalFundBeneficiaryTable
+                        tier={tier.tier}
+                        beneficiaries={tier.beneficiaries}
+                        ranksByNumber={ranksByNumber}
+                        locale={locale}
+                        t={t}
+                      />
+                    </td>
+                  </tr>
+                ) : null}
+              </Fragment>
             ))}
           </tbody>
         </table>
@@ -216,8 +461,10 @@ function MlmAdminInner() {
   const { hasRole } = useAuth();
 
   /**
-   * CONFIG_MLM: Super Admin=ALL (mutate). Accountant=APPROVE (read/approve only — BE 403 on PATCH).
-   * APPROVE_MLM: Accountant + Super Admin can run monthly / flush.
+   * CONFIG_MLM ALL: Super Admin (mutate ranks / promotion rules).
+   * APPROVE_MLM ALL: Accountant + Super Admin — run monthly TEAM/LOYALTY,
+   * run quarterly GLOBAL, flush pending, commission report.
+   * Ops ADMIN has APPROVE_MLM=PROPOSE only → BE blocks POST run; FE hides run UI.
    */
   const canMutateConfig = hasRole("SUPER_ADMIN");
   const canApproveSettlement =
@@ -230,9 +477,15 @@ function MlmAdminInner() {
   const { data: ranks, isLoading, isError, error } = useMlmRanks({
     enabled: canMutateConfig || canApproveSettlement,
   });
+  const ranksByNumber = useMemo(() => {
+    const map = new Map<number, MlmRankConfig>();
+    for (const r of ranks ?? []) map.set(r.rank, r);
+    return map;
+  }, [ranks]);
   const setRank = useSetMlmRank();
   const setReferrer = useSetMlmReferrer();
   const runMonthly = useRunMonthlyCommissions();
+  const runQuarterly = useRunQuarterlyGlobal();
   const reconcileRanks = useReconcileMlmRanks();
   const updateRankConfig = useUpdateRankConfig();
   const {
@@ -242,6 +495,11 @@ function MlmAdminInner() {
     error: monthlyErr,
   } = useMonthlyCommissionOverview(12, { enabled: canApproveSettlement });
   const months = monthlyOverview?.months ?? [];
+  const {
+    data: quarterlyOverview,
+    isLoading: quarterlyLoading,
+  } = useQuarterlyGlobalOverview(8, { enabled: canApproveSettlement });
+  const quarters = quarterlyOverview?.quarters ?? [];
 
   const { data: usersPage } = useQuery({
     queryKey: ["admin", "users", "ACTIVE", "mlm-picker"],
@@ -288,9 +546,12 @@ function MlmAdminInner() {
   const [treeQuery, setTreeQuery] = useState("");
   const [treeModalOpen, setTreeModalOpen] = useState(false);
   const [yearMonth, setYearMonth] = useState("");
-  const [expandedMonth, setExpandedMonth] = useState<string | null>(null);
   const [monthlyOk, setMonthlyOk] = useState("");
   const [monthlyError, setMonthlyError] = useState("");
+  const [periodKey, setPeriodKey] = useState("");
+  const [expandedQuarter, setExpandedQuarter] = useState<string | null>(null);
+  const [quarterlyOk, setQuarterlyOk] = useState("");
+  const [quarterlyError, setQuarterlyError] = useState("");
   const [editingRank, setEditingRank] = useState<MlmRankConfig | null>(null);
   const [editForm, setEditForm] = useState({ name: "", nameVi: "", nameEn: "", nameZhTw: "", teamPercent: "", referralPercent: "", globalFundTier: "", isActive: true });
 
@@ -308,6 +569,23 @@ function MlmAdminInner() {
     Boolean(yearMonth) &&
     selectedMonth?.suggestedAction !== "NO_VOLUME" &&
     Number(selectedMonth?.gmv ?? 0) > 0;
+
+  useEffect(() => {
+    if (periodKey || quarters.length === 0) return;
+    const preferred =
+      quarters.find((q) => q.suggestedAction === "RUN") ??
+      quarters.find((q) => Number(q.gmv) > 0) ??
+      quarters[0];
+    if (preferred?.periodKey) setPeriodKey(preferred.periodKey);
+  }, [quarters, periodKey]);
+
+  const selectedQuarter = quarters.find((q) => q.periodKey === periodKey);
+  const canRunQuarter =
+    Boolean(periodKey) &&
+    selectedQuarter?.suggestedAction !== "NO_VOLUME" &&
+    selectedQuarter?.suggestedAction !== "SKIPPED_MONTHLY_PAID" &&
+    selectedQuarter?.suggestedAction !== "QUARTER_OPEN" &&
+    Number(selectedQuarter?.gmv ?? 0) > 0;
 
   const {
     data: tree,
@@ -478,20 +756,47 @@ function MlmAdminInner() {
     }
     try {
       const res = await runMonthly.mutateAsync({ yearMonth });
-      const periodStart = res.periodStart
-        ? new Date(res.periodStart).toISOString().slice(0, 10)
-        : "";
-      const periodEnd = res.periodEnd
-        ? new Date(res.periodEnd).toISOString().slice(0, 10)
-        : "";
       setMonthlyOk(
         t("admin.mlm.runMonthlyDone", {
           yearMonth: res.yearMonth || yearMonth,
-          timezone: res.timezone || "UTC",
-          periodStart,
-          periodEnd,
-          batchId: res.batchId || "—",
-          status: res.status || "",
+          timezone: res.timezone || "GMT+8",
+          periodStart: formatSettlementDayGmt8(res.periodStart),
+          periodEnd: formatSettlementDayGmt8(res.periodEnd),
+        }),
+      );
+    } catch {
+      /* toast from hook */
+    }
+  };
+
+  const onRunQuarterly = async (e: FormEvent) => {
+    e.preventDefault();
+    setQuarterlyOk("");
+    setQuarterlyError("");
+    if (!periodKey) {
+      setQuarterlyError(t("admin.mlm.periodKeyRequired"));
+      return;
+    }
+    if (!/^\d{4}Q[1-4]$/.test(periodKey)) {
+      setQuarterlyError(t("admin.mlm.periodKeyInvalid"));
+      return;
+    }
+    if (!canRunQuarter) {
+      setQuarterlyError(
+        selectedQuarter?.suggestedAction === "QUARTER_OPEN"
+          ? t("admin.mlm.quarterOpenHint")
+          : selectedQuarter?.skippedReason || t("admin.mlm.periodKeyNoVolume"),
+      );
+      return;
+    }
+    try {
+      const res = await runQuarterly.mutateAsync({ periodKey });
+      setQuarterlyOk(
+        t("admin.mlm.runQuarterlyDone", {
+          periodKey: res.periodKey || periodKey,
+          timezone: res.timezone || "GMT+8",
+          periodStart: formatSettlementDayGmt8(res.periodStart),
+          periodEnd: formatSettlementDayGmt8(res.periodEnd),
         }),
       );
     } catch {
@@ -756,9 +1061,6 @@ function MlmAdminInner() {
 
         {canApproveSettlement ? (
           <section className="mq-card p-5 space-y-4">
-            <div className="mq-alert mq-alert-warning text-sm">
-              {t("admin.mlm.payoutHoldBanner")}
-            </div>
             <div>
               <h2 className="text-base font-medium">{t("admin.mlm.runMonthlyTitle")}</h2>
               <p className="text-sm text-mq-text-muted mt-1">
@@ -799,9 +1101,6 @@ function MlmAdminInner() {
                       <th className="px-3 py-2 font-medium text-right">
                         {t("admin.mlm.orders")}
                       </th>
-                      <th className="px-3 py-2 font-medium text-right">
-                        {t("admin.mlm.globalFund")}
-                      </th>
                       <th className="px-3 py-2 font-medium">
                         {t("admin.mlm.credited")}
                       </th>
@@ -813,89 +1112,47 @@ function MlmAdminInner() {
                   <tbody>
                     {months.map((m) => {
                       const disabled = m.suggestedAction === "NO_VOLUME";
-                      const expanded = expandedMonth === m.yearMonth;
-                      const fund = m.globalFund;
                       return (
-                        <Fragment key={m.yearMonth}>
-                          <tr
-                            className={`border-b border-mq-border ${
-                              yearMonth === m.yearMonth
-                                ? "bg-mq-surface-subtle/80"
-                                : "hover:bg-mq-surface-subtle/60"
-                            } ${disabled ? "opacity-50" : "cursor-pointer"}`}
-                            onClick={() => {
-                              if (!disabled) setYearMonth(m.yearMonth);
-                            }}
-                          >
-                            <td className="px-3 py-2">
-                              <input
-                                type="radio"
-                                name="monthly-yearMonth"
-                                className="accent-mq-text"
-                                checked={yearMonth === m.yearMonth}
-                                disabled={disabled}
-                                onChange={() => setYearMonth(m.yearMonth)}
-                                aria-label={m.yearMonth}
-                              />
-                            </td>
-                            <td className="px-3 py-2 font-semibold text-mq-text">
-                              <span className="inline-flex items-center gap-1">
-                                <button
-                                  type="button"
-                                  className="mq-icon-btn !p-0.5"
-                                  aria-expanded={expanded}
-                                  aria-label={t("admin.mlm.toggleGlobalFund")}
-                                  disabled={!fund}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setExpandedMonth((cur) =>
-                                      cur === m.yearMonth ? null : m.yearMonth,
-                                    );
-                                  }}
-                                >
-                                  {expanded ? (
-                                    <ChevronDown size={14} strokeWidth={1.5} />
-                                  ) : (
-                                    <ChevronRight size={14} strokeWidth={1.5} />
-                                  )}
-                                </button>
-                                {m.yearMonth}
-                              </span>
-                            </td>
-                            <td className="px-3 py-2 text-right text-mq-text">
-                              {formatMoney(m.gmv)}
-                            </td>
-                            <td className="px-3 py-2 text-right text-mq-text-muted">
-                              {m.deliveredOrderCount}
-                            </td>
-                            <td className="px-3 py-2 text-right text-mq-text-muted">
-                              <span className="block">{formatMoney(poolPerTier(m))}</span>
-                              {fund ? (
-                                <span className="block text-[10px] text-mq-text-muted">
-                                  {t("admin.mlm.paidKeptShort", {
-                                    paid: formatMoney(fund.totalPaidToUsers),
-                                    kept: formatMoney(fund.totalCompanyKept),
-                                  })}
-                                </span>
-                              ) : null}
-                            </td>
-                            <td className="px-3 py-2 text-mq-text-muted whitespace-nowrap">
-                              {creditedSummary(m, t)}
-                            </td>
-                            <td className="px-3 py-2">
-                              <span className={suggestedBadge(m.suggestedAction)}>
-                                {t(`admin.mlm.action.${m.suggestedAction}`)}
-                              </span>
-                            </td>
-                          </tr>
-                          {expanded && fund ? (
-                            <tr className="border-b border-mq-border">
-                              <td colSpan={7} className="p-0">
-                                <GlobalFundDetail fund={fund} t={t} />
-                              </td>
-                            </tr>
-                          ) : null}
-                        </Fragment>
+                        <tr
+                          key={m.yearMonth}
+                          className={`border-b border-mq-border ${
+                            yearMonth === m.yearMonth
+                              ? "bg-mq-surface-subtle/80"
+                              : "hover:bg-mq-surface-subtle/60"
+                          } ${disabled ? "opacity-50" : "cursor-pointer"}`}
+                          onClick={() => {
+                            if (!disabled) setYearMonth(m.yearMonth);
+                          }}
+                        >
+                          <td className="px-3 py-2">
+                            <input
+                              type="radio"
+                              name="monthly-yearMonth"
+                              className="accent-mq-text"
+                              checked={yearMonth === m.yearMonth}
+                              disabled={disabled}
+                              onChange={() => setYearMonth(m.yearMonth)}
+                              aria-label={m.yearMonth}
+                            />
+                          </td>
+                          <td className="px-3 py-2 font-semibold text-mq-text">
+                            {m.yearMonth}
+                          </td>
+                          <td className="px-3 py-2 text-right text-mq-text">
+                            {formatMoney(m.gmv)}
+                          </td>
+                          <td className="px-3 py-2 text-right text-mq-text-muted">
+                            {m.deliveredOrderCount}
+                          </td>
+                          <td className="px-3 py-2 text-mq-text-muted whitespace-nowrap">
+                            {creditedSummary(m, t)}
+                          </td>
+                          <td className="px-3 py-2">
+                            <span className={suggestedBadge(m.suggestedAction)}>
+                              {t(`admin.mlm.action.${m.suggestedAction}`)}
+                            </span>
+                          </td>
+                        </tr>
                       );
                     })}
                   </tbody>
@@ -923,6 +1180,191 @@ function MlmAdminInner() {
                 {runMonthly.isPending
                   ? t("admin.common.saving")
                   : t("admin.mlm.runMonthly")}
+              </button>
+            </form>
+          </section>
+        ) : null}
+
+        {canApproveSettlement ? (
+          <section className="mq-card p-5 space-y-4">
+            <div>
+              <h2 className="text-base font-medium">{t("admin.mlm.runQuarterlyTitle")}</h2>
+              <p className="text-sm text-mq-text-muted mt-1">
+                {t("admin.mlm.runQuarterlyHint")}
+              </p>
+            </div>
+            {quarterlyError ? (
+              <div className="mq-alert mq-alert-error">{quarterlyError}</div>
+            ) : null}
+            {quarterlyOk ? (
+              <div className="mq-alert mq-alert-success">{quarterlyOk}</div>
+            ) : null}
+            {quarterlyLoading ? (
+              <AdminCardListSkeleton count={2} />
+            ) : quarters.length === 0 ? (
+              <p className="text-sm text-mq-text-muted">
+                {t("admin.mlm.quarterlyEmpty")}
+              </p>
+            ) : (
+              <div className="mq-table-wrap overflow-x-auto">
+                <table className="w-full text-xs tabular-nums">
+                  <thead>
+                    <tr className="border-b border-mq-border bg-mq-surface-subtle text-left text-mq-text-muted">
+                      <th className="px-3 py-2 font-medium w-10" />
+                      <th className="px-3 py-2 font-medium">
+                        {t("admin.mlm.periodKey")}
+                      </th>
+                      <th className="px-3 py-2 font-medium text-right">
+                        {t("admin.mlm.gmv")}
+                      </th>
+                      <th className="px-3 py-2 font-medium text-right">
+                        {t("admin.mlm.orders")}
+                      </th>
+                      <th className="px-3 py-2 font-medium text-right">
+                        {t("admin.mlm.poolPerTier")}
+                      </th>
+                      <th className="px-3 py-2 font-medium text-right">
+                        {t("admin.mlm.paidToUsers")}
+                      </th>
+                      <th className="px-3 py-2 font-medium text-right">
+                        {t("admin.mlm.companyKept")}
+                      </th>
+                      <th className="px-3 py-2 font-medium">
+                        {t("admin.mlm.rankSnapshotCaptured")}
+                      </th>
+                      <th className="px-3 py-2 font-medium">
+                        {t("admin.mlm.suggestedAction")}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {quarters.map((q) => {
+                      const disabled =
+                        q.suggestedAction === "NO_VOLUME" ||
+                        q.suggestedAction === "SKIPPED_MONTHLY_PAID" ||
+                        q.suggestedAction === "QUARTER_OPEN";
+                      const expanded = expandedQuarter === q.periodKey;
+                      const fund = q.globalFund;
+                      return (
+                        <Fragment key={q.periodKey}>
+                          <tr
+                            className={`border-b border-mq-border ${
+                              periodKey === q.periodKey
+                                ? "bg-mq-surface-subtle/80"
+                                : "hover:bg-mq-surface-subtle/60"
+                            } ${disabled ? "opacity-50" : "cursor-pointer"}`}
+                            onClick={() => {
+                              if (!disabled) setPeriodKey(q.periodKey);
+                            }}
+                          >
+                            <td className="px-3 py-2">
+                              <input
+                                type="radio"
+                                name="quarterly-periodKey"
+                                className="accent-mq-text"
+                                checked={periodKey === q.periodKey}
+                                disabled={disabled}
+                                onChange={() => setPeriodKey(q.periodKey)}
+                                aria-label={q.periodKey}
+                              />
+                            </td>
+                            <td className="px-3 py-2 font-semibold text-mq-text">
+                              <span className="inline-flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  className="mq-icon-btn !p-0.5"
+                                  aria-expanded={expanded}
+                                  aria-label={t("admin.mlm.toggleGlobalFund")}
+                                  disabled={!fund}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setExpandedQuarter((cur) =>
+                                      cur === q.periodKey ? null : q.periodKey,
+                                    );
+                                  }}
+                                >
+                                  {expanded ? (
+                                    <ChevronDown size={14} strokeWidth={1.5} />
+                                  ) : (
+                                    <ChevronRight size={14} strokeWidth={1.5} />
+                                  )}
+                                </button>
+                                {q.periodKey}
+                              </span>
+                            </td>
+                            <td className="px-3 py-2 text-right text-mq-text">
+                              {formatMoney(q.gmv)}
+                            </td>
+                            <td className="px-3 py-2 text-right text-mq-text-muted">
+                              {q.deliveredOrderCount}
+                            </td>
+                            <td className="px-3 py-2 text-right text-mq-text">
+                              {formatMoney(fund?.poolPerTier ?? "0")}
+                            </td>
+                            <td className="px-3 py-2 text-right text-mq-text">
+                              {formatMoney(fund?.totalPaidToUsers ?? "0")}
+                            </td>
+                            <td className="px-3 py-2 text-right text-mq-text-muted">
+                              {formatMoney(fund?.totalCompanyKept ?? "0")}
+                            </td>
+                            <td className="px-3 py-2 text-mq-text-muted whitespace-nowrap">
+                              {q.rankSnapshot
+                                ? formatSettlementDayGmt8(q.rankSnapshot.capturedAt)
+                                : "—"}
+                            </td>
+                            <td className="px-3 py-2">
+                              <span className={suggestedBadge(q.suggestedAction)}>
+                                {t(`admin.mlm.action.${q.suggestedAction}`)}
+                              </span>
+                            </td>
+                          </tr>
+                          {expanded && fund ? (
+                            <tr className="border-b border-mq-border">
+                              <td colSpan={9} className="p-0">
+                                <GlobalFundDetail
+                                  fund={fund}
+                                  periodKey={q.periodKey}
+                                  rankSnapshot={q.rankSnapshot}
+                                  fxLock={q.fxLock}
+                                  ranksByNumber={ranksByNumber}
+                                  locale={locale}
+                                  t={t}
+                                />
+                              </td>
+                            </tr>
+                          ) : null}
+                        </Fragment>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            <form
+              className="flex flex-wrap gap-3 items-center justify-between border-t border-mq-border pt-4"
+              onSubmit={(e) => void onRunQuarterly(e)}
+            >
+              <p className="text-sm text-mq-text-muted">
+                {periodKey
+                  ? t("admin.mlm.selectedQuarter", { periodKey })
+                  : t("admin.mlm.selectQuarter")}
+                {selectedQuarter?.suggestedAction === "RE_RUN_IDEMPOTENT"
+                  ? ` · ${t("admin.mlm.reRunSafe")}`
+                  : null}
+                {selectedQuarter?.suggestedAction === "QUARTER_OPEN"
+                  ? ` · ${t("admin.mlm.quarterOpenHint")}`
+                  : selectedQuarter?.skippedReason
+                    ? ` · ${selectedQuarter.skippedReason}`
+                    : null}
+              </p>
+              <button
+                type="submit"
+                className="mq-btn mq-btn-primary text-sm"
+                disabled={runQuarterly.isPending || !canRunQuarter}
+              >
+                {runQuarterly.isPending
+                  ? t("admin.common.saving")
+                  : t("admin.mlm.runQuarterly")}
               </button>
             </form>
           </section>
@@ -1330,7 +1772,7 @@ export default function AdminMlmPage() {
   return (
     <AuthGuard
       roles={["SUPER_ADMIN", "ACCOUNTANT", "ADMIN"]}
-      permissions={["CONFIG_MLM", "VIEW_MLM_TREE"]}
+      permissions={["CONFIG_MLM", "APPROVE_MLM", "VIEW_MLM_TREE"]}
     >
       <MlmAdminInner />
     </AuthGuard>
