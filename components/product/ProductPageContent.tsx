@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronLeft, ChevronRight, Heart } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Heart, Mail } from "lucide-react";
 import { Product } from "@/lib/data/products";
 import { useDisplayMoney } from "@/components/providers/DisplayMoneyProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -77,6 +77,9 @@ export function ProductPageContent({
   const { toggleItem, isInWishlist } = useWishlist();
   const { flyToWishlist } = useFlyToCart();
   const wished = isInWishlist(product.id);
+  const [askOpen, setAskOpen] = useState(false);
+  const [emailCopied, setEmailCopied] = useState(false);
+  const contactEmail = product.shop?.contactEmail?.trim() || null;
   const variants = product.variants ?? [];
   const [selectedId, setSelectedId] = useState(
     product.selectedVariantId || variants[0]?.id || "",
@@ -327,28 +330,69 @@ export function ProductPageContent({
               </div>
             ) : null}
 
-            <div className="flex gap-6 text-sm text-mq-text-secondary mb-8 mt-6">
-              <button type="button" className="hover:text-mq-text">
-                {t("product.compare")}
-              </button>
-              <button
-                type="button"
-                className={`flex items-center gap-1.5 transition-colors ${
-                  wished ? "text-mq-gold" : "hover:text-mq-text"
-                }`}
-                onClick={(e) => {
-                  const willAdd = !wished;
-                  toggleItem(cartProduct);
-                  if (willAdd) flyToWishlist(displayImage, e.currentTarget);
-                }}
-                aria-pressed={wished}
-              >
-                <Heart className="w-4 h-4" strokeWidth={1.5} fill={wished ? "currentColor" : "none"} />
-                {wished ? t("product.wishlisted") || t("nav.wishlist") : t("nav.wishlist")}
-              </button>
-              <button type="button" className="hover:text-mq-text">
-                {t("product.askUs")}
-              </button>
+            <div className="mb-8 mt-6">
+              <div className="flex gap-6 text-sm text-mq-text-secondary">
+                <button
+                  type="button"
+                  className={`flex items-center gap-1.5 transition-colors ${
+                    wished ? "text-mq-gold" : "hover:text-mq-text"
+                  }`}
+                  onClick={(e) => {
+                    const willAdd = !wished;
+                    toggleItem(cartProduct);
+                    if (willAdd) flyToWishlist(displayImage, e.currentTarget);
+                  }}
+                  aria-pressed={wished}
+                >
+                  <Heart className="w-4 h-4" strokeWidth={1.5} fill={wished ? "currentColor" : "none"} />
+                  {wished ? t("product.wishlisted") || t("nav.wishlist") : t("nav.wishlist")}
+                </button>
+                <button
+                  type="button"
+                  className={`flex items-center gap-1.5 transition-colors ${
+                    askOpen ? "text-mq-gold" : "hover:text-mq-text"
+                  }`}
+                  onClick={() => setAskOpen((open) => !open)}
+                  aria-expanded={askOpen}
+                >
+                  <Mail className="w-4 h-4" strokeWidth={1.5} />
+                  {t("product.askUs")}
+                </button>
+              </div>
+              {askOpen ? (
+                <div className="mt-3 rounded-md border border-mq-border bg-mq-surface-subtle p-4 text-sm">
+                  {contactEmail ? (
+                    <>
+                      <p className="text-mq-text-secondary mb-2">{t("product.askUsHint")}</p>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <a
+                          href={`mailto:${contactEmail}`}
+                          className="font-medium text-mq-text hover:text-mq-gold break-all"
+                        >
+                          {contactEmail}
+                        </a>
+                        <button
+                          type="button"
+                          className="text-xs text-mq-text-secondary hover:text-mq-text"
+                          onClick={async () => {
+                            try {
+                              await navigator.clipboard.writeText(contactEmail);
+                              setEmailCopied(true);
+                              window.setTimeout(() => setEmailCopied(false), 2000);
+                            } catch {
+                              setEmailCopied(false);
+                            }
+                          }}
+                        >
+                          {emailCopied ? t("product.emailCopied") : t("product.copyEmail")}
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-mq-text-secondary">{t("product.askUsNoEmail")}</p>
+                  )}
+                </div>
+              ) : null}
             </div>
 
             <div className="border-t border-mq-border pt-6 space-y-3 text-sm text-mq-text-secondary">

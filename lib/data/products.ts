@@ -40,6 +40,7 @@ export type Product = {
     id: string;
     name: string;
     logoUrl: string | null;
+    contactEmail?: string | null;
   } | null;
   /** ISO-8601 from listing/PDP when available. */
   createdAt?: string;

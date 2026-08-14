@@ -116,6 +116,7 @@ export function mapPublicProductDetail(p: PublicProductDetail): Product {
           id: p.shop.id,
           name: p.shop.name,
           logoUrl: p.shop.logoUrl ?? null,
+          contactEmail: p.shop.contactEmail ?? null,
         }
       : p.shop === null
         ? null
