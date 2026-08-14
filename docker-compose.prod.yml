@@ -1,17 +1,17 @@
 # Pull the pre-built image from Docker Hub instead of building locally.
 # Usage: docker compose -f docker-compose.prod.yml up -d
 #
-# Set DOCKERHUB_IMAGE (e.g. trantuanhung1209/mq-shop:latest) in a .env file
-# or export it before running compose.
+# NEXT_PUBLIC_API_HOST is baked at image build time. Set it when building
+# the image; do not rely on a localhost default in production.
 
 services:
   mq-shop:
-    image: ${DOCKERHUB_IMAGE:-trantuanhung1209/mq-shop:latest}
+    image: ${DOCKERHUB_IMAGE:?DOCKERHUB_IMAGE is required}
     container_name: mq-shop
     restart: unless-stopped
     pull_policy: always
     ports:
       - "${APP_PORT:-3001}:3000"
     environment:
-      NODE_ENV: ${NODE_ENV:-production}
-      NEXT_PUBLIC_API_HOST: ${NEXT_PUBLIC_API_HOST:-http://localhost:3000}
+      NODE_ENV: production
+      NEXT_PUBLIC_API_HOST: ${NEXT_PUBLIC_API_HOST:?NEXT_PUBLIC_API_HOST is required}

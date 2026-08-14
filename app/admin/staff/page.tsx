@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Check, Copy, Lock, Pencil, Plus, Trash2, Unlock, UserPlus, X } from "lucide-react";
+import { Check, Lock, Pencil, Plus, Trash2, Unlock, UserPlus, X } from "lucide-react";
 import type { AuthUser, StaffPoolRole, StaffRole } from "@/lib/api/types";
 import { hasPendingStaffChange } from "@/lib/api/staff";
 import {
@@ -65,7 +65,6 @@ function StaffInner() {
   const [assignOpen, setAssignOpen] = useState<AuthUser | null>(null);
   const [createdCred, setCreatedCred] = useState<{
     email: string;
-    temporaryPassword: string;
   } | null>(null);
   const [pendingNotice, setPendingNotice] = useState(false);
   const [pending, setPending] = useState<PendingStaffAction | null>(null);
@@ -147,11 +146,9 @@ function StaffInner() {
         role,
       });
       closeCreate();
-      if (res.temporaryPassword) {
-        // New user created by Super Admin → show temp password
+      if (res.passwordEmailed) {
         setCreatedCred({
           email: res.user.email,
-          temporaryPassword: res.temporaryPassword,
         });
         toast.success(t("toast.staffCreated"));
       } else if (hasPendingStaffChange(res.user)) {
@@ -190,16 +187,6 @@ function StaffInner() {
       }
     } catch (err) {
       assignAlerts.setErrorFromApi(err);
-    }
-  };
-
-  const copyPassword = async () => {
-    if (!createdCred) return;
-    try {
-      await navigator.clipboard.writeText(createdCred.temporaryPassword);
-      toast.success(t("admin.staffPage.passwordCopied"));
-    } catch {
-      toast.error(t("admin.staffPage.copyFailed"));
     }
   };
 
@@ -608,19 +595,6 @@ function StaffInner() {
               <p className="text-sm text-mq-text-secondary">
                 {t("admin.staffPage.tempPasswordHint", { email: createdCred.email })}
               </p>
-              <div className="flex gap-2 items-center">
-                <code className="mq-input flex-1 font-mono text-sm select-all">
-                  {createdCred.temporaryPassword}
-                </code>
-                <button
-                  type="button"
-                  className="mq-admin-btn mq-admin-btn-secondary"
-                  onClick={() => void copyPassword()}
-                >
-                  <Copy size={14} />
-                  {t("admin.staffPage.copy")}
-                </button>
-              </div>
               <div className="mq-admin-modal-actions">
                 <button
                   type="button"

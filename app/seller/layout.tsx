@@ -6,7 +6,7 @@ import { SellerShell } from "@/components/seller/SellerShell";
 
 export default function SellerLayout({ children }: { children: ReactNode }) {
   return (
-    <AuthGuard>
+    <AuthGuard roles={["SELLER"]}>
       <SellerShell>{children}</SellerShell>
     </AuthGuard>
   );

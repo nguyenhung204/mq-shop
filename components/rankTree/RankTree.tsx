@@ -157,8 +157,9 @@ export default function RankTree({
   const destroyedRef = useRef(false);
   const [expanding, setExpanding] = useState<string | null>(null);
 
-  // Set active labels for HTML renderers
-  activeLabels = labels ?? DEFAULT_LABELS;
+  useEffect(() => {
+    activeLabels = labels ?? DEFAULT_LABELS;
+  }, [labels]);
 
   /**
    * Handle expand group node.

@@ -18,8 +18,8 @@ export type CreateStaffRequest = {
 
 export type CreateStaffResponse = {
   user: AuthUser;
-  /** Present when SA creates ACTIVE; omitted when Admin creates PENDING. */
-  temporaryPassword?: string;
+  /** True when a temp password was emailed (never returned in JSON). */
+  passwordEmailed?: boolean;
 };
 
 export type UpdateStaffRolesRequest = {

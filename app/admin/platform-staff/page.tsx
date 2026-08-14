@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Check, Copy, Lock, Pencil, Plus, Trash2, Unlock, X } from "lucide-react";
+import { Check, Lock, Pencil, Plus, Trash2, Unlock, X } from "lucide-react";
 import type { AuthUser } from "@/lib/api/types";
 import { hasPendingStaffChange } from "@/lib/api/staff";
 import {
@@ -44,7 +44,6 @@ function PlatformStaffInner() {
   const [editOpen, setEditOpen] = useState<AuthUser | null>(null);
   const [createdCred, setCreatedCred] = useState<{
     email: string;
-    temporaryPassword: string;
   } | null>(null);
   const [pendingNotice, setPendingNotice] = useState(false);
 
@@ -101,10 +100,9 @@ function PlatformStaffInner() {
         roles: ["ADMIN"],
       });
       closeCreate();
-      if (res.temporaryPassword) {
+      if (res.passwordEmailed) {
         setCreatedCred({
           email: res.user.email,
-          temporaryPassword: res.temporaryPassword,
         });
         toast.success(t("toast.platformStaffCreated"));
       } else if (hasPendingStaffChange(res.user) || !isSuperAdmin) {
@@ -132,16 +130,6 @@ function PlatformStaffInner() {
       }
     } catch (err) {
       editAlerts.setErrorFromApi(err);
-    }
-  };
-
-  const copyPassword = async () => {
-    if (!createdCred) return;
-    try {
-      await navigator.clipboard.writeText(createdCred.temporaryPassword);
-      toast.success(t("admin.staffPage.passwordCopied"));
-    } catch {
-      toast.error(t("admin.staffPage.copyFailed"));
     }
   };
 
@@ -501,19 +489,6 @@ function PlatformStaffInner() {
               <p className="text-sm text-mq-text-secondary">
                 {t("admin.staffPage.tempPasswordHint", { email: createdCred.email })}
               </p>
-              <div className="flex gap-2 items-center">
-                <code className="mq-input flex-1 font-mono text-sm select-all">
-                  {createdCred.temporaryPassword}
-                </code>
-                <button
-                  type="button"
-                  className="mq-admin-btn mq-admin-btn-secondary"
-                  onClick={() => void copyPassword()}
-                >
-                  <Copy size={14} />
-                  {t("admin.staffPage.copy")}
-                </button>
-              </div>
               <div className="mq-admin-modal-actions">
                 <button
                   type="button"
