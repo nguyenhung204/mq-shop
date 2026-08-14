@@ -209,7 +209,7 @@ function TransfersTab() {
                   <tr key={tr.id} className="border-b border-mq-border/60">
                     <td className="py-2.5 pr-3 font-mono text-xs">
                       <Link href={`/seller/inventory/transfers/${tr.id}`} className="underline hover:text-[#e7ba0a]">
-                        {tr.code || `${tr.id.slice(0, 8)}…`}
+                        {tr.code || t("seller.inventoryPage.code")}
                       </Link>
                     </td>
                     <td className="py-2.5 pr-3 text-xs">
@@ -398,7 +398,7 @@ function VariantsTab() {
 
   const productTitle = (id: string) => {
     const p = productOptions.find((x) => x.id === id);
-    return p?.title || p?.name || id.slice(0, 8);
+    return p?.title || p?.name || "—";
   };
 
   const onSubmit = async (e: FormEvent) => {
@@ -470,7 +470,7 @@ function VariantsTab() {
           <option value="">{t("seller.inventoryPage.allProducts")}</option>
           {productOptions.map((p) => (
             <option key={p.id} value={p.id}>
-              {p.title || p.name || p.id.slice(0, 8)}
+              {p.title || p.name || "—"}
             </option>
           ))}
         </select>
@@ -485,6 +485,7 @@ function VariantsTab() {
 
       {showForm ? (
         <form className="mq-card p-4 grid sm:grid-cols-2 gap-3" onSubmit={(e) => void onSubmit(e)}>
+          <p className="text-xs text-mq-text-muted sm:col-span-2">{t("seller.priceTwdHint")}</p>
           <select
             className="mq-input sm:col-span-2"
             value={productId}
@@ -494,7 +495,7 @@ function VariantsTab() {
             <option value="">{t("seller.inventoryPage.selectProduct")}</option>
             {productOptions.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.title || p.name || p.id.slice(0, 8)}
+                {p.title || p.name || "—"}
               </option>
             ))}
           </select>
@@ -511,7 +512,8 @@ function VariantsTab() {
             type="number"
             min="0"
             step="0.01"
-            placeholder={t("seller.inventoryPage.sellPrice")}
+            aria-label={t("seller.inventoryPage.sellPrice")}
+            placeholder={t("seller.productsPage.sellPricePlaceholder")}
             value={sellingPrice}
             onChange={(e) => setSellingPrice(e.target.value)}
             required
@@ -1098,7 +1100,7 @@ function LedgerTab() {
                       {formatDate(row.recordedAt)}
                     </td>
                     <td className="py-2.5 pr-3 text-xs font-medium">
-                      {warehouseMap.get(row.warehouseId) || row.warehouseId?.slice(0, 8) || "—"}
+                      {warehouseMap.get(row.warehouseId) || "—"}
                     </td>
                     <td className="py-2.5 pr-3 font-medium">{row.sku}</td>
                     <td className="py-2.5 pr-3 text-xs">{slipTypeLabel(row.type, t)}</td>

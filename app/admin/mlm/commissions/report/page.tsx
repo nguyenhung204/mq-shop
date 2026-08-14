@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment, useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -13,21 +13,27 @@ import {
   Search,
   Users,
 } from "lucide-react";
-import { useCommissionReport, useLoyaltyHistory } from "@/lib/queries/wallet";
+import {
+  useCommissionReport,
+  useLoyaltyHistory,
+  useMarkCommissionPeriodPaid,
+  useMlmRanks,
+} from "@/lib/queries/wallet";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { formatMoney, formatPercent } from "@/lib/api/utils";
 import { mlmRankLabel } from "@/lib/i18n/mlm-rank";
+import type { Locale } from "@/lib/i18n/types";
 import { getErrorMessage } from "@/lib/queries/utils";
 import type {
   CommissionReportBatchStatus,
   CommissionTypeSummary,
-  GenericCommissionEntry,
   GlobalFundTierReport,
   GlobalFundTierStatus,
   LoyaltyCommissionEntry,
+  MlmRankConfig,
   ReferralCommissionEntry,
   TeamCommissionEntry,
 } from "@/lib/api/mlm";
@@ -50,6 +56,10 @@ function tierStatusBadge(status: GlobalFundTierStatus): string {
 function fmtDate(iso: string | null | undefined): string {
   if (!iso) return "—";
   return iso.slice(0, 10);
+}
+
+function isYearMonth(value: string): boolean {
+  return /^\d{4}-(0[1-9]|1[0-2])$/.test(value.trim());
 }
 
 // ─── Primitives ───────────────────────────────────────────────────────────────
@@ -444,10 +454,35 @@ function TeamSection({ summary }: { summary: CommissionTypeSummary<TeamCommissio
   );
 }
 
+function formatRankNameAndCode(
+  t: (key: string, vars?: Record<string, string>) => string,
+  mlmRank: number,
+  options?: {
+    rankName?: string | null;
+    ranksByNumber?: Map<number, MlmRankConfig>;
+    locale?: Locale | null;
+  },
+): string {
+  const cfg = options?.ranksByNumber?.get(mlmRank);
+  const name =
+    options?.rankName?.trim() ||
+    mlmRankLabel(t, mlmRank, cfg?.name, {
+      nameI18n: cfg?.nameI18n,
+      locale: options?.locale,
+    });
+  return `${name} - R${mlmRank}`;
+}
+
 // ─── Global fund section ──────────────────────────────────────────────────────
 
-function GlobalSection({ tiers }: { tiers: GlobalFundTierReport[] }) {
-  const { t } = useLanguage();
+function GlobalSection({
+  tiers,
+  ranksByNumber,
+}: {
+  tiers: GlobalFundTierReport[];
+  ranksByNumber: Map<number, MlmRankConfig>;
+}) {
+  const { t, locale } = useLanguage();
   const tr = (k: string) => t(`admin.mlm.commissionReport.${k}`);
   const [expandedTier, setExpandedTier] = useState<number | null>(null);
 
@@ -514,7 +549,7 @@ function GlobalSection({ tiers }: { tiers: GlobalFundTierReport[] }) {
                         <thead>
                           <tr>
                             <Th>{tr("colRecipient")}</Th>
-                            <Th>{tr("colRank")}</Th>
+                            <Th>{t("admin.mlm.colRankAtCutoff")}</Th>
                             <Th right>{tr("colPaid")}</Th>
                           </tr>
                         </thead>
@@ -525,7 +560,13 @@ function GlobalSection({ tiers }: { tiers: GlobalFundTierReport[] }) {
                                 <span className="font-medium">{u.fullName?.trim() || u.email}</span>
                                 <span className="block text-[11px] text-mq-text-muted">{u.email}</span>
                               </Td>
-                              <Td muted>{u.rankName || mlmRankLabel(t, u.mlmRank)}</Td>
+                              <Td muted>
+                                {formatRankNameAndCode(t, u.mlmRank, {
+                                  rankName: u.rankName,
+                                  ranksByNumber,
+                                  locale,
+                                })}
+                              </Td>
                               <Td right><span className="font-semibold">{formatMoney(u.totalPayout)}</span></Td>
                             </tr>
                           ))}
@@ -733,13 +774,34 @@ function CommissionReportInner() {
   const [inputYm, setInputYm] = useState("");
   const [queryYm, setQueryYm] = useState<string | undefined>(undefined);
   const [activeSection, setActiveSection] = useState<CommissionSection | null>(null);
+  const [paidYearMonth, setPaidYearMonth] = useState("");
+  const [paidError, setPaidError] = useState("");
 
   const { data, isLoading, isError, error } = useCommissionReport(queryYm);
+  const markPeriodPaid = useMarkCommissionPeriodPaid();
+  const { data: ranks } = useMlmRanks();
+  const ranksByNumber = useMemo(() => {
+    const map = new Map<number, MlmRankConfig>();
+    for (const r of ranks ?? []) map.set(r.rank, r);
+    return map;
+  }, [ranks]);
 
   function handleLoad() {
     const trimmed = inputYm.trim();
     setQueryYm(trimmed || undefined);
     setActiveSection(null);
+  }
+
+  async function handleMarkPaid(e: FormEvent) {
+    e.preventDefault();
+    setPaidError("");
+    const yearMonth = (paidYearMonth || data?.yearMonth || queryYm || "").trim();
+    if (!isYearMonth(yearMonth)) {
+      setPaidError(tr("markPaidError"));
+      return;
+    }
+    await markPeriodPaid.mutateAsync(yearMonth);
+    setPaidYearMonth(yearMonth);
   }
 
   function toggleSection(s: CommissionSection) {
@@ -793,6 +855,35 @@ function CommissionReportInner() {
           </div>
         </div>
 
+        <form className="mq-admin-panel p-4 space-y-3" onSubmit={(e) => void handleMarkPaid(e)}>
+          <div>
+            <h2 className="text-sm font-semibold text-mq-text">{tr("markPaidTitle")}</h2>
+            <p className="text-xs text-mq-text-muted mt-0.5">{tr("markPaidHint")}</p>
+          </div>
+          {paidError ? <div className="mq-alert mq-alert-error">{paidError}</div> : null}
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="flex flex-col gap-1 min-w-0">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-mq-text-muted">
+                {tr("yearMonthLabel")}
+              </span>
+              <input
+                type="text"
+                className="mq-input text-sm w-40"
+                placeholder={data?.yearMonth || queryYm || tr("yearMonthPlaceholder")}
+                value={paidYearMonth}
+                onChange={(e) => setPaidYearMonth(e.target.value)}
+              />
+            </label>
+            <button
+              type="submit"
+              className="mq-btn mq-btn-primary"
+              disabled={markPeriodPaid.isPending}
+            >
+              {markPeriodPaid.isPending ? t("admin.common.working") : tr("markPaid")}
+            </button>
+          </div>
+        </form>
+
         {isError && (
           <div className="mq-alert mq-alert-error">
             {getErrorMessage(error, t("admin.common.failed"))}
@@ -807,10 +898,18 @@ function CommissionReportInner() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
               <StatCard label={tr("gmv")} value={formatMoney(data.gmv)} />
               <StatCard label={tr("deliveredOrders")} value={(data.deliveredOrderCount ?? 0).toLocaleString()} />
+              <StatCard label={tr("globalPeriod")} value={data.globalPeriodKey ?? "—"} />
+              <StatCard label={tr("globalGmv")} value={formatMoney(data.globalGmv ?? data.gmv)} />
               <StatCard label={tr("globalFundPercent")} value={`${data.globalFundPercent ?? 0}%`} />
               <StatCard label={tr("globalPoolPerTier")} value={formatMoney(data.globalPoolPerTier ?? "0")} />
               <StatCard label={tr("grandTotalPayout")} value={formatMoney(data.grandTotalPayout ?? "0")} accent />
               <StatCard label={tr("companyKeptTotal")} value={formatMoney(data.kpi?.companyKeptTotal ?? "0")} />
+              {data.globalFxAsOf ? (
+                <StatCard
+                  label={tr("globalFxAsOf")}
+                  value={new Date(data.globalFxAsOf).toISOString().slice(0, 10)}
+                />
+              ) : null}
             </div>
 
             {/* Batch meta row */}
@@ -878,7 +977,12 @@ function CommissionReportInner() {
                 />
                 {activeSection === "referral" && <ReferralSection summary={data.referral} />}
                 {activeSection === "team" && <TeamSection summary={data.team} />}
-                {activeSection === "global" && <GlobalSection tiers={data.global?.tiers ?? []} />}
+                {activeSection === "global" && (
+                  <GlobalSection
+                    tiers={data.global?.tiers ?? []}
+                    ranksByNumber={ranksByNumber}
+                  />
+                )}
                 {activeSection === "loyalty" && <LoyaltySection summary={data.loyalty} />}
               </div>
             </SectionCard>
@@ -904,7 +1008,7 @@ function CommissionReportInner() {
 
 export default function CommissionReportPage() {
   return (
-    <AuthGuard roles={["SUPER_ADMIN"]}>
+    <AuthGuard roles={["SUPER_ADMIN", "ACCOUNTANT"]}>
       <CommissionReportInner />
     </AuthGuard>
   );

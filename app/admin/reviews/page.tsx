@@ -34,7 +34,7 @@ function statusBadgeClass(status: string | undefined): string {
 }
 
 function productTitle(p: ApiProduct): string {
-  return p.title || p.name || p.id.slice(0, 8);
+  return p.title || p.name || "—";
 }
 
 function AdminReviewsInner() {
@@ -187,7 +187,7 @@ function AdminReviewsInner() {
                 {items.map((r) => (
                   <tr key={r.id} className="border-t border-mq-border align-top">
                     <td className="p-3 text-xs">
-                      {r.productName || (r.productId || "").slice(0, 8) + "…"}
+                      {r.productName || "—"}
                     </td>
                     <td className="p-3 text-xs">
                       {r.shopName || "—"}

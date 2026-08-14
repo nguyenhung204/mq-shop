@@ -12,9 +12,37 @@ export type OrderStatus =
   | "REFUND_APPROVED"
   | "REFUNDED";
 
-export type PaymentMethod = "COD" | "MOCK";
+/**
+ * Prefer OFF_PLATFORM for bank-transfer / off-platform settlement.
+ * COD kept for backward compatibility (same PENDING flow as OFF_PLATFORM).
+ * MOCK kept for admin place-order / dev.
+ */
+export type PaymentMethod = "OFF_PLATFORM" | "COD" | "MOCK";
 
-export type RmaStatus = "PENDING" | "APPROVED" | "REJECTED" | "CLOSED";
+export type ShopPaymentProfile = {
+  shopId: string;
+  shopName: string;
+  bankName: string | null;
+  accountNumber: string | null;
+  accountName: string | null;
+  qrUrl?: string | null;
+};
+
+export type RmaStatus =
+  | "PENDING"
+  | "REQUESTED"
+  | "APPROVED"
+  | "REJECTED"
+  | "RETURN_SHIPPED"
+  | "RETURN_RECEIVED"
+  | "RETURN_REJECTED"
+  | "DISPUTED"
+  | "REFUND_PENDING"
+  | "REFUND_SENT"
+  | "GOODS_RETURN_PENDING"
+  | "GOODS_RETURN_SHIPPED"
+  | "CLOSED"
+  | "COMPLETED";
 
 export type ShippingAddress = {
   fullName: string;
@@ -41,7 +69,7 @@ export type ShippingQuoteView = {
   shopId: string;
   itemCount: number;
   shippingFee: number;
-  currency: "USD";
+  currency: "TWD";
 };
 
 export type CheckoutRequest = {
@@ -49,6 +77,9 @@ export type CheckoutRequest = {
   shippingAddress: ShippingAddress;
   paymentMethod: PaymentMethod;
   note?: string;
+  displayCurrency?: string;
+  /** asOf from GET /fx/rates at checkout confirm */
+  fxAsOf?: string;
 };
 
 export type AdminCheckoutRequest = CheckoutRequest & {
@@ -90,7 +121,9 @@ export type RmaView = {
   /** Human-readable order name (e.g. "ORD-20260801-E249"). Use for display instead of orderId. */
   orderName?: string | null;
   buyerId?: string;
+  buyerName?: string | null;
   shopId?: string;
+  shopName?: string | null;
   status: RmaStatus;
   reason: string;
   evidenceUrls: string[];
@@ -98,6 +131,23 @@ export type RmaView = {
   reviewerId?: string | null;
   reviewNote: string | null;
   decidedAt: string | null;
+  returnTrackingCode?: string | null;
+  returnCarrier?: string | null;
+  returnShippedAt?: string | null;
+  returnReceivedAt?: string | null;
+  inspectionNote?: string | null;
+  disputeReason?: string | null;
+  disputedAt?: string | null;
+  statusChangedAt?: string | null;
+  escalatedAt?: string | null;
+  refundProofUrl?: string | null;
+  refundProofUploadedAt?: string | null;
+  goodsReturnTrackingCode?: string | null;
+  goodsReturnCarrier?: string | null;
+  goodsReturnShippedAt?: string | null;
+  goodsReturnConfirmedAt?: string | null;
+  goodsReturnIssueNote?: string | null;
+  goodsReturnIssueAt?: string | null;
   createdAt: string;
   updatedAt?: string;
 };
@@ -126,17 +176,33 @@ export type OrderView = {
   buyerEmail?: string | null;
   shopId: string;
   shopName?: string | null;
+  /** Present on order detail when RMA is on goods-return path. */
+  shopOwnerEmail?: string | null;
   status: OrderStatus;
   subtotal: number;
   shippingFee: number;
   total: number;
-  currency: "USD";
+  currency: "TWD";
+  displayCurrency?: string | null;
+  fxRate?: number | null;
+  fxAsOf?: string | null;
+  displayTotal?: number | null;
   paymentMethod: PaymentMethod;
+  /** Buyer-uploaded bank-transfer proof (OFF_PLATFORM / legacy COD). */
+  paymentProofUrl?: string | null;
+  paymentProofUploadedAt?: string | null;
+  paymentRejectedReason?: string | null;
+  /** Set when stale proof review is escalated to admin/CS. */
+  paymentEscalatedAt?: string | null;
+  /** Set when paid fulfillment is escalated for no shipping progress. */
+  fulfillmentEscalatedAt?: string | null;
   shippingAddress: ShippingAddress;
   items: OrderItemView[];
   cancelReason: string | null;
   paidAt: string | null;
   deliveredAt: string | null;
+  /** Set when sales volume is confirmed (RMA window + no active return). */
+  salesEligibleAt?: string | null;
   /** Latest RMA for this order when BE includes it; null/undefined if none. */
   rma?: RmaView | null;
   createdAt: string;
@@ -155,6 +221,7 @@ export type ListOrdersParams = {
 
 export type AdminListOrdersParams = ListOrdersParams & {
   shopId?: string;
+  paymentEscalated?: boolean;
 };
 
 export type UpdateOrderStatusRequest = {
@@ -195,6 +262,83 @@ export const orderApi = {
 
   removeRmaEvidence: (rmaId: string, urls: string[]) =>
     api.delete<RmaView>(`/rma/${rmaId}/evidence`, { body: { urls } }),
+
+  listShopRma: (query?: {
+    status?: RmaStatus;
+    escalated?: boolean;
+    page?: number;
+    pageSize?: number;
+  }) => api.get<PageEnvelope<RmaView>>("/rma", { query, withMeta: true }),
+
+  listMyRma: (query?: { status?: RmaStatus; page?: number; pageSize?: number }) =>
+    api.get<PageEnvelope<RmaView>>("/rma/mine", { query, withMeta: true }),
+
+  approveRma: (rmaId: string, body?: { note?: string }) =>
+    api.post<RmaView>(`/rma/${rmaId}/approve`, body ?? {}),
+
+  rejectRma: (rmaId: string, body: { note: string }) =>
+    api.post<RmaView>(`/rma/${rmaId}/reject`, body),
+
+  markReturnShipped: (
+    rmaId: string,
+    body: { trackingCode: string; carrier?: string; note?: string },
+  ) => api.post<RmaView>(`/rma/${rmaId}/return-shipped`, body),
+
+  markReturnReceived: (rmaId: string, body?: { note?: string }) =>
+    api.post<RmaView>(`/rma/${rmaId}/return-received`, body ?? {}),
+
+  acceptReturn: (rmaId: string, body?: { note?: string }) =>
+    api.post<RmaView>(`/rma/${rmaId}/accept-return`, body ?? {}),
+
+  rejectReturn: (rmaId: string, body: { note: string }) =>
+    api.post<RmaView>(`/rma/${rmaId}/reject-return`, body),
+
+  openDispute: (rmaId: string, body: { reason: string }) =>
+    api.post<RmaView>(`/rma/${rmaId}/dispute`, body),
+
+  markRefundSent: (rmaId: string, body?: { note?: string }) =>
+    api.post<RmaView>(`/rma/${rmaId}/refund-sent`, body ?? {}),
+
+  uploadRefundProof: (rmaId: string, file: File) => {
+    const fd = new FormData();
+    fd.append("proof", file);
+    return api.postForm<RmaView>(`/rma/${rmaId}/refund-proof`, fd);
+  },
+
+  confirmRmaCompleted: (rmaId: string, body?: { note?: string }) =>
+    api.post<RmaView>(`/rma/${rmaId}/confirm-completed`, body ?? {}),
+
+  shipGoodsToBuyer: (
+    rmaId: string,
+    body: { trackingCode: string; carrier?: string; note?: string },
+  ) => api.post<RmaView>(`/rma/${rmaId}/goods-return-shipped`, body),
+
+  updateGoodsReturnTracking: (
+    rmaId: string,
+    body: { trackingCode: string; carrier?: string; note?: string },
+  ) => api.post<RmaView>(`/rma/${rmaId}/goods-return-tracking`, body),
+
+  reportGoodsReturnIssue: (rmaId: string, body: { reason: string }) =>
+    api.post<RmaView>(`/rma/${rmaId}/goods-return-issue`, body),
+
+  confirmGoodsReceived: (rmaId: string, body?: { note?: string }) =>
+    api.post<RmaView>(`/rma/${rmaId}/confirm-goods-received`, body ?? {}),
+
+  /** Multipart field `proof` — buyer payment bill for OFF_PLATFORM/COD. */
+  uploadPaymentProof: (orderId: string, file: File) => {
+    const fd = new FormData();
+    fd.append("proof", file);
+    return api.postForm<OrderView>(`/orders/${orderId}/payment-proof`, fd);
+  },
+
+  confirmPayment: (orderId: string) =>
+    api.post<OrderView>(`/orders/${orderId}/payment/confirm`, {}),
+
+  rejectPayment: (orderId: string, reason: string) =>
+    api.post<OrderView>(`/orders/${orderId}/payment/reject`, { reason }),
+
+  createFulfillmentComplaint: (orderId: string, reason: string) =>
+    api.post(`/orders/${orderId}/fulfillment-complaint`, { reason }),
 };
 
 export const adminOrdersApi = {
@@ -212,8 +356,12 @@ export const adminOrdersApi = {
   cancel: (orderId: string, body: { reason: string }) =>
     api.post<OrderView>(`/admin/orders/${orderId}/cancel`, body),
 
-  listRma: (query?: { status?: RmaStatus; page?: number; pageSize?: number }) =>
-    api.get<PageEnvelope<RmaView>>("/admin/rma", { query, withMeta: true }),
+  listRma: (query?: {
+    status?: RmaStatus;
+    escalated?: boolean;
+    page?: number;
+    pageSize?: number;
+  }) => api.get<PageEnvelope<RmaView>>("/admin/rma", { query, withMeta: true }),
 
   getRma: (rmaId: string) =>
     api.get<AdminRmaDetailView>(`/admin/rma/${rmaId}`),
@@ -224,10 +372,91 @@ export const adminOrdersApi = {
   rejectRma: (rmaId: string, body: { note: string }) =>
     api.post<RmaView>(`/admin/rma/${rmaId}/reject`, body),
 
-  /** Accountant: RMA APPROVED + order REFUND_APPROVED → order REFUNDED, RMA CLOSED. */
+  resolveDispute: (
+    rmaId: string,
+    body: {
+      decision: "REFUND_PENDING" | "GOODS_RETURN_PENDING" | "CLOSED";
+      note?: string;
+    },
+  ) => api.post<RmaView>(`/admin/rma/${rmaId}/resolve-dispute`, body),
+
+  reopenDispute: (rmaId: string, body: { reason: string }) =>
+    api.post<RmaView>(`/admin/rma/${rmaId}/reopen-dispute`, body),
+
+  forceReceive: (rmaId: string, body?: { note?: string }) =>
+    api.post<RmaView>(`/admin/rma/${rmaId}/force-receive`, body ?? {}),
+
+  forceAcceptReturn: (rmaId: string, body?: { note?: string }) =>
+    api.post<RmaView>(`/admin/rma/${rmaId}/force-accept-return`, body ?? {}),
+
+  forceRefundSent: (rmaId: string, body?: { note?: string }) =>
+    api.post<RmaView>(`/admin/rma/${rmaId}/force-refund-sent`, body ?? {}),
+
+  forceCompleteRma: (rmaId: string, body?: { note?: string }) =>
+    api.post<AdminRmaDetailView>(`/admin/rma/${rmaId}/force-complete`, body ?? {}),
+
+  forceCloseAbandoned: (rmaId: string, body?: { note?: string }) =>
+    api.post<RmaView>(`/admin/rma/${rmaId}/force-close-abandoned`, body ?? {}),
+
+  forceCloseGoodsReturned: (rmaId: string, body?: { note?: string }) =>
+    api.post<RmaView>(`/admin/rma/${rmaId}/force-close-goods-returned`, body ?? {}),
+
+  /** Legacy alias → force-complete */
   markRmaRefunded: (rmaId: string, body?: { note?: string }) =>
     api.post<AdminRmaDetailView>(`/admin/rma/${rmaId}/mark-refunded`, body ?? {}),
+
+  /** Admin force-confirm off-platform payment (requires proof) → PAID. */
+  forcePaid: (orderId: string, note?: string) =>
+    api.post<OrderView>(
+      `/admin/orders/${orderId}/payment/force-paid`,
+      note ? { note } : {},
+    ),
+
+  rejectPayment: (orderId: string, reason: string) =>
+    api.post<OrderView>(`/admin/orders/${orderId}/payment/reject`, { reason }),
+
+  listFulfillmentComplaints: () =>
+    api.get<{ items: FulfillmentComplaintView[] }>(
+      "/admin/orders/fulfillment-complaints",
+    ),
 };
+
+export type FulfillmentComplaintView = {
+  id: string;
+  orderId: string;
+  buyerId: string;
+  shopId: string;
+  reason: string;
+  status: string;
+  createdAt: string;
+};
+
+/** OFF_PLATFORM preferred; COD is legacy alias with the same PENDING proof flow. */
+export function isOffPlatformLike(method: PaymentMethod): boolean {
+  return method === "OFF_PLATFORM" || method === "COD";
+}
+
+export function canUploadPaymentProof(
+  order: Pick<OrderView, "status" | "paymentMethod">,
+): boolean {
+  return order.status === "PENDING" && isOffPlatformLike(order.paymentMethod);
+}
+
+export function canSellerReviewPayment(
+  order: Pick<OrderView, "status" | "paymentMethod" | "paymentProofUrl">,
+): boolean {
+  return (
+    order.status === "PENDING" &&
+    isOffPlatformLike(order.paymentMethod) &&
+    Boolean(order.paymentProofUrl)
+  );
+}
+
+export function canAdminForcePaid(
+  order: Pick<OrderView, "status" | "paymentMethod" | "paymentProofUrl">,
+): boolean {
+  return canSellerReviewPayment(order);
+}
 
 /** Next status in seller fulfillment pipeline, or null if terminal / not actionable. */
 export function nextFulfillmentStatus(
@@ -256,9 +485,21 @@ export function canCancelOrder(status: OrderStatus): boolean {
   );
 }
 
-const BLOCKING_RMA_STATUSES: RmaStatus[] = ["PENDING", "APPROVED", "CLOSED"];
+const BLOCKING_RMA_STATUSES: RmaStatus[] = [
+  "PENDING",
+  "REQUESTED",
+  "APPROVED",
+  "RETURN_SHIPPED",
+  "RETURN_RECEIVED",
+  "RETURN_REJECTED",
+  "DISPUTED",
+  "REFUND_PENDING",
+  "REFUND_SENT",
+  "GOODS_RETURN_PENDING",
+  "GOODS_RETURN_SHIPPED",
+];
 
-/** Hide Request return when RMA is PENDING | APPROVED | CLOSED. REJECTED may retry. */
+/** Hide Request return when an in-flight RMA exists. REJECTED / CLOSED / COMPLETED may retry if order still DELIVERED. */
 export function hasBlockingRma(order: Pick<OrderView, "rma">): boolean {
   const status = order.rma?.status;
   return Boolean(status && BLOCKING_RMA_STATUSES.includes(status));
@@ -268,7 +509,6 @@ export function hasBlockingRma(order: Pick<OrderView, "rma">): boolean {
 export function canRequestRma(
   order: Pick<OrderView, "status" | "deliveredAt" | "rma">,
 ): boolean {
-  // REJECTED does not block; PENDING|APPROVED|CLOSED does.
   if (hasBlockingRma(order)) return false;
   if (order.status !== "DELIVERED" || !order.deliveredAt) return false;
   const delivered = new Date(order.deliveredAt).getTime();

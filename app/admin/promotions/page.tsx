@@ -156,7 +156,7 @@ function PromotionsInner() {
   }, [categories, catLocale]);
 
   const formatCategories = (ids: string[]) =>
-    ids.map((id) => categoryNameById.get(id) ?? id).join(", ");
+    ids.map((id) => categoryNameById.get(id) ?? "—").join(", ");
 
   const toggleCategory = (id: string) => {
     setForm((f) => ({

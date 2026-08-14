@@ -11,12 +11,14 @@ import { translateStatus } from "@/lib/i18n/status";
 import { OrderListSkeleton } from "@/components/ui/Skeleton";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 
 const STATUSES: Array<SettlementStatus | ""> = [
   "",
   "PENDING_RECONCILE",
   "INCLUDED_IN_PAYOUT",
   "PAID_OUT",
+  "VOIDED",
 ];
 
 function statusBadgeClass(status: SettlementStatus): string {
@@ -27,6 +29,8 @@ function statusBadgeClass(status: SettlementStatus): string {
       return "mq-badge mq-badge-orange";
     case "PAID_OUT":
       return "mq-badge mq-badge-teal";
+    case "VOIDED":
+      return "mq-badge mq-badge-muted";
     default:
       return "mq-badge mq-badge-muted";
   }
@@ -48,6 +52,7 @@ function SellerSettlementsInner() {
 
   return (
     <div className="space-y-4">
+      <LedgerTwdNote />
       <p className="text-sm text-mq-text-muted">{t("seller.settlementsPage.intro")}</p>
 
       <label className="block text-sm max-w-xs">
@@ -110,7 +115,7 @@ function SellerSettlementsInner() {
           <div className="min-w-0">
             <Link href={`/orders/${s.orderId}`} className="hover:underline">
               <span className="font-mono font-medium">
-                {s.orderCode ?? s.orderId.slice(0, 8)}
+                {s.orderCode ?? t("orders.detail.title")}
               </span>
             </Link>
             <span className={`${statusBadgeClass(s.status)} ml-2`}>{translateStatus(t, "settlement", s.status)}</span>

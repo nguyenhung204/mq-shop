@@ -18,6 +18,7 @@ import type {
   UpdateProductRequest,
   UpdateProductVariantRequest,
 } from "./types";
+import type { ShopPaymentProfile } from "./orders";
 import { asArray, parsePage } from "./utils";
 
 export {
@@ -27,10 +28,15 @@ export {
   canCancelOrder,
   canRequestRma,
   hasBlockingRma,
+  isOffPlatformLike,
+  canUploadPaymentProof,
+  canSellerReviewPayment,
+  canAdminForcePaid,
 } from "./orders";
 export type {
   OrderStatus,
   PaymentMethod,
+  ShopPaymentProfile,
   RmaStatus,
   ShippingAddress,
   ShippingQuoteRequest,
@@ -92,6 +98,7 @@ export {
 export {
   financeConfigApi,
   adminPayoutApi,
+  adminFeePeriodApi,
   landingCostApi,
   financeReportApi,
 } from "./finance";
@@ -116,6 +123,7 @@ export type {
   ListFinanceTransactionsParams,
   ExportFinanceReportBody,
   ExportFinanceReportResult,
+  MarkFeeCollectedResult,
 } from "./finance";
 export { walletApi, adminWalletPayoutApi, adminWalletApi } from "./wallet";
 export { csApi } from "./cs";
@@ -171,6 +179,7 @@ export type {
   SetMlmReferrerResult,
   RankReconcileResult,
   RankReconcileBatchResult,
+  MarkCommissionPeriodPaidResult,
   MonthlyCommissionSuggestedAction,
   MonthlyCommissionOverviewRow,
   MonthlyCommissionOverview,
@@ -245,11 +254,24 @@ export const catalogApi = {
     }>("/catalog/check-region-availability", body),
 };
 
+export type UpdateShopBankInfoBody = {
+  bankName: string;
+  accountNumber: string;
+  accountName: string;
+  qrUrl?: string | null;
+};
+
 export const shopApi = {
   apply: (formData: FormData) => api.postForm<ApiShop>("/shops/apply", formData),
   me: () => api.get<ApiShop>("/shops/me"),
   updateMe: (body: Partial<{ name: string; pickupAddress: string; legalDocumentUrl: string }>) =>
     api.put<ApiShop>("/shops/me", body),
+  /** Bank transfer profile for buyer checkout (APPROVED shops). */
+  getPaymentProfile: (shopId: string) =>
+    api.get<ShopPaymentProfile>(`/shops/${shopId}/payment-profile`),
+  /** Update shop bank info for off-platform buyer transfers. Gate: EDIT_SHOP. */
+  updateMyShopBankInfo: (body: UpdateShopBankInfoBody) =>
+    api.patch<ApiShop>("/shops/me/bank-info", body),
   /** Multipart field `logo` → MinIO WebP (~512×512). Gate: EDIT_SHOP, APPROVED, not suspended. */
   uploadLogo: (file: File) => {
     const fd = new FormData();

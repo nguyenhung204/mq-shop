@@ -6,7 +6,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ShoppingBag, Trash2, Store } from "lucide-react";
 import { toast } from "sonner";
-import { formatPrice } from "@/lib/data/products";
+import { Product } from "@/lib/data/products";
+import { useDisplayMoney } from "@/components/providers/DisplayMoneyProvider";
 import { useCart } from "@/components/providers/CartProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useRegion } from "@/components/providers/RegionProvider";
@@ -73,20 +74,21 @@ function PriceDisplay({
   originalPrice?: number;
   quantity: number;
 }) {
+  const { formatDisplay } = useDisplayMoney();
   const total = unitPrice * quantity;
   const hasDiscount = originalPrice !== undefined && originalPrice > unitPrice;
 
   return (
     <div className="shrink-0 text-right">
-      <p className="text-sm font-semibold text-mq-text">{formatPrice(total)}</p>
+      <p className="text-sm font-semibold text-mq-text">{formatDisplay(total)}</p>
       {hasDiscount && (
         <p className="text-xs text-mq-text-muted line-through mt-0.5">
-          {formatPrice(originalPrice! * quantity)}
+          {formatDisplay(originalPrice! * quantity)}
         </p>
       )}
       {quantity > 1 && (
         <p className="text-[11px] text-mq-text-muted mt-0.5">
-          {formatPrice(unitPrice)} / item
+          {formatDisplay(unitPrice)} / item
         </p>
       )}
     </div>
@@ -98,6 +100,7 @@ function PriceDisplay({
 export function CartContent() {
   const { t } = useLanguage();
   const { regionCode } = useRegion();
+  const { formatDisplay } = useDisplayMoney();
   const router = useRouter();
   const { items, itemCount, updateQuantity, removeItem, clearCart, setSelectedVariantIds } = useCart();
 
@@ -288,12 +291,12 @@ export function CartContent() {
                           {/* unit price row */}
                           <div className="flex items-baseline gap-1.5 mt-0.5">
                             <span className="text-sm font-medium text-mq-text">
-                              {formatPrice(item.unitPrice)}
+                              {formatDisplay(item.unitPrice)}
                             </span>
                             {item.originalPrice !== undefined &&
                               item.originalPrice > item.unitPrice && (
                                 <span className="text-xs text-mq-text-muted line-through">
-                                  {formatPrice(item.originalPrice)}
+                                  {formatDisplay(item.originalPrice)}
                                 </span>
                               )}
                           </div>
@@ -405,7 +408,7 @@ export function CartContent() {
               {t("cart.subtotal")}
             </p>
             <p className="text-lg font-semibold text-mq-text leading-none">
-              {formatPrice(selectedSubtotal)}
+              {formatDisplay(selectedSubtotal)}
             </p>
           </div>
 

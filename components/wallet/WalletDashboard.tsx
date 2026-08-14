@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
-import { formatMoney } from "@/lib/api/utils";
+import { formatPoints } from "@/lib/api/utils";
 import type { WalletTransaction, WalletTxReason } from "@/lib/api/wallet";
 import {
   useConfirmWalletPin,
@@ -23,6 +23,7 @@ import { WalletRankProgress } from "@/components/wallet/WalletRankProgress";
 import { buildReferralRegisterUrl } from "@/lib/mlm/referralLink";
 import { mlmRankLabel } from "@/lib/i18n/mlm-rank";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { usePointsDisplayFx } from "@/lib/hooks/usePointsDisplayFx";
 
 const TX_REASONS: Array<WalletTxReason | ""> = [
   "",
@@ -211,8 +212,8 @@ function TxRow({ row }: { row: WalletTransaction }) {
   const { t } = useLanguage();
   const signed =
     row.direction === "OUT"
-      ? `−${formatMoney(row.amount)}`
-      : `+${formatMoney(row.amount)}`;
+      ? `−${formatPoints(row.amount)}`
+      : `+${formatPoints(row.amount)}`;
   return (
     <div className="mq-card p-4 flex flex-wrap justify-between gap-3 text-sm">
       <div className="space-y-1 min-w-0">
@@ -242,6 +243,14 @@ function WalletInner({ embedded = false }: { embedded?: boolean }) {
   const { user, refreshUser, hasRole } = useAuth();
   const { data: balance, isLoading, isError, error } = useWallet();
   const { data: referral } = useReferralLink();
+  const {
+    onePointDisplay,
+    onePointTwd,
+    pointUsdLabel,
+    isRegionTwd,
+    formatRegion,
+    formatTwd,
+  } = usePointsDisplayFx();
   const [txPage, setTxPage] = useState(1);
   const [txReason, setTxReason] = useState<WalletTxReason | "">("");
   const { data: txPageData, isLoading: txLoading } = useWalletTransactions({
@@ -350,7 +359,7 @@ function WalletInner({ embedded = false }: { embedded?: boolean }) {
                 {t("wallet.available")}
               </p>
               <p className="text-2xl mt-2 tabular-nums">
-                {formatMoney(balance?.availableBalance)}
+                {formatPoints(balance?.availableBalance)}
               </p>
             </div>
             <div className="mq-card p-5">
@@ -358,10 +367,30 @@ function WalletInner({ embedded = false }: { embedded?: boolean }) {
                 {t("wallet.frozen")}
               </p>
               <p className="text-2xl mt-2 tabular-nums">
-                {formatMoney(balance?.frozenBalance)}
+                {formatPoints(balance?.frozenBalance)}
               </p>
               <p className="text-xs text-mq-text-muted mt-1">{t("wallet.frozenHint")}</p>
             </div>
+          </div>
+
+          <div className="rounded-md border border-mq-border/70 bg-mq-surface/40 px-4 py-3 text-sm space-y-1">
+            <p className="text-mq-text-secondary">
+              {t("wallet.pointsExplainer", { usd: pointUsdLabel })}
+            </p>
+            {onePointDisplay != null ? (
+              <p className="text-xs text-mq-text-muted">
+                {t("wallet.pointsRateToday", {
+                  amount: formatRegion(onePointDisplay) ?? "",
+                })}
+              </p>
+            ) : null}
+            {!isRegionTwd && onePointTwd != null ? (
+              <p className="text-xs text-mq-text-muted">
+                {t("wallet.pointsRateTwd", {
+                  amount: formatTwd(onePointTwd) ?? "",
+                })}
+              </p>
+            ) : null}
           </div>
 
           {hasRole("SELLER") ? (

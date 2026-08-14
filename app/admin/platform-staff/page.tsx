@@ -106,9 +106,12 @@ function PlatformStaffInner() {
           email: res.user.email,
           temporaryPassword: res.temporaryPassword,
         });
+        toast.success(t("toast.platformStaffCreated"));
       } else if (hasPendingStaffChange(res.user) || !isSuperAdmin) {
         setPendingNotice(true);
         toast.message(t("admin.platformStaff.pendingNotice"));
+      } else {
+        toast.success(t("toast.platformStaffCreated"));
       }
     } catch (err) {
       createAlerts.setErrorFromApi(err);
@@ -125,7 +128,7 @@ function PlatformStaffInner() {
       setEditOpen(null);
       if (hasPendingStaffChange(user) || !isSuperAdmin) {
         setPendingNotice(true);
-        toast.message(t("admin.platformStaff.pendingNotice"));
+        // Hook already toasts roles updated; banner covers pending dual-control.
       }
     } catch (err) {
       editAlerts.setErrorFromApi(err);

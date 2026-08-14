@@ -6,15 +6,20 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { formatPrice } from "@/lib/data/products";
+import { ApiError } from "@/lib/api/client";
+import { orderApi } from "@/lib/api/orders";
 import { splitStoredPhone, toE164 } from "@/lib/data/phone";
+import { formatMoney } from "@/lib/api/utils";
+import { useDisplayMoney } from "@/components/providers/DisplayMoneyProvider";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { suppressNotificationToasts } from "@/lib/notifications/suppress-toast";
 import {
   checkoutSchema,
   type CheckoutFormValues,
 } from "@/lib/validations/checkout";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { useCheckout, useShippingQuote } from "@/lib/queries/orders";
+import { useShopPaymentProfile } from "@/lib/queries/seller";
 import { useCart } from "@/components/providers/CartProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -30,11 +35,27 @@ import {
   detectCrossBorderItems,
 } from "@/components/cart/CrossBorderWarningModal";
 import type { GateRegionId } from "@/lib/i18n/regions";
+import { regionIdToCountryCode } from "@/lib/i18n/regions";
+
+const PROOF_ACCEPT = "image/jpeg,image/png,image/webp,image/gif";
+const PROOF_MAX_BYTES = 5 * 1024 * 1024;
+
+type PlacedOrder = {
+  id: string;
+  code: string;
+  displayName: string;
+  total: number;
+  proofUploaded: boolean;
+  proofError: string | null;
+};
 
 export function CheckoutContent() {
   const { t, locale } = useLanguage();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
-  const { regionCode, setRegion } = useRegion();
+  const { regionCode, setRegion, currency: regionCurrency } = useRegion();
+  const shipCountryDefault = regionCode ?? "VN";
+  const { formatDisplay, currency: displayCurrency, refetchRates, asOf: fxAsOf, isFallback, isRatesReady } =
+    useDisplayMoney();
   const {
     items,
     selectedItems,
@@ -50,17 +71,19 @@ export function CheckoutContent() {
   const [cartReady, setCartReady] = useState(() =>
     typeof window === "undefined" ? false : useCartStore.persist.hasHydrated(),
   );
-  const [placed, setPlaced] = useState<{ id: string; code: string; displayName: string; total: number } | null>(
-    null,
-  );
+  const [placed, setPlaced] = useState<PlacedOrder | null>(null);
   const [shippingFee, setShippingFee] = useState<number | null>(null);
   const [profileSeeded, setProfileSeeded] = useState(false);
   const [nationalPhone, setNationalPhone] = useState("");
-  const [dialCountry, setDialCountry] = useState("VN");
+  const [dialCountry, setDialCountry] = useState(shipCountryDefault);
   const [submitError, setSubmitError] = useState<unknown>(null);
   const [dialTouched, setDialTouched] = useState(false);
   const [crossBorderOpen, setCrossBorderOpen] = useState(false);
   const [crossBorderBypassed, setCrossBorderBypassed] = useState(false);
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [proofPreviewUrl, setProofPreviewUrl] = useState<string | null>(null);
+  const [proofFieldError, setProofFieldError] = useState<string | null>(null);
+  const [proofRetrying, setProofRetrying] = useState(false);
   const quote = useShippingQuote();
   const checkout = useCheckout();
 
@@ -82,9 +105,9 @@ export function CheckoutContent() {
         city: "",
         district: "",
         postalCode: "",
-        country: "VN",
+        country: shipCountryDefault,
       },
-      paymentMethod: "MOCK",
+      paymentMethod: "OFF_PLATFORM",
       note: "",
     },
   });
@@ -94,10 +117,16 @@ export function CheckoutContent() {
     return useCartStore.persist.onFinishHydration(() => setCartReady(true));
   }, []);
 
+  useEffect(() => {
+    if (profileSeeded || !regionCode) return;
+    setDialCountry(regionCode);
+    setValue("shippingAddress.country", regionCode);
+  }, [regionCode, profileSeeded, setValue]);
+
   // Prefill contact fields from the signed-in profile once.
   useEffect(() => {
     if (!user || profileSeeded) return;
-    const shipCountry = "VN";
+    const shipCountry = regionCode ?? "VN";
     const national = splitStoredPhone(user.phone, shipCountry);
     setDialCountry(shipCountry);
     setNationalPhone(national);
@@ -112,14 +141,16 @@ export function CheckoutContent() {
         postalCode: "",
         country: shipCountry,
       },
-      paymentMethod: "MOCK",
+      paymentMethod: "OFF_PLATFORM",
       note: "",
     });
     setProfileSeeded(true);
-  }, [user, profileSeeded, reset]);
+  }, [user, profileSeeded, reset, regionCode]);
 
   const address = watch("shippingAddress");
   const lineItems = useMemo(() => checkoutSelectedItems(), [selectedItems]);
+  const checkoutShopId = selectedShopIds[0] ?? selectedItems[0]?.shopId ?? null;
+  const { data: paymentProfile } = useShopPaymentProfile(checkoutShopId);
 
   // Detect cross-border items: compare shipping address country vs product countryCodes
   const shippingCountry = address?.country?.toUpperCase() || null;
@@ -138,6 +169,38 @@ export function CheckoutContent() {
   };
 
   useEffect(() => {
+    if (isAuthenticated && itemCount > 0) {
+      void refetchRates();
+    }
+  }, [isAuthenticated, itemCount, refetchRates]);
+
+  useEffect(() => {
+    if (!proofFile) {
+      setProofPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(proofFile);
+    setProofPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [proofFile]);
+
+  const validateProofFile = (file: File | null): string | null => {
+    if (!file) return t("checkout.paymentProofRequired");
+    if (!PROOF_ACCEPT.split(",").includes(file.type)) {
+      return t("checkout.paymentProofInvalidType");
+    }
+    if (file.size > PROOF_MAX_BYTES) {
+      return t("checkout.paymentProofTooLarge");
+    }
+    return null;
+  };
+
+  const onProofFileChange = (file: File | null) => {
+    setProofFile(file);
+    setProofFieldError(file ? validateProofFile(file) : null);
+  };
+
+  useEffect(() => {
     if (!isAuthenticated || lineItems.length === 0) return;
     if (!address?.fullName || !address.phone || !address.line1 || !address.city) {
       setShippingFee(null);
@@ -149,7 +212,7 @@ export function CheckoutContent() {
           items: lineItems,
           shippingAddress: {
             ...address,
-            country: address.country || "VN",
+            country: address.country || shipCountryDefault,
           },
         })
         .then((q) => setShippingFee(q.shippingFee))
@@ -211,13 +274,86 @@ export function CheckoutContent() {
     return (
       <>
         <PageHero title={t("checkout.orderPlaced")} breadcrumb={[{ label: t("checkout.title") }]} />
-        <Container className="py-16 text-center max-w-lg mx-auto">
-          <h2 className="text-2xl text-mq-text mb-3">{t("checkout.thankYou")}</h2>
-          <p className="text-mq-text-secondary mb-2">
-            {t("checkout.orderLabel")} <strong>{placed.displayName}</strong> · {formatPrice(placed.total)}{" "}
-            USD
-          </p>
-          <p className="text-sm text-mq-text-muted mb-8">{t("checkout.paymentStubNote")}</p>
+        <Container className="py-16 text-center max-w-lg mx-auto space-y-6">
+          <div>
+            <h2 className="text-2xl text-mq-text mb-3">{t("checkout.thankYou")}</h2>
+            <p className="text-mq-text-secondary mb-2">
+              {t("checkout.orderLabel")} <strong>{placed.displayName}</strong> ·{" "}
+              {formatDisplay(placed.total)}{" "}
+              <span className="text-mq-text-muted text-sm">({formatMoney(placed.total)})</span>
+            </p>
+          </div>
+
+          {placed.proofUploaded ? (
+            <div className="mq-alert mq-alert-success text-sm text-left">
+              {t("checkout.paymentProofUploadedNote")}
+            </div>
+          ) : (
+            <div className="rounded-[var(--mq-radius-lg)] border border-mq-border bg-mq-surface p-5 text-left space-y-3">
+              <p className="text-sm font-medium text-mq-text">
+                {t("checkout.paymentProofStillNeeded")}
+              </p>
+              {placed.proofError ? (
+                <p className="text-xs text-mq-accent-orange">{placed.proofError}</p>
+              ) : null}
+              <label className="block text-sm" htmlFor="checkout-proof-retry">
+                {t("checkout.paymentProofLabel")}
+              </label>
+              <input
+                id="checkout-proof-retry"
+                type="file"
+                accept={PROOF_ACCEPT}
+                className="mq-input"
+                onChange={(e) => onProofFileChange(e.target.files?.[0] ?? null)}
+              />
+              {proofPreviewUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={proofPreviewUrl}
+                  alt={t("orders.payment.proofAlt")}
+                  className="max-h-40 w-auto rounded border border-mq-border object-contain bg-white"
+                />
+              ) : null}
+              <button
+                type="button"
+                className="mq-btn mq-btn-primary w-full"
+                disabled={!proofFile || proofRetrying}
+                onClick={async () => {
+                  const err = validateProofFile(proofFile);
+                  if (err || !proofFile) {
+                    setProofFieldError(err);
+                    return;
+                  }
+                  setProofRetrying(true);
+                  try {
+                    await orderApi.uploadPaymentProof(placed.id, proofFile);
+                    setPlaced({
+                      ...placed,
+                      proofUploaded: true,
+                      proofError: null,
+                    });
+                    setProofFile(null);
+                    toast.success(t("toast.paymentProofUploaded"));
+                  } catch (e) {
+                    const msg = getErrorMessage(
+                      e,
+                      t("toast.paymentProofUploadFailed"),
+                      locale,
+                    );
+                    // Inline on the success screen — avoid a second error toast.
+                    setPlaced({ ...placed, proofError: msg });
+                  } finally {
+                    setProofRetrying(false);
+                  }
+                }}
+              >
+                {proofRetrying
+                  ? t("checkout.uploadingProof")
+                  : t("checkout.uploadProofNow")}
+              </button>
+            </div>
+          )}
+
           <div className="flex flex-wrap gap-3 justify-center">
             <Link href={`/orders/${placed.id}`} className="mq-btn mq-btn-primary">
               {t("checkout.viewOrder")}
@@ -232,6 +368,8 @@ export function CheckoutContent() {
   }
 
   const previewTotal = selectedSubtotal + (shippingFee ?? 0);
+  const fxCheckoutBlocked =
+    displayCurrency !== "TWD" && (isFallback || !isRatesReady || !fxAsOf.trim());
 
   const onSubmit = async (values: CheckoutFormValues) => {
     // Check for cross-border items before placing order
@@ -243,28 +381,74 @@ export function CheckoutContent() {
       return;
     }
 
+    const needsProof =
+      values.paymentMethod === "OFF_PLATFORM" || values.paymentMethod === "COD";
+    if (needsProof) {
+      const proofErr = validateProofFile(proofFile);
+      if (proofErr) {
+        setProofFieldError(proofErr);
+        return;
+      }
+    }
+
     setSubmitError(null);
     try {
       const phone = toE164(
         dialCountry,
         nationalPhone || values.shippingAddress.phone,
       );
+      const currency = displayCurrency || regionCurrency || "TWD";
+      const freshFx = await refetchRates();
       const order = await checkout.mutateAsync({
         items: checkoutSelectedItems(),
         shippingAddress: {
           ...values.shippingAddress,
           phone,
-          country: values.shippingAddress.country || "VN",
+          country: values.shippingAddress.country || shipCountryDefault,
         },
         paymentMethod: values.paymentMethod,
         note: values.note || undefined,
+        displayCurrency: currency,
+        fxAsOf: currency !== "TWD" ? freshFx.asOf || undefined : undefined,
       });
+
+      let proofUploaded = false;
+      let proofError: string | null = null;
+      if (needsProof && proofFile) {
+        try {
+          await orderApi.uploadPaymentProof(order.id, proofFile);
+          proofUploaded = true;
+        } catch (e) {
+          // Shown inline on the placed-order screen — do not also toast.
+          proofError = getErrorMessage(
+            e,
+            t("toast.paymentProofUploadFailed"),
+            locale,
+          );
+        }
+      }
+
       clearCart();
-      setPlaced({ id: order.id, code: order.code, displayName: order.displayName, total: order.total });
+      setProofFile(null);
+      setPlaced({
+        id: order.id,
+        code: order.code,
+        displayName: order.displayName,
+        total: order.total,
+        proofUploaded,
+        proofError,
+      });
+      // One toast for the whole checkout; proof success is already an on-page alert.
+      suppressNotificationToasts();
       toast.success(t("checkout.orderPlaced"), {
         description: order.displayName,
       });
     } catch (err) {
+      if (err instanceof ApiError && err.code === "FX_RATE_CHANGED") {
+        await refetchRates();
+        toast.warning(t("checkout.fxRateChanged"));
+        return;
+      }
       setSubmitError(err);
     }
   };
@@ -277,9 +461,7 @@ export function CheckoutContent() {
   };
 
   const handleCrossBorderSwitchRegion = (regionId: GateRegionId) => {
-    // Map region id to country code for shipping address
-    const countryMap: Record<GateRegionId, string> = { tw: "TW", my: "MY", vn: "VN", sg: "SG" };
-    const newCountry = countryMap[regionId] || "VN";
+    const newCountry = regionIdToCountryCode(regionId);
     setValue("shippingAddress.country", newCountry, { shouldValidate: true });
     setRegion(regionId);
     setCrossBorderOpen(false);
@@ -376,7 +558,7 @@ export function CheckoutContent() {
                     id="country"
                     {...register("shippingAddress.country", {
                       onChange: (e) => {
-                        const next = String(e.target.value || "VN").toUpperCase();
+                        const next = String(e.target.value || shipCountryDefault).toUpperCase();
                         // Soft-default dial to shipping country until user picks a dial manually.
                         if (!dialTouched) {
                           setDialCountry(next);
@@ -421,7 +603,7 @@ export function CheckoutContent() {
                 </div>
 
                 <AddressRegionFields
-                  countryCode={address?.country || "VN"}
+                  countryCode={address?.country || shipCountryDefault}
                   city={address?.city || ""}
                   district={address?.district || ""}
                   onCityChange={(next) =>
@@ -471,25 +653,88 @@ export function CheckoutContent() {
             </section>
 
             <section className="border border-mq-border bg-mq-surface p-6 rounded-[var(--mq-radius-lg)] shadow-[var(--mq-shadow-sm)]">
-              <h2 className="text-lg font-semibold text-mq-text mb-5">
+              <h2 className="text-lg font-semibold text-mq-text mb-2">
                 {t("checkout.paymentMethod")}
               </h2>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="sm:col-span-2">
-                  <label className="block text-sm mb-1.5" htmlFor="paymentMethod">
-                    {t("checkout.paymentMethod")}
+              <p className="text-sm text-mq-text-muted mb-5">{t("checkout.paySellerDirectly")}</p>
+              <input type="hidden" {...register("paymentMethod")} />
+              <div className="space-y-4">
+                {paymentProfile ? (
+                  <div className="rounded-[var(--mq-radius-sm)] border border-mq-border bg-mq-surface-subtle p-4 text-sm space-y-2">
+                    <p className="font-medium text-mq-text">
+                      {paymentProfile.shopName || t("checkout.sellerPaymentProfile")}
+                    </p>
+                    {paymentProfile.bankName || paymentProfile.accountNumber ? (
+                      <dl className="grid gap-1.5 text-mq-text-secondary">
+                        {paymentProfile.bankName ? (
+                          <div className="flex flex-wrap gap-x-2">
+                            <dt className="text-mq-text-muted">{t("checkout.bankName")}:</dt>
+                            <dd>{paymentProfile.bankName}</dd>
+                          </div>
+                        ) : null}
+                        {paymentProfile.accountNumber ? (
+                          <div className="flex flex-wrap gap-x-2">
+                            <dt className="text-mq-text-muted">{t("checkout.accountNumber")}:</dt>
+                            <dd className="font-mono">{paymentProfile.accountNumber}</dd>
+                          </div>
+                        ) : null}
+                        {paymentProfile.accountName ? (
+                          <div className="flex flex-wrap gap-x-2">
+                            <dt className="text-mq-text-muted">{t("checkout.accountName")}:</dt>
+                            <dd>{paymentProfile.accountName}</dd>
+                          </div>
+                        ) : null}
+                      </dl>
+                    ) : (
+                      <p className="text-mq-accent-orange text-xs">
+                        {t("checkout.bankInfoUnavailable")}
+                      </p>
+                    )}
+                    {paymentProfile.qrUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={paymentProfile.qrUrl}
+                        alt={t("checkout.paymentQr")}
+                        className="mt-2 max-h-40 w-auto rounded border border-mq-border bg-white object-contain"
+                      />
+                    ) : null}
+                  </div>
+                ) : checkoutShopId ? (
+                  <p className="text-xs text-mq-text-muted">{t("checkout.loadingPaymentProfile")}</p>
+                ) : null}
+
+                <div className="space-y-2 rounded-[var(--mq-radius-sm)] border border-dashed border-mq-border bg-mq-surface-subtle p-4">
+                  <label className="block text-sm font-medium" htmlFor="checkout-payment-proof">
+                    {t("checkout.paymentProofLabel")}{" "}
+                    <span className="text-mq-accent-orange">*</span>
                   </label>
-                  <select
-                    id="paymentMethod"
+                  <p className="text-xs text-mq-text-muted">{t("checkout.paymentProofHint")}</p>
+                  <input
+                    id="checkout-payment-proof"
+                    type="file"
+                    accept={PROOF_ACCEPT}
                     className="mq-input"
-                    {...register("paymentMethod")}
-                  >
-                    <option value="MOCK">{t("checkout.paymentMock")}</option>
-                    <option value="COD">{t("checkout.paymentCod")}</option>
-                  </select>
-                  <p className="text-xs text-mq-text-muted mt-2">{t("checkout.paymentHint")}</p>
+                    onChange={(e) => onProofFileChange(e.target.files?.[0] ?? null)}
+                  />
+                  {proofPreviewUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={proofPreviewUrl}
+                      alt={t("orders.payment.proofAlt")}
+                      className="max-h-40 w-auto rounded border border-mq-border object-contain bg-white"
+                    />
+                  ) : null}
+                  {proofFile ? (
+                    <p className="text-xs text-mq-text-secondary">
+                      {proofFile.name} · {(proofFile.size / 1024).toFixed(0)} KB
+                    </p>
+                  ) : null}
+                  {proofFieldError ? (
+                    <p className="text-xs text-mq-accent-orange">{proofFieldError}</p>
+                  ) : null}
                 </div>
-                <div className="sm:col-span-2">
+
+                <div>
                   <label className="block text-sm mb-1.5" htmlFor="note">
                     {t("checkout.note")}
                   </label>
@@ -531,10 +776,12 @@ export function CheckoutContent() {
                         >
                           {item.name}
                         </Link>
-                        <p className="text-mq-text-muted text-xs">{item.sku}</p>
+                        {item.sku ? (
+                          <p className="text-mq-text-muted text-xs">{item.sku}</p>
+                        ) : null}
                       </div>
                       <span className="shrink-0 tabular-nums">
-                        {formatPrice(item.unitPrice * item.quantity)}
+                        {formatDisplay(item.unitPrice * item.quantity)}
                       </span>
                     </div>
                     <QuantityStepper
@@ -550,7 +797,7 @@ export function CheckoutContent() {
             <div className="space-y-2 text-sm border-t border-mq-border pt-4">
               <div className="flex justify-between">
                 <span>{t("cart.subtotal")}</span>
-                <span>{formatPrice(selectedSubtotal)}</span>
+                <span>{formatDisplay(selectedSubtotal)}</span>
               </div>
               <div className="flex justify-between text-mq-text-muted text-xs">
                 <span>{t("cart.quantity")}</span>
@@ -565,18 +812,36 @@ export function CheckoutContent() {
                     ? quote.isPending
                       ? "…"
                       : t("checkout.shippingPending")
-                    : formatPrice(shippingFee)}
+                    : formatDisplay(shippingFee)}
                 </span>
               </div>
               <div className="flex justify-between font-medium text-base pt-2">
                 <span>{t("cart.total")}</span>
-                <span>{formatPrice(previewTotal)}</span>
+                <span>{formatDisplay(previewTotal)}</span>
               </div>
+              {displayCurrency !== "TWD" ? (
+                <p className="text-xs text-mq-text-muted mt-2">
+                  {t("checkout.displayCurrencyNote", {
+                    currency: displayCurrency,
+                    amount: formatMoney(previewTotal),
+                  })}
+                </p>
+              ) : null}
+              {fxCheckoutBlocked ? (
+                <div className="mq-alert mq-alert-warn text-xs mt-3">
+                  {t("checkout.fxUnavailable")}
+                </div>
+              ) : null}
             </div>
             <button
               type="submit"
               className="mq-btn mq-btn-primary w-full mt-6"
-              disabled={isSubmitting || checkout.isPending}
+              disabled={
+                isSubmitting ||
+                checkout.isPending ||
+                fxCheckoutBlocked ||
+                !proofFile
+              }
             >
               {isSubmitting || checkout.isPending
                 ? t("checkout.placing")

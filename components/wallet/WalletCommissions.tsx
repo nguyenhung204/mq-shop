@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
-import { formatMoney, formatPercent } from "@/lib/api/utils";
+import { formatMoney, formatPercent, formatPoints } from "@/lib/api/utils";
 import type { CommissionType } from "@/lib/api/mlm";
 import { useCommissions } from "@/lib/queries/wallet";
 import { AuthGuard } from "@/components/guards/AuthGuard";
@@ -48,6 +47,13 @@ function CommissionsPanel({ embedded = false }: { embedded?: boolean }) {
   const body = (
     <div className="space-y-5">
       <WalletBonusGuide />
+
+      <p className="text-sm text-mq-text-muted leading-relaxed">
+        {t("wallet.commissionsIntro")}
+      </p>
+      <p className="text-xs text-mq-text-muted -mt-3">
+        {t("wallet.commissionsPayoutNote")}
+      </p>
 
       <WalletRankProgress />
 
@@ -118,9 +124,12 @@ function CommissionsPanel({ embedded = false }: { embedded?: boolean }) {
               {t("wallet.commissionBase")}: {formatMoney(row.baseAmount)}
             </p>
           </div>
-          <span className="tabular-nums font-medium">
-            {formatMoney(row.payoutAmount)}
-          </span>
+          <div className="text-right shrink-0">
+            <p className="text-[11px] uppercase tracking-wide text-mq-text-muted">
+              {t("wallet.commissionPayout")}
+            </p>
+            <p className="tabular-nums font-medium">{formatPoints(row.payoutAmount)}</p>
+          </div>
         </div>
       ))}
 

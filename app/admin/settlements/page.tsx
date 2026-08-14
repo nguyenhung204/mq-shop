@@ -13,12 +13,14 @@ import { translateStatus } from "@/lib/i18n/status";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 
 const STATUSES: Array<SettlementStatus | ""> = [
   "",
   "PENDING_RECONCILE",
   "INCLUDED_IN_PAYOUT",
   "PAID_OUT",
+  "VOIDED",
 ];
 
 function statusBadgeClass(status: SettlementStatus): string {
@@ -29,6 +31,8 @@ function statusBadgeClass(status: SettlementStatus): string {
       return "mq-badge mq-badge-orange";
     case "PAID_OUT":
       return "mq-badge mq-badge-teal";
+    case "VOIDED":
+      return "mq-badge mq-badge-muted";
     default:
       return "mq-badge mq-badge-muted";
   }
@@ -41,7 +45,7 @@ function SettlementsInner() {
   const [page, setPage] = useState(1);
   const { data: shopsPage } = useAdminShops("APPROVED", 1, 100);
   const shops = shopsPage?.items ?? [];
-  const shopName = (id: string) => shops.find((s) => s.id === id)?.name ?? `${id.slice(0, 8)}…`;
+  const shopName = (id: string) => shops.find((s) => s.id === id)?.name ?? t("admin.common.shop");
 
   const { data, isLoading, isError, error } = useAdminSettlements({
     status: status || undefined,
@@ -66,6 +70,7 @@ function SettlementsInner() {
         }
       />
       <div className="space-y-4">
+        <LedgerTwdNote />
         <div className="flex flex-wrap gap-3 items-end">
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-mq-text-muted text-xs">{t("admin.common.filterStatus")}</span>
@@ -147,7 +152,7 @@ function SettlementsInner() {
             <div className="min-w-0">
               <Link href={`/orders/${s.orderId}`} className="hover:underline">
                 <span className="font-mono font-medium">
-                  {s.orderCode ?? s.orderId.slice(0, 8)}
+                  {s.orderCode ?? t("orders.detail.title")}
                 </span>
               </Link>
               <span className={`${statusBadgeClass(s.status)} ml-2`}>{translateStatus(t, "settlement", s.status)}</span>

@@ -68,7 +68,7 @@ function statusDot(depth: number): string {
 
 function UserNodeComponent({ data }: NodeProps) {
   const d = data as unknown as UserNodeData;
-  const displayName = d.fullName || d.email?.split("@")[0] || d.userId.slice(0, 8);
+  const displayName = d.fullName || d.email?.split("@")[0] || "—";
   const initials = getInitials(d.fullName, d.email);
 
   return (

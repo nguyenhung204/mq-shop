@@ -121,6 +121,10 @@ export function LanguageGate() {
             })}
           </div>
 
+          <p className="mt-6 text-center text-xs text-mq-text-muted max-w-md mx-auto">
+            {gt("gate.ledgerNote")}
+          </p>
+
           <button
             type="button"
             disabled={!picked}

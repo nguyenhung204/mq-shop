@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
+  adminFeePeriodApi,
   adminPayoutApi,
   financeConfigApi,
   financeReportApi,
@@ -51,6 +52,7 @@ export const financeKeys = {
       params.startDate ?? "",
       params.endDate ?? "",
       params.type ?? "ALL",
+      params.view ?? "",
       params.shopId ?? "",
       params.page ?? 1,
       params.pageSize ?? 20,
@@ -113,6 +115,8 @@ export function useCreateFinanceConfig() {
       void qc.invalidateQueries({ queryKey: financeKeys.all });
       toast.success(tt("toast.financeConfigSubmitted"));
     },
+    // Form catches mutateAsync and shows mq-alert.
+    onError: () => {},
   });
 }
 
@@ -241,5 +245,19 @@ export function useExportFinanceReport() {
       toast.success(tt("toast.financeExportReady", { count: String(res.rowCount) }));
     },
     onError: (e) => toast.error(financeErrorMessage(e, tt("toast.financeExportFailed"))),
+  });
+}
+
+export function useMarkFeePeriodCollected() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ shopId, yearMonth }: { shopId: string; yearMonth: string }) =>
+      adminFeePeriodApi.markCollected(shopId, yearMonth),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: financeKeys.all });
+      toast.success(tt("toast.feePeriodMarkedCollected"));
+    },
+    onError: (e) =>
+      toast.error(financeErrorMessage(e, tt("toast.feePeriodMarkFailed"))),
   });
 }

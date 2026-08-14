@@ -9,9 +9,11 @@ import {
   useApproveFinanceConfig,
   useCreateFinanceConfig,
   useFinanceConfigs,
+  useMarkFeePeriodCollected,
   useRejectFinanceConfig,
 } from "@/lib/queries/finance";
 import { AuthGuard } from "@/components/guards/AuthGuard";
+import { AdminFxRatesPanel } from "@/components/admin/AdminFxRatesPanel";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
@@ -19,6 +21,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
+import { useAdminShops } from "@/lib/queries/admin";
 import { getErrorMessage } from "@/lib/queries/utils";
 
 const STATUSES: Array<FinanceConfigStatus | ""> = [
@@ -86,11 +89,19 @@ function formatWhen(iso: string | null | undefined): string {
   }
 }
 
+function isYearMonth(value: string): boolean {
+  return /^\d{4}-(0[1-9]|1[0-2])$/.test(value.trim());
+}
+
 function FinanceConfigsInner() {
   const { t, locale } = useLanguage();
-  const { hasRole } = useAuth();
+  const { hasRole, hasAnyPermission } = useAuth();
   const canSubmit = hasRole("SUPER_ADMIN");
   const canReview = hasRole("ACCOUNTANT") || hasRole("SUPER_ADMIN");
+  const canMarkFeeCollected =
+    hasRole("ACCOUNTANT") || hasRole("ADMIN") || hasRole("SUPER_ADMIN");
+  const canEditFx =
+    hasRole("SUPER_ADMIN") || hasAnyPermission(["CONFIG_SYS"]);
 
   const [status, setStatus] = useState<FinanceConfigStatus | "">("PENDING_APPROVAL");
   const [page, setPage] = useState(1);
@@ -98,6 +109,14 @@ function FinanceConfigsInner() {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [formError, setFormError] = useState("");
   const [rejectTarget, setRejectTarget] = useState<FinanceConfig | null>(null);
+  const [feeShopId, setFeeShopId] = useState("");
+  const [feeYearMonth, setFeeYearMonth] = useState("");
+  const [feeError, setFeeError] = useState("");
+
+  const { data: shopsPage } = useAdminShops("APPROVED", 1, 100, {
+    enabled: canMarkFeeCollected,
+  });
+  const shops = shopsPage?.items ?? [];
 
   const { data: active, isLoading: activeLoading } = useActiveFinanceConfig();
   const { data, isLoading, isError, error } = useFinanceConfigs({
@@ -111,6 +130,7 @@ function FinanceConfigsInner() {
   const createConfig = useCreateFinanceConfig();
   const approveConfig = useApproveFinanceConfig();
   const rejectConfig = useRejectFinanceConfig();
+  const markFeeCollected = useMarkFeePeriodCollected();
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -129,6 +149,18 @@ function FinanceConfigsInner() {
     } catch (err) {
       setFormError(getErrorMessage(err, t("toast.financeConfigCreateFailed"), locale));
     }
+  };
+
+  const onMarkFeeCollected = async (e: FormEvent) => {
+    e.preventDefault();
+    setFeeError("");
+    const shopId = feeShopId.trim();
+    const yearMonth = feeYearMonth.trim();
+    if (!shopId || !isYearMonth(yearMonth)) {
+      setFeeError(t("admin.financeConfigs.periodMarkError"));
+      return;
+    }
+    await markFeeCollected.mutateAsync({ shopId, yearMonth });
   };
 
   return (
@@ -154,6 +186,66 @@ function FinanceConfigsInner() {
       />
 
       <div className="space-y-5">
+        {canEditFx ? <AdminFxRatesPanel /> : null}
+
+        {canMarkFeeCollected ? (
+          <form
+            className="mq-card p-5 space-y-3"
+            onSubmit={(e) => void onMarkFeeCollected(e)}
+          >
+            <div>
+              <h3 className="font-semibold text-mq-text">
+                {t("admin.financeConfigs.markFeeCollectedTitle")}
+              </h3>
+              <p className="text-sm text-mq-text-muted mt-1">
+                {t("admin.financeConfigs.markFeeCollectedHint")}
+              </p>
+            </div>
+            {feeError ? <div className="mq-alert mq-alert-error">{feeError}</div> : null}
+            <div className="grid sm:grid-cols-[1fr_10rem_auto] gap-3 items-end">
+              <label className="block text-sm">
+                <span className="text-xs text-mq-text-muted">
+                  {t("admin.common.shop")}
+                </span>
+                <select
+                  className="mq-input mt-1"
+                  value={feeShopId}
+                  onChange={(e) => setFeeShopId(e.target.value)}
+                  required
+                >
+                  <option value="">{t("admin.financeConfigs.shopIdPlaceholder")}</option>
+                  {shops.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block text-sm">
+                <span className="text-xs text-mq-text-muted">
+                  {t("admin.financeConfigs.yearMonth")}
+                </span>
+                <input
+                  className="mq-input mt-1"
+                  value={feeYearMonth}
+                  onChange={(e) => setFeeYearMonth(e.target.value)}
+                  placeholder="2026-07"
+                  required
+                />
+              </label>
+              <button
+                type="submit"
+                className="mq-btn mq-btn-primary"
+                disabled={markFeeCollected.isPending}
+              >
+                {markFeeCollected.isPending
+                  ? t("admin.common.working")
+                  : t("admin.financeConfigs.markFeeCollected")}
+              </button>
+            </div>
+          </form>
+        ) : null}
+
         {!activeLoading && (
           <div className="mq-card p-4 space-y-2">
             <p className="text-xs uppercase tracking-wide text-mq-text-muted">
@@ -321,9 +413,6 @@ function FinanceConfigsInner() {
                   <span className={statusBadgeClass(cfg.status)}>
                     {t(`admin.financeConfigs.status.${cfg.status}`)}
                   </span>
-                  <span className="font-mono text-xs text-mq-text-muted">
-                    {cfg.id.slice(0, 8)}…
-                  </span>
                 </div>
                 <p>
                   {t("admin.financeConfigs.platformFee")}:{" "}
@@ -410,7 +499,7 @@ function FinanceConfigsInner() {
 
 export default function AdminFinanceConfigsPage() {
   return (
-    <AuthGuard roles={["SUPER_ADMIN", "ACCOUNTANT"]} permissions={["CONFIG_FEE"]}>
+    <AuthGuard roles={["SUPER_ADMIN", "ACCOUNTANT", "ADMIN"]} permissions={["CONFIG_FEE"]}>
       <FinanceConfigsInner />
     </AuthGuard>
   );

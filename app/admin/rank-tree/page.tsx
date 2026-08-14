@@ -87,8 +87,8 @@ export default function AdminRankTreePage() {
       // Trong production: fetch từ API
       const mockSummary: UserSummary = {
         id: userId,
-        userName: userId.includes("root") ? "Seed Seller" : `User ${userId.slice(-3)}`,
-        email: `${userId.slice(0, 8)}@example.com`,
+        userName: userId.includes("root") ? "Seed Seller" : "User",
+        email: userId.includes("root") ? "seed@example.com" : "user@example.com",
         rank: extractRankFromId(userId),
         rankName: getRankNameFromRanks(extractRankFromId(userId), ranks),
         f1Count: 3,

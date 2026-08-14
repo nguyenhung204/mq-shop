@@ -181,7 +181,6 @@ export type ApiProduct = {
   price?: number;
   minPrice?: number;
   maxPrice?: number;
-  priceUsd?: string | number;
   /** Derived: sum(variant.availableStock). */
   stock?: number;
   /** @deprecated prefer variants[].sku */
@@ -277,6 +276,8 @@ export type ShopBankInfo = {
   bankName: string;
   accountNumber: string;
   accountName: string;
+  /** Optional payment QR image URL for buyer checkout. */
+  qrUrl?: string | null;
 };
 
 export type ApiNotification = {
@@ -327,11 +328,26 @@ export type NotificationType =
   | "ORDER_CANCELLED"
   | "ORDER_CREATED_BY_ADMIN"
   | "ORDER_CREATED_PAYMENT_NEEDED"
+  | "ORDER_PAYMENT_PROOF_UPLOADED"
+  | "ORDER_PAYMENT_CONFIRMED"
+  | "ORDER_PAYMENT_REJECTED"
+  | "ORDER_PAYMENT_ESCALATED"
   | "RMA_NEW"
   | "RMA_APPROVED"
   | "RMA_REJECTED"
   | "RMA_REFUND_COMPLETED"
   | "RMA_APPROVED_EXTERNAL_REFUND"
+  | "RMA_RETURN_SHIPPED"
+  | "RMA_RETURN_RECEIVED"
+  | "RMA_RETURN_REJECTED"
+  | "RMA_DISPUTED"
+  | "RMA_REFUND_PENDING"
+  | "RMA_REFUND_SENT"
+  | "RMA_GOODS_RETURN_PENDING"
+  | "RMA_GOODS_RETURN_SHIPPED"
+  | "RMA_GOODS_RETURN_ISSUE"
+  | "RMA_CLOSED"
+  | "RMA_ESCALATED"
   | "REVIEW_NEW"
   | "REVIEW_SELLER_REPLIED"
   | "REVIEW_HIDDEN"

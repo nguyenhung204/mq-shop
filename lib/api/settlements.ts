@@ -5,7 +5,8 @@ import { asArray } from "./utils";
 export type SettlementStatus =
   | "PENDING_RECONCILE"
   | "INCLUDED_IN_PAYOUT"
-  | "PAID_OUT";
+  | "PAID_OUT"
+  | "VOIDED";
 
 export type SettlementView = {
   id: string;

@@ -22,6 +22,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 
 const STATUSES: Array<PayoutStatus | ""> = ["", "PENDING", "COMPLETED", "REJECTED"];
 
@@ -87,7 +88,8 @@ function PayoutsInner() {
 
   const { data: shopsPage } = useAdminShops("APPROVED", 1, 100);
   const shops = shopsPage?.items ?? [];
-  const shopName = (id: string) => shops.find((s) => s.id === id)?.name ?? id.slice(0, 8);
+  const shopName = (id: string) =>
+    shops.find((s) => s.id === id)?.name ?? t("admin.common.shop");
 
   const { data: active } = useActiveFinanceConfig();
 
@@ -189,6 +191,8 @@ function PayoutsInner() {
         }
       />
 
+      <LedgerTwdNote className="mb-2" />
+
       <div className="space-y-5">
         <div className="mq-card p-4 space-y-2">
           <p className="text-xs uppercase tracking-wide text-mq-text-muted">
@@ -284,7 +288,7 @@ function PayoutsInner() {
                       className="flex flex-wrap justify-between gap-2 text-sm border-b border-mq-border/60 pb-2 last:border-0"
                     >
                       <span className="font-mono">
-                        {s.orderCode ?? s.orderId.slice(0, 8)}
+                        {s.orderCode ?? t("orders.detail.title")}
                       </span>
                       <span className="tabular-nums">{formatMoney(s.amount)}</span>
                     </li>
@@ -387,17 +391,15 @@ function PayoutsInner() {
                 <div className="flex flex-wrap items-center gap-2">
                   <Link
                     href={`/admin/payouts/${payout.id}`}
-                    className="font-mono font-medium hover:underline"
+                    className="font-medium hover:underline"
                   >
-                    {payout.id.slice(0, 8)}…
+                    {shopName(payout.shopId)}
                   </Link>
                   <span className={statusBadgeClass(payout.status)}>
                     {t(`admin.payouts.status.${payout.status}`)}
                   </span>
                 </div>
                 <p>
-                  {shopName(payout.shopId)}
-                  {" · "}
                   {formatWhen(payout.periodStart)} → {formatWhen(payout.periodEnd)}
                 </p>
                 <p className="tabular-nums">

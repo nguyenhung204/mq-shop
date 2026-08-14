@@ -4,6 +4,8 @@ import { useSellerMlmRankConfigs } from "@/lib/queries/wallet";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { formatPercent } from "@/lib/api/utils";
+import { usePointsDisplayFx } from "@/lib/hooks/usePointsDisplayFx";
+import { mlmRankLabel } from "@/lib/i18n/mlm-rank";
 
 type Pillar = {
   type: "REFERRAL" | "TEAM" | "LOYALTY" | "GLOBAL";
@@ -30,14 +32,15 @@ const PILLARS: Pillar[] = [
   {
     type: "GLOBAL",
     bodyKey: "wallet.bonusGuide.globalBody",
-    timingKey: "wallet.bonusGuide.timingMonthEnd",
+    timingKey: "wallet.bonusGuide.timingQuarterEnd",
   },
 ];
 
 export function WalletBonusGuide({ className = "" }: { className?: string }) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { hasRole } = useAuth();
   const { data: ranks } = useSellerMlmRankConfigs({ enabled: hasRole("SELLER") });
+  const { onePointDisplay, formatRegion } = usePointsDisplayFx();
 
   // Only show to SELLER
   if (!hasRole("SELLER")) return null;
@@ -45,17 +48,42 @@ export function WalletBonusGuide({ className = "" }: { className?: string }) {
   const activeRanks = (ranks ?? []).filter((r) => r.isActive);
   const globalTiers = activeRanks.filter((r) => r.globalFundTier != null);
 
+  const rankName = (
+    rank: number,
+    fallback?: string,
+    nameI18n?: Record<string, string>,
+  ) => mlmRankLabel(t, rank, fallback, { nameI18n, locale });
+
   return (
     <section
       className={`rounded-[var(--mq-radius-md)] border border-mq-border bg-mq-surface p-4 md:p-6 space-y-5 ${className}`}
     >
-      <div>
+      <div className="space-y-2">
         <h3 className="text-base md:text-lg font-semibold text-mq-text">
           {t("wallet.bonusGuide.title")}
         </h3>
-        <p className="text-sm text-mq-text-muted mt-1.5 leading-relaxed">
+        <p className="text-sm text-mq-text-muted leading-relaxed">
           {t("wallet.bonusGuide.intro")}
         </p>
+        <div className="rounded-md border border-mq-accent-orange/30 bg-mq-accent-orange/5 px-3 py-2.5 text-sm space-y-2">
+          <p className="font-medium text-mq-text">{t("wallet.bonusGuide.policyTitle")}</p>
+          <p className="text-mq-text-secondary leading-relaxed">
+            {t("wallet.bonusGuide.policyEligible")}
+          </p>
+          <p className="text-mq-text-secondary leading-relaxed">
+            {t("wallet.bonusGuide.policyPeriod")}
+          </p>
+        </div>
+        <div className="rounded-md border border-mq-border/70 bg-mq-surface-subtle px-3 py-2.5 text-sm space-y-1">
+          <p className="text-mq-text-secondary">{t("wallet.bonusGuide.pointsFlow")}</p>
+          {onePointDisplay != null ? (
+            <p className="text-xs text-mq-text-muted">
+              {t("wallet.bonusGuide.pointsRateToday", {
+                amount: formatRegion(onePointDisplay) ?? "",
+              })}
+            </p>
+          ) : null}
+        </div>
       </div>
 
       <div className="grid gap-4">
@@ -88,7 +116,8 @@ export function WalletBonusGuide({ className = "" }: { className?: string }) {
                       className="flex items-center justify-between gap-2 rounded-md bg-mq-surface px-2.5 py-2"
                     >
                       <span>
-                        {r.name} <span className="text-mq-text-muted">(R{r.rank})</span>
+                        {rankName(r.rank, r.name, r.nameI18n)}{" "}
+                        <span className="text-mq-text-muted">(R{r.rank})</span>
                       </span>
                       <span className="tabular-nums font-semibold text-mq-text">
                         {formatPercent(r.referralPercent)}
@@ -116,7 +145,8 @@ export function WalletBonusGuide({ className = "" }: { className?: string }) {
                         className="flex items-center justify-between gap-2 rounded-md bg-mq-surface px-2.5 py-2"
                       >
                         <span>
-                          {r.name} <span className="text-mq-text-muted">(R{r.rank})</span>
+                          {rankName(r.rank, r.name, r.nameI18n)}{" "}
+                          <span className="text-mq-text-muted">(R{r.rank})</span>
                         </span>
                         <span className="tabular-nums font-semibold text-mq-text">
                           {formatPercent(r.teamPercent)}
@@ -136,14 +166,22 @@ export function WalletBonusGuide({ className = "" }: { className?: string }) {
                   {t("wallet.bonusGuide.globalTiersTitle")}
                 </p>
                 <ul className="flex flex-wrap gap-2">
-                  {globalTiers.map((r) => (
-                    <li
-                      key={r.rank}
-                      className="rounded-full border border-mq-border bg-mq-surface px-3 py-1.5 text-sm text-mq-text"
-                    >
-                      ≥ R{r.globalFundTier} · {r.name}
-                    </li>
-                  ))}
+                  {globalTiers.map((r) => {
+                    const tierKey = `wallet.bonusGuide.globalTiers.${r.globalFundTier}`;
+                    const tierLabel = t(tierKey);
+                    const label =
+                      tierLabel !== tierKey
+                        ? tierLabel
+                        : `≥ R${r.globalFundTier} · ${rankName(r.rank, r.name, r.nameI18n)}`;
+                    return (
+                      <li
+                        key={r.rank}
+                        className="rounded-full border border-mq-border bg-mq-surface px-3 py-1.5 text-sm text-mq-text"
+                      >
+                        {label}
+                      </li>
+                    );
+                  })}
                 </ul>
                 <p className="text-sm text-mq-text-muted leading-relaxed">
                   {t("wallet.bonusGuide.globalNote")}

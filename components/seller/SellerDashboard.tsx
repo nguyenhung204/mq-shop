@@ -5,6 +5,7 @@ import {
   ArrowDownRight,
   ArrowUpRight,
   Boxes,
+  CheckCircle,
   Package,
   RotateCcw,
   ShoppingBag,
@@ -17,6 +18,7 @@ import type { DashboardSummary, LowStockItem } from "@/lib/api/seller-dashboard"
 import { useSellerDashboard } from "@/lib/queries/seller";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 import { getErrorMessage } from "@/lib/queries/utils";
 
 // ---------------------------------------------------------------------------
@@ -26,8 +28,8 @@ import { getErrorMessage } from "@/lib/queries/utils";
 function DashboardSkeleton() {
   return (
     <div className="space-y-4" aria-busy="true" aria-label="Loading dashboard">
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        {Array.from({ length: 5 }).map((_, i) => (
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        {Array.from({ length: 6 }).map((_, i) => (
           <Skeleton key={i} className="h-20 rounded-xl" />
         ))}
       </div>
@@ -95,11 +97,21 @@ function SummarySection({
   t: (key: string, vars?: Record<string, string>) => string;
 }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <KpiCard
+        label={t("seller.dashboard.revenueIncurredThisMonth")}
+        value={formatMoneyLocale(summary.revenueIncurredThisMonth ?? "0", locale)}
+        icon={Truck}
+        sub={
+          <span className="text-xs text-mq-text-muted">
+            {t("seller.dashboard.revenueIncurredHint")}
+          </span>
+        }
+      />
       <KpiCard
         label={t("seller.dashboard.revenueThisMonth")}
         value={formatMoneyLocale(summary.revenueThisMonth, locale)}
-        icon={Truck}
+        icon={CheckCircle}
         sub={
           <GrowthBadge
             percent={summary.revenueGrowthPercent}
@@ -271,9 +283,12 @@ export function SellerDashboard() {
   return (
     <section className="space-y-4">
       <div className="flex items-baseline justify-between">
-        <h2 className="text-sm font-semibold text-mq-text">
-          {t("seller.dashboard.title")}
-        </h2>
+        <div>
+          <h2 className="text-sm font-semibold text-mq-text">
+            {t("seller.dashboard.title")}
+          </h2>
+          <LedgerTwdNote className="mt-1" />
+        </div>
         {generatedAt && (
           <p className="text-[11px] text-mq-text-muted">
             {t("seller.dashboard.updatedAt", {

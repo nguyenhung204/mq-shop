@@ -3,7 +3,18 @@ import { api } from "./client";
 export type DashboardCountTile = {
   count: number;
   href?: string;
-  amountUsd?: string;
+  amount?: string;
+};
+
+export type AdminDashboardSnapshot = {
+  ordersToday?: number;
+  ordersThisWeek?: number;
+  gmvIncurredThisMonth?: string;
+  gmvPlatformTotal?: string;
+  gmvDeliveredThisMonth?: string;
+  activeShops?: number;
+  activeProducts?: number;
+  suspendedShops?: number;
 };
 
 export type AdminDashboardQueues = {
@@ -20,16 +31,6 @@ export type AdminDashboardQueues = {
   staffPending?: DashboardCountTile;
   financeConfigsPending?: DashboardCountTile;
 };
-
-export type AdminDashboardSnapshot = {
-  ordersToday?: number;
-  ordersThisWeek?: number;
-  gmvDeliveredThisMonthUsd?: string;
-  activeShops?: number;
-  activeProducts?: number;
-  suspendedShops?: number;
-};
-
 export type AdminDashboardPayload = {
   queues?: AdminDashboardQueues;
   snapshot?: Partial<AdminDashboardSnapshot>;
@@ -42,7 +43,7 @@ const QUEUE_HREF_FALLBACKS: Record<keyof AdminDashboardQueues, string> = {
   shopsPending: "/admin/shops?status=PENDING",
   productsPending: "/admin/products?status=PENDING",
   ordersPending: "/admin/orders",
-  rmaPending: "/admin/rma?status=PENDING",
+  rmaPending: "/admin/rma?status=REQUESTED",
   settlementsPendingReconcile: "/admin/settlements?status=PENDING_RECONCILE",
   sellerPayoutsPending: "/admin/payouts?status=PENDING",
   walletPayoutsPending: "/admin/wallet/payouts?status=PENDING",
@@ -78,9 +79,11 @@ export const ADMIN_DASHBOARD_QUEUE_ORDER: (keyof AdminDashboardQueues)[] = [
 ];
 
 export const ADMIN_DASHBOARD_SNAPSHOT_ORDER: (keyof AdminDashboardSnapshot)[] = [
+  "gmvIncurredThisMonth",
+  "gmvDeliveredThisMonth",
+  "gmvPlatformTotal",
   "ordersToday",
   "ordersThisWeek",
-  "gmvDeliveredThisMonthUsd",
   "activeShops",
   "activeProducts",
   "suspendedShops",
@@ -182,8 +185,11 @@ export interface CronJobInfo {
   id: string;
   name: string;
   description: string;
+  category?: "orders" | "commission" | "mlm" | "marketing" | "compliance" | string;
   cronExpression: string;
   schedule: string;
+  timezone?: string;
+  timezoneLabel?: string;
   nextRunAt: string;
   nextRunInMs: number;
 }
@@ -191,6 +197,7 @@ export interface CronJobInfo {
 export interface CronJobsPayload {
   jobs: CronJobInfo[];
   serverTime: string;
+  count?: number;
 }
 
 export const adminDashboardApi = {

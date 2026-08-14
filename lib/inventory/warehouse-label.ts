@@ -15,6 +15,6 @@ export function formatWarehouseLabel(
     const country = warehouse.countryCode ? `[${warehouse.countryCode}] ` : "";
     return `${country}${warehouse.code}`;
   }
-  if (fallbackId) return `${fallbackId.slice(0, 8)}…`;
+  if (fallbackId) return "—";
   return "—";
 }

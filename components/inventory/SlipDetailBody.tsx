@@ -56,7 +56,7 @@ export function SlipDetailBody({
       <p className="text-mq-text-muted">
         Created {formatWhen(slip.createdAt)}
         {slip.processedAt ? ` · Processed ${formatWhen(slip.processedAt)}` : ""}
-        {slip.createdByUserId ? ` · By ${slip.createdByUserId.slice(0, 8)}…` : ""}
+        {slip.createdByName ? ` · ${slip.createdByName}` : ""}
       </p>
     </div>
   );

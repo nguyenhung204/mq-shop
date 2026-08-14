@@ -105,6 +105,10 @@ export type UserPayoutRequest = {
   id: string;
   userId: string;
   amount: string;
+  /** Wallet currency — new rows use PTS. */
+  currency?: string;
+  /** Snapshot fiat TWD equivalent at withdraw time (PTS → TWD via FX). */
+  fiatAmount?: string | null;
   status: PayoutRequestStatus;
   bankInfo?: BankInfo | null;
   rejectionReason?: string | null;

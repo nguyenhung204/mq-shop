@@ -561,9 +561,6 @@ function AccountInner() {
                             key={r.id}
                             className="rounded-lg border border-mq-border bg-mq-surface-subtle px-3 py-2 text-sm flex flex-wrap gap-2 justify-between"
                           >
-                            <span className="font-mono text-xs text-mq-text-muted">
-                              {r.id.slice(0, 8)}…
-                            </span>
                             <span className="mq-badge mq-badge-muted">{translateStatus(t, "dsar", r.status)}</span>
                             <span className="text-xs text-mq-text-muted w-full sm:w-auto">
                               {r.createdAt ? new Date(r.createdAt).toLocaleString() : "—"}

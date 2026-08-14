@@ -4,7 +4,7 @@ import { FormEvent, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { adminApi } from "@/lib/api";
 import type { AuthUser } from "@/lib/api/types";
-import { parsePage } from "@/lib/api/utils";
+import { formatPoints, parsePage } from "@/lib/api/utils";
 import { useAdjustWalletBalance } from "@/lib/queries/wallet";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
@@ -13,6 +13,7 @@ import {
   SearchableSelect,
   type SearchableSelectOption,
 } from "@/components/ui/SearchableSelect";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 
 function userLabel(u: AuthUser): string {
   const name = u.fullName?.trim();
@@ -77,8 +78,8 @@ function WalletAdjustInner() {
       });
       setOkMsg(
         t("admin.walletAdjust.success", {
-          amount: String(n),
-          email: selected?.email ?? userId.slice(0, 8),
+          amount: formatPoints(n),
+          email: selected?.email ?? "—",
         }),
       );
       setAmount("");
@@ -94,6 +95,8 @@ function WalletAdjustInner() {
         title={t("admin.walletAdjust.title")}
         description={t("admin.walletAdjust.description")}
       />
+
+      <LedgerTwdNote className="mb-2" />
 
       <div className="space-y-4 max-w-lg">
         <p className="text-sm text-mq-text-muted">{t("admin.walletAdjust.hint")}</p>
@@ -126,9 +129,6 @@ function WalletAdjustInner() {
               {selected.fullName ? (
                 <p className="truncate text-mq-text-muted">{selected.email}</p>
               ) : null}
-              <p className="truncate font-mono text-mq-text-muted" title={selected.id}>
-                {selected.id}
-              </p>
             </div>
           ) : null}
           <label className="block text-sm">

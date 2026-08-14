@@ -58,19 +58,19 @@ export const NOTIFICATION_TYPE_COPY: Record<
     },
     SHOP_BANK_INFO_SETUP: {
       title: "Set up your bank account",
-      body: "Your shop was approved. Please add bank info to receive payouts.",
+      body: "Your shop was approved. Please add bank info so buyers can transfer payment off-platform.",
     },
     SHOP_BANK_INFO_REMINDER: {
-      title: "Bank info required for payouts",
-      body: "An order was delivered but your shop has no bank info. Update now to receive payouts.",
+      title: "Bank info required for buyer transfers",
+      body: "An order was delivered but your shop has no bank info. Update now so buyers can pay you off-platform.",
     },
     SELLER_PAYOUT_COMPLETED: {
-      title: "Payout completed",
-      body: "Your payout of {amount} has been credited to your wallet.",
+      title: "Shop reconciliation recorded",
+      body: "Shop reconciliation {amount} was marked complete in accounting. No wallet credit was created.",
     },
     SELLER_PAYOUT_REJECTED: {
-      title: "Payout rejected",
-      body: "Your payout of {amount} was rejected.{reason}",
+      title: "Shop reconciliation rejected",
+      body: "Your shop reconciliation of {amount} was rejected.{reason}",
     },
     PRODUCT_APPROVED: {
       title: "Product approved",
@@ -104,13 +104,29 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "Payment needed",
       body: "Order {orderId} was created. Complete payment to continue.",
     },
+    ORDER_PAYMENT_PROOF_UPLOADED: {
+      title: "Payment proof uploaded",
+      body: "Order {orderId} has new payment proof ready for review.",
+    },
+    ORDER_PAYMENT_CONFIRMED: {
+      title: "Payment confirmed",
+      body: "Payment for order {orderId} was confirmed.",
+    },
+    ORDER_PAYMENT_REJECTED: {
+      title: "Payment proof rejected",
+      body: "Payment proof for order {orderId} was rejected.{reason}",
+    },
+    ORDER_PAYMENT_ESCALATED: {
+      title: "Payment review escalated",
+      body: "Order {orderId} payment proof needs platform review.",
+    },
     RMA_NEW: {
       title: "New return request",
-      body: "Return request {rmaId} needs review.",
+      body: "Return request {rmaId} needs seller review.",
     },
     RMA_APPROVED: {
       title: "Return approved",
-      body: "Return {rmaId} was approved.",
+      body: "Return {rmaId} was approved — ship the items back.",
     },
     RMA_REJECTED: {
       title: "Return rejected",
@@ -122,7 +138,51 @@ export const NOTIFICATION_TYPE_COPY: Record<
     },
     RMA_APPROVED_EXTERNAL_REFUND: {
       title: "Refund approved",
-      body: "Return {rmaId} approved — payout handled outside the system.",
+      body: "Return {rmaId} approved — payout handled outside the app.",
+    },
+    RMA_RETURN_SHIPPED: {
+      title: "Return shipped",
+      body: "Buyer shipped return {rmaId}. Confirm when you receive it.",
+    },
+    RMA_RETURN_RECEIVED: {
+      title: "Return received",
+      body: "Seller received return {rmaId}. Inspection is in progress.",
+    },
+    RMA_RETURN_REJECTED: {
+      title: "Returned goods rejected",
+      body: "Seller rejected return {rmaId}. You can open a dispute.",
+    },
+    RMA_DISPUTED: {
+      title: "Return dispute opened",
+      body: "Dispute opened for return {rmaId}.",
+    },
+    RMA_REFUND_PENDING: {
+      title: "Refund pending",
+      body: "Return {rmaId} awaits an off-platform refund transfer.",
+    },
+    RMA_REFUND_SENT: {
+      title: "Refund sent",
+      body: "Seller marked refund sent for {rmaId}. Confirm when received.",
+    },
+    RMA_GOODS_RETURN_PENDING: {
+      title: "Goods will be returned",
+      body: "No refund for {rmaId}. Seller must ship your items back.",
+    },
+    RMA_GOODS_RETURN_SHIPPED: {
+      title: "Goods shipped back",
+      body: "Seller shipped items back for {rmaId}. Confirm when received.",
+    },
+    RMA_GOODS_RETURN_ISSUE: {
+      title: "Goods return issue",
+      body: "Buyer reported a problem receiving goods for {rmaId}. Check tracking / CS.",
+    },
+    RMA_CLOSED: {
+      title: "Return closed",
+      body: "Return {rmaId} closed — goods returned, no refund.",
+    },
+    RMA_ESCALATED: {
+      title: "Return overdue",
+      body: "Return {rmaId} missed an SLA step and needs attention.",
     },
     REVIEW_NEW: {
       title: "New product review",
@@ -328,19 +388,19 @@ export const NOTIFICATION_TYPE_COPY: Record<
     },
     SHOP_BANK_INFO_SETUP: {
       title: "Thiết lập tài khoản ngân hàng",
-      body: "Shop đã được duyệt. Vui lòng thêm thông tin ngân hàng để nhận thanh toán.",
+      body: "Shop đã được duyệt. Vui lòng thêm STK để buyer chuyển khoản ngoài app.",
     },
     SHOP_BANK_INFO_REMINDER: {
-      title: "Cần cập nhật thông tin ngân hàng để nhận chi trả",
-      body: "Đơn hàng đã giao nhưng shop chưa có thông tin ngân hàng. Cập nhật ngay để nhận thanh toán.",
+      title: "Cần cập nhật STK để buyer chuyển khoản",
+      body: "Đơn hàng đã giao nhưng shop chưa có thông tin ngân hàng. Cập nhật ngay để buyer thanh toán ngoài app.",
     },
     SELLER_PAYOUT_COMPLETED: {
-      title: "Đã chi trả",
-      body: "Khoản chi trả {amount} đã được ghi có vào ví của bạn.",
+      title: "Đã ghi đối soát shop",
+      body: "Phiếu đối soát shop {amount} đã hoàn tất ở kế toán. Không ghi có vào ví.",
     },
     SELLER_PAYOUT_REJECTED: {
-      title: "Chi trả bị từ chối",
-      body: "Khoản chi trả {amount} đã bị từ chối.{reason}",
+      title: "Đối soát shop bị từ chối",
+      body: "Phiếu đối soát shop {amount} đã bị từ chối.{reason}",
     },
     PRODUCT_APPROVED: {
       title: "Sản phẩm đã duyệt",
@@ -374,13 +434,29 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "Cần thanh toán",
       body: "Đơn {orderId} đã tạo. Hoàn tất thanh toán để tiếp tục.",
     },
+    ORDER_PAYMENT_PROOF_UPLOADED: {
+      title: "Đã tải chứng từ thanh toán",
+      body: "Đơn {orderId} có chứng từ thanh toán mới cần duyệt.",
+    },
+    ORDER_PAYMENT_CONFIRMED: {
+      title: "Đã xác nhận thanh toán",
+      body: "Thanh toán cho đơn {orderId} đã được xác nhận.",
+    },
+    ORDER_PAYMENT_REJECTED: {
+      title: "Chứng từ thanh toán bị từ chối",
+      body: "Chứng từ thanh toán của đơn {orderId} bị từ chối.{reason}",
+    },
+    ORDER_PAYMENT_ESCALATED: {
+      title: "Thanh toán cần nền tảng duyệt",
+      body: "Chứng từ thanh toán của đơn {orderId} cần platform review.",
+    },
     RMA_NEW: {
       title: "Yêu cầu đổi trả mới",
-      body: "Yêu cầu {rmaId} cần duyệt.",
+      body: "Yêu cầu {rmaId} cần người bán duyệt.",
     },
     RMA_APPROVED: {
       title: "Đổi trả đã duyệt",
-      body: "Yêu cầu {rmaId} đã được duyệt.",
+      body: "Yêu cầu {rmaId} đã duyệt — hãy gửi hàng hoàn.",
     },
     RMA_REJECTED: {
       title: "Đổi trả bị từ chối",
@@ -392,7 +468,51 @@ export const NOTIFICATION_TYPE_COPY: Record<
     },
     RMA_APPROVED_EXTERNAL_REFUND: {
       title: "Đã duyệt hoàn",
-      body: "Yêu cầu {rmaId} đã duyệt — chi trả ngoài hệ thống.",
+      body: "Yêu cầu {rmaId} đã duyệt — hoàn tiền ngoài app.",
+    },
+    RMA_RETURN_SHIPPED: {
+      title: "Đã gửi hàng hoàn",
+      body: "Người mua đã gửi hoàn {rmaId}. Xác nhận khi nhận được.",
+    },
+    RMA_RETURN_RECEIVED: {
+      title: "Đã nhận hàng hoàn",
+      body: "Người bán đã nhận hoàn {rmaId}. Đang kiểm tra.",
+    },
+    RMA_RETURN_REJECTED: {
+      title: "Từ chối hàng hoàn",
+      body: "Người bán từ chối hàng hoàn {rmaId}. Bạn có thể mở khiếu nại.",
+    },
+    RMA_DISPUTED: {
+      title: "Khiếu nại đổi trả",
+      body: "Đã mở khiếu nại cho yêu cầu {rmaId}.",
+    },
+    RMA_REFUND_PENDING: {
+      title: "Chờ hoàn tiền",
+      body: "Yêu cầu {rmaId} chờ chuyển hoàn ngoài app.",
+    },
+    RMA_REFUND_SENT: {
+      title: "Đã chuyển hoàn",
+      body: "Người bán đánh dấu đã chuyển hoàn {rmaId}. Xác nhận khi nhận tiền.",
+    },
+    RMA_GOODS_RETURN_PENDING: {
+      title: "Hàng sẽ được trả lại",
+      body: "Không hoàn tiền cho {rmaId}. Người bán phải gửi lại hàng.",
+    },
+    RMA_GOODS_RETURN_SHIPPED: {
+      title: "Đã gửi hàng lại",
+      body: "Người bán đã gửi hàng lại cho {rmaId}. Xác nhận khi nhận được.",
+    },
+    RMA_GOODS_RETURN_ISSUE: {
+      title: "Lỗi trả hàng lại",
+      body: "Buyer báo chưa nhận / sai vận đơn cho {rmaId}. Kiểm tra mã / CS.",
+    },
+    RMA_CLOSED: {
+      title: "Đổi trả đã đóng",
+      body: "Đổi trả {rmaId} đã đóng — hàng đã trả lại, không hoàn tiền.",
+    },
+    RMA_ESCALATED: {
+      title: "Đổi trả quá hạn",
+      body: "Yêu cầu {rmaId} bỏ lỡ SLA và cần xử lý.",
     },
     REVIEW_NEW: {
       title: "Đánh giá mới",
@@ -598,19 +718,19 @@ export const NOTIFICATION_TYPE_COPY: Record<
     },
     SHOP_BANK_INFO_SETUP: {
       title: "請設定銀行帳戶",
-      body: "商店已核准。請新增銀行資料以接收撥款。",
+      body: "商店已核准。請新增銀行資料供買家站外轉帳。",
     },
     SHOP_BANK_INFO_REMINDER: {
-      title: "撥款需要銀行資料",
-      body: "訂單已送達但商店尚無銀行資料。請立即更新以接收撥款。",
+      title: "買家轉帳需要銀行資料",
+      body: "訂單已送達但商店尚無銀行資料。請立即更新供買家站外付款。",
     },
     SELLER_PAYOUT_COMPLETED: {
-      title: "已完成撥款",
-      body: "您的撥款 {amount} 已轉入您的銀行帳戶。",
+      title: "商店對帳已記錄",
+      body: "商店對帳 {amount} 已於會計完成標記，未入帳至錢包。",
     },
     SELLER_PAYOUT_REJECTED: {
-      title: "撥款被拒絕",
-      body: "您的撥款 {amount} 已被拒絕。{reason}",
+      title: "商店對帳被拒絕",
+      body: "您的商店對帳 {amount} 已被拒絕。{reason}",
     },
     PRODUCT_APPROVED: {
       title: "商品已核准",
@@ -644,13 +764,29 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "需要付款",
       body: "訂單 {orderId} 已建立，請完成付款。",
     },
+    ORDER_PAYMENT_PROOF_UPLOADED: {
+      title: "已上傳付款憑證",
+      body: "訂單 {orderId} 有新的付款憑證待審核。",
+    },
+    ORDER_PAYMENT_CONFIRMED: {
+      title: "付款已確認",
+      body: "訂單 {orderId} 的付款已確認。",
+    },
+    ORDER_PAYMENT_REJECTED: {
+      title: "付款憑證已拒絕",
+      body: "訂單 {orderId} 的付款憑證已被拒絕。{reason}",
+    },
+    ORDER_PAYMENT_ESCALATED: {
+      title: "付款審核已升級",
+      body: "訂單 {orderId} 的付款憑證需要平台審核。",
+    },
     RMA_NEW: {
       title: "新退貨申請",
-      body: "退貨申請 {rmaId} 待審核。",
+      body: "退貨申請 {rmaId} 待賣家審核。",
     },
     RMA_APPROVED: {
       title: "退貨已核准",
-      body: "退貨 {rmaId} 已核准。",
+      body: "退貨 {rmaId} 已核准 — 請寄回商品。",
     },
     RMA_REJECTED: {
       title: "退貨已拒絕",
@@ -662,7 +798,51 @@ export const NOTIFICATION_TYPE_COPY: Record<
     },
     RMA_APPROVED_EXTERNAL_REFUND: {
       title: "退款已核准",
-      body: "退貨 {rmaId} 已核准 — 線下退款。",
+      body: "退貨 {rmaId} 已核准 — 於 App 外退款。",
+    },
+    RMA_RETURN_SHIPPED: {
+      title: "退貨已寄出",
+      body: "買家已寄出退貨 {rmaId}，請確認收貨。",
+    },
+    RMA_RETURN_RECEIVED: {
+      title: "退貨已收",
+      body: "賣家已收到退貨 {rmaId}，驗貨中。",
+    },
+    RMA_RETURN_REJECTED: {
+      title: "退貨驗收拒絕",
+      body: "賣家拒絕退貨 {rmaId}，您可提出爭議。",
+    },
+    RMA_DISPUTED: {
+      title: "退貨爭議已開啟",
+      body: "退貨 {rmaId} 已開啟爭議。",
+    },
+    RMA_REFUND_PENDING: {
+      title: "待退款",
+      body: "退貨 {rmaId} 等待賣家於 App 外匯款。",
+    },
+    RMA_REFUND_SENT: {
+      title: "已匯退款",
+      body: "賣家已標記退貨 {rmaId} 已匯款，收到後請確認。",
+    },
+    RMA_GOODS_RETURN_PENDING: {
+      title: "商品將寄回",
+      body: "{rmaId} 不退款。賣家須將商品寄回。",
+    },
+    RMA_GOODS_RETURN_SHIPPED: {
+      title: "商品已寄回",
+      body: "賣家已將 {rmaId} 商品寄回。收到後請確認。",
+    },
+    RMA_GOODS_RETURN_ISSUE: {
+      title: "寄回問題",
+      body: "買家回報 {rmaId} 未收到／運單有誤。請檢查運單或客服。",
+    },
+    RMA_CLOSED: {
+      title: "退貨已結案",
+      body: "退貨 {rmaId} 已結案 — 商品已退回，不退款。",
+    },
+    RMA_ESCALATED: {
+      title: "退貨已逾期",
+      body: "退貨 {rmaId} 錯過 SLA，需要處理。",
     },
     REVIEW_NEW: {
       title: "新商品評價",

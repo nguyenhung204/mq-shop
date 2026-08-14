@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Check, Play, X } from "lucide-react";
 import type { PayoutRequestStatus } from "@/lib/api/wallet";
-import { formatMoney } from "@/lib/api/utils";
+import { formatMoney, formatPoints } from "@/lib/api/utils";
 import {
   useAdminWalletPayouts,
   useApproveWalletPayout,
@@ -20,6 +20,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 
 const STATUSES: Array<PayoutRequestStatus | ""> = [
   "",
@@ -87,6 +88,8 @@ function WalletPayoutsInner() {
         description={t("admin.walletPayouts.description")}
       />
 
+      <LedgerTwdNote className="mb-2" />
+
       <div className="space-y-4">
         <p className="text-sm text-mq-text-muted">{t("admin.walletPayouts.hint")}</p>
 
@@ -152,11 +155,15 @@ function WalletPayoutsInner() {
                 <span className={statusBadgeClass(row.status)}>
                   {t(`wallet.payoutStatus.${row.status}`)}
                 </span>
-                <span className="tabular-nums font-medium">{formatMoney(row.amount)}</span>
+                <span className="tabular-nums font-medium">{formatPoints(row.amount)}</span>
+                {row.fiatAmount ? (
+                  <span className="text-xs text-mq-text-muted">
+                    {t("wallet.fiatApprox", {
+                      amount: formatMoney(row.fiatAmount),
+                    })}
+                  </span>
+                ) : null}
               </div>
-              <p className="text-xs text-mq-text-muted font-mono truncate">
-                {row.id} · user {row.userId.slice(0, 8)}…
-              </p>
               <p className="text-xs text-mq-text-muted">{formatWhen(row.createdAt)}</p>
               {row.bankInfo ? (
                 <p className="text-xs text-mq-text-muted">

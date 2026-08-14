@@ -23,6 +23,9 @@ export {
   useAdminRmaDetail,
   useAdminRmaDecision,
   useAdminRmaMarkRefunded,
+  useAdminResolveDispute,
+  useAdminReopenDispute,
+  useAdminRmaForceAction,
   useAdminOrders,
   useAdminCancelOrder,
   useAdminCheckout,
@@ -357,8 +360,9 @@ export function useCreateStaff() {
     }) => adminStaffApi.create(body),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: adminKeys.staff() });
-      actionToastSuccess(tt("toast.staffCreated"));
+      // Page chooses the success copy (new user modal / pending / assigned).
     },
+    onError: () => {},
   });
 }
 
@@ -413,6 +417,7 @@ export function useUpdateStaffRoles() {
       void queryClient.invalidateQueries({ queryKey: adminKeys.staff() });
       actionToastSuccess(tt("toast.staffRolesUpdated"));
     },
+    onError: () => {},
   });
 }
 
@@ -498,8 +503,9 @@ export function useCreatePlatformStaff() {
       adminPlatformStaffApi.create(body),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: adminKeys.platformStaff() });
-      actionToastSuccess(tt("toast.platformStaffCreated"));
+      // Page chooses the success copy (password modal / pending notice).
     },
+    onError: () => {},
   });
 }
 
@@ -517,7 +523,7 @@ export function useUpdatePlatformStaffRoles() {
       void queryClient.invalidateQueries({ queryKey: adminKeys.platformStaff() });
       actionToastSuccess(tt("toast.platformStaffRolesUpdated"));
     },
-    onError: (e) => actionToastError(getErrorMessage(e)),
+    onError: () => {},
   });
 }
 

@@ -3,19 +3,30 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { OrderStatus } from "@/lib/api/orders";
-import { nextFulfillmentStatus } from "@/lib/api/orders";
+import {
+  canSellerReviewPayment,
+  nextFulfillmentStatus,
+} from "@/lib/api/orders";
 import { translateStatus } from "@/lib/i18n/status";
 import { formatMoney } from "@/lib/api/utils";
 import { useSellerOrders } from "@/lib/queries/seller";
-import { useUpdateOrderStatus } from "@/lib/queries/orders";
+import {
+  useConfirmPayment,
+  useRejectPayment,
+  useUpdateOrderStatus,
+} from "@/lib/queries/orders";
 import { AuthGuard } from "@/components/guards/AuthGuard";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
 import { OrderListSkeleton } from "@/components/ui/Skeleton";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 
 function SellerOrdersInner() {
   const { t } = useLanguage();
+  const { hasRole } = useAuth();
   const [status, setStatus] = useState<OrderStatus | "">("");
   const [page, setPage] = useState(1);
   const { data, isLoading, isError, error } = useSellerOrders({
@@ -24,11 +35,17 @@ function SellerOrdersInner() {
     pageSize: 20,
   });
   const updateStatus = useUpdateOrderStatus();
+  const confirmPayment = useConfirmPayment();
+  const rejectPayment = useRejectPayment();
+  const [rejectTarget, setRejectTarget] = useState<string | null>(null);
   const orders = data?.items ?? [];
   const meta = data?.meta;
+  const canReviewPaymentRole =
+    hasRole("SELLER") || hasRole("ADMIN") || hasRole("SUPER_ADMIN");
 
   return (
     <div className="space-y-4">
+      <LedgerTwdNote />
       <p className="text-sm text-mq-text-muted">
         {t("seller.ordersPage.help")}{" "}
         <Link href="/seller/inventory" className="underline">
@@ -74,6 +91,7 @@ function SellerOrdersInner() {
       ) : null}
       {orders.map((o) => {
         const next = nextFulfillmentStatus(o.status);
+        const canReviewPay = canReviewPaymentRole && canSellerReviewPayment(o);
         return (
           <div
             key={o.id}
@@ -82,12 +100,37 @@ function SellerOrdersInner() {
             <Link href={`/orders/${o.id}`} className="hover:underline min-w-0">
               <span className="font-medium">{o.displayName}</span>
               <span className="mq-badge mq-badge-cyan ml-2">{translateStatus(t, "order", o.status)}</span>
+              {canReviewPay ? (
+                <span className="mq-badge mq-badge-orange ml-2">
+                  {t("orders.payment.proofPending")}
+                </span>
+              ) : null}
               <span className="block text-xs text-mq-text-muted mt-1">
                 {new Date(o.createdAt).toLocaleString()}
               </span>
             </Link>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2">
               <span>{formatMoney(o.total)}</span>
+              {canReviewPay ? (
+                <>
+                  <button
+                    type="button"
+                    className="mq-btn mq-btn-primary text-xs"
+                    disabled={confirmPayment.isPending || rejectPayment.isPending}
+                    onClick={() => void confirmPayment.mutateAsync(o.id)}
+                  >
+                    {t("orders.payment.confirmBtn")}
+                  </button>
+                  <button
+                    type="button"
+                    className="mq-btn mq-btn-outline text-xs"
+                    disabled={confirmPayment.isPending || rejectPayment.isPending}
+                    onClick={() => setRejectTarget(o.id)}
+                  >
+                    {t("orders.payment.rejectBtn")}
+                  </button>
+                </>
+              ) : null}
               {next ? (
                 <button
                   type="button"
@@ -108,6 +151,21 @@ function SellerOrdersInner() {
         );
       })}
       <PaginationBar page={page} meta={meta} onPageChange={setPage} />
+      <AdminReasonModal
+        open={Boolean(rejectTarget)}
+        title={t("orders.payment.rejectTitle")}
+        description={t("orders.payment.rejectDesc")}
+        confirmLabel={t("orders.payment.rejectBtn")}
+        maxLength={500}
+        busy={rejectPayment.isPending}
+        onClose={() => setRejectTarget(null)}
+        onConfirm={(reason) => {
+          if (!rejectTarget) return;
+          void rejectPayment.mutateAsync({ orderId: rejectTarget, reason }).then(() => {
+            setRejectTarget(null);
+          });
+        }}
+      />
     </div>
   );
 }

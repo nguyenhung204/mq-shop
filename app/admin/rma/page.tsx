@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Banknote, Check, Eye, X } from "lucide-react";
+import { Check, Eye, Gavel, X } from "lucide-react";
 import type { RmaStatus } from "@/lib/api/orders";
 import {
   useAdminRma,
   useAdminRmaDecision,
-  useAdminRmaMarkRefunded,
+  useAdminResolveDispute,
 } from "@/lib/queries/orders";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
@@ -22,16 +22,24 @@ import { translateStatus } from "@/lib/i18n/status";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
 
+function isRequested(status: RmaStatus) {
+  return status === "REQUESTED" || status === "PENDING";
+}
+
+type FilterValue = RmaStatus | "ESCALATED" | "";
+
 function RmaInner() {
   const { t } = useLanguage();
-  const [status, setStatus] = useState<RmaStatus | "">("");
+  const [filter, setFilter] = useState<FilterValue>("REQUESTED");
   const [rejectId, setRejectId] = useState<string | null>(null);
-  const [refundId, setRefundId] = useState<string | null>(null);
-  const { data, isLoading, isError, error } = useAdminRma(status || undefined);
+  const [disputeCloseId, setDisputeCloseId] = useState<string | null>(null);
+  const escalatedOnly = filter === "ESCALATED";
+  const status = escalatedOnly || !filter ? undefined : filter;
+  const { data, isLoading, isError, error } = useAdminRma(status, escalatedOnly);
   const items = data?.items ?? [];
   const rmaDecision = useAdminRmaDecision();
-  const markRefunded = useAdminRmaMarkRefunded();
-  const busy = rmaDecision.isPending || markRefunded.isPending;
+  const resolveDispute = useAdminResolveDispute();
+  const busy = rmaDecision.isPending || resolveDispute.isPending;
 
   return (
     <>
@@ -41,14 +49,24 @@ function RmaInner() {
       />
       <div className="space-y-4">
         <select
-          className="mq-input max-w-[12rem]"
-          value={status}
+          className="mq-input max-w-[16rem]"
+          value={filter}
           aria-label={t("admin.common.filterStatus")}
-          onChange={(e) => setStatus(e.target.value as RmaStatus | "")}
+          onChange={(e) => setFilter(e.target.value as FilterValue)}
         >
           <option value="">{t("admin.common.all")}</option>
-          <option value="PENDING">{t("admin.rmaPage.pending")}</option>
-          <option value="APPROVED">{t("admin.rmaPage.approvedPayout")}</option>
+          <option value="ESCALATED">{t("admin.rmaPage.escalated")}</option>
+          <option value="REQUESTED">{translateStatus(t, "rma", "REQUESTED")}</option>
+          <option value="DISPUTED">{translateStatus(t, "rma", "DISPUTED")}</option>
+          <option value="APPROVED">{translateStatus(t, "rma", "APPROVED")}</option>
+          <option value="RETURN_SHIPPED">{translateStatus(t, "rma", "RETURN_SHIPPED")}</option>
+          <option value="RETURN_RECEIVED">{translateStatus(t, "rma", "RETURN_RECEIVED")}</option>
+          <option value="RETURN_REJECTED">{translateStatus(t, "rma", "RETURN_REJECTED")}</option>
+          <option value="REFUND_PENDING">{translateStatus(t, "rma", "REFUND_PENDING")}</option>
+          <option value="REFUND_SENT">{translateStatus(t, "rma", "REFUND_SENT")}</option>
+          <option value="GOODS_RETURN_PENDING">{translateStatus(t, "rma", "GOODS_RETURN_PENDING")}</option>
+          <option value="GOODS_RETURN_SHIPPED">{translateStatus(t, "rma", "GOODS_RETURN_SHIPPED")}</option>
+          <option value="COMPLETED">{translateStatus(t, "rma", "COMPLETED")}</option>
           <option value="REJECTED">{t("admin.common.rejected")}</option>
           <option value="CLOSED">{t("admin.rmaPage.closed")}</option>
         </select>
@@ -68,18 +86,20 @@ function RmaInner() {
                 href={`/admin/rma/${r.id}`}
                 className="font-medium hover:text-mq-gold transition-colors"
               >
-                {t("admin.rmaPage.order")} {r.orderName ?? r.orderId.slice(0, 8)}
+                {t("admin.rmaPage.order")} {r.orderName ?? t("orders.detail.title")}
               </Link>
-              <span className="mq-badge mq-badge-pink ml-2">{translateStatus(t, "rma", r.status)}</span>
-              <p className="text-xs text-mq-text-muted line-clamp-2 mt-1">{r.reason}</p>
-              {r.bankInfo ? (
-                <p className="text-xs text-mq-text-muted mt-1">
-                  {r.bankInfo.bankName} · {r.bankInfo.accountNumber}
-                </p>
+              <span className="mq-badge mq-badge-pink ml-2">
+                {translateStatus(t, "rma", r.status)}
+              </span>
+              {r.escalatedAt ? (
+                <span className="mq-badge mq-badge-orange ml-2">
+                  {t("admin.rmaPage.escalatedBadge")}
+                </span>
               ) : null}
-              {(r.evidenceUrls?.length ?? 0) > 0 ? (
+              <p className="text-xs text-mq-text-muted line-clamp-2 mt-1">{r.reason}</p>
+              {r.disputeReason ? (
                 <p className="text-xs text-mq-text-muted mt-1">
-                  {r.evidenceUrls.length} evidence image(s)
+                  {t("admin.rmaPage.dispute")}: {r.disputeReason}
                 </p>
               ) : null}
             </div>
@@ -89,7 +109,7 @@ function RmaInner() {
                 icon={Eye}
                 href={`/admin/rma/${r.id}`}
               />
-              {r.status === "PENDING" ? (
+              {isRequested(r.status) ? (
                 <>
                   <AdminIconButton
                     label={t("admin.common.approve")}
@@ -109,14 +129,28 @@ function RmaInner() {
                   />
                 </>
               ) : null}
-              {r.status === "APPROVED" ? (
-                <AdminIconButton
-                  label={t("admin.common.markRefunded")}
-                  icon={Banknote}
-                  tone="approve"
-                  disabled={busy}
-                  onClick={() => setRefundId(r.id)}
-                />
+              {r.status === "DISPUTED" ? (
+                <>
+                  <AdminIconButton
+                    label={t("admin.rmaPage.sideBuyer")}
+                    icon={Gavel}
+                    tone="approve"
+                    disabled={busy}
+                    onClick={() =>
+                      void resolveDispute.mutateAsync({
+                        id: r.id,
+                        decision: "REFUND_PENDING",
+                      })
+                    }
+                  />
+                  <AdminIconButton
+                    label={t("admin.rmaPage.upholdReject")}
+                    icon={X}
+                    tone="reject"
+                    disabled={busy}
+                    onClick={() => setDisputeCloseId(r.id)}
+                  />
+                </>
               ) : null}
             </AdminActions>
           </div>
@@ -146,21 +180,21 @@ function RmaInner() {
       />
 
       <AdminReasonModal
-        open={Boolean(refundId)}
-        title={t("admin.rmaPage.markRefundedTitle")}
-        description={t("admin.rmaPage.markRefundedDesc")}
-        confirmLabel={t("admin.common.markRefunded")}
-        required={false}
+        open={Boolean(disputeCloseId)}
+        title={t("admin.rmaPage.upholdRejectTitle")}
+        description={t("admin.rmaPage.upholdRejectDesc")}
+        confirmLabel={t("admin.rmaPage.upholdReject")}
         maxLength={500}
         busy={busy}
-        onClose={() => setRefundId(null)}
+        onClose={() => setDisputeCloseId(null)}
         onConfirm={async (note) => {
-          if (!refundId) return;
-          await markRefunded.mutateAsync({
-            id: refundId,
-            note: note.trim() || undefined,
+          if (!disputeCloseId) return;
+          await resolveDispute.mutateAsync({
+            id: disputeCloseId,
+            decision: "GOODS_RETURN_PENDING",
+            note,
           });
-          setRefundId(null);
+          setDisputeCloseId(null);
         }}
       />
     </>

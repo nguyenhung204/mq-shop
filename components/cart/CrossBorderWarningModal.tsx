@@ -2,7 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { AlertTriangle, ArrowRightLeft, Package, Truck } from "lucide-react";
-import { GATE_REGIONS, type GateRegionId } from "@/lib/i18n/regions";
+import {
+  type GateRegionId,
+  countryCodeToRegionId,
+  countryCodeLabel,
+} from "@/lib/i18n/regions";
 import { useRegion } from "@/components/providers/RegionProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import type { CartLine } from "@/lib/stores/cart-store";
@@ -82,21 +86,8 @@ type Props = {
   alternativeRegions: Map<string, string[]>;
 };
 
-function countryCodeToRegionId(code: string): GateRegionId | null {
-  const map: Record<string, GateRegionId> = {
-    TW: "tw",
-    MY: "my",
-    VN: "vn",
-    SG: "sg",
-  };
-  return map[code] ?? null;
-}
-
 function countryCodeToLabel(code: string): string {
-  const region = GATE_REGIONS.find(
-    (r) => r.id === countryCodeToRegionId(code),
-  );
-  return region?.localLabel ?? code;
+  return countryCodeLabel(code);
 }
 
 export function CrossBorderWarningModal({

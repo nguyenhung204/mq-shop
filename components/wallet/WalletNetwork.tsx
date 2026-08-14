@@ -172,7 +172,7 @@ function NetworkPanel({ embedded = false }: { embedded?: boolean }) {
                   >
                     <div className="min-w-0 space-y-1">
                       <p className="font-medium truncate">
-                        {n.fullName || n.email || n.userId.slice(0, 8)}
+                        {n.fullName || n.email || "—"}
                       </p>
                       {n.email ? (
                         <p className="text-xs text-mq-text-muted truncate">{n.email}</p>

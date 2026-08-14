@@ -28,7 +28,7 @@ export const shippingAddressSchema = z
 
 export const checkoutSchema = z.object({
   shippingAddress: shippingAddressSchema,
-  paymentMethod: z.enum(["COD", "MOCK"]),
+  paymentMethod: z.enum(["OFF_PLATFORM", "COD", "MOCK"]),
   note: z.string().max(500).optional(),
 });
 

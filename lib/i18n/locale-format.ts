@@ -31,3 +31,18 @@ export function formatDateTimeLocale(
     timeStyle: "short",
   }).format(date);
 }
+
+/** Settlement calendar day in GMT+8 (Asia/Taipei), YYYY-MM-DD. */
+export function formatSettlementDayGmt8(
+  iso: string | null | undefined,
+): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Taipei",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}

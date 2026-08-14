@@ -138,6 +138,8 @@ export type ListFinanceTransactionsParams = {
   startDate?: string;
   endDate?: string;
   type?: FinanceTransactionType;
+  /** Dual-role: buyer purchases vs shop sales. */
+  view?: "buyer" | "shop";
   shopId?: string;
   page?: number;
   pageSize?: number;
@@ -155,6 +157,12 @@ export type ExportFinanceReportResult = {
   fileUrl: string;
   format: FinanceExportFormat;
   rowCount: number;
+};
+
+export type MarkFeeCollectedResult = {
+  shopId: string;
+  yearMonth: string;
+  status?: string;
 };
 
 type ConfigListRes =
@@ -210,4 +218,12 @@ export const financeReportApi = {
     api.get<TxListRes>("/finance/transactions", { query, withMeta: true }),
   exportReport: (body: ExportFinanceReportBody) =>
     api.post<ExportFinanceReportResult>("/finance/reports/export", body),
+};
+
+export const adminFeePeriodApi = {
+  markCollected: (shopId: string, yearMonth: string) =>
+    api.post<MarkFeeCollectedResult>(
+      `/admin/finance/shops/${shopId}/fee-periods/${yearMonth}/mark-collected`,
+      {},
+    ),
 };

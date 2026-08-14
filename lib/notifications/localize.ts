@@ -21,6 +21,17 @@ const STATUS_DOMAIN_BY_TYPE: Record<string, string> = {
   RMA_REJECTED: "rma",
   RMA_REFUND_COMPLETED: "rma",
   RMA_APPROVED_EXTERNAL_REFUND: "rma",
+  RMA_RETURN_SHIPPED: "rma",
+  RMA_RETURN_RECEIVED: "rma",
+  RMA_RETURN_REJECTED: "rma",
+  RMA_DISPUTED: "rma",
+  RMA_REFUND_PENDING: "rma",
+  RMA_REFUND_SENT: "rma",
+  RMA_GOODS_RETURN_PENDING: "rma",
+  RMA_GOODS_RETURN_SHIPPED: "rma",
+  RMA_GOODS_RETURN_ISSUE: "rma",
+  RMA_CLOSED: "rma",
+  RMA_ESCALATED: "rma",
   SHOP_APPLICATION_NEW: "shop",
   SHOP_APPROVED: "shop",
   SHOP_REJECTED: "shop",
@@ -108,18 +119,10 @@ function buildVars(
     if (metaNames.userName) vars.userId = metaNames.userName;
   }
 
-  // For any remaining UUID-shaped values not covered by metaNames, shorten them.
-  for (const idKey of [
-    "orderId",
-    "shopId",
-    "productId",
-    "rmaId",
-    "payoutId",
-    "promotionId",
-  ] as const) {
-    const raw = vars[idKey];
-    if (raw && /^[0-9a-f]{8}-[0-9a-f]{4}-/.test(raw)) {
-      vars[idKey] = `${raw.slice(0, 8)}…`;
+  // Never surface raw UUIDs in notification copy.
+  for (const [key, raw] of Object.entries(vars)) {
+    if (raw && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(raw)) {
+      vars[key] = "—";
     }
   }
 

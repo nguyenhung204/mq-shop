@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { PayoutRequestStatus, UserPayoutRequest } from "@/lib/api/wallet";
-import { formatMoney } from "@/lib/api/utils";
+import { formatPoints } from "@/lib/api/utils";
+import { formatDisplayMoney, FX_BASE_CURRENCY } from "@/lib/points";
 
 export function walletPayoutStatusBadgeClass(status: PayoutRequestStatus): string {
   switch (status) {
@@ -36,19 +37,19 @@ type Labels = {
   gatewayRef?: string;
   createdAt?: string;
   updatedAt?: string;
-  userId?: string;
+  fiatLabel?: string;
+  /** Optional region approx line under bank TWD. */
+  regionApprox?: string | null;
 };
 
 /** Read-only payout fields for buyer/admin detail. */
 export function WalletPayoutDetailFields({
   payout,
   labels,
-  showUserId = false,
   actions,
 }: {
   payout: UserPayoutRequest;
   labels: Labels;
-  showUserId?: boolean;
   /** Rendered bottom-right inside the card (e.g. approve / reject). */
   actions?: ReactNode;
 }) {
@@ -56,8 +57,18 @@ export function WalletPayoutDetailFields({
     <div className="mq-card p-5 space-y-4 text-sm">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-1 min-w-0">
-          <p className="text-2xl tabular-nums font-medium">{formatMoney(payout.amount)}</p>
-          <p className="text-xs text-mq-text-muted font-mono break-all">{payout.id}</p>
+          <p className="text-2xl tabular-nums font-medium">{formatPoints(payout.amount)}</p>
+          {payout.fiatAmount ? (
+            <div className="text-sm text-mq-text-muted space-y-0.5">
+              <p>
+                {labels.fiatLabel ? `${labels.fiatLabel}: ` : null}
+                {formatDisplayMoney(payout.fiatAmount, FX_BASE_CURRENCY)}
+              </p>
+              {labels.regionApprox ? (
+                <p className="text-xs">{labels.regionApprox}</p>
+              ) : null}
+            </div>
+          ) : null}
         </div>
         <span className={walletPayoutStatusBadgeClass(payout.status)}>
           {labels.status(payout.status)}
@@ -65,12 +76,6 @@ export function WalletPayoutDetailFields({
       </div>
 
       <dl className="grid sm:grid-cols-2 gap-x-6 gap-y-3 border-t border-mq-border/60 pt-4">
-        {showUserId && labels.userId ? (
-          <div>
-            <dt className="text-xs text-mq-text-muted">{labels.userId}</dt>
-            <dd className="font-mono text-xs break-all mt-0.5">{payout.userId}</dd>
-          </div>
-        ) : null}
         {labels.createdAt ? (
           <div>
             <dt className="text-xs text-mq-text-muted">{labels.createdAt}</dt>

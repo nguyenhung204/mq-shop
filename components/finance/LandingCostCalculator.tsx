@@ -7,6 +7,7 @@ import { formatMoney } from "@/lib/api/utils";
 import { useCalculateLandingCost } from "@/lib/queries/finance";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 
 type LineForm = {
   key: string;
@@ -106,6 +107,7 @@ export function LandingCostCalculator() {
   return (
     <div className="space-y-5">
       <p className="text-sm text-mq-text-muted">{t("landingCost.intro")}</p>
+      <LedgerTwdNote />
 
       <form className="mq-card p-5 space-y-4" onSubmit={(e) => void onSubmit(e)}>
         {formError ? <div className="mq-alert mq-alert-error">{formError}</div> : null}

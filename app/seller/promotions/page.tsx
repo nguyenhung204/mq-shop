@@ -266,6 +266,9 @@ function PromotionsInner() {
             </button>
           </div>
           {formError && <div className="mq-alert mq-alert-error">{formError}</div>}
+          {(form.type === "FIXED" || form.type === "VOUCHER") && (
+            <p className="text-xs text-mq-text-muted">{t("seller.priceTwdHint")}</p>
+          )}
 
           <div className="grid sm:grid-cols-2 gap-3">
             <label className="space-y-1 text-sm sm:col-span-2">

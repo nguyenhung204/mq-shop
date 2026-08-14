@@ -5,7 +5,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { toast } from "sonner";
 import { tt } from "@/lib/i18n/tt";
-import { Product, formatPrice } from "@/lib/data/products";
+import { Product } from "@/lib/data/products";
 
 export type CartLine = {
   variantId: string;
@@ -62,7 +62,7 @@ function resolveLine(product: Product, quantity: number): CartLine | null {
     productId: product.id,
     shopId,
     shopName: product.shop?.name,
-    sku: variant?.sku || product.id.slice(0, 8),
+    sku: variant?.sku || "",
     name: product.name,
     unitPrice: variant?.price ?? product.price,
     originalPrice: product.originalPrice,
@@ -213,7 +213,7 @@ export function useCart() {
     shopId,
     shopIds,
     selectedShopIds,
-    formatSubtotal: () => formatPrice(subtotal),
+    formatSubtotal: () => String(subtotal),
     checkoutItems: () =>
       items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
     /** Returns only the selected lines mapped to checkout payload shape. */

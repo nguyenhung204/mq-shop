@@ -106,28 +106,50 @@ export function resolveNotificationRoute(
     case "ORDER_STATUS_UPDATED":
     case "ORDER_CANCELLED":
     case "ORDER_CREATED_BY_ADMIN":
-    case "ORDER_CREATED_PAYMENT_NEEDED": {
+    case "ORDER_CREATED_PAYMENT_NEEDED":
+    case "ORDER_PAYMENT_PROOF_UPLOADED":
+    case "ORDER_PAYMENT_CONFIRMED":
+    case "ORDER_PAYMENT_REJECTED":
+    case "ORDER_PAYMENT_ESCALATED": {
       const m = requireMeta(meta, ["orderId"]);
-      return m ? `/orders/${m.orderId}` : "/orders";
+      if (m) return `/orders/${m.orderId}`;
+      return seller && !buyerOnly ? "/seller/orders" : "/orders";
     }
 
     case "RMA_NEW": {
       const m = requireMeta(meta, ["rmaId"]);
       if (admin && m) return `/admin/rma/${m.rmaId}`;
+      if (seller && !buyerOnly) return "/seller/rma";
       const orderId = metaStr(meta, "orderId");
-      if (orderId) return `/orders/${orderId}/rma`;
+      if (orderId) return `/orders/${orderId}`;
       return admin ? "/admin/rma" : "/rma";
     }
 
     case "RMA_APPROVED":
     case "RMA_REJECTED":
     case "RMA_REFUND_COMPLETED":
-    case "RMA_APPROVED_EXTERNAL_REFUND": {
+    case "RMA_APPROVED_EXTERNAL_REFUND":
+    case "RMA_RETURN_SHIPPED":
+    case "RMA_RETURN_RECEIVED":
+    case "RMA_RETURN_REJECTED":
+    case "RMA_DISPUTED":
+    case "RMA_REFUND_PENDING":
+    case "RMA_REFUND_SENT":
+    case "RMA_GOODS_RETURN_PENDING":
+    case "RMA_GOODS_RETURN_SHIPPED":
+    case "RMA_GOODS_RETURN_ISSUE":
+    case "RMA_CLOSED":
+    case "RMA_ESCALATED": {
       const orderId = metaStr(meta, "orderId");
       const rmaId = metaStr(meta, "rmaId");
       if (admin && rmaId) return `/admin/rma/${rmaId}`;
-      if (orderId) return `/orders/${orderId}/rma`;
-      return admin ? "/admin/rma" : "/rma";
+      if (admin) return "/admin/rma";
+      if (seller && !buyerOnly) {
+        if (rmaId) return "/seller/rma";
+        return "/seller/rma";
+      }
+      if (orderId) return `/orders/${orderId}`;
+      return "/rma";
     }
 
     case "REVIEW_NEW":

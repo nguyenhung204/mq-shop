@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 import { SellerDashboard } from "@/components/seller/SellerDashboard";
 import { SellerRevenueChart } from "@/components/seller/SellerRevenueChart";
 import { SellerTopProducts } from "@/components/seller/SellerTopProducts";
@@ -43,6 +44,7 @@ export default function SellerPage() {
   return (
     <div className="space-y-6">
       <SellerDashboard />
+      <LedgerTwdNote />
       <SellerRevenueChart />
 
       <div className="grid lg:grid-cols-2 gap-4">

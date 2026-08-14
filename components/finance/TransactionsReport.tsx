@@ -17,6 +17,7 @@ import { translateTransactionStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 
 const TYPES: FinanceTransactionType[] = ["ALL", "ORDER", "PAYOUT"];
 const FORMATS: FinanceExportFormat[] = ["CSV", "XLSX"];
@@ -30,6 +31,16 @@ function monthBounds(): { start: string; end: string } {
     start: `${y}-${m}-01`,
     end: `${y}-${m}-${String(last).padStart(2, "0")}`,
   };
+}
+
+/** Buyer history defaults to last 12 months so older orders still appear. */
+function buyerDefaultBounds(): { start: string; end: string } {
+  const end = new Date();
+  const start = new Date(end);
+  start.setFullYear(start.getFullYear() - 1);
+  const fmt = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  return { start: fmt(start), end: fmt(end) };
 }
 
 function toPeriodStart(date: string): string {
@@ -60,6 +71,8 @@ type TransactionsReportProps = {
    * (Buyer has VIEW_TRANSACT but not EXPORT_REPORT).
    */
   buyerMode?: boolean;
+  /** Force BE inbox scope for dual-role users. */
+  view?: "buyer" | "shop";
   /** Link payout rows to admin payout detail. */
   payoutDetailHref?: (id: string) => string;
 };
@@ -67,6 +80,7 @@ type TransactionsReportProps = {
 export function TransactionsReport({
   showShopFilter = false,
   buyerMode = false,
+  view,
   payoutDetailHref,
 }: TransactionsReportProps) {
   const { t } = useLanguage();
@@ -82,11 +96,14 @@ export function TransactionsReport({
   const typeOptions: FinanceTransactionType[] = buyerMode
     ? ["ALL", "ORDER"]
     : TYPES;
-  const bounds = monthBounds();
+  const bounds = buyerMode ? buyerDefaultBounds() : monthBounds();
+  const scopeView = view ?? (buyerMode ? "buyer" : undefined);
 
   const [startDate, setStartDate] = useState(bounds.start);
   const [endDate, setEndDate] = useState(bounds.end);
-  const [type, setType] = useState<FinanceTransactionType>("ALL");
+  const [type, setType] = useState<FinanceTransactionType>(
+    buyerMode ? "ORDER" : "ALL",
+  );
   const [shopId, setShopId] = useState("");
   const [format, setFormat] = useState<FinanceExportFormat>("CSV");
   const [page, setPage] = useState(1);
@@ -100,7 +117,7 @@ export function TransactionsReport({
     const map = new Map(shops.map((s) => [s.id, s.name]));
     return (id: string | null) => {
       if (!id) return "—";
-      return map.get(id) ?? `${id.slice(0, 8)}…`;
+      return map.get(id) ?? "—";
     };
   }, [shops]);
 
@@ -112,6 +129,7 @@ export function TransactionsReport({
     startDate: startIso,
     endDate: endIso,
     type,
+    view: scopeView,
     shopId: showShopFilter && shopId ? shopId : undefined,
     page,
     pageSize: 20,
@@ -138,6 +156,7 @@ export function TransactionsReport({
 
   return (
     <div className="space-y-5">
+      <LedgerTwdNote />
       <p className="text-sm text-mq-text-muted">
         {t(buyerMode ? "transactions.introBuyer" : "transactions.intro")}
       </p>
@@ -263,21 +282,21 @@ export function TransactionsReport({
       ) : null}
 
       {items.map((row) => {
-        const refLabel = row.ref ?? row.id.slice(0, 8);
+        const refLabel = row.ref ?? (row.type === "ORDER" ? t("orders.detail.title") : t("admin.payouts.title"));
         const detail =
           row.type === "ORDER" ? (
-            <Link href={`/orders/${row.id}`} className="font-mono hover:underline">
+            <Link href={`/orders/${row.id}`} className="hover:underline">
               {refLabel}
             </Link>
           ) : payoutDetailHref ? (
             <Link
               href={payoutDetailHref(row.id)}
-              className="font-mono hover:underline"
+              className="hover:underline"
             >
               {refLabel}
             </Link>
           ) : (
-            <span className="font-mono">{refLabel}</span>
+            <span>{refLabel}</span>
           );
 
         return (

@@ -21,6 +21,7 @@ import type { ApiNotification, PageMeta, Role } from "@/lib/api/types";
 import { normalizeNotification } from "@/lib/notifications/normalize";
 import { localizeNotification } from "@/lib/notifications/localize";
 import { resolveNotificationRoute } from "@/lib/notifications/routes";
+import { shouldSuppressNotificationToast } from "@/lib/notifications/suppress-toast";
 import { adminWalletKeys, mlmKeys, walletKeys } from "@/lib/queries/wallet";
 import { financeKeys } from "@/lib/queries/finance";
 import { sellerKeys } from "@/lib/queries/seller";
@@ -107,11 +108,26 @@ const NOTIFY_INVALIDATION_MAP: Partial<Record<string, readonly (readonly unknown
   ORDER_CANCELLED: [orderKeys.all],
   ORDER_CREATED_BY_ADMIN: [orderKeys.all],
   ORDER_CREATED_PAYMENT_NEEDED: [orderKeys.all],
+  ORDER_PAYMENT_PROOF_UPLOADED: [orderKeys.all],
+  ORDER_PAYMENT_CONFIRMED: [orderKeys.all],
+  ORDER_PAYMENT_REJECTED: [orderKeys.all],
+  ORDER_PAYMENT_ESCALATED: [orderKeys.all],
   RMA_NEW: [orderKeys.all],
   RMA_APPROVED: [orderKeys.all],
   RMA_REJECTED: [orderKeys.all],
   RMA_REFUND_COMPLETED: [orderKeys.all],
   RMA_APPROVED_EXTERNAL_REFUND: [orderKeys.all],
+  RMA_RETURN_SHIPPED: [orderKeys.all],
+  RMA_RETURN_RECEIVED: [orderKeys.all],
+  RMA_RETURN_REJECTED: [orderKeys.all],
+  RMA_DISPUTED: [orderKeys.all],
+  RMA_REFUND_PENDING: [orderKeys.all],
+  RMA_REFUND_SENT: [orderKeys.all],
+  RMA_GOODS_RETURN_PENDING: [orderKeys.all],
+  RMA_GOODS_RETURN_SHIPPED: [orderKeys.all],
+  RMA_GOODS_RETURN_ISSUE: [orderKeys.all],
+  RMA_CLOSED: [orderKeys.all],
+  RMA_ESCALATED: [orderKeys.all],
   REVIEW_NEW: [reviewKeys.all],
   REVIEW_SELLER_REPLIED: [reviewKeys.all],
   REVIEW_HIDDEN: [reviewKeys.all],
@@ -124,9 +140,9 @@ const NOTIFY_INVALIDATION_MAP: Partial<Record<string, readonly (readonly unknown
   INVENTORY_TRANSFER_PENDING: [inventoryKeys.all],
   INVENTORY_TRANSFER_APPROVED: [inventoryKeys.all],
   INVENTORY_TRANSFER_RECEIVED: [inventoryKeys.all],
-  // SELLER_PAYOUT_* — seller's own settlement view + accountant's payout queue.
-  SELLER_PAYOUT_COMPLETED: [walletKeys.all, settlementKeys.all, financeKeys.all],
-  SELLER_PAYOUT_REJECTED: [walletKeys.all, settlementKeys.all, financeKeys.all],
+  // SELLER_PAYOUT_* — seller settlements + accountant payout queue; not wallet credit.
+  SELLER_PAYOUT_COMPLETED: [settlementKeys.all, financeKeys.all],
+  SELLER_PAYOUT_REJECTED: [settlementKeys.all, financeKeys.all],
   WALLET_PIN_UPDATED: [walletKeys.all],
   WALLET_TRANSFER_SENT: [walletKeys.all],
   WALLET_TRANSFER_RECEIVED: [walletKeys.all],
@@ -228,6 +244,12 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         for (const key of invalidateKeys) {
           void queryClient.invalidateQueries({ queryKey: key });
         }
+      }
+
+      // Skip toast when the actor already got a mutation success toast for the
+      // same action (avoids “random info toast then success” flicker).
+      if (shouldSuppressNotificationToast(incoming.type)) {
+        return;
       }
 
       const href = resolveNotificationRoute(incoming, {

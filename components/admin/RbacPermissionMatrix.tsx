@@ -530,9 +530,7 @@ function OverridesPanel({
                   <td className="p-2 text-xs text-mq-text-muted">
                     {scopeLabel(row.defaultScope)}
                   </td>
-                  <td className="p-2 font-mono text-[11px] text-mq-text-muted">
-                    {row.updatedByUserId.slice(0, 8)}…
-                  </td>
+                  <td className="p-2 text-xs text-mq-text-muted">—</td>
                   <td className="p-2 text-xs text-mq-text-muted whitespace-nowrap">
                     {formatWhen(row.updatedAt)}
                   </td>
