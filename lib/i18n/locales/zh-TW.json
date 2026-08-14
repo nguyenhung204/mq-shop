@@ -2095,6 +2095,11 @@
       "bankRequired": "銀行名稱、帳號與戶名為必填。",
       "bankRequiredHint": "買家下單後會匯款至此帳戶。",
       "qrUrlOptional": "付款 QR 網址（選填）",
+      "paymentQr": "付款 QR",
+      "noQr": "尚未上傳 QR",
+      "uploadQr": "上傳 QR",
+      "replaceQr": "更換 QR",
+      "qrHint": "JPEG / PNG / WebP / GIF · ≤5MB。結帳時顯示給買家。儲存為 WebP（不裁切）。",
       "saveBankInfo": "儲存銀行資料"
     },
     "productsPage": {
@@ -2617,6 +2622,8 @@
     "logoUploadFailed": "Logo 上傳失敗",
     "shopBannerUpdated": "已更新橫幅",
     "shopBannerUploadFailed": "橫幅上傳失敗",
+    "shopQrUpdated": "已更新付款 QR",
+    "shopQrUploadFailed": "付款 QR 上傳失敗",
     "invalidProductImage": "圖片類型無效。請使用 JPEG、PNG、WebP 或 GIF。",
     "productImageTooLarge": "每張圖片必須 ≤ 5MB。",
     "shopNotEligible": "商店必須已核准且未停權。",

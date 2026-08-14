@@ -2095,6 +2095,11 @@
       "bankRequired": "Bank name, account number, and account name are required.",
       "bankRequiredHint": "Buyers will transfer to this account after ordering.",
       "qrUrlOptional": "Payment QR URL (optional)",
+      "paymentQr": "Payment QR",
+      "noQr": "No QR yet",
+      "uploadQr": "Upload QR",
+      "replaceQr": "Replace QR",
+      "qrHint": "JPEG / PNG / WebP / GIF · ≤5MB. Shown to buyers at checkout. Stored as WebP (not cropped).",
       "saveBankInfo": "Save bank info"
     },
     "productsPage": {
@@ -2617,6 +2622,8 @@
     "logoUploadFailed": "Logo upload failed",
     "shopBannerUpdated": "Banner updated",
     "shopBannerUploadFailed": "Banner upload failed",
+    "shopQrUpdated": "Payment QR updated",
+    "shopQrUploadFailed": "Payment QR upload failed",
     "invalidProductImage": "Invalid image type. Use JPEG, PNG, WebP, or GIF.",
     "productImageTooLarge": "Each image must be ≤ 5MB.",
     "shopNotEligible": "Shop must be approved and not suspended.",

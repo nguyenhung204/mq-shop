@@ -366,6 +366,9 @@ export function useUpdateMyShopBankInfo() {
     mutationFn: shopApi.updateMyShopBankInfo,
     onSuccess: (shop) => {
       queryClient.setQueryData(sellerKeys.shop(), shop);
+      void queryClient.invalidateQueries({
+        queryKey: [...sellerKeys.all, "payment-profile"],
+      });
       toast.success(tt("toast.bankInfoSaved"));
     },
     onError: (e) => toast.error(getErrorMessage(e, tt("toast.bankInfoSaveFailed"))),
@@ -416,5 +419,20 @@ export function useUploadShopBanner() {
     },
     onError: (e) =>
       toast.error(shopMediaErrorMessage(e, tt("toast.shopBannerUploadFailed"))),
+  });
+}
+
+export function useUploadShopQr() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (file: File) => shopApi.uploadQr(file),
+    onSuccess: (shop: ApiShop) => {
+      queryClient.setQueryData(sellerKeys.shop(), shop);
+      void queryClient.invalidateQueries({
+        queryKey: [...sellerKeys.all, "payment-profile"],
+      });
+      toast.success(tt("toast.shopQrUpdated"));
+    },
+    onError: (e) => toast.error(shopMediaErrorMessage(e, tt("toast.shopQrUploadFailed"))),
   });
 }

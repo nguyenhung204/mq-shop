@@ -8,6 +8,7 @@ import {
   useUpdateMyShopBankInfo,
 } from "@/lib/queries/seller";
 import { ShopBrandingUpload } from "@/components/seller/ShopBrandingUpload";
+import { ShopPaymentQrUpload } from "@/components/seller/ShopPaymentQrUpload";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
 import { CountrySelect } from "@/components/ui/CountrySelect";
@@ -68,7 +69,6 @@ export function ShopDashboard({ initialSection }: Props) {
     bankName: "",
     accountNumber: "",
     accountName: "",
-    qrUrl: "",
   });
   const [documentFile, setDocumentFile] = useState<File | null>(null);
 
@@ -89,7 +89,6 @@ export function ShopDashboard({ initialSection }: Props) {
       bankName: shop.bankInfo.bankName || "",
       accountNumber: shop.bankInfo.accountNumber || "",
       accountName: shop.bankInfo.accountName || "",
-      qrUrl: shop.bankInfo.qrUrl || "",
     });
   }, [shop?.bankInfo]);
 
@@ -147,7 +146,6 @@ export function ShopDashboard({ initialSection }: Props) {
         bankName: bankForm.bankName.trim(),
         accountNumber: bankForm.accountNumber.trim(),
         accountName: bankForm.accountName.trim(),
-        qrUrl: bankForm.qrUrl.trim() || null,
       });
     } catch (err) {
       bankAlerts.setErrorFromApi(err);
@@ -392,15 +390,7 @@ export function ShopDashboard({ initialSection }: Props) {
                   />
                 </div>
                 <div className="mq-shop-field">
-                  <label htmlFor="bank-qr">{t("seller.shop.qrUrlOptional")}</label>
-                  <input
-                    id="bank-qr"
-                    className="mq-input"
-                    type="url"
-                    value={bankForm.qrUrl}
-                    onChange={(e) => setBankForm({ ...bankForm, qrUrl: e.target.value })}
-                    placeholder="https://"
-                  />
+                  <ShopPaymentQrUpload qrUrl={shop?.bankInfo?.qrUrl} canEdit={canEditBank} />
                 </div>
                 <button className="mq-btn mq-btn-primary" disabled={updateBank.isPending}>
                   {updateBank.isPending ? t("admin.common.saving") : t("seller.shop.saveBankInfo")}

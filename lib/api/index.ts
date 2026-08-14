@@ -284,6 +284,12 @@ export const shopApi = {
     fd.append("banner", file);
     return api.postForm<ApiShop>("/shops/me/banner", fd);
   },
+  /** Multipart field `qr` → MinIO lossless WebP (≤1024). Sets bankInfo.qrUrl. Gate: EDIT_SHOP. */
+  uploadQr: (file: File) => {
+    const fd = new FormData();
+    fd.append("qr", file);
+    return api.postForm<ApiShop>("/shops/me/qr", fd);
+  },
   listStaff: () => api.get<unknown[]>("/shops/me/staff"),
   addStaff: (body: { userId: string; role?: string }) =>
     api.post("/shops/me/staff", body),

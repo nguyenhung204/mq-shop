@@ -2095,6 +2095,11 @@
       "bankRequired": "Bắt buộc nhập tên ngân hàng, số tài khoản và tên chủ tài khoản.",
       "bankRequiredHint": "Buyer sẽ chuyển khoản vào tài khoản này sau khi đặt hàng.",
       "qrUrlOptional": "URL QR thanh toán (tuỳ chọn)",
+      "paymentQr": "QR thanh toán",
+      "noQr": "Chưa có QR",
+      "uploadQr": "Tải QR lên",
+      "replaceQr": "Đổi QR",
+      "qrHint": "JPEG / PNG / WebP / GIF · ≤5MB. Buyer thấy khi checkout. Lưu WebP (không cắt).",
       "saveBankInfo": "Lưu thông tin ngân hàng"
     },
     "productsPage": {
@@ -2617,6 +2622,8 @@
     "logoUploadFailed": "Upload logo thất bại",
     "shopBannerUpdated": "Đã cập nhật banner",
     "shopBannerUploadFailed": "Upload banner thất bại",
+    "shopQrUpdated": "Đã cập nhật QR thanh toán",
+    "shopQrUploadFailed": "Upload QR thất bại",
     "invalidProductImage": "Loại ảnh không hợp lệ. Dùng JPEG, PNG, WebP hoặc GIF.",
     "productImageTooLarge": "Mỗi ảnh phải ≤ 5MB.",
     "shopNotEligible": "Shop phải đã được duyệt và không bị khoá.",
