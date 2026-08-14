@@ -27,10 +27,10 @@ export function ReviewList({
       {items.map((review) => (
         <li key={review.id} className="py-5 space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <Stars rating={review.rating} />
             <span className="text-sm font-medium text-mq-text">
               {review.buyer?.fullName?.trim() || t("product.reviewsPage.anonymous")}
             </span>
+            <Stars rating={review.rating} />
             <span className="text-[11px] text-mq-text-muted ml-auto">
               {review.createdAt
                 ? new Date(review.createdAt).toLocaleDateString()
