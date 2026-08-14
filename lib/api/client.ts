@@ -1,7 +1,12 @@
 import type { ApiErrorBody, PageMeta } from "./types";
 
 export function getApiHost(): string {
-  return (process.env.NEXT_PUBLIC_API_HOST || "http://localhost:3000").replace(/\/$/, "");
+  const host = process.env.NEXT_PUBLIC_API_HOST?.replace(/\/$/, "");
+  if (host) return host;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("NEXT_PUBLIC_API_HOST is required in production");
+  }
+  return "http://localhost:3000";
 }
 
 export function getApiBase(): string {

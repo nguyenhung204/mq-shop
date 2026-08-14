@@ -61,7 +61,12 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "**",
+        hostname: "minio.mqplaza.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "api.mqplaza.com",
         pathname: "/**",
       },
     ],

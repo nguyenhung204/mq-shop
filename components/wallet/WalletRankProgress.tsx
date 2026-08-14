@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRankProgress } from "@/lib/queries/wallet";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";

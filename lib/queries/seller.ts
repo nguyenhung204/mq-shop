@@ -248,6 +248,7 @@ export function useCreateSellerProduct() {
       invalidate();
       toast.success(tt("toast.productCreatedPending"));
     },
+    onError: (e) => toast.error(productErrorMessage(e, getErrorMessage(e))),
   });
 }
 
@@ -257,7 +258,6 @@ export function useUpdateSellerProduct() {
     mutationFn: ({
       id,
       body,
-      silent,
     }: {
       id: string;
       body: UpdateProductRequest;
@@ -268,6 +268,7 @@ export function useUpdateSellerProduct() {
       if (vars.silent) return;
       toast.success(tt("toast.productUpdated"));
     },
+    onError: (e) => toast.error(productErrorMessage(e, getErrorMessage(e))),
   });
 }
 
@@ -277,7 +278,6 @@ export function useAddSellerVariant() {
     mutationFn: ({
       productId,
       body,
-      silent,
     }: {
       productId: string;
       body: AddProductVariantRequest;
@@ -297,7 +297,6 @@ export function useUpdateSellerVariant() {
       productId,
       variantId,
       body,
-      silent,
     }: {
       productId: string;
       variantId: string;
@@ -319,7 +318,7 @@ export function useHideSellerProduct() {
       invalidate();
       toast.success(tt("toast.productHidden"));
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
+    onError: (e) => toast.error(productErrorMessage(e, getErrorMessage(e))),
   });
 }
 
@@ -336,7 +335,7 @@ export function useUnhideSellerProduct() {
         toast.error(tt("toast.productNotHidden"));
         return;
       }
-      toast.error(getErrorMessage(e));
+      toast.error(productErrorMessage(e, getErrorMessage(e)));
     },
   });
 }
@@ -403,6 +402,7 @@ export function useUploadShopLogo() {
       queryClient.setQueryData(sellerKeys.shop(), shop);
       toast.success(tt("toast.logoUpdated"));
     },
+    onError: (e) => toast.error(shopMediaErrorMessage(e, tt("toast.logoUploadFailed"))),
   });
 }
 
@@ -414,5 +414,7 @@ export function useUploadShopBanner() {
       queryClient.setQueryData(sellerKeys.shop(), shop);
       toast.success(tt("toast.shopBannerUpdated"));
     },
+    onError: (e) =>
+      toast.error(shopMediaErrorMessage(e, tt("toast.shopBannerUploadFailed"))),
   });
 }

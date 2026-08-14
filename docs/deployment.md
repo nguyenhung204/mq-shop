@@ -165,7 +165,9 @@ images: {
     // MinIO local (development)
     { protocol: "http", hostname: "localhost", port: "9010" },
     // MinIO production
-    { protocol: "https", hostname: "**" },
+    // MinIO production
+    { protocol: "https", hostname: "minio.mqplaza.com" },
+    { protocol: "https", hostname: "api.mqplaza.com" },
   ],
 }
 ```

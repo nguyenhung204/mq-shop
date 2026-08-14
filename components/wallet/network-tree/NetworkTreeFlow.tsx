@@ -218,7 +218,7 @@ function NetworkTreeFlowInner({
   apiNodes,
   rootUserId,
   rootUser,
-  initialExpandAll,
+  initialExpandAll: _initialExpandAll,
   className,
 }: {
   apiNodes: NetworkNode[];

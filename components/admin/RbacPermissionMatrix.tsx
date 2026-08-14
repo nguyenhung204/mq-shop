@@ -167,7 +167,7 @@ export function RbacPermissionMatrix() {
     return buildDiff(matrix.cells, draft).filter((cell) =>
       isMatrixUiPermission(cell.permission),
     );
-  }, [matrix?.cells, draft]);
+  }, [matrix, draft]);
   const isDirty = dirtyCells.length > 0;
   const busy = saveMutation.isPending || resetMutation.isPending;
 

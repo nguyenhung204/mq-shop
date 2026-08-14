@@ -7,7 +7,6 @@ import {
   bannerApi,
   marketingApi,
   promotionApi,
-  type BannerLang,
   type PublicBannerLang,
   type CreateMarketingFolderBody,
   type CreatePromotionBody,
