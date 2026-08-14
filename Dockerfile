@@ -6,7 +6,9 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+# npm ci fails on linux/amd64 when the lockfile was generated on macOS
+# (optional @rollup/* platform packages are missing). npm install fetches them.
+RUN npm install --no-fund --no-audit
 
 # ---------- builder ----------
 # Build the Next.js app. Requires next.config.ts to have `output: "standalone"`.
