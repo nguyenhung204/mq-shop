@@ -113,6 +113,7 @@ function buildVars(
   // Prefer resolved names from metaNames over raw UUIDs.
   // Templates use {orderId}, {shopId}, etc. directly — overwrite them with the
   // human-readable value so the placeholder shows a name, not a UUID.
+  if (vars.orderCode) vars.orderId = vars.orderCode;
   if (metaNames) {
     if (metaNames.orderCode) vars.orderId = metaNames.orderCode;
     if (metaNames.shopName) vars.shopId = metaNames.shopName;

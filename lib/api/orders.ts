@@ -191,7 +191,15 @@ export type OrderView = {
   /** Buyer-uploaded bank-transfer proof (OFF_PLATFORM / legacy COD). */
   paymentProofUrl?: string | null;
   paymentProofUploadedAt?: string | null;
+  paymentFirstProofAt?: string | null;
   paymentRejectedReason?: string | null;
+  paymentRejectCount?: number;
+  paymentDisputeReason?: string | null;
+  paymentProofHistory?: Array<{
+    url: string;
+    uploadedAt: string;
+    rejectedReason?: string | null;
+  }>;
   /** Set when stale proof review is escalated to admin/CS. */
   paymentEscalatedAt?: string | null;
   /** Set when paid fulfillment is escalated for no shipping progress. */
@@ -337,6 +345,9 @@ export const orderApi = {
   rejectPayment: (orderId: string, reason: string) =>
     api.post<OrderView>(`/orders/${orderId}/payment/reject`, { reason }),
 
+  disputePayment: (orderId: string, reason: string) =>
+    api.post<OrderView>(`/orders/${orderId}/payment-dispute`, { reason }),
+
   createFulfillmentComplaint: (orderId: string, reason: string) =>
     api.post(`/orders/${orderId}/fulfillment-complaint`, { reason }),
 };
@@ -450,6 +461,13 @@ export function canSellerReviewPayment(
     isOffPlatformLike(order.paymentMethod) &&
     Boolean(order.paymentProofUrl)
   );
+}
+
+/** Reject is a payment sub-state — order.status stays PENDING. */
+export function isPaymentProofRejected(
+  order: Pick<OrderView, "paymentRejectedReason">,
+): boolean {
+  return Boolean(order.paymentRejectedReason?.trim());
 }
 
 export function canAdminForcePaid(

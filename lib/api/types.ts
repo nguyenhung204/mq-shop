@@ -133,6 +133,7 @@ export type ShopStorefront = {
   logoUrl: string | null;
   bannerUrl: string | null;
   countryCode: string;
+  contactEmail?: string | null;
 };
 
 /** Nested on PDP — GET /products/listing/:productId */
@@ -140,6 +141,7 @@ export type ProductShopSummary = {
   id: string;
   name: string;
   logoUrl: string | null;
+  contactEmail?: string | null;
 };
 
 /** GET /products/listing/:productId */
@@ -332,6 +334,8 @@ export type NotificationType =
   | "ORDER_PAYMENT_CONFIRMED"
   | "ORDER_PAYMENT_REJECTED"
   | "ORDER_PAYMENT_ESCALATED"
+  | "ORDER_PAYMENT_DISPUTED"
+  | "ORDER_FULFILLMENT_ESCALATED"
   | "RMA_NEW"
   | "RMA_APPROVED"
   | "RMA_REJECTED"

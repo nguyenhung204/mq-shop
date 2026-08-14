@@ -697,3 +697,19 @@ export function useCreateFulfillmentComplaint() {
       toast.error(orderErrorMessage(e, tt("toast.fulfillmentComplaintFailed"))),
   });
 }
+
+export function useDisputePayment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ orderId, reason }: { orderId: string; reason: string }) =>
+      orderApi.disputePayment(orderId, reason),
+    onSuccess: (order) => {
+      queryClient.setQueryData(orderKeys.detail(order.id), order);
+      invalidateOrder(queryClient, order.id);
+      suppressNotificationToasts();
+      toast.success(tt("toast.paymentDisputeSent"));
+    },
+    onError: (e) =>
+      toast.error(orderErrorMessage(e, tt("toast.paymentDisputeFailed"))),
+  });
+}

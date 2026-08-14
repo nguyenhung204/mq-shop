@@ -13,6 +13,7 @@ import {
   canSellerReviewPayment,
   canUploadPaymentProof,
   hasBlockingRma,
+  isPaymentProofRejected,
   nextFulfillmentStatus,
   type RmaStatus,
 } from "@/lib/api/orders";
@@ -23,6 +24,7 @@ import {
   useCancelOrder,
   useConfirmPayment,
   useCreateFulfillmentComplaint,
+  useDisputePayment,
   useBuyerRmaAction,
   useOrder,
   useRejectPayment,
@@ -46,6 +48,22 @@ import { PRODUCT_FALLBACK_IMAGE } from "@/lib/images";
 import { getErrorMessage } from "@/lib/queries/utils";
 
 const FALLBACK_IMAGE = PRODUCT_FALLBACK_IMAGE;
+const PAYMENT_SLA_HOURS = 48;
+
+function paymentSlaCopy(
+  firstProofAt: string | null | undefined,
+  escalatedAt: string | null | undefined,
+  t: (key: string, vars?: Record<string, string>) => string,
+): string | null {
+  if (escalatedAt) return t("orders.payment.escalatedBadge");
+  if (!firstProofAt) return null;
+  const deadline = new Date(firstProofAt).getTime() + PAYMENT_SLA_HOURS * 3600_000;
+  const leftMs = deadline - Date.now();
+  if (leftMs <= 0) return t("orders.payment.slaOverdue");
+  return t("orders.payment.slaHoursLeft", {
+    hours: String(Math.max(1, Math.ceil(leftMs / 3600_000))),
+  });
+}
 
 function formatAddress(addr: {
   fullName: string;
@@ -157,6 +175,7 @@ function OrderDetailInner() {
   const uploadProof = useUploadPaymentProof(id);
   const confirmPayment = useConfirmPayment();
   const rejectPayment = useRejectPayment();
+  const disputePayment = useDisputePayment();
   const fulfillmentComplaint = useCreateFulfillmentComplaint();
   const buyerRma = useBuyerRmaAction();
   const shopRma = useShopRmaAction();
@@ -164,6 +183,7 @@ function OrderDetailInner() {
   const uploadEvidence = useUploadRmaEvidence(id);
   const uploadRefundProof = useUploadRefundProof(id);
   const [complaintModalOpen, setComplaintModalOpen] = useState(false);
+  const [paymentDisputeOpen, setPaymentDisputeOpen] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [disputeModalOpen, setDisputeModalOpen] = useState(false);
@@ -245,6 +265,9 @@ function OrderDetailInner() {
     Boolean(order && isBuyer && canUploadPaymentProof(order));
   const showSellerPayment =
     Boolean(order && canConfirmPayment);
+  const paymentSla = order
+    ? paymentSlaCopy(order.paymentFirstProofAt, order.paymentEscalatedAt, t)
+    : null;
 
   const confirmCancel = async (reason: string) => {
     await cancelOrder.mutateAsync(reason);
@@ -280,6 +303,9 @@ function OrderDetailInner() {
               <span className="font-mono text-sm text-mq-text-muted">{order.code}</span>
               <span className="mq-badge mq-badge-cyan">{translateStatus(t, "order", order.status)}</span>
               <span className="mq-badge mq-badge-teal">{translateStatus(t, "paymentMethod", order.paymentMethod)}</span>
+              {isPaymentProofRejected(order) ? (
+                <span className="mq-badge mq-badge-orange">{t("orders.payment.rejectedBadge")}</span>
+              ) : null}
               {order.rma ? (
                 <span className="mq-badge mq-badge-pink">RMA · {translateStatus(t, "rma", order.rma.status)}</span>
               ) : null}
@@ -505,7 +531,7 @@ function OrderDetailInner() {
                     {order.rma.refundProofUploadedAt ? (
                       <p className="text-xs text-mq-text-muted">
                         {t("orders.rma.refundProofUploadedAt", {
-                          date: new Date(order.rma.refundProofUploadedAt).toLocaleString(),
+                          date: new Date(order.rma.refundProofUploadedAt).toLocaleString(intlLocale),
                         })}
                       </p>
                     ) : null}
@@ -847,7 +873,7 @@ function OrderDetailInner() {
             {order.deliveredAt ? (
               <p className="text-xs text-mq-text-muted">
                 {t("orders.detail.delivered", {
-                  date: new Date(order.deliveredAt).toLocaleString(),
+                  date: new Date(order.deliveredAt).toLocaleString(intlLocale),
                 })}
               </p>
             ) : null}
@@ -861,7 +887,7 @@ function OrderDetailInner() {
             {showSalesRecognition && order.salesEligibleAt ? (
               <p className="text-xs text-mq-text-muted">
                 {t("orders.detail.salesEligible", {
-                  date: new Date(order.salesEligibleAt).toLocaleString(),
+                  date: new Date(order.salesEligibleAt).toLocaleString(intlLocale),
                 })}
               </p>
             ) : null}
@@ -965,11 +991,27 @@ function OrderDetailInner() {
                     <p className="font-medium">{t("orders.payment.rejectedTitle")}</p>
                     <p>{t("orders.detail.reasonLabel", { reason: order.paymentRejectedReason })}</p>
                     <p className="text-xs mt-1">{t("orders.payment.reuploadHint")}</p>
+                    {order.paymentDisputeReason ? (
+                      <p className="text-xs mt-1">{t("orders.payment.disputeSubmitted")}</p>
+                    ) : (
+                      <button
+                        type="button"
+                        className="mq-btn mq-btn-outline mt-2"
+                        onClick={() => setPaymentDisputeOpen(true)}
+                      >
+                        {t("orders.payment.disputeBtn")}
+                      </button>
+                    )}
                   </div>
                 ) : null}
-                {order.paymentProofUrl && !order.paymentRejectedReason ? (
+                {order.paymentProofUrl ? (
                   <div className="rounded-[var(--mq-radius-sm)] border border-mq-border bg-mq-surface-subtle p-4 space-y-2 text-sm">
-                    <p className="font-medium text-mq-text">{t("orders.payment.waitingSeller")}</p>
+                    {!order.paymentRejectedReason ? (
+                      <p className="font-medium text-mq-text">{t("orders.payment.waitingSeller")}</p>
+                    ) : null}
+                    {paymentSla ? (
+                      <p className="text-xs text-mq-text-muted">{paymentSla}</p>
+                    ) : null}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={order.paymentProofUrl}
@@ -979,12 +1021,13 @@ function OrderDetailInner() {
                     {order.paymentProofUploadedAt ? (
                       <p className="text-xs text-mq-text-muted">
                         {t("orders.payment.uploadedAt", {
-                          date: new Date(order.paymentProofUploadedAt).toLocaleString(),
+                          date: new Date(order.paymentProofUploadedAt).toLocaleString(intlLocale),
                         })}
                       </p>
                     ) : null}
                   </div>
-                ) : (
+                ) : null}
+                {!order.paymentProofUrl || order.paymentRejectedReason ? (
                   <div className="space-y-2">
                     <label className="block text-sm" htmlFor="payment-proof">
                       {t("orders.payment.uploadLabel")}
@@ -1008,13 +1051,20 @@ function OrderDetailInner() {
                         : t("orders.payment.uploadBtn")}
                     </button>
                   </div>
-                )}
+                ) : null}
               </div>
             ) : null}
 
             {showSellerPayment ? (
               <div className="pt-4 border-t border-mq-border space-y-3">
                 <h2 className="text-sm font-semibold">{t("orders.payment.sellerReviewTitle")}</h2>
+                {isPaymentProofRejected(order) ? (
+                  <div className="mq-alert mq-alert-warn text-sm">
+                    <p className="font-medium">{t("orders.payment.rejectedTitle")}</p>
+                    <p>{t("orders.detail.reasonLabel", { reason: order.paymentRejectedReason ?? "" })}</p>
+                    <p className="text-xs mt-1">{t("orders.payment.sellerRejectedHint")}</p>
+                  </div>
+                ) : null}
                 {order.paymentProofUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -1037,7 +1087,11 @@ function OrderDetailInner() {
                   <button
                     type="button"
                     className="mq-btn mq-btn-outline"
-                    disabled={confirmPayment.isPending || rejectPayment.isPending}
+                    disabled={
+                      confirmPayment.isPending ||
+                      rejectPayment.isPending ||
+                      Boolean(order.paymentEscalatedAt)
+                    }
                     onClick={() => setRejectModalOpen(true)}
                   >
                     {t("orders.payment.rejectBtn")}
@@ -1119,6 +1173,21 @@ function OrderDetailInner() {
           void rejectPayment.mutateAsync({ orderId: order.id, reason }).then(() => {
             setRejectModalOpen(false);
           });
+        }}
+      />
+      <AdminReasonModal
+        open={paymentDisputeOpen}
+        title={t("orders.payment.disputeTitle")}
+        description={t("orders.payment.disputeDesc")}
+        confirmLabel={t("orders.payment.disputeBtn")}
+        maxLength={500}
+        busy={disputePayment.isPending}
+        onClose={() => setPaymentDisputeOpen(false)}
+        onConfirm={(reason) => {
+          if (!order) return;
+          void disputePayment
+            .mutateAsync({ orderId: order.id, reason })
+            .then(() => setPaymentDisputeOpen(false));
         }}
       />
       <AdminReasonModal

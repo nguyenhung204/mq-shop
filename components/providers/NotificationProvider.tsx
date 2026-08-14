@@ -112,6 +112,7 @@ const NOTIFY_INVALIDATION_MAP: Partial<Record<string, readonly (readonly unknown
   ORDER_PAYMENT_CONFIRMED: [orderKeys.all],
   ORDER_PAYMENT_REJECTED: [orderKeys.all],
   ORDER_PAYMENT_ESCALATED: [orderKeys.all],
+  ORDER_PAYMENT_DISPUTED: [orderKeys.all],
   RMA_NEW: [orderKeys.all],
   RMA_APPROVED: [orderKeys.all],
   RMA_REJECTED: [orderKeys.all],

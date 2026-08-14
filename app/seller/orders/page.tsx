@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { OrderStatus } from "@/lib/api/orders";
 import {
   canSellerReviewPayment,
+  isPaymentProofRejected,
   nextFulfillmentStatus,
 } from "@/lib/api/orders";
 import { translateStatus } from "@/lib/i18n/status";
@@ -100,7 +101,11 @@ function SellerOrdersInner() {
             <Link href={`/orders/${o.id}`} className="hover:underline min-w-0">
               <span className="font-medium">{o.displayName}</span>
               <span className="mq-badge mq-badge-cyan ml-2">{translateStatus(t, "order", o.status)}</span>
-              {canReviewPay ? (
+              {isPaymentProofRejected(o) ? (
+                <span className="mq-badge mq-badge-orange ml-2">
+                  {t("orders.payment.rejectedBadge")}
+                </span>
+              ) : canReviewPay ? (
                 <span className="mq-badge mq-badge-orange ml-2">
                   {t("orders.payment.proofPending")}
                 </span>

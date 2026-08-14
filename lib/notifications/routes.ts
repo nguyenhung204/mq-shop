@@ -42,6 +42,14 @@ function isBuyerOnly(roles: Role[]): boolean {
   return roles.length === 1 && roles.includes("BUYER");
 }
 
+function isPaymentStaff(roles: Role[]): boolean {
+  return (
+    roles.includes("ADMIN") ||
+    roles.includes("SUPER_ADMIN") ||
+    roles.includes("CS")
+  );
+}
+
 /**
  * Resolve in-app notification → app route.
  * Unknown type / missing required meta → `null` (toast/detail only, no navigate).
@@ -109,9 +117,20 @@ export function resolveNotificationRoute(
     case "ORDER_CREATED_PAYMENT_NEEDED":
     case "ORDER_PAYMENT_PROOF_UPLOADED":
     case "ORDER_PAYMENT_CONFIRMED":
-    case "ORDER_PAYMENT_REJECTED":
-    case "ORDER_PAYMENT_ESCALATED": {
+    case "ORDER_PAYMENT_REJECTED": {
       const m = requireMeta(meta, ["orderId"]);
+      if (m) return `/orders/${m.orderId}`;
+      return seller && !buyerOnly ? "/seller/orders" : "/orders";
+    }
+
+    case "ORDER_PAYMENT_ESCALATED":
+    case "ORDER_PAYMENT_DISPUTED": {
+      const m = requireMeta(meta, ["orderId"]);
+      if (isPaymentStaff(ctx.roles)) {
+        const q = new URLSearchParams({ paymentEscalated: "true" });
+        if (m?.orderId) q.set("orderId", m.orderId);
+        return `/admin/orders?${q.toString()}`;
+      }
       if (m) return `/orders/${m.orderId}`;
       return seller && !buyerOnly ? "/seller/orders" : "/orders";
     }

@@ -120,6 +120,10 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "Payment review escalated",
       body: "Order {orderId} payment proof needs platform review.",
     },
+    ORDER_PAYMENT_DISPUTED: {
+      title: "Buyer disputed a rejected bill",
+      body: "Order {orderId} — Admin will compare the payment proof.",
+    },
     RMA_NEW: {
       title: "New return request",
       body: "Return request {rmaId} needs seller review.",
@@ -450,6 +454,10 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "Thanh toán cần nền tảng duyệt",
       body: "Chứng từ thanh toán của đơn {orderId} cần platform review.",
     },
+    ORDER_PAYMENT_DISPUTED: {
+      title: "Buyer khiếu nại reject bill",
+      body: "Đơn {orderId} — Admin sẽ đối chiếu chứng từ thanh toán.",
+    },
     RMA_NEW: {
       title: "Yêu cầu đổi trả mới",
       body: "Yêu cầu {rmaId} cần người bán duyệt.",
@@ -779,6 +787,10 @@ export const NOTIFICATION_TYPE_COPY: Record<
     ORDER_PAYMENT_ESCALATED: {
       title: "付款審核已升級",
       body: "訂單 {orderId} 的付款憑證需要平台審核。",
+    },
+    ORDER_PAYMENT_DISPUTED: {
+      title: "買家申訴被拒憑證",
+      body: "訂單 {orderId} — 管理員將核對付款憑證。",
     },
     RMA_NEW: {
       title: "新退貨申請",

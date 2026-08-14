@@ -1,11 +1,12 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Ban, CircleDollarSign, X } from "lucide-react";
 import { adminApi } from "@/lib/api";
-import { canAdminForcePaid, type OrderStatus, type PaymentMethod } from "@/lib/api/orders";
+import { canAdminForcePaid, isPaymentProofRejected, type OrderStatus, type PaymentMethod } from "@/lib/api/orders";
 import type { ApiProduct, AuthUser, ProductVariant } from "@/lib/api/types";
 import { formatMoney, parsePage } from "@/lib/api/utils";
 import {
@@ -62,11 +63,22 @@ function variantOptionLabel(v: ProductVariant): string {
 function OrdersInner() {
   const { t } = useLanguage();
   const { hasRole } = useAuth();
+  const searchParams = useSearchParams();
+  const highlightOrderId = searchParams.get("orderId");
   const [status, setStatus] = useState<OrderStatus | "">("");
   const [shopId, setShopId] = useState("");
-  const [escalatedOnly, setEscalatedOnly] = useState(false);
+  const [escalatedOnly, setEscalatedOnly] = useState(
+    () => searchParams.get("paymentEscalated") === "true",
+  );
   const [page, setPage] = useState(1);
   const [createOpen, setCreateOpen] = useState(false);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (searchParams.get("paymentEscalated") === "true") {
+      setEscalatedOnly(true);
+    }
+  }, [searchParams]);
 
   const { data: shopsPage } = useAdminShops("APPROVED", 1, 100);
   const shops = shopsPage?.items ?? [];
@@ -416,17 +428,91 @@ function OrdersInner() {
         {items.map((o) => (
           <div
             key={o.id}
-            className="mq-card p-4 flex flex-wrap justify-between gap-3 text-sm"
+            className={`mq-card p-4 flex flex-wrap justify-between gap-3 text-sm ${
+              highlightOrderId === o.id ? "ring-2 ring-mq-gold" : ""
+            }`}
           >
-            <div>
-              <Link href={`/orders/${o.id}`} className="font-medium hover:underline">
-                {o.displayName}
-              </Link>
-              <span className="mq-badge mq-badge-cyan ml-2">{translateStatus(t, "order", o.status)}</span>
-              <p className="text-xs text-mq-text-muted mt-1">
-                {o.shopName ?? t("admin.common.shop")} · {o.buyerName ?? t("admin.ordersPage.buyer")} ·{" "}
+            <div className="min-w-0 flex-1 space-y-2">
+              <div>
+                <Link href={`/orders/${o.id}`} className="font-medium hover:underline">
+                  {o.displayName}
+                </Link>
+                <span className="mq-badge mq-badge-cyan ml-2">{translateStatus(t, "order", o.status)}</span>
+                {isPaymentProofRejected(o) ? (
+                  <span className="mq-badge mq-badge-orange ml-2">
+                    {t("orders.payment.rejectedBadge")}
+                  </span>
+                ) : null}
+                {o.paymentEscalatedAt ? (
+                  <span className="mq-badge mq-badge-orange ml-2">
+                    {t("orders.payment.escalatedBadge")}
+                  </span>
+                ) : null}
+              </div>
+              <p className="text-xs text-mq-text-muted">
+                {o.code} · {o.shopName ?? t("admin.common.shop")} · {o.buyerName ?? t("admin.ordersPage.buyer")} ·{" "}
                 {formatMoney(o.total)} {o.currency}
               </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  className="text-xs text-mq-text-secondary hover:text-mq-text"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(o.code);
+                      setCopiedCode(o.code);
+                      window.setTimeout(() => setCopiedCode(null), 2000);
+                    } catch {
+                      setCopiedCode(null);
+                    }
+                  }}
+                >
+                  {copiedCode === o.code
+                    ? t("admin.ordersPage.orderCodeCopied")
+                    : t("admin.ordersPage.copyOrderCode")}
+                </button>
+                {(o.paymentRejectCount ?? 0) > 0 ? (
+                  <span className="text-xs text-mq-text-muted">
+                    {t("admin.ordersPage.rejectCount", {
+                      count: String(o.paymentRejectCount ?? 0),
+                    })}
+                  </span>
+                ) : null}
+              </div>
+              {o.paymentDisputeReason ? (
+                <p className="text-xs text-mq-text">
+                  {t("admin.ordersPage.disputeReason", {
+                    reason: o.paymentDisputeReason,
+                  })}
+                </p>
+              ) : null}
+              {o.paymentProofUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={o.paymentProofUrl}
+                  alt={t("orders.payment.proofAlt")}
+                  className="max-h-32 w-auto rounded border border-mq-border bg-white object-contain"
+                />
+              ) : null}
+              {(o.paymentProofHistory ?? []).length > 0 ? (
+                <div>
+                  <p className="text-xs text-mq-text-muted mb-1">
+                    {t("admin.ordersPage.proofHistory")}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {(o.paymentProofHistory ?? []).map((entry) => (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        key={`${entry.url}-${entry.uploadedAt}`}
+                        src={entry.url}
+                        alt=""
+                        className="max-h-20 w-auto rounded border border-mq-border bg-white object-contain"
+                      />
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+              <p className="text-xs text-mq-text-muted">{t("orders.payment.bankOutsideNote")}</p>
             </div>
             {o.status !== "CANCELLED" && o.status !== "DELIVERED" && o.status !== "REFUND_APPROVED" ? (
               <AdminActions>
@@ -533,7 +619,9 @@ function OrdersInner() {
 export default function AdminOrdersPage() {
   return (
     <AuthGuard roles={["ADMIN", "SUPER_ADMIN", "CS", "WAREHOUSE"]} permissions={["VIEW_ORDER", "CREATE_ORDER"]}>
-      <OrdersInner />
+      <Suspense fallback={<AdminCardListSkeleton count={4} />}>
+        <OrdersInner />
+      </Suspense>
     </AuthGuard>
   );
 }

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { OrderStatus } from "@/lib/api/orders";
+import { isPaymentProofRejected } from "@/lib/api/orders";
 import { useMyOrders } from "@/lib/queries/orders";
 import { formatOrderMoney } from "@/lib/fx/formatOrderMoney";
 import { AuthGuard } from "@/components/guards/AuthGuard";
@@ -29,12 +30,12 @@ function OrdersInner() {
 
   return (
     <>
-      <PageHero title="My orders" breadcrumb={[{ label: "Orders" }]} />
+      <PageHero title={t("orders.title")} breadcrumb={[{ label: t("orders.breadcrumb") }]} />
       <Container className="py-10 md:py-14 space-y-4">
         <select
           className="mq-input max-w-[14rem]"
           value={status}
-          aria-label="Filter by status"
+          aria-label={t("orders.filterStatus")}
           onChange={(e) => {
             setStatus(e.target.value as OrderStatus | "");
             setPage(1);
@@ -67,9 +68,9 @@ function OrdersInner() {
         )}
         {!isLoading && orders.length === 0 && !isError && (
           <div className="text-center py-12">
-            <p className="text-mq-text-secondary mb-4">No orders yet.</p>
+            <p className="text-mq-text-secondary mb-4">{t("orders.empty")}</p>
             <Link href="/shop" className="mq-btn mq-btn-primary">
-              Shop now
+              {t("orders.shopNow")}
             </Link>
           </div>
         )}
@@ -86,13 +87,18 @@ function OrdersInner() {
                   <div>
                     <p className="text-sm font-medium">{o.displayName}</p>
                     <p className="text-xs text-mq-text-muted mt-1">
-                      {new Date(o.createdAt).toLocaleString()}
+                      {new Date(o.createdAt).toLocaleString(intlLocale)}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="mq-badge mq-badge-cyan">
                       {translateStatus(t, "order", o.status)}
                     </span>
+                    {isPaymentProofRejected(o) ? (
+                      <span className="mq-badge mq-badge-orange">
+                        {t("orders.payment.rejectedBadge")}
+                      </span>
+                    ) : null}
                     <span className="text-sm font-medium">
                       {money.primary}
                       {money.ledgerHint ? (
