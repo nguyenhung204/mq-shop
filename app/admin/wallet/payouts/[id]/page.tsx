@@ -22,11 +22,9 @@ import { getErrorMessage } from "@/lib/queries/utils";
 
 function WalletPayoutDetailInner({ payoutId }: { payoutId: string }) {
   const { t } = useLanguage();
-  const { hasPermission, hasRole } = useAuth();
-  const canProcess =
-    hasPermission("PROCESS_PAYOUT") ||
-    hasRole("ACCOUNTANT") ||
-    hasRole("SUPER_ADMIN");
+  const { canMutatePermission } = useAuth();
+  const canApproveWallet = canMutatePermission("APPROVE_PAYOUT");
+  const canProcess = canMutatePermission("PROCESS_PAYOUT");
 
   const { data: payout, isLoading, isError, error } = useAdminWalletPayout(payoutId);
   const approve = useApproveWalletPayout();
@@ -44,6 +42,7 @@ function WalletPayoutDetailInner({ payoutId }: { payoutId: string }) {
     createdAt: t("admin.walletPayouts.createdAt"),
     updatedAt: t("admin.walletPayouts.updatedAt"),
     fiatLabel: t("wallet.fiatLabel"),
+    pointUnit: t("common.pointUnit"),
   };
 
   return (
@@ -75,7 +74,7 @@ function WalletPayoutDetailInner({ payoutId }: { payoutId: string }) {
             payout={payout}
             labels={labels}
             actions={
-              payout.status === "PENDING" ? (
+              payout.status === "PENDING" && canApproveWallet ? (
                 <AdminActions>
                   <AdminIconButton
                     label={t("admin.common.approve")}

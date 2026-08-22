@@ -57,11 +57,9 @@ function formatWhen(iso: string): string {
 
 function WalletPayoutsInner() {
   const { t } = useLanguage();
-  const { hasPermission, hasRole } = useAuth();
-  const canProcess =
-    hasPermission("PROCESS_PAYOUT") ||
-    hasRole("ACCOUNTANT") ||
-    hasRole("SUPER_ADMIN");
+  const { canMutatePermission } = useAuth();
+  const canApproveWallet = canMutatePermission("APPROVE_PAYOUT");
+  const canProcess = canMutatePermission("PROCESS_PAYOUT");
 
   const [status, setStatus] = useState<PayoutRequestStatus | "">("");
   const [search, setSearch] = useState("");
@@ -155,7 +153,7 @@ function WalletPayoutsInner() {
                 <span className={statusBadgeClass(row.status)}>
                   {t(`wallet.payoutStatus.${row.status}`)}
                 </span>
-                <span className="tabular-nums font-medium">{formatPoints(row.amount)}</span>
+                <span className="tabular-nums font-medium">{formatPoints(row.amount, t("common.pointUnit"))}</span>
                 {row.fiatAmount ? (
                   <span className="text-xs text-mq-text-muted">
                     {t("wallet.fiatApprox", {
@@ -179,7 +177,7 @@ function WalletPayoutsInner() {
               <p className="text-xs text-mq-accent mt-1">{t("admin.walletPayouts.viewDetail")}</p>
             </Link>
             <AdminActions>
-              {row.status === "PENDING" ? (
+              {row.status === "PENDING" && canApproveWallet ? (
                 <>
                   <AdminIconButton
                     label={t("admin.common.approve")}

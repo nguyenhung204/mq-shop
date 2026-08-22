@@ -41,7 +41,10 @@ export type AuthUser = {
   roles: Role[];
   /** Dual-control (008): roles awaiting Super Admin approval. */
   pendingRoles?: Role[] | null;
+  /** Non-NONE permission codes from the RBAC matrix (incl. Super Admin overrides). */
   permissions?: string[];
+  /** Effective scope per granted permission (NONE omitted). */
+  permissionScopes?: Record<string, "NONE" | "APPROVE" | "SELF" | "SHOP" | "ALL">;
   /** Present for shop staff (WAREHOUSE / CS / ACCOUNTANT). */
   shopId?: string | null;
   emailVerifiedAt?: string | null;

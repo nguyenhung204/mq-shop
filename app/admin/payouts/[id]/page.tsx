@@ -17,6 +17,7 @@ import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
 
@@ -44,6 +45,8 @@ function formatWhen(iso: string | null | undefined): string {
 
 function PayoutDetailInner({ payoutId }: { payoutId: string }) {
   const { t } = useLanguage();
+  const { canMutatePermission } = useAuth();
+  const canWritePayout = canMutatePermission("PAYOUT_SELLER");
   const { data: payout, isLoading, isError, error } = useAdminPayout(payoutId);
   const { data: shopsPage } = useAdminShops("APPROVED", 1, 100);
   const shops = shopsPage?.items ?? [];
@@ -87,7 +90,7 @@ function PayoutDetailInner({ payoutId }: { payoutId: string }) {
                     {t(`admin.payouts.status.${payout.status}`)}
                   </span>
                 </div>
-                {payout.status === "PENDING" ? (
+                {payout.status === "PENDING" && canWritePayout ? (
                   <AdminActions>
                     <AdminIconButton
                       label={t("admin.common.approve")}

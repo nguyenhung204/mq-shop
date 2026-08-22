@@ -19,6 +19,7 @@ import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
@@ -74,6 +75,8 @@ function inPeriod(iso: string, start: string, end: string): boolean {
 
 function PayoutsInner() {
   const { t } = useLanguage();
+  const { canMutatePermission } = useAuth();
+  const canWritePayout = canMutatePermission("PAYOUT_SELLER");
   const bounds = monthBounds();
 
   const [shopId, setShopId] = useState("");
@@ -177,6 +180,7 @@ function PayoutsInner() {
         title={t("admin.payouts.title")}
         description={t("admin.payouts.description")}
         actions={
+          canWritePayout ? (
           <button
             type="button"
             className="mq-btn mq-btn-primary shrink-0 whitespace-nowrap"
@@ -188,6 +192,7 @@ function PayoutsInner() {
             <Plus size={16} aria-hidden />
             {showCreate ? t("admin.common.hideForm") : t("admin.payouts.createNew")}
           </button>
+          ) : undefined
         }
       />
 
@@ -217,7 +222,7 @@ function PayoutsInner() {
           )}
         </div>
 
-        {showCreate && (
+        {showCreate && canWritePayout && (
           <form className="mq-card p-5 space-y-4" onSubmit={(e) => void onCreate(e)}>
             <h3 className="font-semibold">{t("admin.payouts.createHeading")}</h3>
             <p className="text-sm text-mq-text-muted">{t("admin.payouts.createHint")}</p>
@@ -422,7 +427,7 @@ function PayoutsInner() {
                 ) : null}
               </div>
 
-              {payout.status === "PENDING" ? (
+              {payout.status === "PENDING" && canWritePayout ? (
                 <AdminActions>
                   <AdminIconButton
                     label={t("admin.common.approve")}

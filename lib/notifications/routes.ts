@@ -34,6 +34,15 @@ function isAdminish(roles: Role[]): boolean {
   );
 }
 
+function isRmaStaff(roles: Role[]): boolean {
+  return (
+    roles.includes("ADMIN") ||
+    roles.includes("SUPER_ADMIN") ||
+    roles.includes("CS") ||
+    roles.includes("WAREHOUSE")
+  );
+}
+
 function isSeller(roles: Role[]): boolean {
   return roles.includes("SELLER");
 }
@@ -137,11 +146,11 @@ export function resolveNotificationRoute(
 
     case "RMA_NEW": {
       const m = requireMeta(meta, ["rmaId"]);
-      if (admin && m) return `/admin/rma/${m.rmaId}`;
+      if (isRmaStaff(ctx.roles) && m) return `/admin/rma/${m.rmaId}`;
       if (seller && !buyerOnly) return "/seller/rma";
       const orderId = metaStr(meta, "orderId");
       if (orderId) return `/orders/${orderId}`;
-      return admin ? "/admin/rma" : "/rma";
+      return isRmaStaff(ctx.roles) ? "/admin/rma" : "/rma";
     }
 
     case "RMA_APPROVED":
@@ -161,8 +170,8 @@ export function resolveNotificationRoute(
     case "RMA_ESCALATED": {
       const orderId = metaStr(meta, "orderId");
       const rmaId = metaStr(meta, "rmaId");
-      if (admin && rmaId) return `/admin/rma/${rmaId}`;
-      if (admin) return "/admin/rma";
+      if (isRmaStaff(ctx.roles) && rmaId) return `/admin/rma/${rmaId}`;
+      if (isRmaStaff(ctx.roles)) return "/admin/rma";
       if (seller && !buyerOnly) {
         if (rmaId) return "/seller/rma";
         return "/seller/rma";

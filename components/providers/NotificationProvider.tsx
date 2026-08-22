@@ -153,8 +153,7 @@ const NOTIFY_INVALIDATION_MAP: Partial<Record<string, readonly (readonly unknown
   WALLET_WITHDRAW_REJECTED: [walletKeys.all],
   WALLET_WITHDRAW_COMPLETED: [walletKeys.all],
   WALLET_WITHDRAW_PAY_FAILED: [walletKeys.all],
-  // Sent to the ACCOUNTANT approving the withdrawal — needs the admin queue, not
-  // the requester's own wallet.
+  // Staff queue (view for Accountant; mutate only when RBAC scope is ALL)
   WALLET_WITHDRAW_NEW: [adminWalletKeys.all],
   WALLET_WITHDRAW_STAFF_APPROVED: [adminWalletKeys.all],
   WALLET_WITHDRAW_STAFF_REJECTED: [adminWalletKeys.all],

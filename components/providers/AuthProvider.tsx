@@ -19,6 +19,8 @@ type AuthContextValue = {
   hasRole: (role: Role) => boolean;
   hasPermission: (code: string) => boolean;
   hasAnyPermission: (codes: string[]) => boolean;
+  /** True when the session grant can POST/PATCH (ALL / SELF / SHOP), not APPROVE-only view. */
+  canMutatePermission: (code: string) => boolean;
   login: (identifier: string, password: string) => Promise<AuthUser>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -28,6 +30,18 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 const USER_KEY = "mq_user";
+const MUTATING_SCOPES = new Set(["ALL", "SELF", "SHOP"]);
+
+function canMutateFromUser(user: AuthUser | null, code: string): boolean {
+  if (!user) return false;
+  if (user.roles?.includes("SUPER_ADMIN")) return true;
+  if (user.permissionScopes) {
+    const scope = user.permissionScopes[code];
+    return Boolean(scope && MUTATING_SCOPES.has(scope));
+  }
+  // Legacy cached session without scopes: Admin only, never Accountant.
+  return Boolean(user.roles?.includes("ADMIN"));
+}
 
 function readCachedUser(): AuthUser | null {
   if (typeof window === "undefined") return null;
@@ -124,6 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (user.roles?.includes("SUPER_ADMIN") || user.roles?.includes("ADMIN")) return true;
         return codes.some((c) => user.permissions?.includes(c));
       },
+      canMutatePermission: (code) => canMutateFromUser(user, code),
       login,
       logout,
       refreshUser,

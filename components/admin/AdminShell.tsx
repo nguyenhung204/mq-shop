@@ -13,7 +13,7 @@ import { useTheme } from "@/components/providers/ThemeProvider";
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
-  const { hasAnyPermission, hasRole } = useAuth();
+  const { hasAnyPermission, hasRole, user } = useAuth();
   const { t } = useLanguage();
 
   const visible = adminNavItems.filter((i) => {
@@ -23,7 +23,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
     if (hasAnyPermission(i.permissions) || hasRole("ADMIN") || hasRole("SUPER_ADMIN")) {
       return true;
     }
-    if (hasRole("ACCOUNTANT")) {
+    if (hasRole("ACCOUNTANT") && user?.permissions == null) {
       return i.permissions.some((p) =>
         (ACCOUNTANT_COMMERCE_PERMS as readonly string[]).includes(p),
       );

@@ -33,19 +33,22 @@ import {
 } from "lucide-react";
 import type { Role } from "@/lib/api/types";
 
-/** Commerce permissions accountants may access when `/me` omits a full grant list. */
+/** Fallback nav grants when `/me` has no `permissions` yet (legacy cache). View/export only. */
 export const ACCOUNTANT_COMMERCE_PERMS = [
-  "PROCESS_RMA",
-  "MANAGE_RMA",
   "VIEW_TRANSACT",
   "CONFIG_FEE",
   "PAYOUT_SELLER",
   "CALC_LAND_COST",
   "APPROVE_PAYOUT",
-  "PROCESS_PAYOUT",
   "VIEW_MLM_TREE",
-  "ADJUST_POINTS",
+  "VIEW_MLM_COMSN",
   "CONFIG_MLM",
+  "EXPORT_REPORT",
+  "VIEW_ORDER",
+  "VIEW_USERS",
+  "VIEW_CUST_DATA",
+  "VIEW_AUDIT_LOG",
+  "VIEW_WALLET",
 ] as const;
 
 export type AdminNavItem = {
@@ -120,6 +123,7 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.users",
     icon: Users,
     permissions: ["LOCK_USER", "UNLOCK_USER", "DELETE_USER", "VIEW_USERS", "DELETE_ACCOUNT"],
+    roles: ["ADMIN", "SUPER_ADMIN"],
     group: "ops",
   },
   {
@@ -150,15 +154,15 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.audit",
     icon: ClipboardList,
     permissions: ["VIEW_AUDIT_LOG"],
-    roles: ["ADMIN", "SUPER_ADMIN"],
+    roles: ["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"],
     group: "ops",
   },
   {
     href: "/admin/orders",
     labelKey: "admin.nav.orders",
     icon: ShoppingBag,
-    permissions: ["FORCE_CANCEL_ORDER", "CONFIRM_ORDER"],
-    roles: ["CS", "WAREHOUSE", "ACCOUNTANT", "ADMIN", "SUPER_ADMIN"],
+    permissions: ["FORCE_CANCEL_ORDER", "CONFIRM_ORDER", "VIEW_ORDER"],
+    roles: ["CS", "WAREHOUSE", "ADMIN", "SUPER_ADMIN"],
     group: "commerce",
   },
   {
@@ -166,7 +170,7 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.rma",
     icon: RotateCcw,
     permissions: ["PROCESS_RMA", "MANAGE_RMA"],
-    roles: ["CS", "WAREHOUSE", "ACCOUNTANT", "ADMIN", "SUPER_ADMIN"],
+    roles: ["CS", "WAREHOUSE", "ADMIN", "SUPER_ADMIN"],
     group: "commerce",
   },
   {
@@ -203,7 +207,7 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.walletAdjust",
     icon: Coins,
     permissions: ["ADJUST_POINTS"],
-    roles: ["ACCOUNTANT", "ADMIN", "SUPER_ADMIN"],
+    roles: ["ADMIN", "SUPER_ADMIN"],
     group: "commerce",
   },
   {
@@ -219,7 +223,7 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.commissionReport",
     icon: FileBarChart2,
     permissions: ["APPROVE_MLM", "VIEW_MLM_COMSN"],
-    roles: ["SUPER_ADMIN", "ACCOUNTANT"],
+    roles: ["SUPER_ADMIN", "ACCOUNTANT", "ADMIN"],
     group: "commerce",
   },
   {

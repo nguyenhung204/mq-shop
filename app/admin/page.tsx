@@ -67,6 +67,7 @@ const cards: {
     href: "/admin/users",
     navKey: "users",
     permissions: ["VIEW_USERS", "DELETE_ACCOUNT", "LOCK_USER"],
+    roles: ["ADMIN", "SUPER_ADMIN"],
     icon: Users,
   },
   {
@@ -79,6 +80,7 @@ const cards: {
     href: "/admin/orders",
     navKey: "orders",
     permissions: ["VIEW_ORDER", "CREATE_ORDER"],
+    roles: ["CS", "WAREHOUSE", "ADMIN", "SUPER_ADMIN"],
     icon: ShoppingBag,
   },
   {
@@ -115,7 +117,7 @@ const cards: {
   {
     href: "/admin/mlm",
     navKey: "mlm",
-    permissions: ["CONFIG_MLM", "VIEW_MLM_TREE"],
+    permissions: ["CONFIG_MLM", "VIEW_MLM_TREE", "VIEW_MLM_COMSN"],
     roles: ["SUPER_ADMIN", "ACCOUNTANT", "ADMIN"],
     icon: Network,
   },
@@ -153,14 +155,14 @@ const cards: {
 ];
 
 function AdminHome() {
-  const { hasAnyPermission, hasRole } = useAuth();
+  const { hasAnyPermission, hasRole, user } = useAuth();
   const { t } = useLanguage();
   const visible = cards.filter((c) => {
     if (c.roles?.length && !c.roles.some((r) => hasRole(r))) return false;
     if (hasAnyPermission(c.permissions) || hasRole("ADMIN") || hasRole("SUPER_ADMIN")) {
       return true;
     }
-    if (hasRole("ACCOUNTANT")) {
+    if (hasRole("ACCOUNTANT") && user?.permissions == null) {
       return c.permissions.some((p) =>
         (ACCOUNTANT_COMMERCE_PERMS as readonly string[]).includes(p),
       );

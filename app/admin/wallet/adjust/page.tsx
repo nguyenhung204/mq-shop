@@ -78,7 +78,7 @@ function WalletAdjustInner() {
       });
       setOkMsg(
         t("admin.walletAdjust.success", {
-          amount: formatPoints(n),
+          amount: formatPoints(n, t("common.pointUnit")),
           email: selected?.email ?? "—",
         }),
       );
@@ -171,7 +171,7 @@ function WalletAdjustInner() {
 export default function AdminWalletAdjustPage() {
   return (
     <AuthGuard
-      roles={["SUPER_ADMIN", "ACCOUNTANT", "ADMIN"]}
+      roles={["SUPER_ADMIN", "ADMIN"]}
       permissions={["ADJUST_POINTS"]}
     >
       <WalletAdjustInner />

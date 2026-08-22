@@ -23,6 +23,7 @@ import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { formatMoney, formatPercent } from "@/lib/api/utils";
 import { mlmRankLabel } from "@/lib/i18n/mlm-rank";
 import type { Locale } from "@/lib/i18n/types";
@@ -769,6 +770,8 @@ function LoyaltySection({ summary }: { summary: CommissionTypeSummary<LoyaltyCom
 
 function CommissionReportInner() {
   const { t } = useLanguage();
+  const { canMutatePermission } = useAuth();
+  const canMarkPaid = canMutatePermission("APPROVE_MLM");
   const tr = (k: string) => t(`admin.mlm.commissionReport.${k}`);
 
   const [inputYm, setInputYm] = useState("");
@@ -794,6 +797,7 @@ function CommissionReportInner() {
 
   async function handleMarkPaid(e: FormEvent) {
     e.preventDefault();
+    if (!canMarkPaid) return;
     setPaidError("");
     const yearMonth = (paidYearMonth || data?.yearMonth || queryYm || "").trim();
     if (!isYearMonth(yearMonth)) {
@@ -855,6 +859,7 @@ function CommissionReportInner() {
           </div>
         </div>
 
+        {canMarkPaid ? (
         <form className="mq-admin-panel p-4 space-y-3" onSubmit={(e) => void handleMarkPaid(e)}>
           <div>
             <h2 className="text-sm font-semibold text-mq-text">{tr("markPaidTitle")}</h2>
@@ -883,6 +888,7 @@ function CommissionReportInner() {
             </button>
           </div>
         </form>
+        ) : null}
 
         {isError && (
           <div className="mq-alert mq-alert-error">
@@ -1008,7 +1014,7 @@ function CommissionReportInner() {
 
 export default function CommissionReportPage() {
   return (
-    <AuthGuard roles={["SUPER_ADMIN", "ACCOUNTANT"]}>
+    <AuthGuard roles={["SUPER_ADMIN", "ACCOUNTANT", "ADMIN"]} permissions={["VIEW_MLM_COMSN", "APPROVE_MLM"]}>
       <CommissionReportInner />
     </AuthGuard>
   );

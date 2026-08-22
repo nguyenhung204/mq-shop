@@ -90,7 +90,6 @@ export function TransactionsReport({
     !buyerMode &&
     (hasPermission("EXPORT_REPORT") ||
       hasRole("SELLER") ||
-      hasRole("ACCOUNTANT") ||
       hasRole("ADMIN") ||
       hasRole("SUPER_ADMIN"));
   const typeOptions: FinanceTransactionType[] = buyerMode

@@ -458,24 +458,27 @@ function GlobalFundDetail({
 
 function MlmAdminInner() {
   const { t, locale } = useLanguage();
-  const { hasRole } = useAuth();
+  const { hasRole, hasPermission, canMutatePermission } = useAuth();
 
   /**
    * CONFIG_MLM ALL: Super Admin (mutate ranks / promotion rules).
-   * APPROVE_MLM ALL: Accountant + Super Admin — run monthly TEAM/LOYALTY,
-   * run quarterly GLOBAL, flush pending, commission report.
-   * Ops ADMIN has APPROVE_MLM=PROPOSE only → BE blocks POST run; FE hides run UI.
+   * VIEW_MLM_COMSN: Accountant + Super Admin — monthly/quarterly fund reports (view/download).
+   * APPROVE_MLM ALL: run monthly TEAM/LOYALTY, run quarterly GLOBAL, flush pending.
+   * Super Admin can restore Accountant writes via Admin → RBAC matrix.
    */
-  const canMutateConfig = hasRole("SUPER_ADMIN");
-  const canApproveSettlement =
-    hasRole("SUPER_ADMIN") || hasRole("ACCOUNTANT");
+  const canMutateConfig = canMutatePermission("CONFIG_MLM");
+  const canViewFunds =
+    hasRole("SUPER_ADMIN") ||
+    hasPermission("VIEW_MLM_COMSN") ||
+    hasRole("ACCOUNTANT");
+  const canRunFunds = canMutatePermission("APPROVE_MLM");
   const canViewTree =
     hasRole("SUPER_ADMIN") ||
     hasRole("ACCOUNTANT") ||
     hasRole("ADMIN");
 
   const { data: ranks, isLoading, isError, error } = useMlmRanks({
-    enabled: canMutateConfig || canApproveSettlement,
+    enabled: canMutateConfig || canViewFunds,
   });
   const ranksByNumber = useMemo(() => {
     const map = new Map<number, MlmRankConfig>();
@@ -493,12 +496,12 @@ function MlmAdminInner() {
     isLoading: monthlyLoading,
     isError: monthlyIsError,
     error: monthlyErr,
-  } = useMonthlyCommissionOverview(12, { enabled: canApproveSettlement });
+  } = useMonthlyCommissionOverview(12, { enabled: canViewFunds });
   const months = monthlyOverview?.months ?? [];
   const {
     data: quarterlyOverview,
     isLoading: quarterlyLoading,
-  } = useQuarterlyGlobalOverview(8, { enabled: canApproveSettlement });
+  } = useQuarterlyGlobalOverview(8, { enabled: canViewFunds });
   const quarters = quarterlyOverview?.quarters ?? [];
 
   const { data: usersPage } = useQuery({
@@ -742,6 +745,7 @@ function MlmAdminInner() {
     e.preventDefault();
     setMonthlyOk("");
     setMonthlyError("");
+    if (!canRunFunds) return;
     if (!yearMonth) {
       setMonthlyError(t("admin.mlm.yearMonthRequired"));
       return;
@@ -773,6 +777,7 @@ function MlmAdminInner() {
     e.preventDefault();
     setQuarterlyOk("");
     setQuarterlyError("");
+    if (!canRunFunds) return;
     if (!periodKey) {
       setQuarterlyError(t("admin.mlm.periodKeyRequired"));
       return;
@@ -1053,13 +1058,9 @@ function MlmAdminInner() {
 
           <MlmPromotionRulesSection />
           </>
-        ) : (
-          <div className="mq-alert mq-alert-error text-sm">
-            {t("admin.mlm.noConfigPerm")}
-          </div>
-        )}
+        ) : null}
 
-        {canApproveSettlement ? (
+        {canViewFunds ? (
           <section className="mq-card p-5 space-y-4">
             <div>
               <h2 className="text-base font-medium">{t("admin.mlm.runMonthlyTitle")}</h2>
@@ -1160,6 +1161,7 @@ function MlmAdminInner() {
               </div>
             )}
 
+            {canRunFunds ? (
             <form
               className="flex flex-wrap gap-3 items-center justify-between border-t border-mq-border pt-4"
               onSubmit={(e) => void onRunMonthly(e)}
@@ -1175,17 +1177,18 @@ function MlmAdminInner() {
               <button
                 type="submit"
                 className="mq-btn mq-btn-primary text-sm"
-                disabled={runMonthly.isPending || !canRunSelected}
+                disabled={runMonthly.isPending || !canRunSelected || !canRunFunds}
               >
                 {runMonthly.isPending
                   ? t("admin.common.saving")
                   : t("admin.mlm.runMonthly")}
               </button>
             </form>
+            ) : null}
           </section>
         ) : null}
 
-        {canApproveSettlement ? (
+        {canViewFunds ? (
           <section className="mq-card p-5 space-y-4">
             <div>
               <h2 className="text-base font-medium">{t("admin.mlm.runQuarterlyTitle")}</h2>
@@ -1340,6 +1343,7 @@ function MlmAdminInner() {
                 </table>
               </div>
             )}
+            {canRunFunds ? (
             <form
               className="flex flex-wrap gap-3 items-center justify-between border-t border-mq-border pt-4"
               onSubmit={(e) => void onRunQuarterly(e)}
@@ -1360,13 +1364,14 @@ function MlmAdminInner() {
               <button
                 type="submit"
                 className="mq-btn mq-btn-primary text-sm"
-                disabled={runQuarterly.isPending || !canRunQuarter}
+                disabled={runQuarterly.isPending || !canRunQuarter || !canRunFunds}
               >
                 {runQuarterly.isPending
                   ? t("admin.common.saving")
                   : t("admin.mlm.runQuarterly")}
               </button>
             </form>
+            ) : null}
           </section>
         ) : null}
 
