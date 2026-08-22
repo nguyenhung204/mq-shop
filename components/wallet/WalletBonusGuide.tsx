@@ -40,7 +40,7 @@ export function WalletBonusGuide({ className = "" }: { className?: string }) {
   const { t, locale } = useLanguage();
   const { hasRole } = useAuth();
   const { data: ranks } = useSellerMlmRankConfigs({ enabled: hasRole("SELLER") });
-  const { onePointDisplay, formatRegion } = usePointsDisplayFx();
+  const { onePointDisplay, formatRegion, pointUsdLabel } = usePointsDisplayFx();
 
   // Only show to SELLER
   if (!hasRole("SELLER")) return null;
@@ -63,7 +63,7 @@ export function WalletBonusGuide({ className = "" }: { className?: string }) {
           {t("wallet.bonusGuide.title")}
         </h3>
         <p className="text-sm text-mq-text-muted leading-relaxed">
-          {t("wallet.bonusGuide.intro")}
+          {t("wallet.bonusGuide.intro", { usd: pointUsdLabel })}
         </p>
         <div className="rounded-md border border-mq-accent-orange/30 bg-mq-accent-orange/5 px-3 py-2.5 text-sm space-y-2">
           <p className="font-medium text-mq-text">{t("wallet.bonusGuide.policyTitle")}</p>

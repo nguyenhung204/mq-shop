@@ -1,3 +1,4 @@
+import { formatPoints } from "@/lib/api/utils";
 import { getTranslation } from "@/lib/i18n/get-translation";
 import {
   NOTIFICATION_FALLBACK_TITLE,
@@ -7,6 +8,35 @@ import { mlmRankLabel } from "@/lib/i18n/mlm-rank";
 import { statusLabel } from "@/lib/i18n/status";
 import type { Locale } from "@/lib/i18n/types";
 import type { ApiNotification } from "@/lib/api/types";
+
+/** Inbox types whose `{amount}` is wallet points (not TWD shop payout). */
+const POINT_AMOUNT_TYPES = new Set([
+  "WALLET_TRANSFER_SENT",
+  "WALLET_TRANSFER_RECEIVED",
+  "WALLET_ADJUSTED",
+  "COMMISSION_REFERRAL_CREDITED",
+  "COMMISSION_TEAM_CREDITED",
+  "COMMISSION_GLOBAL_CREDITED",
+  "COMMISSION_LOYALTY_CREDITED",
+]);
+
+function pointUnitLabel(locale: Locale | null): string {
+  return getTranslation(locale ?? "en", "common.pointUnit");
+}
+
+/** Ledger code `PTS` → điểm / points / 點 (UI copy + legacy BE bodies). */
+function localizePtsToken(text: string, locale: Locale | null): string {
+  if (!text.includes("PTS")) return text;
+  return text.replace(/\bPTS\b/g, pointUnitLabel(locale));
+}
+
+function formatNotificationPointAmount(
+  raw: string,
+  locale: Locale | null,
+): string {
+  const cleaned = raw.replace(/\s*PTS\s*$/i, "").trim();
+  return formatPoints(cleaned, pointUnitLabel(locale));
+}
 
 const STATUS_DOMAIN_BY_TYPE: Record<string, string> = {
   ORDER_STATUS_UPDATED: "order",
@@ -110,6 +140,10 @@ function buildVars(
     vars.reason = "";
   }
 
+  if (POINT_AMOUNT_TYPES.has(type) && vars.amount) {
+    vars.amount = formatNotificationPointAmount(vars.amount, locale);
+  }
+
   // Prefer resolved names from metaNames over raw UUIDs.
   // Templates use {orderId}, {shopId}, etc. directly — overwrite them with the
   // human-readable value so the placeholder shows a name, not a UUID.
@@ -141,14 +175,17 @@ export function localizeNotification(
 
   if (!copy) {
     return {
-      title: n.title?.trim() || NOTIFICATION_FALLBACK_TITLE[lang],
-      body: n.body?.trim() || "",
+      title: localizePtsToken(
+        n.title?.trim() || NOTIFICATION_FALLBACK_TITLE[lang],
+        locale,
+      ),
+      body: localizePtsToken(n.body?.trim() || "", locale),
     };
   }
 
   const vars = buildVars(type, n.meta, locale, n.metaNames);
   return {
-    title: interpolate(copy.title, vars),
-    body: interpolate(copy.body, vars),
+    title: localizePtsToken(interpolate(copy.title, vars), locale),
+    body: localizePtsToken(interpolate(copy.body, vars), locale),
   };
 }

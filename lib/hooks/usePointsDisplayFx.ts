@@ -1,8 +1,11 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { useRegion } from "@/components/providers/RegionProvider";
 import { useFxRates } from "@/lib/fx/useFxRates";
+import { useActiveFinanceConfig } from "@/lib/queries/finance";
+import { useWallet } from "@/lib/queries/wallet";
 import {
   convertPointsToDisplay,
   convertPointsToTwd,
@@ -10,12 +13,22 @@ import {
   FX_BASE_CURRENCY,
   formatDisplayMoney,
   formatPointUsdValue,
+  resolvePointUsdValue,
 } from "@/lib/points";
 
 /** Region currency + FX helpers for PTS value notes and withdraw estimates. */
 export function usePointsDisplayFx() {
+  const { hasRole } = useAuth();
   const { currentRegion } = useRegion();
   const { rates, isRatesReady } = useFxRates();
+  const canReadFeeConfig = hasRole("SUPER_ADMIN") || hasRole("ACCOUNTANT");
+  const { data: activeConfig } = useActiveFinanceConfig({
+    enabled: canReadFeeConfig,
+  });
+  const { data: wallet } = useWallet();
+  const pointUsdValue = resolvePointUsdValue(
+    activeConfig?.pointUsdValue ?? wallet?.pointUsdValue,
+  );
 
   const displayCurrency = (
     currentRegion?.currency || FX_BASE_CURRENCY
@@ -24,13 +37,20 @@ export function usePointsDisplayFx() {
 
   const onePointDisplay = useMemo(() => {
     if (!(typeof rateTwdToUsd === "number" && rateTwdToUsd > 0)) return null;
-    return convertPointsToDisplay(1, rateTwdToUsd, displayCurrency, rates);
-  }, [rateTwdToUsd, displayCurrency, rates]);
+    return convertPointsToDisplay(
+      1,
+      rateTwdToUsd,
+      displayCurrency,
+      rates,
+      2,
+      pointUsdValue,
+    );
+  }, [rateTwdToUsd, displayCurrency, rates, pointUsdValue]);
 
   const onePointTwd = useMemo(() => {
     if (!(typeof rateTwdToUsd === "number" && rateTwdToUsd > 0)) return null;
-    return convertPointsToTwd(1, rateTwdToUsd);
-  }, [rateTwdToUsd]);
+    return convertPointsToTwd(1, rateTwdToUsd, 2, pointUsdValue);
+  }, [rateTwdToUsd, pointUsdValue]);
 
   const estimateWithdraw = useCallback(
     (points: number): { twd: number | null; display: number | null } => {
@@ -41,11 +61,11 @@ export function usePointsDisplayFx() {
       ) {
         return { twd: null, display: null };
       }
-      const twd = convertPointsToTwd(points, rateTwdToUsd);
+      const twd = convertPointsToTwd(points, rateTwdToUsd, 2, pointUsdValue);
       const display = convertTwdToDisplay(twd, displayCurrency, rates);
       return { twd, display };
     },
-    [rateTwdToUsd, displayCurrency, rates],
+    [rateTwdToUsd, displayCurrency, rates, pointUsdValue],
   );
 
   const formatRegion = useCallback(
@@ -84,7 +104,7 @@ export function usePointsDisplayFx() {
     isRatesReady,
     onePointDisplay,
     onePointTwd,
-    pointUsdLabel: formatPointUsdValue(),
+    pointUsdLabel: formatPointUsdValue(pointUsdValue),
     isRegionTwd: displayCurrency === FX_BASE_CURRENCY,
     estimateWithdraw,
     formatRegion,

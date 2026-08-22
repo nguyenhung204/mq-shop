@@ -226,7 +226,7 @@ export const NOTIFICATION_TYPE_COPY: Record<
     },
     WALLET_ADJUSTED: {
       title: "Wallet adjusted",
-      body: "Your wallet balance was adjusted by an administrator.",
+      body: "Your wallet was adjusted by {amount}.",
     },
     WALLET_WITHDRAW_REQUESTED: {
       title: "Withdrawal requested",
@@ -560,7 +560,7 @@ export const NOTIFICATION_TYPE_COPY: Record<
     },
     WALLET_ADJUSTED: {
       title: "Ví được điều chỉnh",
-      body: "Số dư ví được admin điều chỉnh.",
+      body: "Admin đã điều chỉnh ví {amount}.",
     },
     WALLET_WITHDRAW_REQUESTED: {
       title: "Yêu cầu rút tiền",
@@ -894,7 +894,7 @@ export const NOTIFICATION_TYPE_COPY: Record<
     },
     WALLET_ADJUSTED: {
       title: "錢包已調整",
-      body: "管理員已調整您的錢包餘額。",
+      body: "管理員已調整您的錢包 {amount}。",
     },
     WALLET_WITHDRAW_REQUESTED: {
       title: "已申請提款",

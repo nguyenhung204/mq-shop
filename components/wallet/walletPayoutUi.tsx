@@ -38,6 +38,8 @@ type Labels = {
   createdAt?: string;
   updatedAt?: string;
   fiatLabel?: string;
+  /** Localized unit after the amount (điểm / points / 點). */
+  pointUnit?: string;
   /** Optional region approx line under bank TWD. */
   regionApprox?: string | null;
 };
@@ -57,7 +59,9 @@ export function WalletPayoutDetailFields({
     <div className="mq-card p-5 space-y-4 text-sm">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-1 min-w-0">
-          <p className="text-2xl tabular-nums font-medium">{formatPoints(payout.amount)}</p>
+          <p className="text-2xl tabular-nums font-medium">
+            {formatPoints(payout.amount, labels.pointUnit)}
+          </p>
           {payout.fiatAmount ? (
             <div className="text-sm text-mq-text-muted space-y-0.5">
               <p>

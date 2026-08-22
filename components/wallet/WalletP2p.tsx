@@ -271,7 +271,7 @@ function P2pPanel({
                 <p className="text-xs text-mq-text-muted">
                   {t("wallet.available")}:{" "}
                   <span className="tabular-nums font-medium text-mq-text">
-                    {formatPoints(balance?.availableBalance)}
+                    {formatPoints(balance?.availableBalance, t("common.pointUnit"))}
                   </span>
                 </p>
               ) : null}

@@ -1,19 +1,28 @@
 /**
  * Mirror of mq_backend `points-conversion.ts`.
- * 1 PTS ≈ POINT_USD_VALUE USD; ledger withdraw converts PTS → TWD via FX (TWD→USD).
+ * 1 PTS ≈ pointUsdValue USD (default 0.99999; Super Admin may change).
+ * Ledger withdraw converts PTS → TWD via FX (TWD→USD).
  * Display can further convert that TWD amount into the shopper's region currency.
  */
 export const POINT_USD_VALUE = 0.99999;
 
 export const FX_BASE_CURRENCY = "TWD";
 
+export function resolvePointUsdValue(value: number | string | null | undefined): number {
+  const n = typeof value === "string" ? Number(value) : value;
+  if (typeof n === "number" && Number.isFinite(n) && n > 0) return n;
+  return POINT_USD_VALUE;
+}
+
 export function convertPointsToTwd(
   points: number,
   rateTwdToUsd: number,
   decimalPlaces = 2,
+  pointUsdValue = POINT_USD_VALUE,
 ): number {
-  if (!(points > 0) || !(rateTwdToUsd > 0)) return 0;
-  const raw = (points * POINT_USD_VALUE) / rateTwdToUsd;
+  const peg = resolvePointUsdValue(pointUsdValue);
+  if (!(points > 0) || !(rateTwdToUsd > 0) || !(peg > 0)) return 0;
+  const raw = (points * peg) / rateTwdToUsd;
   const factor = 10 ** decimalPlaces;
   return Math.round(raw * factor) / factor;
 }
@@ -40,13 +49,14 @@ export function convertPointsToDisplay(
   displayCurrency: string,
   rates: Record<string, number> | null | undefined,
   decimalPlaces = 2,
+  pointUsdValue = POINT_USD_VALUE,
 ): number {
-  const twd = convertPointsToTwd(points, rateTwdToUsd, decimalPlaces);
+  const twd = convertPointsToTwd(points, rateTwdToUsd, decimalPlaces, pointUsdValue);
   return convertTwdToDisplay(twd, displayCurrency, rates, decimalPlaces);
 }
 
-export function formatPointUsdValue(): string {
-  return String(POINT_USD_VALUE);
+export function formatPointUsdValue(value?: number | string | null): string {
+  return String(resolvePointUsdValue(value));
 }
 
 export function formatDisplayMoney(

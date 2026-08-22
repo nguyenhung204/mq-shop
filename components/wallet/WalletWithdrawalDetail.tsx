@@ -37,6 +37,7 @@ function WithdrawalDetailInner({
     createdAt: t("wallet.withdrawCreatedAt"),
     updatedAt: t("wallet.withdrawUpdatedAt"),
     fiatLabel: t("wallet.fiatLabel"),
+    pointUnit: t("common.pointUnit"),
     regionApprox:
       payout?.fiatAmount && !isRegionTwd
         ? t("wallet.fiatApproxRegion", {

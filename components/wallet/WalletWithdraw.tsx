@@ -277,7 +277,7 @@ function WithdrawPanel({
                 className="rounded-md border border-mq-border p-3 flex items-center justify-between gap-3 text-sm hover:border-mq-accent transition-colors block"
               >
                 <div className="space-y-1 min-w-0 flex-1">
-                  <p className="tabular-nums font-medium">{formatPoints(w.amount)}</p>
+                  <p className="tabular-nums font-medium">{formatPoints(w.amount, t("common.pointUnit"))}</p>
                   {w.fiatAmount ? (
                     <div className="text-xs text-mq-text-muted space-y-0.5">
                       <p>

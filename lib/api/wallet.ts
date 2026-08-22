@@ -7,6 +7,8 @@ export type Wallet = {
   availableBalance: string;
   frozenBalance: string;
   currency: "USD" | string;
+  /** Active 1 PTS = N USD (finance config; default 0.99999). */
+  pointUsdValue?: string;
   updatedAt: string;
 };
 

@@ -212,8 +212,8 @@ function TxRow({ row }: { row: WalletTransaction }) {
   const { t } = useLanguage();
   const signed =
     row.direction === "OUT"
-      ? `−${formatPoints(row.amount)}`
-      : `+${formatPoints(row.amount)}`;
+      ? `−${formatPoints(row.amount, t("common.pointUnit"))}`
+      : `+${formatPoints(row.amount, t("common.pointUnit"))}`;
   return (
     <div className="mq-card p-4 flex flex-wrap justify-between gap-3 text-sm">
       <div className="space-y-1 min-w-0">
@@ -359,7 +359,7 @@ function WalletInner({ embedded = false }: { embedded?: boolean }) {
                 {t("wallet.available")}
               </p>
               <p className="text-2xl mt-2 tabular-nums">
-                {formatPoints(balance?.availableBalance)}
+                {formatPoints(balance?.availableBalance, t("common.pointUnit"))}
               </p>
             </div>
             <div className="mq-card p-5">
@@ -367,7 +367,7 @@ function WalletInner({ embedded = false }: { embedded?: boolean }) {
                 {t("wallet.frozen")}
               </p>
               <p className="text-2xl mt-2 tabular-nums">
-                {formatPoints(balance?.frozenBalance)}
+                {formatPoints(balance?.frozenBalance, t("common.pointUnit"))}
               </p>
               <p className="text-xs text-mq-text-muted mt-1">{t("wallet.frozenHint")}</p>
             </div>

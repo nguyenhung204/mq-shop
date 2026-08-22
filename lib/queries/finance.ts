@@ -126,6 +126,7 @@ export function useApproveFinanceConfig() {
     mutationFn: (id: string) => financeConfigApi.approve(id),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: financeKeys.all });
+      void qc.invalidateQueries({ queryKey: ["wallet"] });
       toast.success(tt("toast.financeConfigApproved"));
     },
     onError: (e) =>

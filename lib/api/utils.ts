@@ -1,3 +1,5 @@
+import { tt } from "@/lib/i18n/tt";
+
 export function asArray<T>(data: unknown): T[] {
   if (!data) return [];
   if (Array.isArray(data)) return data as T[];
@@ -100,13 +102,17 @@ export function formatMoney(value: string | number | undefined | null): string {
   }).format(n);
 }
 
-export function formatPoints(value: string | number | undefined | null): string {
+export function formatPoints(
+  value: string | number | undefined | null,
+  unit?: string,
+): string {
+  const suffix = unit ?? tt("common.pointUnit");
   const n = typeof value === "string" ? Number(value) : value ?? 0;
-  if (!Number.isFinite(n)) return "0 PTS";
+  if (!Number.isFinite(n)) return `0 ${suffix}`;
   return `${new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  }).format(n)} PTS`;
+  }).format(n)} ${suffix}`;
 }
 
 /** Format BE percent strings (e.g. `"5.0000"`) as `5%` / `6.5%`. */

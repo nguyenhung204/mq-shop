@@ -23,6 +23,7 @@ import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { useAdminShops } from "@/lib/queries/admin";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { POINT_USD_VALUE, formatPointUsdValue } from "@/lib/points";
 
 const STATUSES: Array<FinanceConfigStatus | ""> = [
   "",
@@ -34,6 +35,7 @@ const STATUSES: Array<FinanceConfigStatus | ""> = [
 type FormState = {
   platformFeePercent: string;
   commissionPercent: string;
+  pointUsdValue: string;
   gatewayName: string;
   apiKey: string;
   secretKey: string;
@@ -42,6 +44,7 @@ type FormState = {
 const emptyForm = (): FormState => ({
   platformFeePercent: "5.00",
   commissionPercent: "2.00",
+  pointUsdValue: String(POINT_USD_VALUE),
   gatewayName: "",
   apiKey: "",
   secretKey: "",
@@ -65,13 +68,22 @@ function isPercent(value: string): boolean {
   return Number.isFinite(n) && n >= 0 && n <= 100;
 }
 
+function isPointUsd(value: string): boolean {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 && n <= 100;
+}
+
 function buildBody(form: FormState): CreateFinanceConfigBody | null {
   if (!isPercent(form.platformFeePercent) || !isPercent(form.commissionPercent)) {
+    return null;
+  }
+  if (!isPointUsd(form.pointUsdValue)) {
     return null;
   }
   const body: CreateFinanceConfigBody = {
     platformFeePercent: form.platformFeePercent.trim(),
     commissionPercent: form.commissionPercent.trim(),
+    pointUsdValue: form.pointUsdValue.trim(),
   };
   const gateway = form.gatewayName.trim();
   if (gateway) body.gatewayName = gateway;
@@ -89,23 +101,26 @@ function formatWhen(iso: string | null | undefined): string {
   }
 }
 
+function pointUsdLine(t: (key: string, vars?: Record<string, string>) => string, raw?: string | null): string {
+  return t("common.onePointUsd", { usd: formatPointUsdValue(raw) });
+}
+
 function isYearMonth(value: string): boolean {
   return /^\d{4}-(0[1-9]|1[0-2])$/.test(value.trim());
 }
 
 function FinanceConfigsInner() {
   const { t, locale } = useLanguage();
-  const { hasRole, hasAnyPermission } = useAuth();
+  const { hasRole, hasAnyPermission, canMutatePermission } = useAuth();
   const canSubmit = hasRole("SUPER_ADMIN");
-  const canReview = hasRole("ACCOUNTANT") || hasRole("SUPER_ADMIN");
-  const canMarkFeeCollected =
-    hasRole("ACCOUNTANT") || hasRole("ADMIN") || hasRole("SUPER_ADMIN");
+  const canReview = canMutatePermission("CONFIG_FEE");
+  const canMarkFeeCollected = canMutatePermission("PAYOUT_SELLER");
   const canEditFx =
     hasRole("SUPER_ADMIN") || hasAnyPermission(["CONFIG_SYS"]);
 
   const [status, setStatus] = useState<FinanceConfigStatus | "">("PENDING_APPROVAL");
   const [page, setPage] = useState(1);
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(true);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [formError, setFormError] = useState("");
   const [rejectTarget, setRejectTarget] = useState<FinanceConfig | null>(null);
@@ -137,13 +152,16 @@ function FinanceConfigsInner() {
     setFormError("");
     const body = buildBody(form);
     if (!body) {
-      setFormError(t("admin.financeConfigs.formError"));
+      setFormError(
+        isPercent(form.platformFeePercent) && isPercent(form.commissionPercent)
+          ? t("admin.financeConfigs.formErrorPointUsd")
+          : t("admin.financeConfigs.formError"),
+      );
       return;
     }
     try {
       await createConfig.mutateAsync(body);
       setForm(emptyForm());
-      setShowForm(false);
       setStatus("PENDING_APPROVAL");
       setPage(1);
     } catch (err) {
@@ -153,6 +171,7 @@ function FinanceConfigsInner() {
 
   const onMarkFeeCollected = async (e: FormEvent) => {
     e.preventDefault();
+    if (!canMarkFeeCollected) return;
     setFeeError("");
     const shopId = feeShopId.trim();
     const yearMonth = feeYearMonth.trim();
@@ -174,7 +193,24 @@ function FinanceConfigsInner() {
               type="button"
               className="mq-btn mq-btn-primary shrink-0 whitespace-nowrap"
               onClick={() => {
-                setShowForm((v) => !v);
+                setShowForm((v) => {
+                  const next = !v;
+                  if (next) {
+                    const defaults = emptyForm();
+                    setForm({
+                      ...defaults,
+                      platformFeePercent:
+                        active?.platformFeePercent?.trim() ||
+                        defaults.platformFeePercent,
+                      commissionPercent:
+                        active?.commissionPercent?.trim() ||
+                        defaults.commissionPercent,
+                      pointUsdValue:
+                        active?.pointUsdValue?.trim() || defaults.pointUsdValue,
+                    });
+                  }
+                  return next;
+                });
                 setFormError("");
               }}
             >
@@ -186,7 +222,113 @@ function FinanceConfigsInner() {
       />
 
       <div className="space-y-5">
-        {canEditFx ? <AdminFxRatesPanel /> : null}
+        {showForm && canSubmit && (
+          <form className="mq-card p-5 space-y-4" onSubmit={(e) => void onSubmit(e)}>
+            <h3 className="font-semibold">{t("admin.financeConfigs.createHeading")}</h3>
+            <p className="text-sm text-mq-text-muted">
+              {t("admin.financeConfigs.createHint")}
+            </p>
+            {formError ? <div className="mq-alert mq-alert-error">{formError}</div> : null}
+
+            <div className="grid sm:grid-cols-2 gap-3">
+              <label className="space-y-1 text-sm">
+                <span className="text-mq-text-muted">
+                  {t("admin.financeConfigs.platformFee")} (%)
+                </span>
+                <input
+                  className="mq-input"
+                  inputMode="decimal"
+                  value={form.platformFeePercent}
+                  onChange={(e) =>
+                    setForm({ ...form, platformFeePercent: e.target.value })
+                  }
+                  required
+                />
+              </label>
+              <label className="space-y-1 text-sm">
+                <span className="text-mq-text-muted">
+                  {t("admin.financeConfigs.commission")} (%)
+                </span>
+                <input
+                  className="mq-input"
+                  inputMode="decimal"
+                  value={form.commissionPercent}
+                  onChange={(e) =>
+                    setForm({ ...form, commissionPercent: e.target.value })
+                  }
+                  required
+                />
+              </label>
+              <label className="space-y-1 text-sm sm:col-span-2">
+                <span className="text-mq-text-muted">
+                  {t("admin.financeConfigs.pointUsdValuePrefix")}
+                </span>
+                <div className="flex items-center gap-2">
+                  <input
+                    className="mq-input"
+                    inputMode="decimal"
+                    value={form.pointUsdValue}
+                    onChange={(e) =>
+                      setForm({ ...form, pointUsdValue: e.target.value })
+                    }
+                    required
+                  />
+                  <span className="text-sm text-mq-text-muted shrink-0">
+                    {t("admin.financeConfigs.pointUsdValueUnit")}
+                  </span>
+                </div>
+                <span className="text-xs text-mq-text-muted">
+                  {t("admin.financeConfigs.pointUsdValueHint")}
+                </span>
+              </label>
+              <label className="space-y-1 text-sm sm:col-span-2">
+                <span className="text-mq-text-muted">
+                  {t("admin.financeConfigs.gatewayOptional")}
+                </span>
+                <input
+                  className="mq-input"
+                  value={form.gatewayName}
+                  onChange={(e) => setForm({ ...form, gatewayName: e.target.value })}
+                  placeholder="SEED_STUB"
+                />
+              </label>
+              <label className="space-y-1 text-sm">
+                <span className="text-mq-text-muted">
+                  {t("admin.financeConfigs.apiKeyOptional")}
+                </span>
+                <input
+                  className="mq-input"
+                  type="password"
+                  autoComplete="off"
+                  value={form.apiKey}
+                  onChange={(e) => setForm({ ...form, apiKey: e.target.value })}
+                />
+              </label>
+              <label className="space-y-1 text-sm">
+                <span className="text-mq-text-muted">
+                  {t("admin.financeConfigs.secretKeyOptional")}
+                </span>
+                <input
+                  className="mq-input"
+                  type="password"
+                  autoComplete="off"
+                  value={form.secretKey}
+                  onChange={(e) => setForm({ ...form, secretKey: e.target.value })}
+                />
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              className="mq-btn mq-btn-primary"
+              disabled={createConfig.isPending}
+            >
+              {createConfig.isPending
+                ? t("admin.financeConfigs.submitting")
+                : t("admin.financeConfigs.submitBtn")}
+            </button>
+          </form>
+        )}
 
         {canMarkFeeCollected ? (
           <form
@@ -264,6 +406,9 @@ function FinanceConfigsInner() {
                   {t("admin.financeConfigs.commission")}:{" "}
                   <strong>{formatPercent(active.commissionPercent)}</strong>
                 </span>
+                <span>
+                  <strong>{pointUsdLine(t, active.pointUsdValue)}</strong>
+                </span>
                 {active.gatewayName ? (
                   <span>
                     {t("admin.financeConfigs.gateway")}:{" "}
@@ -304,92 +449,6 @@ function FinanceConfigsInner() {
           ))}
         </select>
 
-        {showForm && canSubmit && (
-          <form className="mq-card p-5 space-y-4" onSubmit={(e) => void onSubmit(e)}>
-            <h3 className="font-semibold">{t("admin.financeConfigs.createHeading")}</h3>
-            <p className="text-sm text-mq-text-muted">
-              {t("admin.financeConfigs.createHint")}
-            </p>
-            {formError ? <div className="mq-alert mq-alert-error">{formError}</div> : null}
-
-            <div className="grid sm:grid-cols-2 gap-3">
-              <label className="space-y-1 text-sm">
-                <span className="text-mq-text-muted">
-                  {t("admin.financeConfigs.platformFee")} (%)
-                </span>
-                <input
-                  className="mq-input"
-                  inputMode="decimal"
-                  value={form.platformFeePercent}
-                  onChange={(e) =>
-                    setForm({ ...form, platformFeePercent: e.target.value })
-                  }
-                  required
-                />
-              </label>
-              <label className="space-y-1 text-sm">
-                <span className="text-mq-text-muted">
-                  {t("admin.financeConfigs.commission")} (%)
-                </span>
-                <input
-                  className="mq-input"
-                  inputMode="decimal"
-                  value={form.commissionPercent}
-                  onChange={(e) =>
-                    setForm({ ...form, commissionPercent: e.target.value })
-                  }
-                  required
-                />
-              </label>
-              <label className="space-y-1 text-sm sm:col-span-2">
-                <span className="text-mq-text-muted">
-                  {t("admin.financeConfigs.gatewayOptional")}
-                </span>
-                <input
-                  className="mq-input"
-                  value={form.gatewayName}
-                  onChange={(e) => setForm({ ...form, gatewayName: e.target.value })}
-                  placeholder="SEED_STUB"
-                />
-              </label>
-              <label className="space-y-1 text-sm">
-                <span className="text-mq-text-muted">
-                  {t("admin.financeConfigs.apiKeyOptional")}
-                </span>
-                <input
-                  className="mq-input"
-                  type="password"
-                  autoComplete="off"
-                  value={form.apiKey}
-                  onChange={(e) => setForm({ ...form, apiKey: e.target.value })}
-                />
-              </label>
-              <label className="space-y-1 text-sm">
-                <span className="text-mq-text-muted">
-                  {t("admin.financeConfigs.secretKeyOptional")}
-                </span>
-                <input
-                  className="mq-input"
-                  type="password"
-                  autoComplete="off"
-                  value={form.secretKey}
-                  onChange={(e) => setForm({ ...form, secretKey: e.target.value })}
-                />
-              </label>
-            </div>
-
-            <button
-              type="submit"
-              className="mq-btn mq-btn-primary"
-              disabled={createConfig.isPending}
-            >
-              {createConfig.isPending
-                ? t("admin.financeConfigs.submitting")
-                : t("admin.financeConfigs.submitBtn")}
-            </button>
-          </form>
-        )}
-
         {isError && (
           <div className="mq-alert mq-alert-error">
             {getErrorMessage(error, t("admin.common.failed"))}
@@ -420,6 +479,8 @@ function FinanceConfigsInner() {
                   {" · "}
                   {t("admin.financeConfigs.commission")}:{" "}
                   <strong>{formatPercent(cfg.commissionPercent)}</strong>
+                  {" · "}
+                  <strong>{pointUsdLine(t, cfg.pointUsdValue)}</strong>
                 </p>
                 <p className="text-mq-text-muted">
                   {cfg.gatewayName
@@ -471,6 +532,8 @@ function FinanceConfigsInner() {
           ))}
 
         {meta && <PaginationBar page={page} meta={meta} onPageChange={setPage} />}
+
+        {canEditFx ? <AdminFxRatesPanel /> : null}
       </div>
 
       <AdminReasonModal

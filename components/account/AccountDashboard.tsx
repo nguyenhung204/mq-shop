@@ -17,6 +17,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { authApi } from "@/lib/api/auth";
+import { formatPoints } from "@/lib/api/utils";
 import type { AuthUser } from "@/lib/api/types";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { AuthGuard } from "@/components/guards/AuthGuard";
@@ -455,7 +456,10 @@ function AccountInner() {
                           <li className="flex items-center justify-between gap-3">
                             <span>
                               {t("account.sellerClosure.blocked.walletBalance", {
-                                amount: blockedDetails.walletBalance,
+                                amount: formatPoints(
+                                  blockedDetails.walletBalance,
+                                  t("common.pointUnit"),
+                                ),
                               })}
                             </span>
                             <Link

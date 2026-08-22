@@ -10,6 +10,7 @@ export type FinanceConfig = {
   id: string;
   platformFeePercent: string;
   commissionPercent: string;
+  pointUsdValue: string;
   gatewayName: string | null;
   hasApiKey: boolean;
   hasSecretKey: boolean;
@@ -26,6 +27,7 @@ export type FinanceConfig = {
 export type CreateFinanceConfigBody = {
   platformFeePercent: string;
   commissionPercent: string;
+  pointUsdValue?: string;
   gatewayName?: string;
   apiKey?: string;
   secretKey?: string;

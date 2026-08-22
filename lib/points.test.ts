@@ -21,6 +21,13 @@ describe("points conversion (FE ↔ BE)", () => {
     expect(formatPointUsdValue()).toBe("0.99999");
   });
 
+  it("uses a custom 1 PTS = USD peg", () => {
+    expect(convertPointsToTwd(1, 0.031, 2, 1)).toBe(
+      Math.round((1 / 0.031) * 100) / 100,
+    );
+    expect(formatPointUsdValue("1")).toBe("1");
+  });
+
   it("matches BE convertPointsToTwd for seed FX", () => {
     expect(convertPointsToTwd(1, 0.031)).toBe(32.26);
     expect(convertPointsToTwd(5.58, 0.031)).toBeCloseTo(180, 0);

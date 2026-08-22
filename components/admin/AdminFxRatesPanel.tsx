@@ -4,13 +4,38 @@ import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { fxApi, type FxRatesResponse } from "@/lib/api/fx";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useActiveFinanceConfig } from "@/lib/queries/finance";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { formatPointUsdValue } from "@/lib/points";
 
 const QUOTES = ["MYR", "VND", "SGD", "USD"] as const;
+
+function formatFxWhen(iso: string, locale: string | null): string {
+  const loc = locale === "zh-TW" ? "zh-TW" : locale === "vi" ? "vi-VN" : "en-GB";
+  try {
+    return new Date(iso).toLocaleString(loc, {
+      dateStyle: "short",
+      timeStyle: "short",
+    });
+  } catch {
+    return iso;
+  }
+}
+
+function fxSourceLabel(
+  t: (key: string) => string,
+  source: string | null | undefined,
+): string {
+  const raw = (source ?? "").trim().toLowerCase();
+  if (raw === "manual") return t("admin.fx.sourceManual");
+  if (raw === "seed") return t("admin.fx.sourceSeed");
+  return source?.trim() || "—";
+}
 
 /** Super-admin FX display rates (CONFIG_SYS). Ledger stays TWD. */
 export function AdminFxRatesPanel() {
   const { t, locale } = useLanguage();
+  const { data: activeFee } = useActiveFinanceConfig();
   const [latest, setLatest] = useState<FxRatesResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -70,6 +95,11 @@ export function AdminFxRatesPanel() {
         <p className="text-xs text-amber-700 dark:text-amber-400 mt-2">
           {t("admin.fx.ledgerNote")}
         </p>
+        <p className="text-sm text-mq-text mt-2">
+          {t("common.onePointUsd", {
+            usd: formatPointUsdValue(activeFee?.pointUsdValue),
+          })}
+        </p>
       </div>
 
       {loading ? (
@@ -77,15 +107,11 @@ export function AdminFxRatesPanel() {
       ) : (
         <>
           {latest ? (
-            <div className="text-sm text-mq-text-muted border border-mq-border rounded-lg p-4 space-y-1">
-              <p>
-                {t("admin.fx.asOf")}:{" "}
-                {latest.asOf ? new Date(latest.asOf).toLocaleString() : "—"}
+            <div className="text-sm border border-mq-border rounded-lg p-4 space-y-2">
+              <p className="text-mq-text">
+                <span className="text-mq-text-muted">{t("admin.fx.asOf")}: </span>
+                {latest.asOf ? formatFxWhen(latest.asOf, locale) : "—"}
               </p>
-              <p>
-                {t("admin.fx.source")}: {latest.source}
-              </p>
-              <p>{t("admin.fx.baseCurrency")}</p>
             </div>
           ) : null}
 
@@ -95,7 +121,9 @@ export function AdminFxRatesPanel() {
             <div className="grid sm:grid-cols-2 gap-4">
               {QUOTES.map((q) => (
                 <label key={q} className="block text-sm">
-                  <span className="mb-1 block">1 TWD = … {q}</span>
+                  <span className="mb-1 block">
+                    {t("admin.fx.quoteLabel", { code: q })}
+                  </span>
                   <input
                     className="mq-input w-full"
                     type="number"
