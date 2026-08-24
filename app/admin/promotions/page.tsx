@@ -26,6 +26,8 @@ import { translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { formatDateTimeGmt8, gmt8DateTimeLocalToIso } from "@/lib/i18n/gmt8-calendar";
+import { toIntlLocale } from "@/lib/i18n/locale-format";
 
 const TYPES: PromotionType[] = ["PERCENT", "FIXED", "FREE_SHIP", "VOUCHER"];
 const STATUSES: Array<PromotionStatus | ""> = [
@@ -52,7 +54,7 @@ function statusBadgeClass(status: PromotionStatus): string {
 }
 
 function fromLocalInput(local: string): string {
-  return new Date(local).toISOString();
+  return gmt8DateTimeLocalToIso(local);
 }
 
 type FormState = {
@@ -338,6 +340,7 @@ function PromotionsInner() {
                 />
               </label>
             </div>
+            <p className="text-xs text-mq-text-muted">{t("common.datetimeGmt8Hint")}</p>
 
             {form.scopeType === "TARGETED" && (
               <>
@@ -398,7 +401,7 @@ function PromotionsInner() {
                   : null,
                 p.code ? t("admin.promotions.code", { code: p.code }) : null,
                 p.budget ? t("admin.promotions.budgetLine", { budget: p.budget }) : null,
-                `${new Date(p.startAt).toLocaleString()} → ${new Date(p.endAt).toLocaleString()}`,
+                `${formatDateTimeGmt8(p.startAt, toIntlLocale(locale))} → ${formatDateTimeGmt8(p.endAt, toIntlLocale(locale))}`,
               ].filter(Boolean);
 
               return (

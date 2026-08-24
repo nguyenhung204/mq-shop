@@ -40,6 +40,11 @@ import { useWarehouses } from "@/lib/queries/inventory";
 import { useProductReviews } from "@/lib/queries/reviews";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { ReviewForm } from "@/components/reviews/ReviewForm";
+import { UnpaidProofCountdown } from "@/components/orders/UnpaidProofCountdown";
+import {
+  ProofFilePreview,
+  ProofRetentionBadge,
+} from "@/components/orders/ProofRetention";
 import { Container, PageHero } from "@/components/ui/shared";
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
 import { OrderDetailSkeleton } from "@/components/ui/Skeleton";
@@ -265,6 +270,14 @@ function OrderDetailInner() {
     Boolean(order && isBuyer && canUploadPaymentProof(order));
   const showSellerPayment =
     Boolean(order && canConfirmPayment);
+  const showPaymentProofArchive = Boolean(
+    order &&
+      !showBuyerPayment &&
+      !showSellerPayment &&
+      (order.paymentProofUrl ||
+        order.paymentProofPurgedAt ||
+        (order.paymentProofHistory?.length ?? 0) > 0),
+  );
   const paymentSla = order
     ? paymentSlaCopy(order.paymentFirstProofAt, order.paymentEscalatedAt, t)
     : null;
@@ -306,10 +319,12 @@ function OrderDetailInner() {
               {isPaymentProofRejected(order) ? (
                 <span className="mq-badge mq-badge-orange">{t("orders.payment.rejectedBadge")}</span>
               ) : null}
+              <ProofRetentionBadge retention={order.paymentProofRetention} compact />
               {order.rma ? (
                 <span className="mq-badge mq-badge-pink">RMA · {translateStatus(t, "rma", order.rma.status)}</span>
               ) : null}
             </div>
+            <UnpaidProofCountdown order={order} />
             {rmaInfo ? (
               <div className="rounded-[var(--mq-radius-sm)] border border-mq-border bg-mq-surface-subtle p-4 space-y-2 text-sm">
                 <p className="font-medium">
@@ -396,6 +411,13 @@ function OrderDetailInner() {
                         </li>
                       ))}
                     </ul>
+                    {(order.rma.evidencePurgedCount ?? 0) > 0 ? (
+                      <p className="text-xs text-mq-text-muted">
+                        {t("orders.rma.evidencePurgedCount", {
+                          count: String(order.rma.evidencePurgedCount),
+                        })}
+                      </p>
+                    ) : null}
                   </div>
                 ) : null}
 
@@ -403,7 +425,11 @@ function OrderDetailInner() {
                 order.rma &&
                 (order.rma.evidenceUrls?.length ?? 0) === 0 ? (
                   <p className="text-xs text-mq-text-muted pt-2 border-t border-mq-border">
-                    {t("orders.rma.noEvidence")}
+                    {(order.rma.evidencePurgedCount ?? 0) > 0
+                      ? t("orders.rma.evidencePurgedCount", {
+                          count: String(order.rma.evidencePurgedCount),
+                        })
+                      : t("orders.rma.noEvidence")}
                   </p>
                 ) : null}
 
@@ -415,12 +441,14 @@ function OrderDetailInner() {
                       <ul className="flex flex-wrap gap-2">
                         {order.rma.evidenceUrls.map((url) => (
                           <li key={url} className="relative">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={url}
-                              alt={t("orders.rma.evidenceAlt")}
-                              className="h-16 w-16 rounded object-cover border border-mq-border"
-                            />
+                            <a href={url} target="_blank" rel="noreferrer">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={url}
+                                alt={t("orders.rma.evidenceAlt")}
+                                className="h-16 w-16 rounded object-cover border border-mq-border"
+                              />
+                            </a>
                             <button
                               type="button"
                               className="absolute -top-1 -right-1 mq-admin-icon-btn"
@@ -438,6 +466,13 @@ function OrderDetailInner() {
                           </li>
                         ))}
                       </ul>
+                    ) : null}
+                    {(order.rma.evidencePurgedCount ?? 0) > 0 ? (
+                      <p className="text-xs text-mq-text-muted">
+                        {t("orders.rma.evidencePurgedCount", {
+                          count: String(order.rma.evidencePurgedCount),
+                        })}
+                      </p>
                     ) : null}
                     {(order.rma.evidenceUrls?.length ?? 0) < 5 ? (
                       <input
@@ -510,25 +545,17 @@ function OrderDetailInner() {
                   </div>
                 ) : null}
 
-                {order.rma?.refundProofUrl ? (
+                {order.rma?.refundProofUrl || order.rma?.refundProofPurgedAt ? (
                   <div className="pt-2 border-t border-mq-border space-y-2">
                     <p className="text-xs font-medium text-mq-text-muted uppercase tracking-wide">
                       {t("orders.rma.refundProofTitle")}
                     </p>
-                    <a
-                      href={order.rma.refundProofUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-block"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={order.rma.refundProofUrl}
-                        alt={t("orders.rma.refundProofAlt")}
-                        className="max-h-48 w-auto rounded border border-mq-border object-contain bg-white"
-                      />
-                    </a>
-                    {order.rma.refundProofUploadedAt ? (
+                    <ProofFilePreview
+                      url={order.rma.refundProofUrl}
+                      alt={t("orders.rma.refundProofAlt")}
+                      retention={order.rma.refundProofRetention}
+                    />
+                    {order.rma.refundProofUploadedAt && order.rma.refundProofUrl ? (
                       <p className="text-xs text-mq-text-muted">
                         {t("orders.rma.refundProofUploadedAt", {
                           date: new Date(order.rma.refundProofUploadedAt).toLocaleString(intlLocale),
@@ -1004,21 +1031,20 @@ function OrderDetailInner() {
                     )}
                   </div>
                 ) : null}
-                {order.paymentProofUrl ? (
+                {order.paymentProofUrl || order.paymentProofPurgedAt ? (
                   <div className="rounded-[var(--mq-radius-sm)] border border-mq-border bg-mq-surface-subtle p-4 space-y-2 text-sm">
-                    {!order.paymentRejectedReason ? (
+                    {!order.paymentRejectedReason && order.paymentProofUrl ? (
                       <p className="font-medium text-mq-text">{t("orders.payment.waitingSeller")}</p>
                     ) : null}
                     {paymentSla ? (
                       <p className="text-xs text-mq-text-muted">{paymentSla}</p>
                     ) : null}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={order.paymentProofUrl}
+                    <ProofFilePreview
+                      url={order.paymentProofUrl}
                       alt={t("orders.payment.proofAlt")}
-                      className="max-h-48 w-auto rounded border border-mq-border object-contain bg-white"
+                      retention={order.paymentProofRetention}
                     />
-                    {order.paymentProofUploadedAt ? (
+                    {order.paymentProofUploadedAt && order.paymentProofUrl ? (
                       <p className="text-xs text-mq-text-muted">
                         {t("orders.payment.uploadedAt", {
                           date: new Date(order.paymentProofUploadedAt).toLocaleString(intlLocale),
@@ -1065,12 +1091,12 @@ function OrderDetailInner() {
                     <p className="text-xs mt-1">{t("orders.payment.sellerRejectedHint")}</p>
                   </div>
                 ) : null}
-                {order.paymentProofUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={order.paymentProofUrl}
+                {order.paymentProofUrl || order.paymentProofPurgedAt ? (
+                  <ProofFilePreview
+                    url={order.paymentProofUrl}
                     alt={t("orders.payment.proofAlt")}
-                    className="max-h-56 w-auto rounded border border-mq-border object-contain bg-white"
+                    retention={order.paymentProofRetention}
+                    imgClassName="max-h-56 w-auto rounded border border-mq-border object-contain bg-white"
                   />
                 ) : null}
                 <div className="flex flex-wrap gap-2">
@@ -1097,6 +1123,29 @@ function OrderDetailInner() {
                     {t("orders.payment.rejectBtn")}
                   </button>
                 </div>
+              </div>
+            ) : null}
+
+            {showPaymentProofArchive ? (
+              <div className="pt-4 border-t border-mq-border space-y-3">
+                <h2 className="text-sm font-semibold">{t("orders.payment.title")}</h2>
+                <ProofFilePreview
+                  url={order.paymentProofUrl}
+                  alt={t("orders.payment.proofAlt")}
+                  retention={order.paymentProofRetention}
+                />
+                {(order.paymentProofHistory ?? []).map((entry) => (
+                  <ProofFilePreview
+                    key={`${entry.uploadedAt}-${entry.url ?? "purged"}`}
+                    url={entry.url}
+                    alt={t("orders.payment.proofAlt")}
+                    retention={
+                      entry.purgedAt || !entry.url
+                        ? { status: "purged", deleteAt: null, daysUntilDelete: null }
+                        : undefined
+                    }
+                  />
+                ))}
               </div>
             ) : null}
 

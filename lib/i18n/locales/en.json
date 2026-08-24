@@ -103,7 +103,9 @@
     "mqCollection": "MQ Collection",
     "cancel": "Cancel",
     "onePointUsd": "1 point = {usd} USD",
-    "pointUnit": "points"
+    "pointUnit": "points",
+    "calendarGmt8Hint": "Dates are GMT+8 (Taiwan). Admins in VN and TW select the same period.",
+    "datetimeGmt8Hint": "Times are GMT+8 (Taiwan), not your computer clock."
   },
   "home": {
     "hero1Title": "ELEVATE DAILY LIVING",
@@ -462,6 +464,9 @@
       "disputeSubmitted": "Dispute sent — Admin will review the bill.",
       "slaHoursLeft": "Seller review SLA: about {hours}h left (from first upload).",
       "slaOverdue": "Seller review SLA has passed — Admin/CS can take over.",
+      "unpaidHoursLeft": "Payment deadline: {hours} hours left",
+      "unpaidDeadlineOverdue": "Payment proof deadline has passed — the order will be cancelled",
+      "unpaidDeadlineWall": "Due {when} ({tz})",
       "escalatedBadge": "Escalated to Admin",
       "bankOutsideNote": "The platform cannot pull money back from the bank. Force-paid only updates the order ledger.",
       "proofAlt": "Payment proof",
@@ -472,7 +477,12 @@
       "rejectBtn": "Reject proof",
       "rejectTitle": "Reject payment proof",
       "rejectDesc": "Tell the buyer why this proof was rejected so they can re-upload.",
-      "proofPending": "Proof pending review"
+      "proofPending": "Proof pending review",
+      "downloadProof": "Open / download file",
+      "retentionNotice": "Receipt files will be deleted in {days} days. Please save a copy if you still need them.",
+      "purgedPlaceholder": "Receipt files were deleted because the storage period ended.",
+      "retentionBadgeNotice": "Receipt expiring",
+      "retentionBadgePurged": "Receipt deleted"
     },
     "rma": {
       "title": "Request return",
@@ -520,6 +530,7 @@
       "refundProofHint": "Transfer the refund to the buyer’s bank account, then upload proof before marking refund sent.",
       "refundProofRequired": "Upload refund proof first.",
       "refundProofUploadedAt": "Uploaded {date}",
+      "evidencePurgedCount": "{count} evidence image(s) were deleted because the storage period ended.",
       "goodsReturnTrackingLabel": "Goods return tracking",
       "goodsReturnShipHint": "No refund — ship the rejected goods back to the buyer with tracking, then wait for their confirmation.",
       "goodsReturnTrackingPlaceholder": "Return-to-buyer tracking (required)",
@@ -918,8 +929,18 @@
       "noCronJobs": "No automatic tasks yet.",
       "jobs": {
         "order-expiry": {
-          "name": "Cancel unpaid orders",
-          "description": "Daily: cancel orders still unpaid after 3 days; flag slow payment or shipping cases. Up to 100 orders per type each run.",
+          "name": "Flag slow paid shipping",
+          "description": "Daily 03:00 GMT+8: escalate paid orders with no shipping progress (72h). Also retries unpaid-no-bill cancels. Up to 100 orders per type each run.",
+          "schedule": "Every day at 03:00 (GMT+8)"
+        },
+        "order-payment-hourly": {
+          "name": "Unpaid bill cancel and payment-proof SLA",
+          "description": "Hourly GMT+8: auto-cancel PENDING with no payment proof after 72 elapsed hours; escalate seller bill review after 48 hours from first upload.",
+          "schedule": "Every hour (GMT+8)"
+        },
+        "order-proof-retention": {
+          "name": "Delete expired order proof files",
+          "description": "Daily 03:00 GMT+8: remind at 30 and 45 days after upload; delete S3 proof files after 60 elapsed days (payment bills, RMA evidence, refund proof).",
           "schedule": "Every day at 03:00 (GMT+8)"
         },
         "order-sales-eligible": {
@@ -1983,6 +2004,7 @@
       "budget": "Budget (TWD, optional)",
       "start": "Start",
       "end": "End",
+      "windowTzHint": "Times are GMT+8 (Taiwan), not your computer clock.",
       "skus": "SKUs (shop variants)",
       "addSku": "Add SKU…",
       "searchSku": "Search SKU…",

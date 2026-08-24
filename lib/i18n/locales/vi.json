@@ -103,7 +103,9 @@
     "mqCollection": "Bộ sưu tập MQ",
     "cancel": "Hủy",
     "onePointUsd": "1 điểm = {usd} USD",
-    "pointUnit": "điểm"
+    "pointUnit": "điểm",
+    "calendarGmt8Hint": "Ngày theo GMT+8 (Đài Loan). Admin VN và TW chọn cùng một kỳ.",
+    "datetimeGmt8Hint": "Giờ nhập là GMT+8 (Đài Loan), không theo giờ máy."
   },
   "home": {
     "hero1Title": "NÂNG TẦM CUỘC SỐNG",
@@ -462,6 +464,9 @@
       "disputeSubmitted": "Đã gửi khiếu nại — Admin sẽ đối chiếu bill.",
       "slaHoursLeft": "SLA seller duyệt: còn khoảng {hours} giờ (tính từ lần tải bill đầu).",
       "slaOverdue": "Đã quá SLA 48 giờ — Admin/CS có thể tiếp quản.",
+      "unpaidHoursLeft": "Thời hạn thanh toán còn {hours} tiếng",
+      "unpaidDeadlineOverdue": "Đã hết hạn tải minh chứng — đơn sẽ bị hủy",
+      "unpaidDeadlineWall": "Hết hạn lúc {when} ({tz})",
       "escalatedBadge": "Đã chuyển Admin",
       "bankOutsideNote": "Sàn không rút hộ tiền ngân hàng. Đánh dấu đã thanh toán chỉ ghi sổ đơn.",
       "proofAlt": "Chứng từ thanh toán",
@@ -472,7 +477,12 @@
       "rejectBtn": "Từ chối chứng từ",
       "rejectTitle": "Từ chối chứng từ thanh toán",
       "rejectDesc": "Cho buyer biết lý do bị từ chối để họ tải lại.",
-      "proofPending": "Chứng từ chờ duyệt"
+      "proofPending": "Chứng từ chờ duyệt",
+      "downloadProof": "Mở / tải file",
+      "retentionNotice": "Biên lai sẽ được hệ thống xóa sau {days} ngày. Vui lòng lưu lại nếu cần.",
+      "purgedPlaceholder": "Biên lai đã được hệ thống xóa do hết thời hạn lưu trữ.",
+      "retentionBadgeNotice": "Sắp xóa biên lai",
+      "retentionBadgePurged": "Biên lai đã xóa"
     },
     "rma": {
       "title": "Yêu cầu đổi trả",
@@ -520,6 +530,7 @@
       "refundProofHint": "Chuyển hoàn vào STK người mua, rồi tải minh chứng trước khi đánh dấu đã chuyển.",
       "refundProofRequired": "Cần tải minh chứng chuyển hoàn trước.",
       "refundProofUploadedAt": "Đã tải {date}",
+      "evidencePurgedCount": "{count} ảnh minh chứng đã xóa do hết hạn lưu trữ.",
       "goodsReturnTrackingLabel": "Mã vận đơn trả hàng lại",
       "goodsReturnShipHint": "Không hoàn tiền — gửi hàng đã từ chối về cho người mua kèm mã vận đơn, rồi chờ họ xác nhận.",
       "goodsReturnTrackingPlaceholder": "Mã vận đơn trả lại buyer (bắt buộc)",
@@ -918,8 +929,18 @@
       "noCronJobs": "Chưa có việc tự động nào.",
       "jobs": {
         "order-expiry": {
-          "name": "Hủy đơn chưa thanh toán",
-          "description": "Mỗi ngày: tự hủy đơn còn treo chưa trả tiền quá 3 ngày; nhắc các đơn thanh toán hoặc giao hàng bị chậm. Mỗi lần xử lý tối đa 100 đơn mỗi loại.",
+          "name": "Nhắc đơn đã trả chưa giao",
+          "description": "Mỗi ngày lúc 03:00 GMT+8: escalate đơn đã PAID nhưng chưa có tiến độ giao hàng (72 giờ). Đồng thời rà lại đơn chưa bill quá 72 giờ (job chính chạy mỗi giờ). Mỗi loại tối đa 100 đơn.",
+          "schedule": "Mỗi ngày lúc 03:00 (GMT+8)"
+        },
+        "order-payment-hourly": {
+          "name": "Hủy đơn chưa bill và SLA duyệt bill",
+          "description": "Mỗi giờ GMT+8: tự hủy đơn PENDING chưa tải minh chứng sau 72 tiếng (tính từ lúc đặt); escalate nếu seller chưa duyệt bill quá 48 giờ kể từ lần tải đầu.",
+          "schedule": "Mỗi giờ (GMT+8)"
+        },
+        "order-proof-retention": {
+          "name": "Xóa chứng từ đơn hết hạn 60 ngày",
+          "description": "Mỗi ngày lúc 03:00 GMT+8: nhắc chuông ngày 30 và 45 sau khi tải; xóa file S3 sau 60 ngày (bill thanh toán, ảnh RMA, proof hoàn tiền).",
           "schedule": "Mỗi ngày lúc 03:00 (GMT+8)"
         },
         "order-sales-eligible": {
@@ -1983,6 +2004,7 @@
       "budget": "Ngân sách (TWD, tuỳ chọn)",
       "start": "Bắt đầu",
       "end": "Kết thúc",
+      "windowTzHint": "Giờ nhập là GMT+8 (Đài Loan), không theo giờ máy.",
       "skus": "SKU (biến thể shop)",
       "addSku": "Thêm SKU…",
       "searchSku": "Tìm SKU…",

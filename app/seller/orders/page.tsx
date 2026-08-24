@@ -24,6 +24,8 @@ import { OrderListSkeleton } from "@/components/ui/Skeleton";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
+import { UnpaidProofCountdown } from "@/components/orders/UnpaidProofCountdown";
+import { ProofRetentionBadge } from "@/components/orders/ProofRetention";
 
 function SellerOrdersInner() {
   const { t } = useLanguage();
@@ -113,6 +115,10 @@ function SellerOrdersInner() {
               <span className="block text-xs text-mq-text-muted mt-1">
                 {new Date(o.createdAt).toLocaleString()}
               </span>
+              <UnpaidProofCountdown order={o} compact />
+              <div className="mt-1">
+                <ProofRetentionBadge retention={o.paymentProofRetention} compact />
+              </div>
             </Link>
             <div className="flex flex-wrap items-center gap-2">
               <span>{formatMoney(o.total)}</span>

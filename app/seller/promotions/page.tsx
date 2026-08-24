@@ -24,6 +24,8 @@ import { PaginationBar } from "@/components/ui/PaginationBar";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { formatDateTimeGmt8, gmt8DateTimeLocalToIso, isoToGmt8DateTimeLocal } from "@/lib/i18n/gmt8-calendar";
+import { toIntlLocale } from "@/lib/i18n/locale-format";
 
 const TYPES: PromotionType[] = ["PERCENT", "FIXED", "FREE_SHIP", "VOUCHER"];
 const STATUSES: Array<PromotionStatus | ""> = [
@@ -50,16 +52,11 @@ function statusBadgeClass(status: PromotionStatus): string {
 }
 
 function toLocalInput(iso: string): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return isoToGmt8DateTimeLocal(iso);
 }
 
 function fromLocalInput(local: string): string {
-  const d = new Date(local);
-  return d.toISOString();
+  return gmt8DateTimeLocalToIso(local);
 }
 
 type FormState = {
@@ -362,6 +359,7 @@ function PromotionsInner() {
               />
             </label>
           </div>
+          <p className="text-xs text-mq-text-muted">{t("seller.promotions.windowTzHint")}</p>
 
           <div className="space-y-2">
             <p className="text-sm text-mq-text-muted">{t("seller.promotions.skus")}</p>
@@ -478,9 +476,9 @@ function PromotionsInner() {
                     <span className={statusBadgeClass(p.status)}>{translateStatus(t, "promo", p.status)}</span>
                   </td>
                   <td className="py-2.5 px-3 text-xs text-mq-text-muted whitespace-nowrap">
-                    {new Date(p.startAt).toLocaleString()}
+                    {formatDateTimeGmt8(p.startAt, toIntlLocale(locale))}
                     <br />
-                    {t("seller.promotions.windowTo")} {new Date(p.endAt).toLocaleString()}
+                    {t("seller.promotions.windowTo")} {formatDateTimeGmt8(p.endAt, toIntlLocale(locale))}
                   </td>
                   <td className="py-2.5 px-3 text-xs text-mq-text-muted">
                     {p.skus.length > 0 && (

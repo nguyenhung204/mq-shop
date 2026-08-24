@@ -124,6 +124,14 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "Buyer disputed a rejected bill",
       body: "Order {orderId} — Admin will compare the payment proof.",
     },
+    ORDER_PROOF_RETENTION_WARNING: {
+      title: "Receipt files will be deleted soon",
+      body: "Receipt files for order {orderId} will be deleted in {daysLeft} days. Please save a copy if you still need them.",
+    },
+    ORDER_PROOF_PURGED: {
+      title: "Receipt files deleted",
+      body: "Receipt files for order {orderId} were deleted because the storage period ended.",
+    },
     RMA_NEW: {
       title: "New return request",
       body: "Return request {rmaId} needs seller review.",
@@ -458,6 +466,14 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "Buyer khiếu nại reject bill",
       body: "Đơn {orderId} — Admin sẽ đối chiếu chứng từ thanh toán.",
     },
+    ORDER_PROOF_RETENTION_WARNING: {
+      title: "Biên lai sắp hết hạn lưu trữ",
+      body: "Biên lai sẽ được hệ thống xóa sau {daysLeft} ngày. Vui lòng lưu lại nếu cần.",
+    },
+    ORDER_PROOF_PURGED: {
+      title: "Biên lai đã bị xóa",
+      body: "Biên lai đã được hệ thống xóa do hết thời hạn lưu trữ.",
+    },
     RMA_NEW: {
       title: "Yêu cầu đổi trả mới",
       body: "Yêu cầu {rmaId} cần người bán duyệt.",
@@ -791,6 +807,14 @@ export const NOTIFICATION_TYPE_COPY: Record<
     ORDER_PAYMENT_DISPUTED: {
       title: "買家申訴被拒憑證",
       body: "訂單 {orderId} — 管理員將核對付款憑證。",
+    },
+    ORDER_PROOF_RETENTION_WARNING: {
+      title: "憑證即將到期刪除",
+      body: "系統將於 {daysLeft} 天後刪除訂單 {orderId} 的憑證。若仍需要請先自行存檔。",
+    },
+    ORDER_PROOF_PURGED: {
+      title: "憑證已刪除",
+      body: "憑證已因超過保存期限由系統刪除。",
     },
     RMA_NEW: {
       title: "新退貨申請",

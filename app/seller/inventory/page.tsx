@@ -44,6 +44,7 @@ import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { gmt8DayEndIso, gmt8DayStartIso } from "@/lib/i18n/gmt8-calendar";
 
 type TabId = "warehouses" | "transfers" | "variants" | "slips" | "ledger";
 
@@ -1022,8 +1023,8 @@ function LedgerTab() {
 
   const { data, isLoading, isError, error } = useInventoryLedger({
     sku: sku || undefined,
-    from: from ? new Date(from).toISOString() : undefined,
-    to: to ? new Date(`${to}T23:59:59`).toISOString() : undefined,
+    from: from ? gmt8DayStartIso(from) : undefined,
+    to: to ? gmt8DayEndIso(to) : undefined,
     page,
     pageSize: 20,
   });
@@ -1069,6 +1070,7 @@ function LedgerTab() {
           }}
         />
       </div>
+      <p className="text-xs text-mq-text-muted">{t("common.calendarGmt8Hint")}</p>
 
       {isError && (
         <div className="mq-alert mq-alert-error">

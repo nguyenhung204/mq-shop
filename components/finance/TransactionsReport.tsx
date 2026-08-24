@@ -18,37 +18,31 @@ import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
+import {
+  gmt8DayEndIso,
+  gmt8DayStartIso,
+  gmt8MonthBounds,
+  gmt8YearBackDayBounds,
+} from "@/lib/i18n/gmt8-calendar";
 
 const TYPES: FinanceTransactionType[] = ["ALL", "ORDER", "PAYOUT"];
 const FORMATS: FinanceExportFormat[] = ["CSV", "XLSX"];
 
 function monthBounds(): { start: string; end: string } {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const last = new Date(y, now.getMonth() + 1, 0).getDate();
-  return {
-    start: `${y}-${m}-01`,
-    end: `${y}-${m}-${String(last).padStart(2, "0")}`,
-  };
+  return gmt8MonthBounds();
 }
 
 /** Buyer history defaults to last 12 months so older orders still appear. */
 function buyerDefaultBounds(): { start: string; end: string } {
-  const end = new Date();
-  const start = new Date(end);
-  start.setFullYear(start.getFullYear() - 1);
-  const fmt = (d: Date) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  return { start: fmt(start), end: fmt(end) };
+  return gmt8YearBackDayBounds();
 }
 
 function toPeriodStart(date: string): string {
-  return new Date(`${date}T00:00:00.000`).toISOString();
+  return gmt8DayStartIso(date);
 }
 
 function toPeriodEnd(date: string): string {
-  return new Date(`${date}T23:59:59.999`).toISOString();
+  return gmt8DayEndIso(date);
 }
 
 function formatWhen(iso: string): string {
@@ -187,6 +181,9 @@ export function TransactionsReport({
               }}
             />
           </label>
+          <p className="text-xs text-mq-text-muted self-center max-w-xs">
+            {t("common.calendarGmt8Hint")}
+          </p>
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-mq-text-muted text-xs">{t("transactions.type")}</span>
             <select

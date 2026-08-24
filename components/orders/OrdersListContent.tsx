@@ -13,6 +13,8 @@ import { OrderListSkeleton } from "@/components/ui/Skeleton";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { translateStatus } from "@/lib/i18n/status";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { UnpaidProofCountdown } from "@/components/orders/UnpaidProofCountdown";
+import { ProofRetentionBadge } from "@/components/orders/ProofRetention";
 
 function OrdersInner() {
   const { t, locale } = useLanguage();
@@ -89,6 +91,10 @@ function OrdersInner() {
                     <p className="text-xs text-mq-text-muted mt-1">
                       {new Date(o.createdAt).toLocaleString(intlLocale)}
                     </p>
+                    <UnpaidProofCountdown order={o} compact />
+                    <div className="mt-1">
+                      <ProofRetentionBadge retention={o.paymentProofRetention} compact />
+                    </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="mq-badge mq-badge-cyan">

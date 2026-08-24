@@ -104,6 +104,21 @@ export type OrderItemView = {
   lineTotal: number;
 };
 
+export type ProofRetentionStatus = "none" | "live" | "notice" | "purged";
+
+export type ProofRetentionView = {
+  status: ProofRetentionStatus;
+  deleteAt: string | null;
+  daysUntilDelete: number | null;
+};
+
+export type PaymentProofHistoryEntry = {
+  url: string | null;
+  uploadedAt: string;
+  rejectedReason?: string | null;
+  purgedAt?: string | null;
+};
+
 export type RmaBankInfo = {
   bankName: string;
   accountNumber: string;
@@ -127,6 +142,7 @@ export type RmaView = {
   status: RmaStatus;
   reason: string;
   evidenceUrls: string[];
+  evidencePurgedCount?: number;
   bankInfo: RmaBankInfo;
   reviewerId?: string | null;
   reviewNote: string | null;
@@ -142,6 +158,8 @@ export type RmaView = {
   escalatedAt?: string | null;
   refundProofUrl?: string | null;
   refundProofUploadedAt?: string | null;
+  refundProofPurgedAt?: string | null;
+  refundProofRetention?: ProofRetentionView;
   goodsReturnTrackingCode?: string | null;
   goodsReturnCarrier?: string | null;
   goodsReturnShippedAt?: string | null;
@@ -192,14 +210,12 @@ export type OrderView = {
   paymentProofUrl?: string | null;
   paymentProofUploadedAt?: string | null;
   paymentFirstProofAt?: string | null;
+  paymentProofPurgedAt?: string | null;
+  paymentProofRetention?: ProofRetentionView;
   paymentRejectedReason?: string | null;
   paymentRejectCount?: number;
   paymentDisputeReason?: string | null;
-  paymentProofHistory?: Array<{
-    url: string;
-    uploadedAt: string;
-    rejectedReason?: string | null;
-  }>;
+  paymentProofHistory?: PaymentProofHistoryEntry[];
   /** Set when stale proof review is escalated to admin/CS. */
   paymentEscalatedAt?: string | null;
   /** Set when paid fulfillment is escalated for no shipping progress. */
@@ -213,6 +229,8 @@ export type OrderView = {
   salesEligibleAt?: string | null;
   /** Latest RMA for this order when BE includes it; null/undefined if none. */
   rma?: RmaView | null;
+  /** ISO while PENDING with no bill — createdAt + 72 elapsed hours. */
+  unpaidProofDueAt?: string | null;
   createdAt: string;
   updatedAt: string;
 };

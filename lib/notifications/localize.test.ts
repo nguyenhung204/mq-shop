@@ -31,4 +31,28 @@ describe("localizeNotification point unit", () => {
       "You sent 10 點 to user@example.com.",
     );
   });
+
+  it("localizes proof retention warning and purge copy", () => {
+    const warning = {
+      type: "ORDER_PROOF_RETENTION_WARNING",
+      title: "Receipt files will be deleted soon",
+      body: "fallback",
+      meta: { orderId: "order-1", daysLeft: "30", milestone: "30" },
+      metaNames: { orderCode: "ORD-1" },
+    };
+    expect(localizeNotification(warning, "vi").body).toContain("30 ngày");
+    expect(localizeNotification(warning, "en").body).toContain("30 days");
+    expect(localizeNotification(warning, "zh-TW").body).toContain("30 天");
+
+    const purged = {
+      type: "ORDER_PROOF_PURGED",
+      title: "Receipt files deleted",
+      body: "fallback",
+      meta: { orderId: "order-1" },
+      metaNames: { orderCode: "ORD-1" },
+    };
+    expect(localizeNotification(purged, "vi").body).toContain("hết thời hạn lưu trữ");
+    expect(localizeNotification(purged, "en").body).toMatch(/storage period/i);
+    expect(localizeNotification(purged, "zh-TW").body).toContain("保存期限");
+  });
 });

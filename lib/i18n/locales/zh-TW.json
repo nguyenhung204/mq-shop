@@ -103,7 +103,9 @@
     "mqCollection": "MQ 系列",
     "cancel": "取消",
     "onePointUsd": "1 點 = {usd} USD",
-    "pointUnit": "點"
+    "pointUnit": "點",
+    "calendarGmt8Hint": "日期以 GMT+8（台灣）為準。越南與台灣後台選擇同一期間。",
+    "datetimeGmt8Hint": "輸入時間為 GMT+8（台灣），非本機時鐘。"
   },
   "home": {
     "hero1Title": "提升日常品味",
@@ -462,6 +464,9 @@
       "disputeSubmitted": "已送出申訴 — 管理員將核對憑證。",
       "slaHoursLeft": "賣家審核 SLA：約剩 {hours} 小時（自首次上傳起算）。",
       "slaOverdue": "已超過 48 小時 SLA — 管理員／客服可接手。",
+      "unpaidHoursLeft": "付款期限尚餘 {hours} 小時",
+      "unpaidDeadlineOverdue": "已超過付款憑證期限 — 訂單將被取消",
+      "unpaidDeadlineWall": "截止時間 {when}（{tz}）",
       "escalatedBadge": "已升級管理員",
       "bankOutsideNote": "平台無法代為從銀行扣回款項。強制標記已付款僅更新訂單帳本。",
       "proofAlt": "付款憑證",
@@ -472,7 +477,12 @@
       "rejectBtn": "拒絕憑證",
       "rejectTitle": "拒絕付款憑證",
       "rejectDesc": "請告知買家拒絕原因，以便重新上傳。",
-      "proofPending": "憑證待審核"
+      "proofPending": "憑證待審核",
+      "downloadProof": "開啟／下載檔案",
+      "retentionNotice": "系統將於 {days} 天後刪除憑證。若仍需要請先自行存檔。",
+      "purgedPlaceholder": "憑證已因超過保存期限由系統刪除。",
+      "retentionBadgeNotice": "憑證即將刪除",
+      "retentionBadgePurged": "憑證已刪除"
     },
     "rma": {
       "title": "申請退貨",
@@ -520,6 +530,7 @@
       "refundProofHint": "請先匯款至買家帳戶，上傳憑證後再標記已匯退款。",
       "refundProofRequired": "請先上傳退款憑證。",
       "refundProofUploadedAt": "已於 {date} 上傳",
+      "evidencePurgedCount": "已因超過保存期限刪除 {count} 張佐證圖片。",
       "goodsReturnTrackingLabel": "退回買家運單",
       "goodsReturnShipHint": "不退款 — 請將拒收商品寄回買家並填運單，等待買家確認。",
       "goodsReturnTrackingPlaceholder": "寄回買家運單號（必填）",
@@ -918,8 +929,18 @@
       "noCronJobs": "尚無自動工作。",
       "jobs": {
         "order-expiry": {
-          "name": "取消未付款訂單",
-          "description": "每日：自動取消超過 3 天仍未付款的訂單；標記付款或出貨過慢的案件。每次每類最多處理 100 筆。",
+          "name": "標記已付款未出貨",
+          "description": "每日 03:00 GMT+8：升級已付款但無出貨進度的訂單（72 小時）。同時再檢查未上傳帳單超過 72 小時的取消（主要為每小時任務）。每類最多 100 筆。",
+          "schedule": "每日 03:00（GMT+8）"
+        },
+        "order-payment-hourly": {
+          "name": "未上傳帳單取消與審核 SLA",
+          "description": "每小時 GMT+8：PENDING 且未上傳付款憑證滿 72 小時則自動取消；賣家未審核帳單超過首次上傳 48 小時則升級。",
+          "schedule": "每小時（GMT+8）"
+        },
+        "order-proof-retention": {
+          "name": "刪除滿 60 天的訂單憑證",
+          "description": "每日 03:00 GMT+8：上傳後第 30、45 天提醒；滿 60 天刪除 S3 憑證（付款帳單、RMA 佐證、退款憑證）。",
           "schedule": "每日 03:00（GMT+8）"
         },
         "order-sales-eligible": {
@@ -1983,6 +2004,7 @@
       "budget": "預算 (TWD，選填)",
       "start": "開始",
       "end": "結束",
+      "windowTzHint": "輸入時間為 GMT+8（台灣），非本機時鐘。",
       "skus": "SKU（商店規格）",
       "addSku": "新增 SKU…",
       "searchSku": "搜尋 SKU…",

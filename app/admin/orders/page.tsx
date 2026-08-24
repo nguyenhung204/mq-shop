@@ -35,6 +35,7 @@ import {
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
+import { ProofFilePreview, ProofRetentionBadge } from "@/components/orders/ProofRetention";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { isValidNationalPhone, toE164 } from "@/lib/data/phone";
 import { getErrorMessage } from "@/lib/queries/utils";
@@ -448,6 +449,9 @@ function OrdersInner() {
                     {t("orders.payment.escalatedBadge")}
                   </span>
                 ) : null}
+                <span className="ml-2 inline-flex align-middle">
+                  <ProofRetentionBadge retention={o.paymentProofRetention} compact />
+                </span>
               </div>
               <p className="text-xs text-mq-text-muted">
                 {o.code} · {o.shopName ?? t("admin.common.shop")} · {o.buyerName ?? t("admin.ordersPage.buyer")} ·{" "}
@@ -486,12 +490,12 @@ function OrdersInner() {
                   })}
                 </p>
               ) : null}
-              {o.paymentProofUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={o.paymentProofUrl}
+              {o.paymentProofUrl || o.paymentProofPurgedAt ? (
+                <ProofFilePreview
+                  url={o.paymentProofUrl}
                   alt={t("orders.payment.proofAlt")}
-                  className="max-h-32 w-auto rounded border border-mq-border bg-white object-contain"
+                  retention={o.paymentProofRetention}
+                  imgClassName="max-h-32 w-auto rounded border border-mq-border bg-white object-contain"
                 />
               ) : null}
               {(o.paymentProofHistory ?? []).length > 0 ? (
@@ -500,15 +504,30 @@ function OrdersInner() {
                     {t("admin.ordersPage.proofHistory")}
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {(o.paymentProofHistory ?? []).map((entry) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        key={`${entry.url}-${entry.uploadedAt}`}
-                        src={entry.url}
-                        alt=""
-                        className="max-h-20 w-auto rounded border border-mq-border bg-white object-contain"
-                      />
-                    ))}
+                    {(o.paymentProofHistory ?? []).map((entry) =>
+                      entry.url ? (
+                        <a
+                          key={`${entry.url}-${entry.uploadedAt}`}
+                          href={entry.url}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={entry.url}
+                            alt=""
+                            className="max-h-20 w-auto rounded border border-mq-border bg-white object-contain"
+                          />
+                        </a>
+                      ) : (
+                        <p
+                          key={`purged-${entry.uploadedAt}`}
+                          className="text-xs text-mq-text-muted max-w-[10rem]"
+                        >
+                          {t("orders.payment.purgedPlaceholder")}
+                        </p>
+                      ),
+                    )}
                   </div>
                 </div>
               ) : null}

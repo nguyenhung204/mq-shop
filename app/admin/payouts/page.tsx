@@ -24,6 +24,7 @@ import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
+import { gmt8DayEndIso, gmt8DayStartIso, gmt8MonthBounds } from "@/lib/i18n/gmt8-calendar";
 
 const STATUSES: Array<PayoutStatus | ""> = ["", "PENDING", "COMPLETED", "REJECTED"];
 
@@ -41,22 +42,15 @@ function statusBadgeClass(status: PayoutStatus): string {
 }
 
 function monthBounds(): { start: string; end: string } {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const last = new Date(y, now.getMonth() + 1, 0).getDate();
-  return {
-    start: `${y}-${m}-01`,
-    end: `${y}-${m}-${String(last).padStart(2, "0")}`,
-  };
+  return gmt8MonthBounds();
 }
 
 function toPeriodStart(date: string): string {
-  return new Date(`${date}T00:00:00.000`).toISOString();
+  return gmt8DayStartIso(date);
 }
 
 function toPeriodEnd(date: string): string {
-  return new Date(`${date}T23:59:59.999`).toISOString();
+  return gmt8DayEndIso(date);
 }
 
 function formatWhen(iso: string | null | undefined): string {
@@ -266,6 +260,7 @@ function PayoutsInner() {
                 />
               </label>
             </div>
+            <p className="text-xs text-mq-text-muted">{t("common.calendarGmt8Hint")}</p>
 
             <div className="space-y-2">
               <div className="flex flex-wrap items-baseline justify-between gap-2">

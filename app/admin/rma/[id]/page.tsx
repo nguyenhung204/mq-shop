@@ -20,6 +20,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { ProofFilePreview } from "@/components/orders/ProofRetention";
 
 function isRequested(status: RmaStatus) {
   return status === "REQUESTED" || status === "PENDING";
@@ -341,24 +342,17 @@ function RmaDetailInner({ id }: { id: string }) {
               </div>
             ) : null}
 
-            {rma.refundProofUrl ? (
+            {rma.refundProofUrl || rma.refundProofPurgedAt ? (
               <div>
                 <h3 className="text-xs uppercase tracking-wide text-mq-text-muted mb-2">
                   {t("admin.rmaPage.refundProofTitle")}
                 </h3>
-                <a
-                  href={rma.refundProofUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="relative block max-w-xs overflow-hidden rounded-[var(--mq-radius-sm)] border border-mq-border"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={rma.refundProofUrl}
-                    alt={t("admin.rmaPage.refundProofAlt")}
-                    className="max-h-56 w-auto object-contain bg-white"
-                  />
-                </a>
+                <ProofFilePreview
+                  url={rma.refundProofUrl}
+                  alt={t("admin.rmaPage.refundProofAlt")}
+                  retention={rma.refundProofRetention}
+                  imgClassName="max-h-56 w-auto object-contain bg-white rounded border border-mq-border"
+                />
               </div>
             ) : null}
 
@@ -400,7 +394,13 @@ function RmaDetailInner({ id }: { id: string }) {
                 })}
               </h3>
               {(rma.evidenceUrls?.length ?? 0) === 0 ? (
-                <p className="text-mq-text-muted text-xs">{t("admin.rmaPage.noEvidence")}</p>
+                <p className="text-mq-text-muted text-xs">
+                  {(rma.evidencePurgedCount ?? 0) > 0
+                    ? t("orders.rma.evidencePurgedCount", {
+                        count: String(rma.evidencePurgedCount),
+                      })
+                    : t("admin.rmaPage.noEvidence")}
+                </p>
               ) : (
                 <ul className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {rma.evidenceUrls.map((url) => (
@@ -423,6 +423,13 @@ function RmaDetailInner({ id }: { id: string }) {
                   ))}
                 </ul>
               )}
+              {(rma.evidenceUrls?.length ?? 0) > 0 && (rma.evidencePurgedCount ?? 0) > 0 ? (
+                <p className="text-xs text-mq-text-muted mt-2">
+                  {t("orders.rma.evidencePurgedCount", {
+                    count: String(rma.evidencePurgedCount),
+                  })}
+                </p>
+              ) : null}
             </div>
           </div>
         )}

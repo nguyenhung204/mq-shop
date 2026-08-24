@@ -144,6 +144,15 @@ export function resolveNotificationRoute(
       return seller && !buyerOnly ? "/seller/orders" : "/orders";
     }
 
+    case "ORDER_PROOF_RETENTION_WARNING":
+    case "ORDER_PROOF_PURGED": {
+      const rmaId = metaStr(meta, "rmaId");
+      if (isRmaStaff(ctx.roles) && rmaId) return `/admin/rma/${rmaId}`;
+      const m = requireMeta(meta, ["orderId"]);
+      if (m) return `/orders/${m.orderId}`;
+      return seller && !buyerOnly ? "/seller/orders" : "/orders";
+    }
+
     case "RMA_NEW": {
       const m = requireMeta(meta, ["rmaId"]);
       if (isRmaStaff(ctx.roles) && m) return `/admin/rma/${m.rmaId}`;
