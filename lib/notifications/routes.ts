@@ -107,6 +107,7 @@ export function resolveNotificationRoute(
     case "SHOP_SUSPENDED":
     case "SHOP_REINSTATED":
     case "SHOP_BANK_INFO_SETUP":
+    case "SHOP_BANK_INFO_REMINDER":
       return seller ? "/seller/shop" : "/account";
 
     case "PRODUCT_APPROVED":
@@ -245,6 +246,7 @@ export function resolveNotificationRoute(
     case "COMMISSION_REFERRAL_TRIGGERED":
       return buyerOnly ? null : "/wallet/commissions";
 
+    case "COMMISSION_REFERRAL_SKIPPED_NOT_SELLER":
     case "COMMISSION_REFERRAL_SKIPPED_NOT_BUYER":
       return buyerOnly ? null : "/wallet/commissions";
 

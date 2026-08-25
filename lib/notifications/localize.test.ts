@@ -55,4 +55,16 @@ describe("localizeNotification point unit", () => {
     expect(localizeNotification(purged, "en").body).toMatch(/storage period/i);
     expect(localizeNotification(purged, "zh-TW").body).toContain("保存期限");
   });
+
+  it("localizes referral skipped-not-seller copy", () => {
+    const n = {
+      type: "COMMISSION_REFERRAL_SKIPPED_NOT_SELLER",
+      title: "fallback",
+      body: "fallback",
+      meta: { orderId: "order-1" },
+      metaNames: null,
+    };
+    expect(localizeNotification(n, "vi").title).toBeTruthy();
+    expect(localizeNotification(n, "en").body.toLowerCase()).toMatch(/seller/);
+  });
 });

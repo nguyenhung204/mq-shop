@@ -77,14 +77,26 @@ export function NotificationBell() {
         <div className="absolute right-0 top-full mt-2 w-[320px] max-w-[90vw] mq-card z-[80] overflow-hidden shadow-lg">
           <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-mq-border">
             <span className="text-sm font-medium">{t("nav.notifications")}</span>
-            <button
-              type="button"
-              className="text-xs text-mq-text-muted hover:text-mq-text disabled:opacity-40"
-              disabled={unreadCount === 0}
-              onClick={() => void markAllRead()}
-            >
-              {t("nav.markAllRead")}
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                className="text-xs text-mq-gold hover:underline"
+                onClick={() => {
+                  setOpen(false);
+                  router.push("/notifications");
+                }}
+              >
+                {t("nav.viewAllNotifications")}
+              </button>
+              <button
+                type="button"
+                className="text-xs text-mq-text-muted hover:text-mq-text disabled:opacity-40"
+                disabled={unreadCount === 0}
+                onClick={() => void markAllRead()}
+              >
+                {t("nav.markAllRead")}
+              </button>
+            </div>
           </div>
           <ul className="max-h-72 overflow-y-auto">
             {loading && items.length === 0 && (
@@ -130,7 +142,7 @@ export function NotificationBell() {
                             </p>
                           ) : null}
                           {canOpenDetail ? (
-                            <p className="text-[10px] text-mq-gold cursor-pointer">
+                            <p className="text-xs font-semibold text-mq-gold">
                               {t("nav.notificationsOpen")}
                             </p>
                           ) : null}

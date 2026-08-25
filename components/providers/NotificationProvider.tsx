@@ -54,6 +54,7 @@ type NotificationContextValue = {
   setPage: (page: number) => void;
   markRead: (id: string) => Promise<void>;
   markAllRead: () => Promise<void>;
+  hide: (id: string) => Promise<void>;
   clear: () => void;
 };
 
@@ -478,6 +479,25 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     }
   }, [unreadCount]);
 
+  const hide = useCallback(async (id: string) => {
+    const snapshot = itemsRef.current;
+    const target = snapshot.find((n) => n.id === id);
+    setItems((prev) => prev.filter((n) => n.id !== id));
+    if (target && !target.readAt) {
+      setUnreadCount((c) => Math.max(0, c - 1));
+    }
+    try {
+      await notificationApi.hide(id);
+      void refreshRef.current(pageRef.current, { quiet: true });
+    } catch (err) {
+      setItems(snapshot);
+      if (target && !target.readAt) {
+        setUnreadCount((c) => c + 1);
+      }
+      throw err;
+    }
+  }, []);
+
   const clear = useCallback(() => {
     setItems([]);
     setUnreadCount(0);
@@ -498,6 +518,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       setPage,
       markRead,
       markAllRead,
+      hide,
       clear,
     }),
     [
@@ -511,6 +532,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       setPage,
       markRead,
       markAllRead,
+      hide,
       clear,
     ],
   );

@@ -34,4 +34,25 @@ describe("resolveNotificationRoute proof retention", () => {
       ),
     ).toBe("/admin/rma/rma-1");
   });
+
+  it("routes referral skip to commissions for sellers, not buyers-only", () => {
+    expect(
+      resolveNotificationRoute(
+        {
+          type: "COMMISSION_REFERRAL_SKIPPED_NOT_SELLER",
+          meta: { orderId: "order-1" },
+        },
+        { roles: ["BUYER", "SELLER"] },
+      ),
+    ).toBe("/wallet/commissions");
+    expect(
+      resolveNotificationRoute(
+        {
+          type: "COMMISSION_REFERRAL_SKIPPED_NOT_SELLER",
+          meta: { orderId: "order-1" },
+        },
+        { roles: ["BUYER"] },
+      ),
+    ).toBeNull();
+  });
 });

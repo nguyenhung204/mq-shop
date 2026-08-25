@@ -296,6 +296,10 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "Referral commission triggered",
       body: "A referral commission was triggered for order {orderId}.",
     },
+    COMMISSION_REFERRAL_SKIPPED_NOT_SELLER: {
+      title: "Commission not credited",
+      body: "Referral commission was skipped — referrer must be a seller (approved shop).",
+    },
     COMMISSION_REFERRAL_SKIPPED_NOT_BUYER: {
       title: "Commission not credited",
       body: "Referral commission was skipped — referrer must be a seller (approved shop).",
@@ -638,6 +642,10 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "Kích hoạt hoa hồng",
       body: "Hoa hồng giới thiệu được kích hoạt cho đơn {orderId}.",
     },
+    COMMISSION_REFERRAL_SKIPPED_NOT_SELLER: {
+      title: "Không cộng hoa hồng",
+      body: "Bỏ qua hoa hồng — người giới thiệu phải là seller (shop được duyệt).",
+    },
     COMMISSION_REFERRAL_SKIPPED_NOT_BUYER: {
       title: "Không cộng hoa hồng",
       body: "Bỏ qua hoa hồng — người giới thiệu phải là seller (shop được duyệt).",
@@ -979,6 +987,10 @@ export const NOTIFICATION_TYPE_COPY: Record<
     COMMISSION_REFERRAL_TRIGGERED: {
       title: "推薦佣金已觸發",
       body: "訂單 {orderId} 的推薦佣金已觸發。",
+    },
+    COMMISSION_REFERRAL_SKIPPED_NOT_SELLER: {
+      title: "未發放佣金",
+      body: "未發放推薦佣金 — 推薦人必須是賣家（已核准商店）。",
     },
     COMMISSION_REFERRAL_SKIPPED_NOT_BUYER: {
       title: "未發放佣金",

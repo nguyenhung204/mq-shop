@@ -63,11 +63,18 @@ function parseListPayload(raw: unknown): NotificationListResult {
 }
 
 export const notificationApi = {
-  list: async (query?: { page?: number; pageSize?: number }) => {
+  list: async (query?: {
+    page?: number;
+    pageSize?: number;
+    category?: string;
+    unreadOnly?: boolean;
+  }) => {
     const raw = await api.get<unknown>("/notifications", {
       query: {
         page: query?.page ?? 1,
         pageSize: query?.pageSize ?? 8,
+        category: query?.category,
+        unreadOnly: query?.unreadOnly ? true : undefined,
       },
       withMeta: true,
     });
@@ -77,4 +84,70 @@ export const notificationApi = {
   markRead: (id: string) => api.post(`/notifications/${id}/read`, {}),
 
   markAllRead: () => api.post("/notifications/read-all", {}),
+
+  hide: (id: string) => api.delete(`/notifications/${id}`),
 };
+
+export type AdminNotificationTarget = {
+  type: "USER" | "ROLE" | "ALL" | "SHOP_ROLE";
+  value?: string | null;
+  shopId?: string | null;
+};
+
+export type AdminCatalogItem = {
+  type: string;
+  mode: "system" | "broadcast";
+  category: string;
+  source: string;
+  title: string;
+  body: string;
+  actors: string[];
+  shopRoles: string[];
+  roles: Array<{ role: string; granted: boolean }>;
+  allowedSendTargets: Array<"ALL" | "ROLE" | "USER">;
+  locked: boolean;
+};
+
+export type AdminSentNotification = {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  createdAt: string;
+  createdBy: string | null;
+  recipientCount: number | null;
+  targets: AdminNotificationTarget[];
+};
+
+export const adminNotificationApi = {
+  catalog: () =>
+    api.get<{ roles: string[]; items: AdminCatalogItem[] }>(
+      "/admin/notifications/catalog",
+    ),
+
+  list: (query?: { page?: number; pageSize?: number }) =>
+    api.get<unknown>("/admin/notifications", {
+      query: {
+        page: query?.page ?? 1,
+        pageSize: query?.pageSize ?? 20,
+      },
+      withMeta: true,
+    }),
+
+  recipientCount: (query: {
+    all?: boolean;
+    roles?: string;
+    userIds?: string;
+  }) =>
+    api.get<{ count: number }>("/admin/notifications/recipient-count", {
+      query,
+    }),
+
+  create: (body: {
+    type: string;
+    title: string;
+    body: string;
+    targets: AdminNotificationTarget[];
+  }) => api.post<{ id: string; recipientCount: number }>("/admin/notifications", body),
+};
+

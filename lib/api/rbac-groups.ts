@@ -149,7 +149,7 @@ export const RBAC_PERMISSION_GROUPS: ReadonlyArray<{
   },
   {
     id: "system",
-    permissions: ["CONFIG_SYS", "BACKUP_RESTORE"],
+    permissions: ["CONFIG_SYS", "BACKUP_RESTORE", "SEND_NOTIFICATION"],
   },
 ];
 
