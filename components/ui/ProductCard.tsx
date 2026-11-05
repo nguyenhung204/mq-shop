@@ -42,7 +42,7 @@ export function ProductCard({
       onMouseLeave={() => setHovered(false)}
     >
       <Link href={`/product/${product.slug}`} className="block flex-1">
-        <div data-mq-fly-source className="relative aspect-square mq-product-image-bg mq-product-media mb-3.5">
+        <div data-mq-fly-source className="relative aspect-square mq-product-image-bg mq-product-media mb-2.5">
           <Image
             src={product.image}
             alt={product.name}
@@ -54,14 +54,14 @@ export function ProductCard({
           />
 
           {product.salePercent && (
-            <span className="absolute top-3 left-3 mq-sale-badge z-10 shadow-sm">
+            <span className="absolute top-2.5 left-2.5 mq-sale-badge z-10 shadow-sm text-[11px] px-2 py-0.5">
               -{product.salePercent}%
             </span>
           )}
 
           {product.displayMode === "OUT_OF_STOCK_WATERMARK" && (
             <div className="absolute inset-0 z-[5] flex items-center justify-center bg-black/35 rounded-[inherit]">
-              <span className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-white bg-black/70 rounded-[var(--mq-radius-sm)]">
+              <span className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white bg-black/70 rounded-[var(--mq-radius-sm)]">
                 {watermark ||
                   product.watermarkText?.en ||
                   product.watermarkText?.vi ||
@@ -71,13 +71,13 @@ export function ProductCard({
           )}
 
           <div
-            className={`absolute top-3 right-3 z-10 flex items-center gap-0.5 rounded-full bg-white/90 dark:bg-black/55 backdrop-blur-md px-1 py-1 shadow-[var(--mq-shadow-sm)] transition-all duration-300 max-md:opacity-100 ${
+            className={`absolute top-2.5 right-2.5 z-10 flex items-center gap-0.5 rounded-full bg-white/90 dark:bg-black/55 backdrop-blur-md px-1 py-1 shadow-[var(--mq-shadow-sm)] transition-all duration-300 max-md:opacity-100 ${
               hovered ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1"
             }`}
           >
             <button
               type="button"
-              className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
+              className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors ${
                 wished
                   ? "text-mq-gold"
                   : "text-mq-text dark:text-white hover:text-mq-gold"
@@ -91,7 +91,7 @@ export function ProductCard({
                 if (willAdd) flyToWishlist(product.image, e.currentTarget);
               }}
             >
-              <Heart {...iconProps} fill={wished ? "currentColor" : "none"} />
+              <Heart {...iconProps} className="w-3.5 h-3.5" fill={wished ? "currentColor" : "none"} />
             </button>
           </div>
 
@@ -99,16 +99,16 @@ export function ProductCard({
         </div>
 
         <h3
-          className="text-[16px] leading-snug text-mq-text font-medium truncate"
+          className="text-[14px] md:text-[15px] leading-snug text-mq-text font-medium truncate"
           title={product.name}
         >
           {product.name}
         </h3>
-        <div className="mt-1.5">
+        <div className="mt-1">
           <Stars rating={product.rating} />
         </div>
         <div className="mt-1 flex items-center gap-2">
-          <span className="text-sm font-semibold text-mq-text">
+          <span className="text-xs md:text-sm font-semibold text-mq-text">
             {product.minPrice != null &&
             product.maxPrice != null &&
             product.minPrice !== product.maxPrice
@@ -116,7 +116,7 @@ export function ProductCard({
               : formatDisplay(product.price)}
           </span>
           {product.originalPrice && (
-            <span className="text-sm text-mq-text-muted line-through">
+            <span className="text-xs text-mq-text-muted line-through">
               {formatDisplay(product.originalPrice)}
             </span>
           )}
@@ -125,7 +125,7 @@ export function ProductCard({
 
       <AddToCartButton
         product={product}
-        className={`mq-btn mq-btn-cart mt-2.5 max-md:opacity-100 transition-opacity duration-200 ${hovered ? "opacity-100" : "opacity-0"}`}
+        className={`mq-btn mq-btn-cart mt-2 text-xs py-1.5 max-md:opacity-100 transition-opacity duration-200 focus-visible:opacity-100 group-focus-within:opacity-100 ${hovered ? "opacity-100" : "opacity-0"}`}
       />
     </article>
   );

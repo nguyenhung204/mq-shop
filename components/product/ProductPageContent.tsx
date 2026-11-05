@@ -14,6 +14,7 @@ import { ProductShopCard } from "@/components/product/ProductShopCard";
 import { ReviewList } from "@/components/reviews/ReviewList";
 import { ReviewSummaryPanel } from "@/components/reviews/ReviewSummary";
 import { ProductCarousel } from "@/components/ui/ProductCarousel";
+import { SaleCountdown } from "@/components/ui/SaleCountdown";
 import { Container, PageHero, Stars } from "@/components/ui/shared";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { useProductReviews, useProductReviewSummary } from "@/lib/queries/reviews";
@@ -147,9 +148,9 @@ export function ProductPageContent({
           { label: product.name },
         ]}
       />
-      <Container className="py-10 md:py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,520px)_1fr] gap-10 lg:gap-16">
-          <div className="mx-auto w-full max-w-[520px] lg:mx-0">
+      <Container className="py-6 md:py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,440px)_1fr] gap-8 lg:gap-12">
+          <div className="mx-auto w-full max-w-[440px] lg:mx-0">
             <div
               data-mq-fly-source
               data-mq-product-gallery
@@ -161,7 +162,7 @@ export function ProductPageContent({
                 alt={product.name}
                 fill
                 className="mq-product-media-img"
-                sizes="(max-width:1024px) 90vw, 520px"
+                sizes="(max-width:1024px) 90vw, 440px"
                 quality={88}
                 priority
               />
@@ -197,13 +198,13 @@ export function ProductPageContent({
               ) : null}
             </div>
             {galleryImages.length > 1 ? (
-              <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
+              <div className="flex gap-2 mt-2.5 overflow-x-auto pb-1">
                 {galleryImages.map((img, i) => (
                   <button
                     key={img + i}
                     type="button"
                     onClick={() => setActiveIndex(i)}
-                    className={`relative shrink-0 w-16 h-16 rounded-[var(--mq-radius-sm)] overflow-hidden border transition-colors ${
+                    className={`relative shrink-0 w-14 h-14 rounded-[var(--mq-radius-sm)] overflow-hidden border transition-colors ${
                       i === safeIndex
                         ? "border-mq-text"
                         : "border-mq-border hover:border-mq-text-muted"
@@ -215,7 +216,7 @@ export function ProductPageContent({
                       alt={`${product.name} ${i + 1}`}
                       fill
                       className="object-cover"
-                      sizes="64px"
+                      sizes="56px"
                     />
                   </button>
                 ))}
@@ -298,20 +299,22 @@ export function ProductPageContent({
             </ul>
 
             {product.salePercent && (
-              <div className="bg-mq-surface-subtle p-4 mb-6 text-sm">
-                <p className="font-medium text-mq-accent-orange mb-1">
+              <div className="bg-mq-surface-subtle p-4 mb-6 text-sm rounded-[var(--mq-radius-sm)] border border-mq-border">
+                <p className="font-medium text-mq-accent-orange mb-1.5">
                   {t("product.saleEndsSoon")}
                 </p>
-                <p className="text-mq-text-muted">02d : 14h : 32m : 18s</p>
+                <SaleCountdown seed={product.id} />
               </div>
             )}
 
             {outOfStock ? (
               <p className="mq-alert mq-alert-error mb-6 text-sm">
-                This option is out of stock.
+                {t("product.outOfStock") || "Out of stock"}
               </p>
             ) : (
-              <ProductActions product={cartProduct} />
+              <div data-mq-product-actions>
+                <ProductActions product={cartProduct} />
+              </div>
             )}
 
             {product.shop ? (
@@ -450,6 +453,36 @@ export function ProductPageContent({
           </div>
         )}
       </Container>
+
+      {/* Mobile Sticky Add to Cart Bar */}
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-mq-surface/95 backdrop-blur-md border-t border-mq-border px-4 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] flex items-center justify-between gap-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="min-w-0">
+          <p className="text-xs text-mq-text-muted truncate max-w-[150px] sm:max-w-[220px]">{product.name}</p>
+          <p className="text-base font-bold text-mq-text">{formatDisplay(displayPrice)}</p>
+        </div>
+        <div className="shrink-0 flex items-center gap-2">
+          {outOfStock ? (
+            <span className="text-xs font-semibold uppercase text-red-500 bg-red-50 dark:bg-red-950/40 px-3 py-2 rounded-full border border-red-200 dark:border-red-800">
+              {t("product.outOfStock") || "Out of stock"}
+            </span>
+          ) : (
+            <button
+              type="button"
+              className="mq-btn mq-btn-primary text-xs py-2 px-5 rounded-full font-semibold shadow-md active:scale-95 transition-transform"
+              onClick={() => {
+                const actionsEl = document.querySelector('[data-mq-product-actions]');
+                if (actionsEl) {
+                  actionsEl.scrollIntoView({ behavior: "smooth", block: "center" });
+                } else {
+                  window.scrollTo({ top: 300, behavior: "smooth" });
+                }
+              }}
+            >
+              {t("common.addToCart")}
+            </button>
+          )}
+        </div>
+      </div>
     </>
   );
 }

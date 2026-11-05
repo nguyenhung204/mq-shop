@@ -25,7 +25,7 @@ function getUrgencyClass(ms: number): string {
   if (ms <= 0) return "text-mq-text-muted";
   if (ms < 5 * 60_000) return "text-red-500 animate-pulse";
   if (ms < 30 * 60_000) return "text-orange-500";
-  return "text-emerald-600";
+  return "text-[#b48c08] dark:text-[#ffd54a]";
 }
 
 function useCountdowns(jobs: CronJobInfo[], serverTime: string) {

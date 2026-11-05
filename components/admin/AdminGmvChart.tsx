@@ -64,8 +64,8 @@ export function AdminGmvChart() {
           <AreaChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="adminGmvGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                <stop offset="5%" stopColor="#e7ba0a" stopOpacity={0.35} />
+                <stop offset="95%" stopColor="#e7ba0a" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-mq-border, #e5e7eb)" />
@@ -83,7 +83,7 @@ export function AdminGmvChart() {
                 );
               }}
             />
-            <Area type="monotone" dataKey="gmv" stroke="#3b82f6" strokeWidth={2} fill="url(#adminGmvGrad)" />
+            <Area type="monotone" dataKey="gmv" stroke="#e7ba0a" strokeWidth={2} fill="url(#adminGmvGrad)" />
           </AreaChart>
         </ResponsiveContainer>
       </div>

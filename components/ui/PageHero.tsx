@@ -14,10 +14,10 @@ export function PageHero({
   const { t } = useLanguage();
 
   return (
-    <div className="bg-mq-surface-subtle border-b border-mq-border py-11 md:py-16">
+    <div className="bg-mq-surface-subtle border-b border-mq-border py-5 md:py-7">
       <Container>
         {breadcrumb && (
-          <nav className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-mq-text-muted mb-3.5 uppercase tracking-wider">
+          <nav className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-mq-text-muted mb-2 uppercase tracking-wider">
             <Link href="/" className="hover:text-mq-text transition-colors duration-200">
               {t("nav.home")}
             </Link>
@@ -35,7 +35,7 @@ export function PageHero({
             ))}
           </nav>
         )}
-        <h1 className="text-2xl sm:text-3xl md:text-[40px] text-mq-text tracking-wide">{title}</h1>
+        <h1 className="text-xl sm:text-2xl md:text-3xl text-mq-text tracking-wide">{title}</h1>
       </Container>
     </div>
   );

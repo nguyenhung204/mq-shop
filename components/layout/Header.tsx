@@ -43,12 +43,16 @@ function NavBadge({ type }: { type: "sale" | "hot" | "new" }) {
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [activeMega, setActiveMega] = useState<string | null>(null);
   const [activeCategoryId, setActiveCategoryId] = useState("");
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [suggestOpen, setSuggestOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const megaRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchRef = useRef<HTMLFormElement>(null);
   const { dark, toggle } = useTheme();
   const { t, locale } = useLanguage();
@@ -101,7 +105,34 @@ export function Header() {
   const showSuggestions =
     suggestOpen && debouncedQuery.length >= 2 && !mobileOpen && !activeMega;
 
-  const closeMega = useCallback(() => setActiveMega(null), []);
+  const cancelClose = useCallback(() => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  }, []);
+
+  const closeMega = useCallback(() => {
+    cancelClose();
+    setActiveMega(null);
+  }, [cancelClose]);
+
+  const scheduleClose = useCallback(
+    (delayMs = 250) => {
+      cancelClose();
+      closeTimerRef.current = setTimeout(() => {
+        setActiveMega(null);
+      }, delayMs);
+    },
+    [cancelClose],
+  );
+
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    };
+  }, []);
+
   const closeSuggestions = useCallback(() => setSuggestOpen(false), []);
 
   const handleSearch = (e: FormEvent) => {
@@ -110,6 +141,7 @@ export function Header() {
     closeMega();
     closeSuggestions();
     setMobileOpen(false);
+    setMobileSearchOpen(false);
     router.push(next ? `/shop?q=${encodeURIComponent(next)}` : "/shop");
   };
 
@@ -192,17 +224,9 @@ export function Header() {
 
   return (
     <>
-      {activeMega && (
-        <button
-          type="button"
-          className="fixed inset-0 z-40 cursor-default bg-black/20"
-          aria-label={t("nav.closeMenu")}
-          onClick={closeMega}
-        />
-      )}
       <div
         ref={menuRef}
-        className="sticky top-0 z-50 relative"
+        className="sticky top-0 z-50 bg-mq-surface shadow-sm"
         onMouseLeave={(e) => {
           const next = e.relatedTarget;
           if (
@@ -215,7 +239,17 @@ export function Header() {
       >
         <TopBar />
 
-        <header className="relative z-50 overflow-visible bg-mq-surface border-b border-mq-border">
+        <header
+          ref={headerRef}
+          className="relative z-50 overflow-visible bg-mq-surface border-b border-mq-border"
+          onMouseLeave={(e) => {
+            const next = e.relatedTarget;
+            if (next instanceof Node && megaRef.current?.contains(next)) {
+              return;
+            }
+            scheduleClose(250);
+          }}
+        >
           <div
             className="mq-container flex items-center gap-3 lg:gap-4 xl:gap-6 overflow-visible"
             style={{ height: "var(--mq-header-h)" }}
@@ -240,7 +274,10 @@ export function Header() {
                   <div
                     key={item.key}
                     className="relative h-full flex items-center"
-                    onMouseEnter={() => setActiveMega(item.mega)}
+                    onMouseEnter={() => {
+                      cancelClose();
+                      setActiveMega(item.mega);
+                    }}
                   >
                     <Link
                       href={item.href}
@@ -261,7 +298,7 @@ export function Header() {
             <form
               ref={searchRef}
               onSubmit={handleSearch}
-              className="relative flex-1 min-w-0 max-w-[420px] xl:max-w-[480px] mx-auto"
+              className="hidden md:block relative flex-1 min-w-0 max-w-[420px] xl:max-w-[480px] mx-auto"
               onMouseEnter={closeMega}
             >
               <label className="relative block">
@@ -340,6 +377,18 @@ export function Header() {
               className="flex items-center gap-0.5 sm:gap-1 shrink-0 ml-auto"
               onMouseEnter={closeMega}
             >
+              {/* Mobile Search Toggle */}
+              <button
+                type="button"
+                onClick={() => setMobileSearchOpen((o) => !o)}
+                className="md:hidden mq-icon-btn text-mq-text"
+                aria-label={t("nav.search")}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
+
               <NotificationBell />
               <UserMenu />
               <CartMenu onNavigate={closeMega} />
@@ -398,12 +447,56 @@ export function Header() {
               </div>
             </div>
           </div>
+
+          {/* Mobile slide-down search bar */}
+          {mobileSearchOpen && (
+            <div className="md:hidden px-4 py-2.5 bg-mq-surface border-t border-mq-border flex items-center gap-2">
+              <form onSubmit={handleSearch} className="flex-1 relative">
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                    setSuggestOpen(true);
+                  }}
+                  placeholder={t("nav.searchPlaceholder")}
+                  className="w-full h-9 pl-9 pr-3 rounded-full border border-mq-border bg-mq-surface-subtle text-sm outline-none text-mq-text placeholder:text-mq-text-muted"
+                  autoFocus
+                />
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-mq-text-muted pointer-events-none">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </span>
+              </form>
+              <button
+                type="button"
+                onClick={() => setMobileSearchOpen(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-xs text-mq-text-muted hover:text-mq-text hover:bg-mq-surface-subtle"
+                aria-label="Close search"
+              >
+                ✕
+              </button>
+            </div>
+          )}
         </header>
 
         {activeMega && (
-          <div className="absolute left-0 right-0 top-full z-50 flex justify-center pt-1">
-            <div className="mq-mega w-[92%] md:w-[80%] max-w-[1144px]">
-              <div className="px-5 md:px-10 py-8">
+          <div className="absolute left-0 right-0 top-full z-50 pointer-events-none">
+            <div className="mq-container">
+              <div
+                ref={megaRef}
+                className="mq-mega pointer-events-auto w-full bg-mq-surface border border-t-0 border-mq-border shadow-[0_20px_48px_rgba(0,0,0,0.12)] rounded-b-[var(--mq-radius-lg)] transition-all duration-150"
+                onMouseEnter={cancelClose}
+                onMouseLeave={(e) => {
+                  const next = e.relatedTarget;
+                  if (next instanceof Node && headerRef.current?.contains(next)) {
+                    return;
+                  }
+                  scheduleClose(250);
+                }}
+              >
+                <div className="px-6 py-6 lg:px-8 lg:py-7">
               {activeMega === "categories" && (
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-10">
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-6 gap-y-4">
@@ -532,14 +625,26 @@ export function Header() {
               )}
 
               {activeMega === "elements" && (
-                <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
-                  {elementPages.map((page) => (
-                    <Link key={page.href} href={page.href} className="text-sm text-mq-text-secondary hover:text-mq-gold py-2 border-b border-mq-border transition-colors" onClick={closeMega}>
-                      {t(`nav.${page.key}`)}
-                    </Link>
-                  ))}
+                <div className="max-w-xl">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-mq-text-muted mb-3">
+                    {t("nav.elements")}
+                  </h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {elementPages.map((page) => (
+                      <Link
+                        key={page.href}
+                        href={page.href}
+                        className="text-sm text-mq-text-secondary hover:text-mq-gold py-2 px-3 rounded-[var(--mq-radius-sm)] border border-mq-border hover:bg-mq-surface-subtle transition-colors flex items-center justify-between"
+                        onClick={closeMega}
+                      >
+                        <span>{t(`nav.${page.key}`)}</span>
+                        <span className="text-xs text-mq-text-muted">→</span>
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               )}
+                </div>
               </div>
             </div>
           </div>

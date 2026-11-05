@@ -560,7 +560,7 @@ function ProductsInner() {
       </div>
 
       {showForm ? (
-        <form className="mq-card p-6 grid sm:grid-cols-2 gap-3" onSubmit={(e) => void submit(e)}>
+        <form className="mq-card p-4 sm:p-5 grid sm:grid-cols-2 gap-3" onSubmit={(e) => void submit(e)}>
           <h2 className="sm:col-span-2 text-lg">
             {editing
               ? `${t("seller.productsPage.edit")} (${translateStatus(t, "product", editing.status)})`
@@ -884,14 +884,14 @@ function ProductsInner() {
           ) : (
             <div className="mq-table-wrap">
               <table className="w-full text-sm">
-                <thead className="bg-mq-surface-subtle text-left">
+                <thead className="bg-mq-surface-subtle text-left text-xs uppercase tracking-wider text-mq-text-muted">
                   <tr>
-                    <th className="p-3">{t("seller.productsPage.title")}</th>
-                    <th className="p-3">{t("seller.productsPage.priceTwd")}</th>
-                    <th className="p-3">{t("seller.productsPage.stock")}</th>
-                    <th className="p-3">{t("seller.productsPage.sku")}</th>
-                    <th className="p-3">{t("seller.productsPage.status")}</th>
-                    <th className="p-3" />
+                    <th className="py-2.5 px-3">{t("seller.productsPage.title")}</th>
+                    <th className="py-2.5 px-3">{t("seller.productsPage.priceTwd")}</th>
+                    <th className="py-2.5 px-3">{t("seller.productsPage.stock")}</th>
+                    <th className="py-2.5 px-3">{t("seller.productsPage.sku")}</th>
+                    <th className="py-2.5 px-3">{t("seller.productsPage.status")}</th>
+                    <th className="py-2.5 px-3" />
                   </tr>
                 </thead>
                 <tbody>
@@ -899,35 +899,35 @@ function ProductsInner() {
                     const imgs = productImages(p);
                     const vars = variantsOf(p);
                     return (
-                      <tr key={p.id} className="border-t border-mq-border">
-                        <td className="p-3">
+                      <tr key={p.id} className="border-t border-mq-border hover:bg-mq-surface-subtle/50 transition-colors">
+                        <td className="py-2.5 px-3">
                           <div className="flex items-center gap-2">
                             {imgs[0] ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img
                                 src={imgs[0]}
                                 alt=""
-                                className="w-10 h-10 rounded object-cover border border-mq-border"
+                                className="w-9 h-9 rounded-[var(--mq-radius-sm)] object-cover border border-mq-border shrink-0"
                               />
                             ) : null}
-                            <div>
-                              <div>{p.title || p.name || "—"}</div>
+                            <div className="min-w-0">
+                              <div className="font-medium truncate max-w-xs">{p.title || p.name || "—"}</div>
                               {p.status === "REJECTED" && reasonText(p.rejectionReason) ? (
-                                <div className="text-xs text-mq-accent-pink mt-1">
+                                <div className="text-xs text-mq-accent-pink mt-0.5">
                                   {reasonText(p.rejectionReason)}
                                 </div>
                               ) : null}
                             </div>
                           </div>
                         </td>
-                        <td className="p-3">{priceLabel(p)}</td>
-                        <td className="p-3">{p.stock ?? "—"}</td>
-                        <td className="p-3 text-xs text-mq-text-muted">
+                        <td className="py-2.5 px-3 font-medium whitespace-nowrap">{priceLabel(p)}</td>
+                        <td className="py-2.5 px-3 whitespace-nowrap">{p.stock ?? "—"}</td>
+                        <td className="py-2.5 px-3 text-xs text-mq-text-muted">
                           {vars.length
                             ? vars.map((v) => v.sku).join(", ")
                             : p.sku || "—"}
                         </td>
-                        <td className="p-3">
+                        <td className="py-2.5 px-3 whitespace-nowrap">
                           <span className={statusBadgeClass(p.status)}>
                             {translateStatus(t, "product", p.status)}
                           </span>
@@ -941,7 +941,7 @@ function ProductsInner() {
                             </button>
                           ) : null}
                         </td>
-                        <td className="p-3">
+                        <td className="py-2.5 px-3 text-right">
                           <AdminActions>
                             <AdminIconButton
                               label={t("seller.common.edit")}

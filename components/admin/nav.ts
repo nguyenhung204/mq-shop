@@ -53,6 +53,13 @@ export const ACCOUNTANT_COMMERCE_PERMS = [
   "VIEW_WALLET",
 ] as const;
 
+export type AdminNavGroup =
+  | "catalog_ops"
+  | "sales_crm"
+  | "finance_mlm"
+  | "marketing"
+  | "system";
+
 export type AdminNavItem = {
   href: string;
   /** i18n key under admin.nav.* */
@@ -62,17 +69,17 @@ export type AdminNavItem = {
   /** When set, user must have at least one of these roles (in addition to permissions). */
   roles?: Role[];
   sa?: boolean;
-  group?: "ops" | "commerce" | "system";
+  group?: AdminNavGroup | "ops" | "commerce";
 };
 
 export const adminNavItems: AdminNavItem[] = [
-  { href: "/admin", labelKey: "admin.nav.overview", icon: LayoutDashboard, group: "ops" },
+  { href: "/admin", labelKey: "admin.nav.overview", icon: LayoutDashboard },
   {
     href: "/admin/shops",
     labelKey: "admin.nav.shops",
     icon: Store,
     permissions: ["APPROVE_SELLER", "APPROVE_SHOP", "REJECT_SHOP", "SUSPEND_SHOP"],
-    group: "ops",
+    group: "catalog_ops",
   },
   {
     href: "/admin/products",
@@ -80,7 +87,7 @@ export const adminNavItems: AdminNavItem[] = [
     icon: Package,
     permissions: ["APPROVE_PRODUCT", "REJECT_PRODUCT", "HIDE_PRODUCT"],
     roles: ["ADMIN", "SUPER_ADMIN"],
-    group: "ops",
+    group: "catalog_ops",
   },
   {
     href: "/admin/products-view",
@@ -88,14 +95,14 @@ export const adminNavItems: AdminNavItem[] = [
     icon: Package,
     permissions: ["VIEW_PROD_BKG"],
     roles: ["WAREHOUSE"],
-    group: "ops",
+    group: "catalog_ops",
   },
   {
     href: "/admin/reviews",
     labelKey: "admin.nav.reviews",
     icon: Star,
     roles: ["ADMIN", "SUPER_ADMIN"],
-    group: "ops",
+    group: "catalog_ops",
   },
   {
     href: "/admin/inventory",
@@ -103,7 +110,7 @@ export const adminNavItems: AdminNavItem[] = [
     icon: Boxes,
     permissions: ["VIEW_INVENTORY", "EDIT_INVENTORY"],
     roles: ["WAREHOUSE", "ADMIN", "SUPER_ADMIN"],
-    group: "ops",
+    group: "catalog_ops",
   },
   {
     href: "/admin/transfers",
@@ -111,53 +118,14 @@ export const adminNavItems: AdminNavItem[] = [
     icon: ArrowRightLeft,
     permissions: ["SYNC_INVENTORY"],
     roles: ["WAREHOUSE", "ADMIN", "SUPER_ADMIN"],
-    group: "ops",
+    group: "catalog_ops",
   },
   {
     href: "/admin/categories",
     labelKey: "admin.nav.categories",
     icon: FolderTree,
     permissions: ["MANAGE_CONTENT"],
-    group: "ops",
-  },
-  {
-    href: "/admin/users",
-    labelKey: "admin.nav.users",
-    icon: Users,
-    permissions: ["LOCK_USER", "UNLOCK_USER", "DELETE_USER", "VIEW_USERS", "DELETE_ACCOUNT"],
-    roles: ["ADMIN", "SUPER_ADMIN"],
-    group: "ops",
-  },
-  {
-    href: "/admin/staff",
-    labelKey: "admin.nav.staff",
-    icon: UserCog,
-    permissions: ["MANAGE_STAFF", "ASSIGN_ROLES"],
-    group: "ops",
-  },
-  {
-    href: "/admin/platform-staff",
-    labelKey: "admin.nav.platformStaff",
-    icon: Shield,
-    permissions: ["MANAGE_STAFF", "ASSIGN_ROLES"],
-    roles: ["ADMIN", "SUPER_ADMIN"],
-    group: "ops",
-  },
-  {
-    href: "/admin/customers",
-    labelKey: "admin.nav.customers",
-    icon: Users,
-    permissions: ["VIEW_CUST_DATA"],
-    roles: ["CS", "ACCOUNTANT", "ADMIN", "SUPER_ADMIN"],
-    group: "ops",
-  },
-  {
-    href: "/admin/audit-logs",
-    labelKey: "admin.nav.audit",
-    icon: ClipboardList,
-    permissions: ["VIEW_AUDIT_LOG"],
-    roles: ["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"],
-    group: "ops",
+    group: "catalog_ops",
   },
   {
     href: "/admin/orders",
@@ -165,7 +133,7 @@ export const adminNavItems: AdminNavItem[] = [
     icon: ShoppingBag,
     permissions: ["FORCE_CANCEL_ORDER", "CONFIRM_ORDER", "VIEW_ORDER"],
     roles: ["CS", "WAREHOUSE", "ADMIN", "SUPER_ADMIN"],
-    group: "commerce",
+    group: "sales_crm",
   },
   {
     href: "/admin/rma",
@@ -173,28 +141,36 @@ export const adminNavItems: AdminNavItem[] = [
     icon: RotateCcw,
     permissions: ["PROCESS_RMA", "MANAGE_RMA"],
     roles: ["CS", "WAREHOUSE", "ADMIN", "SUPER_ADMIN"],
-    group: "commerce",
+    group: "sales_crm",
+  },
+  {
+    href: "/admin/customers",
+    labelKey: "admin.nav.customers",
+    icon: Users,
+    permissions: ["VIEW_CUST_DATA"],
+    roles: ["CS", "ACCOUNTANT", "ADMIN", "SUPER_ADMIN"],
+    group: "sales_crm",
   },
   {
     href: "/admin/settlements",
     labelKey: "admin.nav.settlements",
     icon: Scale,
     permissions: ["VIEW_TRANSACT"],
-    group: "commerce",
+    group: "finance_mlm",
   },
   {
     href: "/admin/transactions",
     labelKey: "admin.nav.transactions",
     icon: Receipt,
     permissions: ["VIEW_TRANSACT"],
-    group: "commerce",
+    group: "finance_mlm",
   },
   {
     href: "/admin/payouts",
     labelKey: "admin.nav.payouts",
     icon: HandCoins,
     permissions: ["PAYOUT_SELLER"],
-    group: "commerce",
+    group: "finance_mlm",
   },
   {
     href: "/admin/wallet/payouts",
@@ -202,7 +178,7 @@ export const adminNavItems: AdminNavItem[] = [
     icon: Wallet,
     permissions: ["APPROVE_PAYOUT"],
     roles: ["ACCOUNTANT", "ADMIN", "SUPER_ADMIN"],
-    group: "commerce",
+    group: "finance_mlm",
   },
   {
     href: "/admin/wallet/adjust",
@@ -210,7 +186,7 @@ export const adminNavItems: AdminNavItem[] = [
     icon: Coins,
     permissions: ["ADJUST_POINTS"],
     roles: ["ADMIN", "SUPER_ADMIN"],
-    group: "commerce",
+    group: "finance_mlm",
   },
   {
     href: "/admin/mlm",
@@ -218,7 +194,7 @@ export const adminNavItems: AdminNavItem[] = [
     icon: Network,
     permissions: ["CONFIG_MLM", "APPROVE_MLM", "VIEW_MLM_TREE"],
     roles: ["SUPER_ADMIN", "ACCOUNTANT", "ADMIN"],
-    group: "commerce",
+    group: "finance_mlm",
   },
   {
     href: "/admin/mlm/commissions/report",
@@ -226,7 +202,7 @@ export const adminNavItems: AdminNavItem[] = [
     icon: FileBarChart2,
     permissions: ["APPROVE_MLM", "VIEW_MLM_COMSN"],
     roles: ["SUPER_ADMIN", "ACCOUNTANT", "ADMIN"],
-    group: "commerce",
+    group: "finance_mlm",
   },
   {
     href: "/admin/rank-tree",
@@ -234,14 +210,14 @@ export const adminNavItems: AdminNavItem[] = [
     icon: GitBranchPlus,
     permissions: ["CONFIG_MLM", "VIEW_MLM_TREE"],
     roles: ["SUPER_ADMIN", "ACCOUNTANT", "ADMIN"],
-    group: "commerce",
+    group: "finance_mlm",
   },
   {
     href: "/admin/landing-cost",
     labelKey: "admin.nav.landingCost",
     icon: Calculator,
     permissions: ["CALC_LAND_COST"],
-    group: "commerce",
+    group: "finance_mlm",
   },
   {
     href: "/admin/finance/configs",
@@ -249,28 +225,59 @@ export const adminNavItems: AdminNavItem[] = [
     icon: Percent,
     permissions: ["CONFIG_FEE"],
     roles: ["SUPER_ADMIN", "ACCOUNTANT"],
-    group: "commerce",
+    group: "finance_mlm",
   },
   {
     href: "/admin/promotions",
     labelKey: "admin.nav.promotions",
     icon: BadgePercent,
     permissions: ["APPROVE_PROMO", "MANAGE_PROMO"],
-    group: "commerce",
+    group: "marketing",
   },
   {
     href: "/admin/banners",
     labelKey: "admin.nav.banners",
     icon: ImageIcon,
     permissions: ["MANAGE_CONTENT"],
-    group: "commerce",
+    group: "marketing",
   },
   {
     href: "/admin/marketing",
     labelKey: "admin.nav.marketing",
     icon: FolderOpen,
     permissions: ["MANAGE_CONTENT"],
-    group: "commerce",
+    group: "marketing",
+  },
+  {
+    href: "/admin/users",
+    labelKey: "admin.nav.users",
+    icon: Users,
+    permissions: ["LOCK_USER", "UNLOCK_USER", "DELETE_USER", "VIEW_USERS", "DELETE_ACCOUNT"],
+    roles: ["ADMIN", "SUPER_ADMIN"],
+    group: "system",
+  },
+  {
+    href: "/admin/staff",
+    labelKey: "admin.nav.staff",
+    icon: UserCog,
+    permissions: ["MANAGE_STAFF", "ASSIGN_ROLES"],
+    group: "system",
+  },
+  {
+    href: "/admin/platform-staff",
+    labelKey: "admin.nav.platformStaff",
+    icon: Shield,
+    permissions: ["MANAGE_STAFF", "ASSIGN_ROLES"],
+    roles: ["ADMIN", "SUPER_ADMIN"],
+    group: "system",
+  },
+  {
+    href: "/admin/audit-logs",
+    labelKey: "admin.nav.audit",
+    icon: ClipboardList,
+    permissions: ["VIEW_AUDIT_LOG"],
+    roles: ["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"],
+    group: "system",
   },
   {
     href: "/admin/backups",

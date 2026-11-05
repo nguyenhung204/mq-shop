@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
+import { Trash2 } from "lucide-react";
 import { useDisplayMoney } from "@/components/providers/DisplayMoneyProvider";
 import { useCart } from "@/components/providers/CartProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -12,7 +13,7 @@ const PREVIEW_LIMIT = 5;
 
 export function CartMenu({ onNavigate }: { onNavigate?: () => void }) {
   const { t } = useLanguage();
-  const { items, itemCount, subtotal, updateQuantity } = useCart();
+  const { items, itemCount, subtotal, updateQuantity, removeItem } = useCart();
   const { formatDisplay } = useDisplayMoney();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -116,13 +117,22 @@ export function CartMenu({ onNavigate }: { onNavigate?: () => void }) {
                       {formatDisplay(item.unitPrice * item.quantity)}
                     </span>
                   </Link>
-                  <div className="mq-cart-menu-qty">
+                  <div className="mq-cart-menu-qty flex items-center gap-1">
                     <QuantityStepper
                       size="sm"
                       value={item.quantity}
                       min={1}
                       onChange={(next) => updateQuantity(item.variantId, next)}
                     />
+                    <button
+                      type="button"
+                      onClick={() => removeItem(item.variantId)}
+                      className="p-1 text-mq-text-muted hover:text-red-500 transition-colors ml-0.5"
+                      aria-label={t("cart.remove") || "Remove item"}
+                      title={t("cart.remove") || "Remove item"}
+                    >
+                      <Trash2 size={13} />
+                    </button>
                   </div>
                 </li>
               ))}

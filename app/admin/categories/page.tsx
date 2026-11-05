@@ -116,11 +116,11 @@ function CategoriesInner() {
           </div>
         )}
 
-        <form className="mq-card p-5 space-y-4 max-w-3xl" onSubmit={(e) => void submit(e)}>
+        <form className="mq-card p-4 space-y-3 max-w-3xl" onSubmit={(e) => void submit(e)}>
           <div>
             <FormAlerts error={formAlerts.error} />
           </div>
-          <h2 className="text-lg">
+          <h2 className="text-base font-semibold">
             {editing ? `${t("admin.common.edit")} ${editing.name}` : t("admin.categoriesPage.create")}
           </h2>
 
@@ -243,31 +243,31 @@ function CategoriesInner() {
         ) : (
           <div className="mq-table-wrap">
             <table className="w-full text-sm">
-              <thead className="bg-mq-surface-subtle text-left">
+              <thead className="bg-mq-surface-subtle text-left text-xs uppercase tracking-wider text-mq-text-muted">
                 <tr>
-                  <th className="p-3">{t("admin.categoriesPage.nameEn")}</th>
-                  <th className="p-3">{t("admin.categoriesPage.nameVi")}</th>
-                  <th className="p-3">{t("admin.categoriesPage.nameTw")}</th>
-                  <th className="p-3">{t("admin.categoriesPage.slug")}</th>
-                  <th className="p-3">{t("admin.categoriesPage.parent")}</th>
-                  <th className="p-3" />
+                  <th className="py-2.5 px-3">{t("admin.categoriesPage.nameEn")}</th>
+                  <th className="py-2.5 px-3">{t("admin.categoriesPage.nameVi")}</th>
+                  <th className="py-2.5 px-3">{t("admin.categoriesPage.nameTw")}</th>
+                  <th className="py-2.5 px-3">{t("admin.categoriesPage.slug")}</th>
+                  <th className="py-2.5 px-3">{t("admin.categoriesPage.parent")}</th>
+                  <th className="py-2.5 px-3" />
                 </tr>
               </thead>
               <tbody>
                 {categories.map((c) => (
-                  <tr key={c.id} className="border-t border-mq-border">
-                    <td className="p-3">{c.name}</td>
-                    <td className="p-3 text-mq-text-muted">{c.nameVi || "—"}</td>
-                    <td className="p-3 text-mq-text-muted">{c.nameTw || "—"}</td>
-                    <td className="p-3">{c.slug}</td>
-                    <td className="p-3">
+                  <tr key={c.id} className="border-t border-mq-border hover:bg-mq-surface-subtle/50 transition-colors">
+                    <td className="py-2.5 px-3 font-medium">{c.name}</td>
+                    <td className="py-2.5 px-3 text-mq-text-muted">{c.nameVi || "—"}</td>
+                    <td className="py-2.5 px-3 text-mq-text-muted">{c.nameTw || "—"}</td>
+                    <td className="py-2.5 px-3">{c.slug}</td>
+                    <td className="py-2.5 px-3">
                       {c.parentId
                         ? categories.find((p) => p.id === c.parentId)?.name ||
                           categories.find((p) => p.id === c.parentId)?.slug ||
                           "—"
                         : "—"}
                     </td>
-                    <td className="p-3">
+                    <td className="py-2.5 px-3 text-right">
                       <AdminIconButton
                         label={t("admin.common.edit")}
                         icon={Pencil}

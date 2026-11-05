@@ -52,7 +52,7 @@ export function AdminChartCard({
     }
     if (isError) {
       return (
-        <p className="text-xs text-mq-accent-pink py-2">
+        <p className="text-xs text-red-500 py-2">
           {getErrorMessage(error, t("admin.common.failed"))}
         </p>
       );
@@ -71,14 +71,14 @@ export function AdminChartCard({
 
   return (
     <div className="mq-card">
-      <div className="flex flex-wrap items-center justify-between gap-2 px-4 pt-4 pb-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 pt-3 pb-1.5">
         <div>
-          <h3 className="text-sm font-semibold text-mq-text flex items-center gap-2">
-            <Icon size={15} strokeWidth={1.75} aria-hidden />
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-mq-text flex items-center gap-2">
+            <Icon size={14} strokeWidth={1.75} aria-hidden />
             {title}
           </h3>
           {description ? (
-            <p className="text-xs text-mq-text-muted mt-0.5">{description}</p>
+            <p className="text-[11px] text-mq-text-muted mt-0.5">{description}</p>
           ) : null}
         </div>
         {rangeOptions && range && onRangeChange ? (
@@ -89,7 +89,7 @@ export function AdminChartCard({
           />
         ) : null}
       </div>
-      <div className={showPlaceholder ? "px-4 pb-4" : undefined}>{body()}</div>
+      <div className={showPlaceholder ? "px-3.5 pb-3" : undefined}>{body()}</div>
     </div>
   );
 }

@@ -191,7 +191,7 @@ export function AdminDashboardOverview({
       : null;
 
   return (
-    <section className="mb-6 space-y-5">
+    <section className="mb-4 space-y-3.5">
       {isFull ? <LedgerTwdNote /> : null}
       {isError ? (
         <div className="mq-alert mq-alert-error text-sm">
@@ -201,8 +201,8 @@ export function AdminDashboardOverview({
 
       {hasQueues ? (
         <div>
-          <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
-            <h2 className="text-sm font-semibold text-mq-text">
+          <div className="flex flex-wrap items-baseline justify-between gap-2 mb-2">
+            <h2 className="text-xs uppercase tracking-wider font-semibold text-mq-text">
               {t("admin.overview.queuesTitle")}
             </h2>
             {updatedLabel ? (
@@ -226,7 +226,7 @@ export function AdminDashboardOverview({
 
       {hasSnapshot ? (
         <div>
-          <h2 className="text-sm font-semibold text-mq-text mb-3">
+          <h2 className="text-xs uppercase tracking-wider font-semibold text-mq-text mb-2">
             {t("admin.overview.snapshotTitle")}
           </h2>
           <div className="mq-admin-kpi-grid">
@@ -245,10 +245,10 @@ export function AdminDashboardOverview({
       {scope === "warehouse" ? <AdminInventoryQueues /> : null}
 
       <div>
-        <h2 className="text-sm font-semibold text-mq-text mb-3">
+        <h2 className="text-xs uppercase tracking-wider font-semibold text-mq-text mb-2">
           {t("admin.overview.chartsTitle")}
         </h2>
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-3 lg:grid-cols-2">
           {isFull ? (
             <>
               <AdminGmvChart />
@@ -265,7 +265,7 @@ export function AdminDashboardOverview({
 
       {isFull ? (
         <div>
-          <h2 className="text-sm font-semibold text-mq-text mb-3">
+          <h2 className="text-xs uppercase tracking-wider font-semibold text-mq-text mb-2">
             {t("admin.overview.cronSectionTitle")}
           </h2>
           <AdminCronJobs />

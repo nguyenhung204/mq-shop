@@ -9,6 +9,7 @@ import { RegionBridge } from "@/components/providers/RegionBridge";
 import { WishlistProvider } from "@/components/providers/WishlistProvider";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { AosProvider } from "@/components/providers/AosProvider";
 import { AppShell } from "@/components/layout/AppShell";
 import { AppToaster } from "@/components/ui/AppToaster";
 import "./globals.css";
@@ -46,22 +47,24 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col antialiased font-sans">
         <QueryProvider>
           <ThemeProvider>
-            <LanguageProvider>
-              <AuthProvider>
-                <RegionBridge>
-                  <NotificationProvider>
-                    <WishlistProvider>
-                      <CartProvider>
-                        <FlyToCartProvider>
-                          <AppShell>{children}</AppShell>
-                          <AppToaster />
-                        </FlyToCartProvider>
-                      </CartProvider>
-                    </WishlistProvider>
-                  </NotificationProvider>
-                </RegionBridge>
-              </AuthProvider>
-            </LanguageProvider>
+            <AosProvider>
+              <LanguageProvider>
+                <AuthProvider>
+                  <RegionBridge>
+                    <NotificationProvider>
+                      <WishlistProvider>
+                        <CartProvider>
+                          <FlyToCartProvider>
+                            <AppShell>{children}</AppShell>
+                            <AppToaster />
+                          </FlyToCartProvider>
+                        </CartProvider>
+                      </WishlistProvider>
+                    </NotificationProvider>
+                  </RegionBridge>
+                </AuthProvider>
+              </LanguageProvider>
+            </AosProvider>
           </ThemeProvider>
         </QueryProvider>
       </body>

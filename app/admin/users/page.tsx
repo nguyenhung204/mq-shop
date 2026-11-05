@@ -137,25 +137,25 @@ function UsersInner() {
         ) : (
           <div className="mq-table-wrap">
             <table className="w-full text-sm">
-              <thead className="bg-mq-surface-subtle text-left">
+              <thead className="bg-mq-surface-subtle text-left text-xs uppercase tracking-wider text-mq-text-muted">
                 <tr>
-                  <th className="p-3">{t("admin.common.email")}</th>
-                  <th className="p-3">{t("admin.common.name")}</th>
-                  <th className="p-3">{t("admin.common.status")}</th>
-                  <th className="p-3">{t("admin.common.roles")}</th>
-                  <th className="p-3" />
+                  <th className="py-2.5 px-3">{t("admin.common.email")}</th>
+                  <th className="py-2.5 px-3">{t("admin.common.name")}</th>
+                  <th className="py-2.5 px-3">{t("admin.common.status")}</th>
+                  <th className="py-2.5 px-3">{t("admin.common.roles")}</th>
+                  <th className="py-2.5 px-3" />
                 </tr>
               </thead>
               <tbody>
                 {items.map((u) => {
                   const isLocked = u.status === "LOCKED";
                   return (
-                  <tr key={u.id} className="border-t border-mq-border">
-                    <td className="p-3">{u.email}</td>
-                    <td className="p-3">{u.fullName || "—"}</td>
-                    <td className="p-3">{u.status ? translateStatus(t, "user", u.status) : "—"}</td>
-                    <td className="p-3">{translateRoles(t, u.roles)}</td>
-                    <td className="p-3 whitespace-nowrap">
+                  <tr key={u.id} className="border-t border-mq-border hover:bg-mq-surface-subtle/50 transition-colors">
+                    <td className="py-2.5 px-3 font-medium">{u.email}</td>
+                    <td className="py-2.5 px-3">{u.fullName || "—"}</td>
+                    <td className="py-2.5 px-3">{u.status ? translateStatus(t, "user", u.status) : "—"}</td>
+                    <td className="py-2.5 px-3">{translateRoles(t, u.roles)}</td>
+                    <td className="py-2.5 px-3 whitespace-nowrap text-right">
                       <AdminActions>
                         <AdminIconButton
                           label={t("admin.common.lock")}

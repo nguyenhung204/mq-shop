@@ -99,7 +99,7 @@ function ProductsInner() {
 
       <LedgerTwdNote className="mb-4" />
 
-      <div className="space-y-4">
+      <div className="space-y-2.5">
         {isError && (
           <div className="mq-alert mq-alert-error">
             {getErrorMessage(error, t("admin.common.failed"))}
@@ -117,19 +117,19 @@ function ProductsInner() {
           const title = p.title || p.name || "Product";
           const variants = productVariants(p);
           return (
-            <div key={p.id} className="mq-card p-4 flex flex-wrap gap-4 text-sm">
+            <div key={p.id} className="mq-card p-3 sm:p-3.5 flex flex-wrap gap-3 text-sm">
               {thumb ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={thumb}
                   alt=""
-                  className="w-20 h-20 rounded object-cover border border-mq-border shrink-0 bg-mq-surface-subtle"
+                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-[var(--mq-radius-sm)] object-cover border border-mq-border shrink-0 bg-mq-surface-subtle"
                 />
               ) : (
-                <div className="w-20 h-20 rounded border border-mq-border shrink-0 bg-mq-surface-subtle" />
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-[var(--mq-radius-sm)] border border-mq-border shrink-0 bg-mq-surface-subtle" />
               )}
               <div className="flex-1 min-w-[200px]">
-                <p className="font-medium">{title}</p>
+                <p className="font-medium text-sm leading-snug">{title}</p>
                 <p className="text-xs text-mq-text-muted mt-0.5">
                   {productPriceLabel(p)} ·{" "}
                   {t("admin.productsPage.stock", { n: String(p.stock ?? "—") })} · {translateStatus(t, "product", p.status)}
@@ -147,10 +147,10 @@ function ProductsInner() {
                   </div>
                 )}
                 {excerpt ? (
-                  <p className="text-xs text-mq-text-secondary mt-2">{excerpt}</p>
+                  <p className="text-xs text-mq-text-secondary mt-1 line-clamp-2">{excerpt}</p>
                 ) : null}
                 {variants.length > 0 ? (
-                  <ul className="mt-2 space-y-1 text-xs text-mq-text-muted">
+                  <ul className="mt-1.5 space-y-0.5 text-xs text-mq-text-muted">
                     {variants.map((v) => (
                       <li key={v.id} className="flex flex-wrap gap-x-2">
                         <span className="font-medium text-mq-text-secondary">{v.sku}</span>

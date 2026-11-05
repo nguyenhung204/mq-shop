@@ -68,7 +68,7 @@ export function AdminOrdersChart() {
                 );
               }}
             />
-            <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="count" fill="#e7ba0a" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>

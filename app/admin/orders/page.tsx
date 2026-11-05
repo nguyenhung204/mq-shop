@@ -416,7 +416,7 @@ function OrdersInner() {
         </button>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-2.5">
         {isError && (
           <div className="mq-alert mq-alert-error">
             {getErrorMessage(error, t("admin.common.failed"))}
@@ -429,7 +429,7 @@ function OrdersInner() {
         {items.map((o) => (
           <div
             key={o.id}
-            className={`mq-card p-4 flex flex-wrap justify-between gap-3 text-sm ${
+            className={`mq-card p-3 sm:p-3.5 flex flex-wrap justify-between gap-2.5 text-sm ${
               highlightOrderId === o.id ? "ring-2 ring-mq-gold" : ""
             }`}
           >

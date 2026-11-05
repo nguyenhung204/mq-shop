@@ -62,7 +62,7 @@ export function AdminTopShops() {
                 </div>
                 <div className="h-1.5 bg-mq-surface rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-emerald-500 rounded-full transition-all"
+                    className="h-full bg-[#e7ba0a] rounded-full transition-all"
                     style={{ width: `${pct}%` }}
                   />
                 </div>

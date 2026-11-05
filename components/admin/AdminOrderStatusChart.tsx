@@ -17,18 +17,18 @@ const RANGE_OPTIONS = [
 ];
 
 const STATUS_COLORS: Record<string, string> = {
-  DELIVERED: "#22c55e",
-  SHIPPED: "#3b82f6",
-  CONFIRMED: "#8b5cf6",
-  PAID: "#6366f1",
-  PACKED: "#06b6d4",
-  PENDING: "#f59e0b",
-  CANCELLED: "#ef4444",
-  REFUNDED: "#f97316",
+  DELIVERED: "#e7ba0a",
+  SHIPPED: "#ffd54a",
+  CONFIRMED: "#d4a305",
+  PAID: "#fbbf24",
+  PACKED: "#b48c08",
+  PENDING: "#78716c",
+  CANCELLED: "#f87171",
+  REFUNDED: "#fb923c",
 };
 
 function getColor(status: string, idx: number): string {
-  return STATUS_COLORS[status] ?? ["#64748b", "#94a3b8", "#cbd5e1"][idx % 3];
+  return STATUS_COLORS[status] ?? ["#b48c08", "#d4a305", "#a8a29e"][idx % 3];
 }
 
 export function AdminOrderStatusChart() {

@@ -56,8 +56,8 @@ export function AdminNewUsersChart() {
           <AreaChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="adminUsersGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                <stop offset="5%" stopColor="#e7ba0a" stopOpacity={0.35} />
+                <stop offset="95%" stopColor="#e7ba0a" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-mq-border, #e5e7eb)" />
@@ -74,7 +74,7 @@ export function AdminNewUsersChart() {
                 );
               }}
             />
-            <Area type="monotone" dataKey="count" stroke="#10b981" strokeWidth={2} fill="url(#adminUsersGrad)" />
+            <Area type="monotone" dataKey="count" stroke="#e7ba0a" strokeWidth={2} fill="url(#adminUsersGrad)" />
           </AreaChart>
         </ResponsiveContainer>
       </div>

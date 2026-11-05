@@ -73,7 +73,7 @@ export function CategoryMarquee({ categories, locale, imageFor }: Props) {
   }
 
   return (
-    <div className="mq-category-marquee" aria-label="Categories">
+    <div className="mq-category-marquee touch-pan-x" aria-label="Categories">
       <div className="mq-category-marquee-track">
         <div className="mq-category-marquee-group">
           {sequence.map((cat, i) => (
@@ -82,7 +82,7 @@ export function CategoryMarquee({ categories, locale, imageFor }: Props) {
               cat={cat}
               locale={locale}
               image={resolveImage(cat.slug)}
-              priority={i < 4}
+              priority={i < 8}
             />
           ))}
         </div>

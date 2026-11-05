@@ -28,7 +28,7 @@ function ReviewCard({ review }: { review: FeaturedReview }) {
   return (
     <blockquote
       data-review-card
-      className="shrink-0 w-[min(100%,20rem)] md:w-[22rem] snap-start bg-mq-surface p-6 md:p-8 border border-mq-border rounded-[var(--mq-radius-lg)] flex flex-col gap-4"
+      className="shrink-0 w-[min(100%,20rem)] md:w-[22rem] snap-start bg-mq-surface p-6 md:p-8 border border-mq-border rounded-[var(--mq-radius-lg)] flex flex-col gap-4 shadow-[var(--mq-shadow-sm)] hover:shadow-md transition-shadow"
     >
       <div className="flex items-center gap-2">
         <Stars rating={review.rating} />
@@ -182,26 +182,28 @@ export function FeaturedReviews() {
   const { data = [], isLoading, isError } = useFeaturedReviews(4, 12);
 
   return (
-    <section className="py-14 md:py-20 bg-mq-surface-subtle">
+    <section className="py-14 md:py-20 bg-mq-surface border-y border-mq-border">
       <Container>
         <SectionHeading label={t("home.reviews")} title={t("home.whatClientsSay")} />
 
-        {isLoading ? (
-          <div className="mq-carousel-track gap-4">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div
-                key={i}
-                className="shrink-0 w-[min(100%,20rem)] md:w-[22rem] h-56 rounded-[var(--mq-radius-lg)] bg-mq-surface animate-pulse border border-mq-border"
-              />
-            ))}
-          </div>
-        ) : isError || data.length === 0 ? (
-          <p className="text-sm text-mq-text-muted text-center py-8">
-            {t("home.noReviews")}
-          </p>
-        ) : (
-          <ReviewsAutoTrack reviews={data} />
-        )}
+        <div data-aos="fade-up">
+          {isLoading ? (
+            <div className="mq-carousel-track gap-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="shrink-0 w-[min(100%,20rem)] md:w-[22rem] h-56 rounded-[var(--mq-radius-lg)] bg-mq-surface animate-pulse border border-mq-border"
+                />
+              ))}
+            </div>
+          ) : isError || data.length === 0 ? (
+            <p className="text-sm text-mq-text-muted text-center py-8">
+              {t("home.noReviews")}
+            </p>
+          ) : (
+            <ReviewsAutoTrack reviews={data} />
+          )}
+        </div>
       </Container>
     </section>
   );
