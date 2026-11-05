@@ -199,15 +199,19 @@
     "sortLatest": "Latest",
     "sortDeals": "On Sale",
     "sortPriceLow": "Price: Low to High",
-    "sortPriceHigh": "Price: High to Low"
+    "sortPriceHigh": "Price: High to Low",
+    "showingRange": "Showing {from}–{to} of {total} products",
+    "prev": "Previous",
+    "next": "Next",
+    "page": "Page"
   },
   "storefront": {
     "officialShop": "Official shop",
     "shipsFrom": "Ships from",
     "searchPlaceholder": "Search in this shop…",
-    "priceRange": "Price range (TWD)",
-    "minPrice": "Min (TWD)",
-    "maxPrice": "Max (TWD)",
+    "priceRange": "Price range",
+    "minPrice": "Min",
+    "maxPrice": "Max",
     "applyPrice": "Apply price",
     "clearFilters": "Clear filters",
     "loading": "Loading shop…",

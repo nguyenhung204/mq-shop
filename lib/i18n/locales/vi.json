@@ -199,15 +199,19 @@
     "sortLatest": "Mới nhất",
     "sortDeals": "Đang giảm giá",
     "sortPriceLow": "Giá: Thấp đến cao",
-    "sortPriceHigh": "Giá: Cao đến thấp"
+    "sortPriceHigh": "Giá: Cao đến thấp",
+    "showingRange": "Hiển thị {from}–{to} trên tổng số {total} sản phẩm",
+    "prev": "Trang trước",
+    "next": "Trang sau",
+    "page": "Trang"
   },
   "storefront": {
     "officialShop": "Gian hàng chính thức",
     "shipsFrom": "Giao từ",
     "searchPlaceholder": "Tìm trong gian hàng…",
-    "priceRange": "Khoảng giá (TWD)",
-    "minPrice": "Từ (TWD)",
-    "maxPrice": "Đến (TWD)",
+    "priceRange": "Khoảng giá",
+    "minPrice": "Từ",
+    "maxPrice": "Đến",
     "applyPrice": "Áp dụng giá",
     "clearFilters": "Xóa bộ lọc",
     "loading": "Đang tải gian hàng…",

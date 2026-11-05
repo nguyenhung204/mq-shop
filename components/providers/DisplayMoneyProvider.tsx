@@ -11,6 +11,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useRegion } from "@/components/providers/RegionProvider";
 import {
   convertFromTwd,
+  convertToTwd,
   formatMoneyDisplay,
   formatMoneyForCurrency,
 } from "@/lib/fx/convert";
@@ -25,6 +26,7 @@ type DisplayMoneyContextValue = {
   /** True when live rates loaded with a non-empty asOf timestamp. */
   isRatesReady: boolean;
   convert: (amountTwd: number) => number;
+  convertToTwd: (amountInCurrency: number) => number;
   formatDisplay: (amountTwd: number) => string;
   formatLedger: (amountTwd: number) => string;
   /** Refetch public FX rates (e.g. before checkout). Returns fresh payload. */
@@ -44,6 +46,11 @@ export function DisplayMoneyProvider({ children }: { children: ReactNode }) {
 
   const convert = useCallback(
     (amountTwd: number) => convertFromTwd(amountTwd, currency, rates),
+    [currency, rates],
+  );
+
+  const convertToTwdAmount = useCallback(
+    (amountInCurrency: number) => convertToTwd(amountInCurrency, currency, rates),
     [currency, rates],
   );
 
@@ -75,6 +82,7 @@ export function DisplayMoneyProvider({ children }: { children: ReactNode }) {
       isFallback,
       isRatesReady,
       convert,
+      convertToTwd: convertToTwdAmount,
       formatDisplay,
       formatLedger,
       refetchRates,
@@ -86,6 +94,7 @@ export function DisplayMoneyProvider({ children }: { children: ReactNode }) {
       isFallback,
       isRatesReady,
       convert,
+      convertToTwdAmount,
       formatDisplay,
       formatLedger,
       refetchRates,

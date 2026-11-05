@@ -224,7 +224,7 @@ export const catalogApi = {
           minPrice: query.minPrice,
           maxPrice: query.maxPrice,
           page: query.page ?? 1,
-          pageSize: query.pageSize ?? 20,
+          pageSize: query.pageSize ?? 8,
         },
         withMeta: true,
       },

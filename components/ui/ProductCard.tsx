@@ -12,15 +12,20 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useWishlist } from "@/components/providers/WishlistProvider";
 import { useFlyToCart } from "@/components/cart/FlyToCartProvider";
 import { Stars } from "./shared";
+import { useScrollReveal } from "@/lib/hooks/useScrollReveal";
 
 export function ProductCard({
   product,
   compact = false,
   priority = false,
+  index,
+  enableReveal = true,
 }: {
   product: Product;
   compact?: boolean;
   priority?: boolean;
+  index?: number;
+  enableReveal?: boolean;
 }) {
   const [hovered, setHovered] = useState(false);
   const { locale, t } = useLanguage();
@@ -35,9 +40,16 @@ export function ProductCard({
         ? product.watermarkText?.zh
         : product.watermarkText?.en;
 
+  const { ref: revealRef, revealClasses, revealStyle } = useScrollReveal<HTMLElement>({
+    index,
+    disabled: !enableReveal || compact,
+  });
+
   return (
     <article
-      className="group mq-product-card"
+      ref={revealRef}
+      className={`group mq-product-card ${revealClasses}`.trim()}
+      style={revealStyle}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >

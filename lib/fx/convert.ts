@@ -20,8 +20,27 @@ export function convertFromTwd(
   return amountTwd * rate;
 }
 
+export function convertToTwd(
+  amountInCurrency: number,
+  currency: string,
+  rates: Record<string, number>,
+): number {
+  if (!Number.isFinite(amountInCurrency)) return 0;
+  if (currency === "TWD") return amountInCurrency;
+  const rate = rates[currency];
+  if (rate == null || !Number.isFinite(rate) || rate <= 0) return amountInCurrency;
+  return amountInCurrency / rate;
+}
+
 export function getFxDecimals(currency: string): number {
-  if (currency === "VND") return 0;
+  if (
+    currency === "VND" ||
+    currency === "TWD" ||
+    currency === "JPY" ||
+    currency === "KRW"
+  ) {
+    return 0;
+  }
   return 2;
 }
 

@@ -199,15 +199,19 @@
     "sortLatest": "最新",
     "sortDeals": "特價中",
     "sortPriceLow": "價格：低到高",
-    "sortPriceHigh": "價格：高到低"
+    "sortPriceHigh": "價格：高到低",
+    "showingRange": "顯示第 {from}–{to} 項，共 {total} 個商品",
+    "prev": "上一頁",
+    "next": "下一頁",
+    "page": "頁"
   },
   "storefront": {
     "officialShop": "官方商店",
     "shipsFrom": "出貨地",
     "searchPlaceholder": "在本店搜尋…",
-    "priceRange": "價格區間 (TWD)",
-    "minPrice": "最低 (TWD)",
-    "maxPrice": "最高 (TWD)",
+    "priceRange": "價格區間",
+    "minPrice": "最低",
+    "maxPrice": "最高",
     "applyPrice": "套用價格",
     "clearFilters": "清除篩選",
     "loading": "載入商店中…",

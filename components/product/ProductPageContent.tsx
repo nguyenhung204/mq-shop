@@ -448,7 +448,9 @@ export function ProductPageContent({
 
         {related.length > 0 && (
           <div className="mt-16">
-            <h2 className="text-2xl md:text-3xl text-mq-text mb-8">{t("product.relatedTitle")}</h2>
+            <h2 className="text-2xl md:text-3xl text-mq-text mb-8" data-aos="fade-up">
+              {t("product.relatedTitle")}
+            </h2>
             <ProductCarousel products={related} />
           </div>
         )}

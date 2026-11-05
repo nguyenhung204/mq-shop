@@ -1157,6 +1157,40 @@ select.mq-input,
   .group:hover .mq-product-media-img {
     transform: none;
   }
+
+  .mq-product-reveal,
+  .mq-product-reveal.is-revealed {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    will-change: auto !important;
+  }
+}
+
+/* ==========================================================================
+   Scroll-Triggered Product Reveal & Entrance Experience (Calm & Subtle)
+   ========================================================================== */
+.mq-product-reveal {
+  opacity: 0;
+  transform: translate3d(0, 10px, 0);
+  transition-property: opacity, transform;
+  transition-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: opacity, transform;
+}
+
+.mq-product-reveal.is-revealed {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Calm, subtle AOS override — avoid jarring default 100px jumps */
+[data-aos="fade-up"] {
+  transform: translate3d(0, 14px, 0) !important;
+  transition-property: transform, opacity !important;
+}
+
+[data-aos="fade-up"].aos-animate {
+  transform: translate3d(0, 0, 0) !important;
 }
 
 .dark .mq-card {

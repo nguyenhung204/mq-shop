@@ -83,11 +83,13 @@ export function useCatalogListing(
 }
 
 /** Paginated listing for shop storefront / catalog pages. */
+export const STOREFRONT_PAGE_SIZE = 8;
+
 export function useCatalogListingPage(
   params: CatalogListingParams & { enabled?: boolean } = {},
 ) {
   const page = params.page ?? 1;
-  const pageSize = params.pageSize ?? 24;
+  const pageSize = params.pageSize ?? STOREFRONT_PAGE_SIZE;
   const { q, categoryId, shopId, countryCode, minPrice, maxPrice } = params;
   return useQuery({
     queryKey: [

@@ -35,6 +35,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
 import { formatWarehouseLabel } from "@/lib/inventory/warehouse-label";
 import { CountrySelect } from "@/components/ui/CountrySelect";
+import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import {
   AdminActions,
   AdminIconButton,
@@ -508,15 +509,13 @@ function VariantsTab() {
             onChange={(e) => setSku(e.target.value)}
             required
           />
-          <input
-            className="mq-input"
-            type="number"
-            min="0"
-            step="0.01"
+          <CurrencyInput
+            currency="TWD"
             aria-label={t("seller.inventoryPage.sellPrice")}
             placeholder={t("seller.productsPage.sellPricePlaceholder")}
-            value={sellingPrice}
-            onChange={(e) => setSellingPrice(e.target.value)}
+            value={sellingPrice ? Number(sellingPrice) : null}
+            onChange={(num) => setSellingPrice(num != null ? String(num) : "")}
+            min={0}
             required
           />
           <input

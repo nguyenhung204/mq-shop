@@ -47,7 +47,11 @@ export function ProductCarousel({
       <div ref={trackRef} className="mq-carousel-track">
         {products.map((p, i) => (
           <div key={p.id} className="mq-carousel-item">
-            <ProductCard product={p} priority={i < priorityCount} />
+            <ProductCard
+              product={p}
+              priority={i < priorityCount}
+              index={i}
+            />
           </div>
         ))}
       </div>

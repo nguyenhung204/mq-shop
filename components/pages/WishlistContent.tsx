@@ -80,8 +80,8 @@ export function WishlistContent() {
           </button>
         </div>
         <div className="mq-product-grid">
-          {items.map((item) => (
-            <ProductCard key={item.productId} product={toProduct(item)} />
+          {items.map((item, i) => (
+            <ProductCard key={item.productId} product={toProduct(item)} index={i} />
           ))}
         </div>
       </Container>

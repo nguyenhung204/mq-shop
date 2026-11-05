@@ -30,6 +30,7 @@ import {
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
+import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { categoryLabel } from "@/lib/api/categoryLabel";
@@ -694,16 +695,16 @@ function ProductsInner() {
                       onChange={(e) => updateVariantDraft(v.key, { sku: e.target.value })}
                       required
                     />
-                    <input
-                      className="mq-input"
-                      type="number"
-                      step="0.01"
-                      min="0"
+                    <CurrencyInput
+                      currency="TWD"
                       placeholder={t("seller.productsPage.sellPricePlaceholder")}
-                      value={v.sellingPrice}
-                      onChange={(e) =>
-                        updateVariantDraft(v.key, { sellingPrice: e.target.value })
+                      value={v.sellingPrice ? Number(v.sellingPrice) : null}
+                      onChange={(num) =>
+                        updateVariantDraft(v.key, {
+                          sellingPrice: num != null ? String(num) : "",
+                        })
                       }
+                      min={0}
                       required
                     />
                     <div className="flex items-center gap-2 justify-end">

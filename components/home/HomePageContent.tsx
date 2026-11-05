@@ -163,12 +163,14 @@ export function HomePageContent() {
 
       <section className="py-8 md:py-12 bg-mq-surface-subtle">
         <Container>
-          <SectionHeading
-            label={t("home.seasonSale")}
-            title={t("home.forEveryMoment")}
-            action={{ label: t("common.shopAll"), href: "/shop" }}
-          />
           <div data-aos="fade-up">
+            <SectionHeading
+              label={t("home.seasonSale")}
+              title={t("home.forEveryMoment")}
+              action={{ label: t("common.shopAll"), href: "/shop" }}
+            />
+          </div>
+          <div>
             {loadingProducts ? (
               <ProductCarouselSkeleton />
             ) : picks.length === 0 ? (
@@ -182,12 +184,14 @@ export function HomePageContent() {
 
       <section className="py-8 md:py-12">
         <Container>
-          <SectionHeading
-            label={t("home.justArrived")}
-            title={t("home.newAtMq")}
-            action={{ label: t("common.shopAll"), href: "/shop" }}
-          />
           <div data-aos="fade-up">
+            <SectionHeading
+              label={t("home.justArrived")}
+              title={t("home.newAtMq")}
+              action={{ label: t("common.shopAll"), href: "/shop" }}
+            />
+          </div>
+          <div>
             {loadingProducts ? (
               <ProductCarouselSkeleton />
             ) : newest.length === 0 ? (
@@ -201,12 +205,14 @@ export function HomePageContent() {
 
       <section className="py-8 md:py-12 bg-mq-surface-subtle">
         <Container>
-          <SectionHeading
-            label={t("home.featured")}
-            title={t("home.curatedSelection")}
-            action={{ label: t("common.seeCollection"), href: "/shop" }}
-          />
           <div data-aos="fade-up">
+            <SectionHeading
+              label={t("home.featured")}
+              title={t("home.curatedSelection")}
+              action={{ label: t("common.seeCollection"), href: "/shop" }}
+            />
+          </div>
+          <div>
             {loadingProducts ? (
               <ProductCarouselSkeleton />
             ) : featured.length === 0 ? (
@@ -222,10 +228,12 @@ export function HomePageContent() {
 
       <section className="py-14 md:py-20 bg-mq-surface-subtle border-b border-mq-border">
         <Container>
-          <SectionHeading label={t("home.compare")} title={t("home.seeTheDifference")} />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 w-full" data-aos="fade-up">
+          <div data-aos="fade-up">
+            <SectionHeading label={t("home.compare")} title={t("home.seeTheDifference")} />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 w-full">
             {/* Standard Grade Card */}
-            <div className="group relative rounded-[var(--mq-radius-lg)] overflow-hidden border border-mq-border bg-mq-surface shadow-[var(--mq-shadow-sm)] hover:shadow-md transition-all duration-300 flex flex-col">
+            <div data-aos="fade-up" className="group relative rounded-[var(--mq-radius-lg)] overflow-hidden border border-mq-border bg-mq-surface shadow-[var(--mq-shadow-sm)] hover:shadow-md transition-all duration-300 flex flex-col">
               <div className="relative w-full h-[280px] sm:h-[340px] md:h-[380px] lg:h-[420px] overflow-hidden bg-neutral-900">
                 <Image
                   src={miscImages.compareBefore}
@@ -268,7 +276,7 @@ export function HomePageContent() {
             </div>
 
             {/* MQ Premium Quality Card */}
-            <div className="group relative rounded-[var(--mq-radius-lg)] overflow-hidden border-2 border-mq-gold/70 bg-mq-surface shadow-[0_4px_24px_rgba(255,210,29,0.12)] hover:shadow-[0_8px_32px_rgba(255,210,29,0.25)] transition-all duration-300 flex flex-col">
+            <div data-aos="fade-up" data-aos-delay="100" className="group relative rounded-[var(--mq-radius-lg)] overflow-hidden border-2 border-mq-gold/70 bg-mq-surface shadow-[0_4px_24px_rgba(255,210,29,0.12)] hover:shadow-[0_8px_32px_rgba(255,210,29,0.25)] transition-all duration-300 flex flex-col">
               <div className="relative w-full h-[280px] sm:h-[340px] md:h-[380px] lg:h-[420px] overflow-hidden bg-neutral-900">
                 <Image
                   src={miscImages.compareAfter}
