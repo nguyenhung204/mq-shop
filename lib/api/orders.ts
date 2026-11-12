@@ -512,13 +512,13 @@ export function nextFulfillmentStatus(
   }
 }
 
+/**
+ * Buyer/seller self-service cancel: PENDING only. Once PAID the buyer's money
+ * is with the seller, so only support (admin orders page) can cancel and the
+ * backend records a refund obligation.
+ */
 export function canCancelOrder(status: OrderStatus): boolean {
-  return (
-    status === "PENDING" ||
-    status === "PAID" ||
-    status === "CONFIRMED" ||
-    status === "PACKED"
-  );
+  return status === "PENDING";
 }
 
 const BLOCKING_RMA_STATUSES: RmaStatus[] = [
