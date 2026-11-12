@@ -2,18 +2,19 @@
 
 # ---------- deps ----------
 # Install dependencies in an isolated layer so they're cached
-# unless package.json / package-lock.json change.
+# unless package.json / pnpm-lock.yaml change.
 FROM node:20-alpine AS deps
 WORKDIR /app
-COPY package.json package-lock.json ./
-# npm ci fails on linux/amd64 when the lockfile was generated on macOS
-# (optional @rollup/* platform packages are missing). npm install fetches them.
-RUN npm install --no-fund --no-audit
+# pnpm version comes from the "packageManager" field in package.json.
+RUN corepack enable
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
 # ---------- builder ----------
 # Build the Next.js app. Requires next.config.ts to have `output: "standalone"`.
 FROM node:20-alpine AS builder
 WORKDIR /app
+RUN corepack enable
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
@@ -23,7 +24,7 @@ ARG NEXT_PUBLIC_API_HOST=https://api.mqplaza.com
 ENV NEXT_PUBLIC_API_HOST=$NEXT_PUBLIC_API_HOST
 
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN npm run build
+RUN pnpm run build
 
 # ---------- runner ----------
 # Minimal runtime image: only the standalone server output + static assets.
