@@ -111,10 +111,12 @@ function isYearMonth(value: string): boolean {
 
 function FinanceConfigsInner() {
   const { t, locale } = useLanguage();
-  const { hasRole, hasAnyPermission, canMutatePermission } = useAuth();
+  const { hasRole, hasAnyPermission, canApprovePermission } = useAuth();
   const canSubmit = hasRole("SUPER_ADMIN");
-  const canReview = canMutatePermission("CONFIG_FEE");
-  const canMarkFeeCollected = canMutatePermission("PAYOUT_SELLER");
+  const canReview = canApprovePermission("CONFIG_FEE");
+  // Backend: mark-collected needs PAYOUT_SELLER and CONFIG_FEE (Accountant yes, Admin no).
+  const canMarkFeeCollected =
+    canApprovePermission("PAYOUT_SELLER") && canApprovePermission("CONFIG_FEE");
   const canEditFx =
     hasRole("SUPER_ADMIN") || hasAnyPermission(["CONFIG_SYS"]);
 

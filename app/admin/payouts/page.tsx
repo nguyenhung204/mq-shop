@@ -69,8 +69,9 @@ function inPeriod(iso: string, start: string, end: string): boolean {
 
 function PayoutsInner() {
   const { t } = useLanguage();
-  const { canMutatePermission } = useAuth();
+  const { canMutatePermission, canApprovePermission } = useAuth();
   const canWritePayout = canMutatePermission("PAYOUT_SELLER");
+  const canReviewPayout = canApprovePermission("PAYOUT_SELLER");
   const bounds = monthBounds();
 
   const [shopId, setShopId] = useState("");
@@ -422,7 +423,7 @@ function PayoutsInner() {
                 ) : null}
               </div>
 
-              {payout.status === "PENDING" && canWritePayout ? (
+              {payout.status === "PENDING" && canReviewPayout ? (
                 <AdminActions>
                   <AdminIconButton
                     label={t("admin.common.approve")}

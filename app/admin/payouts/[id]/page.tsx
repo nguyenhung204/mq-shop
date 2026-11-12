@@ -45,8 +45,8 @@ function formatWhen(iso: string | null | undefined): string {
 
 function PayoutDetailInner({ payoutId }: { payoutId: string }) {
   const { t } = useLanguage();
-  const { canMutatePermission } = useAuth();
-  const canWritePayout = canMutatePermission("PAYOUT_SELLER");
+  const { canApprovePermission } = useAuth();
+  const canWritePayout = canApprovePermission("PAYOUT_SELLER");
   const { data: payout, isLoading, isError, error } = useAdminPayout(payoutId);
   const { data: shopsPage } = useAdminShops("APPROVED", 1, 100);
   const shops = shopsPage?.items ?? [];

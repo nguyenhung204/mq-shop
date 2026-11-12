@@ -22,8 +22,8 @@ import { getErrorMessage } from "@/lib/queries/utils";
 
 function WalletPayoutDetailInner({ payoutId }: { payoutId: string }) {
   const { t } = useLanguage();
-  const { canMutatePermission } = useAuth();
-  const canApproveWallet = canMutatePermission("APPROVE_PAYOUT");
+  const { canMutatePermission, canApprovePermission } = useAuth();
+  const canApproveWallet = canApprovePermission("APPROVE_PAYOUT");
   const canProcess = canMutatePermission("PROCESS_PAYOUT");
 
   const { data: payout, isLoading, isError, error } = useAdminWalletPayout(payoutId);
