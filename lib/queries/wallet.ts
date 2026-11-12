@@ -408,16 +408,21 @@ export function useApproveWalletPayout() {
 
 export function useAdjustWalletBalance() {
   const qc = useQueryClient();
+  const idempotency = useMemo(() => createIdempotencyKeyStore(), []);
   return useMutation({
-    mutationFn: (body: AdjustWalletBody) => adminWalletApi.adjust(body),
+    mutationFn: (body: AdjustWalletBody) =>
+      adminWalletApi.adjust(body, idempotency.keyFor(body)),
     onSuccess: () => {
+      idempotency.invalidate();
       // Page shows a detailed inline success alert — skip toast.
       suppressNotificationToasts();
       void qc.invalidateQueries({ queryKey: walletKeys.all });
       void qc.invalidateQueries({ queryKey: adminWalletKeys.all });
     },
-    onError: (e) =>
-      toast.error(walletErrorMessage(e, tt("toast.walletAdjustFailed"))),
+    onError: (e) => {
+      onWalletIdempotencyError(e, idempotency);
+      toast.error(walletErrorMessage(e, tt("toast.walletAdjustFailed")));
+    },
   });
 }
 

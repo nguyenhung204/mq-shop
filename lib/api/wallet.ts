@@ -211,6 +211,8 @@ export type AdjustWalletResult = {
 
 /** Admin wallet balance adjust — `ADJUST_POINTS`. */
 export const adminWalletApi = {
-  adjust: (body: AdjustWalletBody) =>
-    api.post<AdjustWalletResult | Wallet>("/admin/wallet/adjust", body),
+  adjust: (body: AdjustWalletBody, idempotencyKey: string) =>
+    api.post<AdjustWalletResult | Wallet>("/admin/wallet/adjust", body, {
+      headers: { "Idempotency-Key": idempotencyKey },
+    }),
 };
