@@ -259,6 +259,8 @@ export type UpdateShopBankInfoBody = {
   accountNumber: string;
   accountName: string;
   qrUrl?: string | null;
+  /** 6-digit wallet PIN; required to change the payout destination (N6). */
+  pin: string;
 };
 
 export const shopApi = {
@@ -266,7 +268,7 @@ export const shopApi = {
   me: () => api.get<ApiShop>("/shops/me"),
   updateMe: (body: Partial<{ name: string; pickupAddress: string; legalDocumentUrl: string }>) =>
     api.put<ApiShop>("/shops/me", body),
-  /** Bank transfer profile for buyer checkout (APPROVED shops). */
+  /** Bank transfer profile; only for the owner, staff, or a buyer with a non-final order at the shop. */
   getPaymentProfile: (shopId: string) =>
     api.get<ShopPaymentProfile>(`/shops/${shopId}/payment-profile`),
   /** Update shop bank info for off-platform buyer transfers. Gate: EDIT_SHOP. */

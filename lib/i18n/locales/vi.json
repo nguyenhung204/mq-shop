@@ -364,9 +364,9 @@
     "fxRateChanged": "Tỷ giá đã được cập nhật. Vui lòng xem lại giá hiển thị và đặt hàng lại.",
     "fxUnavailable": "Không thể tải tỷ giá. Thanh toán theo tiền khu vực tạm khóa. Thử lại sau hoặc chuyển sang Taiwan (TWD).",
     "paymentStubNote": "Thanh toán stub (COD → PENDING, MOCK → PAID). Không redirect PSP.",
-    "paySellerDirectly": "Chuyển khoản vào STK seller bên dưới, rồi tải minh chứng thanh toán ngay trên trang này trước khi đặt hàng.",
+    "paySellerDirectly": "Hãy đặt hàng trước. Thông tin ngân hàng và QR của seller sẽ hiện ở trang đơn hàng; chuyển khoản tại đó rồi tải minh chứng (nếu đã chuyển khoản, bạn có thể đính kèm ngay bây giờ).",
     "paymentProofLabel": "Minh chứng thanh toán",
-    "paymentProofHint": "Tải biên lai / bill chuyển khoản ngay (JPEG, PNG, WebP hoặc GIF · tối đa 5 MB). Bắt buộc để seller xác nhận.",
+    "paymentProofHint": "Không bắt buộc lúc này: đính kèm biên lai chuyển khoản (JPEG, PNG, WebP hoặc GIF · tối đa 5 MB). Bạn cũng có thể tải lên từ trang đơn hàng sau khi chuyển khoản.",
     "paymentProofRequired": "Vui lòng tải minh chứng thanh toán trước khi đặt hàng.",
     "paymentProofInvalidType": "Minh chứng phải là JPEG, PNG, WebP hoặc GIF.",
     "paymentProofTooLarge": "Minh chứng tối đa 5 MB.",
@@ -2278,7 +2278,9 @@
       "uploadQr": "Tải QR lên",
       "replaceQr": "Đổi QR",
       "qrHint": "JPEG / PNG / WebP / GIF · ≤5MB. Buyer thấy khi checkout. Lưu WebP (không cắt).",
-      "saveBankInfo": "Lưu thông tin ngân hàng"
+      "saveBankInfo": "Lưu thông tin ngân hàng",
+      "bankPin": "PIN ví",
+      "bankPinHint": "PIN ví 6 số, bắt buộc khi đổi tài khoản nhận tiền của shop."
     },
     "productsPage": {
       "pendingReview": "Chờ duyệt",

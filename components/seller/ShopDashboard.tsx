@@ -69,6 +69,7 @@ export function ShopDashboard({ initialSection }: Props) {
     bankName: "",
     accountNumber: "",
     accountName: "",
+    pin: "",
   });
   const [documentFile, setDocumentFile] = useState<File | null>(null);
 
@@ -85,11 +86,12 @@ export function ShopDashboard({ initialSection }: Props) {
 
   useEffect(() => {
     if (!shop?.bankInfo) return;
-    setBankForm({
-      bankName: shop.bankInfo.bankName || "",
-      accountNumber: shop.bankInfo.accountNumber || "",
-      accountName: shop.bankInfo.accountName || "",
-    });
+    setBankForm((prev) => ({
+      ...prev,
+      bankName: shop.bankInfo?.bankName || "",
+      accountNumber: shop.bankInfo?.accountNumber || "",
+      accountName: shop.bankInfo?.accountName || "",
+    }));
   }, [shop?.bankInfo]);
 
   const navItems = useMemo(() => {
@@ -146,7 +148,9 @@ export function ShopDashboard({ initialSection }: Props) {
         bankName: bankForm.bankName.trim(),
         accountNumber: bankForm.accountNumber.trim(),
         accountName: bankForm.accountName.trim(),
+        pin: bankForm.pin,
       });
+      setBankForm((prev) => ({ ...prev, pin: "" }));
     } catch (err) {
       bankAlerts.setErrorFromApi(err);
     }
@@ -388,6 +392,21 @@ export function ShopDashboard({ initialSection }: Props) {
                     minLength={2}
                     maxLength={100}
                   />
+                </div>
+                <div className="mq-shop-field">
+                  <label htmlFor="bank-pin">{t("seller.shop.bankPin")}</label>
+                  <input
+                    id="bank-pin"
+                    className="mq-input"
+                    type="password"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    value={bankForm.pin}
+                    onChange={(e) => setBankForm({ ...bankForm, pin: e.target.value.replace(/\D/g, "").slice(0, 6) })}
+                    required
+                    pattern="\d{6}"
+                  />
+                  <p className="text-xs text-mq-text-muted mt-1">{t("seller.shop.bankPinHint")}</p>
                 </div>
                 <div className="mq-shop-field">
                   <ShopPaymentQrUpload qrUrl={shop?.bankInfo?.qrUrl} canEdit={canEditBank} />

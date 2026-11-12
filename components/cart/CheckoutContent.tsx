@@ -19,7 +19,6 @@ import {
 } from "@/lib/validations/checkout";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { useCheckout, useShippingQuote } from "@/lib/queries/orders";
-import { useShopPaymentProfile } from "@/lib/queries/seller";
 import { useCart } from "@/components/providers/CartProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -149,8 +148,6 @@ export function CheckoutContent() {
 
   const address = watch("shippingAddress");
   const lineItems = useMemo(() => checkoutSelectedItems(), [selectedItems]);
-  const checkoutShopId = selectedShopIds[0] ?? selectedItems[0]?.shopId ?? null;
-  const { data: paymentProfile } = useShopPaymentProfile(checkoutShopId);
 
   // Detect cross-border items: compare shipping address country vs product countryCodes
   const shippingCountry = address?.country?.toUpperCase() || null;
@@ -383,7 +380,9 @@ export function CheckoutContent() {
 
     const needsProof =
       values.paymentMethod === "OFF_PLATFORM" || values.paymentMethod === "COD";
-    if (needsProof) {
+    // N6: bank details are only shown once the order exists, so the receipt is
+    // optional here (it can be uploaded from the placed screen / order page).
+    if (needsProof && proofFile) {
       const proofErr = validateProofFile(proofFile);
       if (proofErr) {
         setProofFieldError(proofErr);
@@ -659,54 +658,9 @@ export function CheckoutContent() {
               <p className="text-sm text-mq-text-muted mb-5">{t("checkout.paySellerDirectly")}</p>
               <input type="hidden" {...register("paymentMethod")} />
               <div className="space-y-4">
-                {paymentProfile ? (
-                  <div className="rounded-[var(--mq-radius-sm)] border border-mq-border bg-mq-surface-subtle p-4 text-sm space-y-2">
-                    <p className="font-medium text-mq-text">
-                      {paymentProfile.shopName || t("checkout.sellerPaymentProfile")}
-                    </p>
-                    {paymentProfile.bankName || paymentProfile.accountNumber ? (
-                      <dl className="grid gap-1.5 text-mq-text-secondary">
-                        {paymentProfile.bankName ? (
-                          <div className="flex flex-wrap gap-x-2">
-                            <dt className="text-mq-text-muted">{t("checkout.bankName")}:</dt>
-                            <dd>{paymentProfile.bankName}</dd>
-                          </div>
-                        ) : null}
-                        {paymentProfile.accountNumber ? (
-                          <div className="flex flex-wrap gap-x-2">
-                            <dt className="text-mq-text-muted">{t("checkout.accountNumber")}:</dt>
-                            <dd className="font-mono">{paymentProfile.accountNumber}</dd>
-                          </div>
-                        ) : null}
-                        {paymentProfile.accountName ? (
-                          <div className="flex flex-wrap gap-x-2">
-                            <dt className="text-mq-text-muted">{t("checkout.accountName")}:</dt>
-                            <dd>{paymentProfile.accountName}</dd>
-                          </div>
-                        ) : null}
-                      </dl>
-                    ) : (
-                      <p className="text-mq-accent-orange text-xs">
-                        {t("checkout.bankInfoUnavailable")}
-                      </p>
-                    )}
-                    {paymentProfile.qrUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={paymentProfile.qrUrl}
-                        alt={t("checkout.paymentQr")}
-                        className="mt-2 max-h-40 w-auto rounded border border-mq-border bg-white object-contain"
-                      />
-                    ) : null}
-                  </div>
-                ) : checkoutShopId ? (
-                  <p className="text-xs text-mq-text-muted">{t("checkout.loadingPaymentProfile")}</p>
-                ) : null}
-
                 <div className="space-y-2 rounded-[var(--mq-radius-sm)] border border-dashed border-mq-border bg-mq-surface-subtle p-4">
                   <label className="block text-sm font-medium" htmlFor="checkout-payment-proof">
-                    {t("checkout.paymentProofLabel")}{" "}
-                    <span className="text-mq-accent-orange">*</span>
+                    {t("checkout.paymentProofLabel")}
                   </label>
                   <p className="text-xs text-mq-text-muted">{t("checkout.paymentProofHint")}</p>
                   <input
