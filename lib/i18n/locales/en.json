@@ -2602,7 +2602,9 @@
       "APPROVED": "Approved",
       "COMPLETED": "Completed",
       "REJECTED": "Rejected",
-      "PAY_FAILED": "Pay failed"
+      "PAY_FAILED": "Pay failed",
+      "PROCESSING": "Processing",
+      "PAID_UNRECONCILED": "Paid - needs reconcile"
     },
     "networkIntro": "Your downline by depth (F1, F2, …). Only your network is shown.",
     "networkTotal": "Downline",

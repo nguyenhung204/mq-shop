@@ -2602,7 +2602,9 @@
       "APPROVED": "Đã duyệt",
       "COMPLETED": "Hoàn tất",
       "REJECTED": "Từ chối",
-      "PAY_FAILED": "Thanh toán lỗi"
+      "PAY_FAILED": "Thanh toán lỗi",
+      "PROCESSING": "Đang xử lý",
+      "PAID_UNRECONCILED": "Đã chi - cần đối soát"
     },
     "networkIntro": "Downline theo độ sâu (F1, F2, …). Chỉ hiện mạng của bạn.",
     "networkTotal": "Downline",

@@ -101,7 +101,9 @@ export type PayoutRequestStatus =
   | "APPROVED"
   | "COMPLETED"
   | "REJECTED"
-  | "PAY_FAILED";
+  | "PAY_FAILED"
+  | "PROCESSING"
+  | "PAID_UNRECONCILED";
 
 export type UserPayoutRequest = {
   id: string;

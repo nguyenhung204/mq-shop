@@ -2602,7 +2602,9 @@
       "APPROVED": "已核准",
       "COMPLETED": "已完成",
       "REJECTED": "已拒絕",
-      "PAY_FAILED": "付款失敗"
+      "PAY_FAILED": "付款失敗",
+      "PROCESSING": "處理中",
+      "PAID_UNRECONCILED": "已付款 - 待對帳"
     },
     "networkIntro": "依層級顯示下線（F1、F2…）。僅顯示您的網絡。",
     "networkTotal": "下線數",
