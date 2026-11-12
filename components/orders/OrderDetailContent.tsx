@@ -174,10 +174,7 @@ function OrderDetailInner() {
   const { user } = useAuth();
   const { data: order, isLoading, isError, error } = useOrder(id);
   const { data: shop } = useSellerShop();
-  // N6: the backend only serves the profile for non-final orders; the card renders only while proof can be uploaded.
-  const { data: paymentProfile } = useShopPaymentProfile(
-    order && canUploadPaymentProof(order) ? order.shopId : null,
-  );
+  const { data: paymentProfile } = useShopPaymentProfile(order?.shopId);
   const cancelOrder = useCancelOrder(id);
   const updateStatus = useUpdateOrderStatus();
   const uploadProof = useUploadPaymentProof(id);

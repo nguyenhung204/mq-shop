@@ -268,7 +268,7 @@ export const shopApi = {
   me: () => api.get<ApiShop>("/shops/me"),
   updateMe: (body: Partial<{ name: string; pickupAddress: string; legalDocumentUrl: string }>) =>
     api.put<ApiShop>("/shops/me", body),
-  /** Bank transfer profile; only for the owner, staff, or a buyer with a non-final order at the shop. */
+  /** Bank transfer profile for buyer checkout (APPROVED shops). */
   getPaymentProfile: (shopId: string) =>
     api.get<ShopPaymentProfile>(`/shops/${shopId}/payment-profile`),
   /** Update shop bank info for off-platform buyer transfers. Gate: EDIT_SHOP. */
@@ -287,9 +287,10 @@ export const shopApi = {
     return api.postForm<ApiShop>("/shops/me/banner", fd);
   },
   /** Multipart field `qr` → MinIO lossless WebP (≤1024). Sets bankInfo.qrUrl. Gate: EDIT_SHOP. */
-  uploadQr: (file: File) => {
+  uploadQr: (file: File, pin: string) => {
     const fd = new FormData();
     fd.append("qr", file);
+    fd.append("pin", pin);
     return api.postForm<ApiShop>("/shops/me/qr", fd);
   },
   listStaff: () => api.get<unknown[]>("/shops/me/staff"),

@@ -425,7 +425,7 @@ export function useUploadShopBanner() {
 export function useUploadShopQr() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (file: File) => shopApi.uploadQr(file),
+    mutationFn: ({ file, pin }: { file: File; pin: string }) => shopApi.uploadQr(file, pin),
     onSuccess: (shop: ApiShop) => {
       queryClient.setQueryData(sellerKeys.shop(), shop);
       void queryClient.invalidateQueries({

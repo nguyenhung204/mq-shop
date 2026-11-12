@@ -29,6 +29,7 @@ export function ShopPaymentQrUpload({ qrUrl, canEdit }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const uploadQr = useUploadShopQr();
   const [error, setError] = useState("");
+  const [pin, setPin] = useState("");
 
   const onChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -39,9 +40,14 @@ export function ShopPaymentQrUpload({ qrUrl, canEdit }: Props) {
       setError(validationError);
       return;
     }
+    if (!/^\d{6}$/.test(pin)) {
+      setError(t("seller.shop.bankPinHint"));
+      return;
+    }
     setError("");
     try {
-      await uploadQr.mutateAsync(file);
+      await uploadQr.mutateAsync({ file, pin });
+      setPin("");
     } catch (err) {
       setError(getErrorMessage(err, t("toast.shopQrUploadFailed"), locale));
     }
@@ -68,6 +74,17 @@ export function ShopPaymentQrUpload({ qrUrl, canEdit }: Props) {
       )}
       {canEdit ? (
         <>
+          <input
+            id="qr-pin"
+            className="mq-input max-w-[10rem]"
+            type="password"
+            inputMode="numeric"
+            autoComplete="off"
+            placeholder={t("seller.shop.bankPin")}
+            aria-label={t("seller.shop.bankPin")}
+            value={pin}
+            onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
+          />
           <input
             ref={inputRef}
             type="file"
