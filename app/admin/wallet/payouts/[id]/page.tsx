@@ -2,34 +2,41 @@
 
 import Link from "next/link";
 import { use, useState } from "react";
-import { ArrowLeft, Check, Play, X } from "lucide-react";
+import { ArrowLeft, Check, Play, ShieldCheck, X } from "lucide-react";
 import type { PayoutRequestStatus } from "@/lib/api/wallet";
 import {
   useAdminWalletPayout,
   useApproveWalletPayout,
   useProcessWalletPayout,
   useRejectWalletPayout,
+  useResolveWalletPayout,
 } from "@/lib/queries/wallet";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
+import { AdminResolvePayoutModal } from "@/components/admin/AdminResolvePayoutModal";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { WalletPayoutDetailFields } from "@/components/wallet/walletPayoutUi";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { canResolvePayoutStatus } from "@/lib/wallet/payout-resolve";
 
 function WalletPayoutDetailInner({ payoutId }: { payoutId: string }) {
   const { t } = useLanguage();
   const { canMutatePermission, canApprovePermission } = useAuth();
   const canApproveWallet = canApprovePermission("APPROVE_PAYOUT");
   const canProcess = canMutatePermission("PROCESS_PAYOUT");
+  // Resolve is SUPER_ADMIN only (PROCESS_PAYOUT): accountants only hold APPROVE.
+  const canResolve = canProcess;
 
   const { data: payout, isLoading, isError, error } = useAdminWalletPayout(payoutId);
   const approve = useApproveWalletPayout();
   const reject = useRejectWalletPayout();
   const process = useProcessWalletPayout();
+  const resolve = useResolveWalletPayout();
+  const [resolveOpen, setResolveOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
 
   const labels = {
@@ -106,6 +113,21 @@ function WalletPayoutDetailInner({ payoutId }: { payoutId: string }) {
                     />
                   </AdminActions>
                 </div>
+              ) : canResolvePayoutStatus(payout.status) && canResolve ? (
+                <div className="flex flex-wrap items-center justify-end gap-3 w-full">
+                  <p className="text-sm text-mq-text-muted mr-auto">
+                    {t("admin.walletPayouts.resolveHint")}
+                  </p>
+                  <AdminActions>
+                    <AdminIconButton
+                      label={t("admin.walletPayouts.resolve")}
+                      icon={ShieldCheck}
+                      tone="secondary"
+                      disabled={resolve.isPending}
+                      onClick={() => setResolveOpen(true)}
+                    />
+                  </AdminActions>
+                </div>
               ) : undefined
             }
           />
@@ -124,6 +146,22 @@ function WalletPayoutDetailInner({ payoutId }: { payoutId: string }) {
           setRejectOpen(false);
         }}
       />
+      {payout && resolveOpen ? (
+        <AdminResolvePayoutModal
+          open
+          status={payout.status}
+          busy={resolve.isPending}
+          onClose={() => setResolveOpen(false)}
+          onConfirm={async (body) => {
+            try {
+              await resolve.mutateAsync({ id: payoutId, ...body });
+              setResolveOpen(false);
+            } catch {
+              // toast shown by the mutation; keep the dialog open to retry
+            }
+          }}
+        />
+      ) : null}
     </>
   );
 }

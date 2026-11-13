@@ -10,6 +10,7 @@ import {
   type AdjustWalletBody,
   type ConfirmWalletPinBody,
   type ListAdminWalletPayoutsParams,
+  type ResolvePayoutBody,
   type ListTransferRecipientsParams,
   type ListWalletTransactionsParams,
   type ListWalletWithdrawalsParams,
@@ -40,6 +41,7 @@ import { createIdempotencyKeyStore } from "@/lib/api/idempotency";
 import { asArray, parsePage } from "@/lib/api/utils";
 import { formatSettlementDayGmt8 } from "@/lib/i18n/locale-format";
 import { tt } from "@/lib/i18n/tt";
+import { processResultKind } from "@/lib/wallet/payout-resolve";
 import { suppressNotificationToasts } from "@/lib/notifications/suppress-toast";
 import { getErrorMessage } from "@/lib/queries/utils";
 
@@ -148,6 +150,8 @@ function walletErrorMessage(e: unknown, fallback: string): string {
         return tt("toast.mlmTreeTooLarge");
       case "MLM_USER_PAYOUT_NOT_FOUND":
         return tt("toast.mlmUserPayoutNotFound");
+      case "PAYOUT_GATEWAY_REF_REQUIRED":
+        return tt("toast.payoutGatewayRefRequired");
       case "MLM_USER_PAYOUT_INVALID_STATUS":
         return tt("toast.mlmUserPayoutInvalidStatus");
       case "MLM_RANK_INVALID":
@@ -450,16 +454,45 @@ export function useProcessWalletPayout() {
         id,
         idempotency.keyFor({ payoutId: id, action: "process" }),
       ),
-    onSuccess: () => {
+    onSuccess: (payout) => {
       idempotency.invalidate();
       suppressNotificationToasts();
-      toast.success(tt("toast.walletPayoutProcessed"));
+      // PAID_UNRECONCILED / PROCESSING are 200 responses but not a clean success.
+      const kind = processResultKind(payout?.status);
+      if (kind === "unreconciled") {
+        toast.warning(tt("toast.walletPayoutUnreconciled"));
+      } else if (kind === "processing") {
+        toast.warning(tt("toast.walletPayoutStillProcessing"));
+      } else {
+        toast.success(tt("toast.walletPayoutProcessed"));
+      }
       void qc.invalidateQueries({ queryKey: adminWalletKeys.all });
     },
     onError: (e) => {
       onWalletIdempotencyError(e, idempotency);
       toast.error(walletErrorMessage(e, tt("toast.walletPayoutProcessFailed")));
     },
+  });
+}
+
+/** SUPER_ADMIN manual resolution of a PROCESSING / PAID_UNRECONCILED payout. */
+export function useResolveWalletPayout() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...body }: { id: string } & ResolvePayoutBody) =>
+      adminWalletPayoutApi.resolve(id, body),
+    onSuccess: (res) => {
+      suppressNotificationToasts();
+      // Repeating the same outcome is a 200 "already resolved" no-op.
+      if (/already resolved/i.test(res.message ?? "")) {
+        toast.info(tt("toast.walletPayoutAlreadyResolved"));
+      } else {
+        toast.success(tt("toast.walletPayoutResolved"));
+      }
+      void qc.invalidateQueries({ queryKey: adminWalletKeys.all });
+    },
+    onError: (e) =>
+      toast.error(walletErrorMessage(e, tt("toast.walletPayoutResolveFailed"))),
   });
 }
 

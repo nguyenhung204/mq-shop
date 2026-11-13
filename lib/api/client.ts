@@ -178,7 +178,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   }
 
   if (withMeta && isEnvelope(json)) {
-    return { data: json.data, meta: json.meta } as T;
+    return { data: json.data, meta: json.meta, message: json.message } as T;
   }
 
   if (isEnvelope(json)) {

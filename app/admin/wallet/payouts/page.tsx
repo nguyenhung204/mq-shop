@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Check, Play, X } from "lucide-react";
+import { Check, Play, ShieldCheck, X } from "lucide-react";
 import type { PayoutRequestStatus } from "@/lib/api/wallet";
 import { formatMoney, formatPoints } from "@/lib/api/utils";
 import {
@@ -10,17 +10,20 @@ import {
   useApproveWalletPayout,
   useProcessWalletPayout,
   useRejectWalletPayout,
+  useResolveWalletPayout,
 } from "@/lib/queries/wallet";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
+import { AdminResolvePayoutModal } from "@/components/admin/AdminResolvePayoutModal";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
+import { canResolvePayoutStatus } from "@/lib/wallet/payout-resolve";
 
 const STATUSES: Array<PayoutRequestStatus | ""> = [
   "",
@@ -64,11 +67,17 @@ function WalletPayoutsInner() {
   const { canMutatePermission, canApprovePermission } = useAuth();
   const canApproveWallet = canApprovePermission("APPROVE_PAYOUT");
   const canProcess = canMutatePermission("PROCESS_PAYOUT");
+  // Resolve is SUPER_ADMIN only (PROCESS_PAYOUT): accountants only hold APPROVE.
+  const canResolve = canProcess;
 
   const [status, setStatus] = useState<PayoutRequestStatus | "">("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [rejectId, setRejectId] = useState<string | null>(null);
+  const [resolveTarget, setResolveTarget] = useState<{
+    id: string;
+    status: PayoutRequestStatus;
+  } | null>(null);
 
   const { data, isLoading, isError, error, isFetching } = useAdminWalletPayouts({
     status: status || undefined,
@@ -82,6 +91,7 @@ function WalletPayoutsInner() {
   const approve = useApproveWalletPayout();
   const reject = useRejectWalletPayout();
   const process = useProcessWalletPayout();
+  const resolve = useResolveWalletPayout();
 
   return (
     <>
@@ -208,6 +218,15 @@ function WalletPayoutsInner() {
                   disabled={process.isPending}
                 />
               ) : null}
+              {canResolvePayoutStatus(row.status) && canResolve ? (
+                <AdminIconButton
+                  label={t("admin.walletPayouts.resolve")}
+                  icon={ShieldCheck}
+                  tone="secondary"
+                  onClick={() => setResolveTarget({ id: row.id, status: row.status })}
+                  disabled={resolve.isPending}
+                />
+              ) : null}
             </AdminActions>
           </div>
         ))}
@@ -228,6 +247,22 @@ function WalletPayoutsInner() {
           setRejectId(null);
         }}
       />
+      {resolveTarget ? (
+        <AdminResolvePayoutModal
+          open
+          status={resolveTarget.status}
+          busy={resolve.isPending}
+          onClose={() => setResolveTarget(null)}
+          onConfirm={async (body) => {
+            try {
+              await resolve.mutateAsync({ id: resolveTarget.id, ...body });
+              setResolveTarget(null);
+            } catch {
+              // toast shown by the mutation; keep the dialog open to retry
+            }
+          }}
+        />
+      ) : null}
     </>
   );
 }

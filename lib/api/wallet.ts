@@ -123,6 +123,12 @@ export type UserPayoutRequest = {
   updatedAt?: string;
 };
 
+export type ResolvePayoutBody = {
+  outcome: "COMPLETED" | "FAILED";
+  gatewayRef?: string;
+  note: string;
+};
+
 export type ListWalletWithdrawalsParams = {
   status?: PayoutRequestStatus;
   page?: number;
@@ -192,6 +198,13 @@ export const adminWalletPayoutApi = {
     api.post<UserPayoutRequest>(`/admin/wallet/payouts/${id}/approve`, {}),
   reject: (id: string, body: { reason: string }) =>
     api.post<UserPayoutRequest>(`/admin/wallet/payouts/${id}/reject`, body),
+  /** SUPER_ADMIN (`PROCESS_PAYOUT`): settle a PROCESSING / PAID_UNRECONCILED payout by hand. */
+  resolve: (id: string, body: ResolvePayoutBody) =>
+    api.post<{ data: UserPayoutRequest; message?: string }>(
+      `/admin/wallet/payouts/${id}/resolve`,
+      body,
+      { withMeta: true },
+    ),
   process: (id: string, idempotencyKey: string) =>
     api.post<UserPayoutRequest>(`/admin/wallet/payouts/${id}/process`, {}, {
       headers: { "Idempotency-Key": idempotencyKey },
