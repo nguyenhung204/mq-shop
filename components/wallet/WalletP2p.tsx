@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { formatPoints } from "@/lib/api/utils";
 import type { TransferPreviewResult } from "@/lib/api/wallet";
+import { transferPreviewLabel } from "@/lib/wallet/display";
 import {
   useTransferPreview,
   useTransferRecipients,
@@ -252,8 +253,10 @@ function P2pPanel({
           <form className="space-y-3" onSubmit={(e) => void onTransfer(e)}>
             <p className="text-sm">
               {t("wallet.p2pTo")}:{" "}
-              <strong>{preview.maskedName || preview.maskedEmail}</strong>
-              {preview.maskedName ? <> ({preview.maskedEmail})</> : null}
+              <strong>{transferPreviewLabel(preview).primary}</strong>
+              {transferPreviewLabel(preview).secondary ? (
+                <> ({transferPreviewLabel(preview).secondary})</>
+              ) : null}
             </p>
             <div className="space-y-2">
               <label className="block text-sm">

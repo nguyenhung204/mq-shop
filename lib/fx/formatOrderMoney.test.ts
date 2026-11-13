@@ -62,3 +62,29 @@ describe("formatOrderLineMoney", () => {
     expect(line.ledgerHint).toContain("2,000");
   });
 });
+
+describe("formatOrderLineMoney with a full order object (M15 regression)", () => {
+  it("TWD order: uses the line total even though the order has a different total", () => {
+    const order = { total: 999, displayTotal: 99999, currency: "TWD" };
+    const line = formatOrderLineMoney(order, 89.97);
+    expect(line.primary).toContain("89.97");
+    expect(line.primary).not.toContain("999");
+  });
+
+  it("FX snapshot order: converts the line total, never the order total/displayTotal", () => {
+    const order = { total: 999, displayTotal: 99999, displayCurrency: "USD", fxRate: 0.03, currency: "TWD" };
+    const a = formatOrderLineMoney(order, 2000);
+    const b = formatOrderLineMoney(order, 100);
+    expect(a.primary).toContain("60.00");
+    expect(b.primary).toContain("3.00");
+    expect(a.ledgerHint).toContain("2,000");
+    expect(a.primary).not.toContain("99,999");
+  });
+
+  it("two lines of one order differ from each other", () => {
+    const order = { total: 2094.97, currency: "TWD" };
+    expect(formatOrderLineMoney(order, 89.97).primary).not.toBe(
+      formatOrderLineMoney(order, 2000).primary,
+    );
+  });
+});
