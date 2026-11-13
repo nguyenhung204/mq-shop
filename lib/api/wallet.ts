@@ -56,10 +56,12 @@ export type TransferPreviewBody =
   | { email: string }
   | { userId: string };
 
+/** Masked by the API (no raw email/fullName); `userId` only for downline recipients. */
 export type TransferPreviewResult = {
-  userId: string;
-  email: string;
-  fullName: string | null;
+  userId: string | null;
+  maskedEmail: string;
+  maskedName: string | null;
+  inNetwork: boolean;
 };
 
 /** ACTIVE downline for P2P picker — `GET /wallet/transfer/recipients`. */

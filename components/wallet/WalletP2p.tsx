@@ -173,7 +173,7 @@ function P2pPanel({
       await transferMut.mutateAsync({
         ...(pickedUserId
           ? { userId: pickedUserId }
-          : { email: preview.email }),
+          : { email: email.trim() }),
         amount: n,
         pin,
       });
@@ -252,7 +252,8 @@ function P2pPanel({
           <form className="space-y-3" onSubmit={(e) => void onTransfer(e)}>
             <p className="text-sm">
               {t("wallet.p2pTo")}:{" "}
-              <strong>{preview.fullName || preview.email}</strong> ({preview.email})
+              <strong>{preview.maskedName || preview.maskedEmail}</strong>
+              {preview.maskedName ? <> ({preview.maskedEmail})</> : null}
             </p>
             <div className="space-y-2">
               <label className="block text-sm">
