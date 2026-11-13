@@ -1620,6 +1620,7 @@
       "upholdRejectDesc": "維持賣家驗收拒絕。賣家必須將商品寄回買家（不退款）。買家確認後訂單恢復為已配達。",
       "tracking": "退貨追蹤",
       "inspectionNote": "驗貨備註",
+      "refundAmount": "退款金額",
       "forceCloseAbandoned": "關閉（買家未寄回）",
       "forceReceive": "標記已收貨（覆寫）",
       "forceAccept": "接受商品（覆寫）→ 待退款",

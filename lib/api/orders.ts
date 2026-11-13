@@ -156,6 +156,9 @@ export type RmaView = {
   disputedAt?: string | null;
   statusChangedAt?: string | null;
   escalatedAt?: string | null;
+  /** Order total refunded to the buyer (null until the RMA is approved / legacy rows). */
+  refundAmount?: string | null;
+  refundCurrency?: string | null;
   refundProofUrl?: string | null;
   refundProofUploadedAt?: string | null;
   refundProofPurgedAt?: string | null;

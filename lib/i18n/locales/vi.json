@@ -1620,6 +1620,7 @@
       "upholdRejectDesc": "Giữ từ chối kiểm hàng của seller. Seller phải gửi hàng về lại người mua (không hoàn tiền). Đơn về Đã giao sau khi người mua xác nhận.",
       "tracking": "Mã vận đơn hoàn",
       "inspectionNote": "Ghi chú kiểm hàng",
+      "refundAmount": "Số tiền hoàn",
       "forceCloseAbandoned": "Đóng (người mua không gửi hàng)",
       "forceReceive": "Đánh dấu đã nhận hàng (can thiệp)",
       "forceAccept": "Chấp nhận hàng (can thiệp) → chờ hoàn",

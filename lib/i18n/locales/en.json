@@ -1620,6 +1620,7 @@
       "upholdRejectDesc": "Uphold the seller’s inspection reject. Seller must ship the goods back to the buyer (no refund). Order returns to Delivered after buyer confirms.",
       "tracking": "Return tracking",
       "inspectionNote": "Inspection note",
+      "refundAmount": "Refund amount",
       "forceCloseAbandoned": "Close (buyer never shipped)",
       "forceReceive": "Mark received (override)",
       "forceAccept": "Accept goods (override) → refund pending",
