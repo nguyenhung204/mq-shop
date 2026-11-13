@@ -14,6 +14,7 @@ import {
   type CreateRmaRequest,
   type ListOrdersParams,
   type OrderView,
+  type RefundObligationView,
   type RmaView,
   type ShippingQuoteRequest,
   type UpdateOrderStatusRequest,
@@ -269,6 +270,20 @@ export function useAdminOrders(params: AdminListOrdersParams = {}) {
     queryFn: async () =>
       parsePage<OrderView>(
         await adminOrdersApi.list({ page, pageSize, status, shopId, paymentEscalated }),
+      ),
+    placeholderData: (prev) => prev,
+  });
+}
+
+export function useAdminRefundObligations(params: { status?: string; page?: number; pageSize?: number } = {}) {
+  const page = params.page ?? 1;
+  const pageSize = params.pageSize ?? 20;
+  const status = params.status || undefined;
+  return useQuery({
+    queryKey: [...orderKeys.all, "admin", "refund-obligations", { page, pageSize, status }],
+    queryFn: async () =>
+      parsePage<RefundObligationView>(
+        await adminOrdersApi.refundObligations({ page, pageSize, status }),
       ),
     placeholderData: (prev) => prev,
   });

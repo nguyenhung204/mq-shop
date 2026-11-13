@@ -621,7 +621,7 @@
       "passwordUpdated": "Password updated. You can sign in.",
       "invalidOtp": "Invalid or expired OTP.",
       "otpExpired": "OTP expired. Please request a new code.",
-      "tooManyRequests": "Too many attempts. Please wait and try again.",
+      "tooManyRequests": "Too many attempts. Please wait and try again (after repeated wrong OTP entries, retry in 15 minutes).",
       "requestFailed": "Could not send OTP. Please try again.",
       "resetFailed": "Could not reset password. Please try again."
     },
@@ -828,7 +828,8 @@
       "dsar": "DSAR",
       "inbox": "Inbox",
       "notifyAdmin": "Admin notifications",
-      "reviews": "Reviews"
+      "reviews": "Reviews",
+      "refundObligations": "Refund obligations"
     },
     "common": {
       "create": "Create",
@@ -1619,6 +1620,7 @@
       "upholdRejectDesc": "Uphold the seller’s inspection reject. Seller must ship the goods back to the buyer (no refund). Order returns to Delivered after buyer confirms.",
       "tracking": "Return tracking",
       "inspectionNote": "Inspection note",
+      "refundAmount": "Refund amount",
       "forceCloseAbandoned": "Close (buyer never shipped)",
       "forceReceive": "Mark received (override)",
       "forceAccept": "Accept goods (override) → refund pending",
@@ -1700,6 +1702,19 @@
         "VOIDED": "Voided (refunded)"
       }
     },
+    "refundObligations": {
+      "title": "Refund obligations",
+      "description": "Open refunds the platform owes to buyers (read only).",
+      "hint": "Read only. Refunds are paid and recorded outside this screen.",
+      "empty": "No open refund obligations.",
+      "backToOrders": "Back to orders",
+      "buyer": "Buyer",
+      "reason": "Reason",
+      "amount": "Amount",
+      "status": {
+        "OPEN": "Open"
+      }
+    },
     "walletPayouts": {
       "title": "Wallet payouts",
       "description": "Personal withdraw queue — approve, reject, or process stub bank payouts.",
@@ -1717,7 +1732,30 @@
       "viewDetail": "View detail →",
       "gatewayRef": "Gateway ref",
       "createdAt": "Created",
-      "updatedAt": "Updated"
+      "updatedAt": "Updated",
+      "resolve": "Resolve",
+      "resolveHint": "Payout is stuck. Settle it manually after checking the bank or gateway.",
+      "resolveTitle": "Resolve wallet payout",
+      "resolveDesc": "Use only after confirming with the bank or gateway what really happened. This cannot be undone.",
+      "outcome": {
+        "COMPLETED": "Completed - money was sent",
+        "FAILED": "Failed - money was not sent"
+      },
+      "outcomeConsequence": {
+        "COMPLETED": "Frozen funds are consumed (the withdrawal is final).",
+        "FAILED": "Frozen funds are released back to the user's available balance."
+      },
+      "gatewayRefRequiredLabel": "Gateway reference (required to complete)",
+      "gatewayRefOptionalLabel": "Gateway reference (optional)",
+      "failedNotAllowed": "Mark as failed is not available: the gateway already paid this payout. Only \"Completed\" is allowed.",
+      "resolveNote": "Note (3-500 characters)",
+      "resolveConfirm": "Confirm resolution",
+      "resolveErrors": {
+        "outcomeNotAllowed": "This outcome is not available for this payout.",
+        "gatewayRefRequired": "Enter the gateway reference to complete a PROCESSING payout.",
+        "gatewayRefTooLong": "Gateway reference is at most 128 characters.",
+        "noteInvalid": "Note must be 3-500 characters."
+      }
     },
     "walletAdjust": {
       "title": "Wallet adjust",
@@ -2278,7 +2316,9 @@
       "uploadQr": "Upload QR",
       "replaceQr": "Replace QR",
       "qrHint": "JPEG / PNG / WebP / GIF · ≤5MB. Shown to buyers at checkout. Stored as WebP (not cropped).",
-      "saveBankInfo": "Save bank info"
+      "saveBankInfo": "Save bank info",
+      "bankPin": "Wallet PIN",
+      "bankPinHint": "6-digit wallet PIN, required to change where buyers pay you."
     },
     "productsPage": {
       "pendingReview": "Pending review",
@@ -2600,7 +2640,9 @@
       "APPROVED": "Approved",
       "COMPLETED": "Completed",
       "REJECTED": "Rejected",
-      "PAY_FAILED": "Pay failed"
+      "PAY_FAILED": "Pay failed",
+      "PROCESSING": "Processing",
+      "PAID_UNRECONCILED": "Paid - needs reconcile"
     },
     "networkIntro": "Your downline by depth (F1, F2, …). Only your network is shown.",
     "networkTotal": "Downline",
@@ -2713,7 +2755,8 @@
     "withdrawRegionApprox": "≈ {amount} in your region ({currency})",
     "fiatApproxRegion": "≈ {amount} ({currency})",
     "commissionsPayoutNote": "Amounts on the right are points credited to the wallet. Order bases stay TWD from recognized sales (after the 7-day return window), not from the purchase date.",
-    "commissionPayout": "Credit (points)"
+    "commissionPayout": "Credit (points)",
+    "commissionValueTwd": "Value (TWD)"
   },
   "toast": {
     "somethingWentWrong": "Something went wrong",
@@ -2722,7 +2765,24 @@
     "accountLocked": "This account is locked.",
     "sessionExpired": "Session expired. Please sign in again.",
     "emailAlreadyInUse": "This email is already in use.",
-    "tooManyRequests": "Too many attempts. Please wait and try again.",
+    "tooManyRequests": "Too many attempts. Please wait and try again (after repeated wrong PIN or OTP entries, retry in 15 minutes).",
+    "walletPayoutUnreconciled": "The gateway paid this payout but wallet settlement did not finish. It is flagged PAID_UNRECONCILED: resolve it manually.",
+    "walletPayoutStillProcessing": "This payout is still PROCESSING. Check the gateway, then resolve it if needed.",
+    "walletPayoutPaidAfterResolve": "The gateway paid this payout, but it had already been resolved manually. The wallet was not changed again: reconcile with the bank by hand.",
+    "walletPayoutPayFailed": "Payout payment failed. Funds were returned to the user's available balance.",
+    "walletPayoutProcessUnknown": "Unexpected payout status in the response. Reload the list and check the payout before retrying.",
+    "payoutPaidCannotFail": "The gateway already paid this payout, so it cannot be marked as failed. Resolve it as completed.",
+    "walletPayoutResolved": "Payout resolved",
+    "walletPayoutAlreadyResolved": "This payout was already resolved; nothing changed.",
+    "walletPayoutResolveFailed": "Could not resolve the payout",
+    "payoutGatewayRefRequired": "A gateway reference is required to complete a PROCESSING payout.",
+    "productNotActive": "This product is not active and cannot be used here.",
+    "inventoryTransferReceiveMismatch": "Received quantities do not match the transfer.",
+    "walletAmountInvalid": "Enter a valid amount greater than zero.",
+    "csrfOriginRejected": "Request blocked: it did not come from an allowed site. Reload the page and try again.",
+    "categoryParentCycle": "A category cannot be moved under itself or one of its descendants.",
+    "reviewNotAllowed": "This review action is not allowed (reviews are only allowed for delivered orders, and a review hidden by a moderator cannot be deleted).",
+    "invalidShopDocument": "Invalid or missing document. Upload a JPEG, PNG or WebP image, or a real PDF file.",
     "registrationNotFound": "Registration session expired. Please register again.",
     "registrationFailed": "Registration failed.",
     "verificationFailed": "Verification failed.",

@@ -23,6 +23,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { canShowSellerPayoutReview } from "@/lib/auth/payout-access";
 import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 import { gmt8DayEndIso, gmt8DayStartIso, gmt8MonthBounds } from "@/lib/i18n/gmt8-calendar";
 
@@ -69,8 +70,9 @@ function inPeriod(iso: string, start: string, end: string): boolean {
 
 function PayoutsInner() {
   const { t } = useLanguage();
-  const { canMutatePermission } = useAuth();
+  const { user, canMutatePermission, canApprovePermission } = useAuth();
   const canWritePayout = canMutatePermission("PAYOUT_SELLER");
+  const canApprovePayout = canApprovePermission("PAYOUT_SELLER");
   const bounds = monthBounds();
 
   const [shopId, setShopId] = useState("");
@@ -422,7 +424,7 @@ function PayoutsInner() {
                 ) : null}
               </div>
 
-              {payout.status === "PENDING" && canWritePayout ? (
+              {canShowSellerPayoutReview(user, payout.status, canApprovePayout) ? (
                 <AdminActions>
                   <AdminIconButton
                     label={t("admin.common.approve")}

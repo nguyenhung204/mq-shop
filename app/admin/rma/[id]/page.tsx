@@ -20,6 +20,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { formatMoneyForCurrency } from "@/lib/fx/convert";
 import { ProofFilePreview } from "@/components/orders/ProofRetention";
 
 function isRequested(status: RmaStatus) {
@@ -339,6 +340,17 @@ function RmaDetailInner({ id }: { id: string }) {
                   {t("admin.rmaPage.inspectionNote")}
                 </h3>
                 <p className="text-mq-text-secondary whitespace-pre-wrap">{rma.inspectionNote}</p>
+              </div>
+            ) : null}
+
+            {rma.refundAmount ? (
+              <div>
+                <h3 className="text-xs uppercase tracking-wide text-mq-text-muted mb-1">
+                  {t("admin.rmaPage.refundAmount")}
+                </h3>
+                <p className="text-mq-text-secondary tabular-nums">
+                  {formatMoneyForCurrency(Number(rma.refundAmount), rma.refundCurrency || "TWD")}
+                </p>
               </div>
             ) : null}
 

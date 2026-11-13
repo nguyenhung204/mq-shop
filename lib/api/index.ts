@@ -259,6 +259,8 @@ export type UpdateShopBankInfoBody = {
   accountNumber: string;
   accountName: string;
   qrUrl?: string | null;
+  /** 6-digit wallet PIN; required to change the payout destination (N6). */
+  pin: string;
 };
 
 export const shopApi = {
@@ -285,9 +287,10 @@ export const shopApi = {
     return api.postForm<ApiShop>("/shops/me/banner", fd);
   },
   /** Multipart field `qr` → MinIO lossless WebP (≤1024). Sets bankInfo.qrUrl. Gate: EDIT_SHOP. */
-  uploadQr: (file: File) => {
+  uploadQr: (file: File, pin: string) => {
     const fd = new FormData();
     fd.append("qr", file);
+    fd.append("pin", pin);
     return api.postForm<ApiShop>("/shops/me/qr", fd);
   },
   listStaff: () => api.get<unknown[]>("/shops/me/staff"),

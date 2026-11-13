@@ -56,10 +56,12 @@ export type TransferPreviewBody =
   | { email: string }
   | { userId: string };
 
+/** Masked by the API (no raw email/fullName); `userId` only for downline recipients. */
 export type TransferPreviewResult = {
-  userId: string;
-  email: string;
-  fullName: string | null;
+  userId: string | null;
+  maskedEmail: string;
+  maskedName: string | null;
+  inNetwork: boolean;
 };
 
 /** ACTIVE downline for P2P picker — `GET /wallet/transfer/recipients`. */
@@ -101,7 +103,9 @@ export type PayoutRequestStatus =
   | "APPROVED"
   | "COMPLETED"
   | "REJECTED"
-  | "PAY_FAILED";
+  | "PAY_FAILED"
+  | "PROCESSING"
+  | "PAID_UNRECONCILED";
 
 export type UserPayoutRequest = {
   id: string;
@@ -117,6 +121,12 @@ export type UserPayoutRequest = {
   gatewayRef?: string | null;
   createdAt: string;
   updatedAt?: string;
+};
+
+export type ResolvePayoutBody = {
+  outcome: "COMPLETED" | "FAILED";
+  gatewayRef?: string;
+  note: string;
 };
 
 export type ListWalletWithdrawalsParams = {
@@ -188,10 +198,20 @@ export const adminWalletPayoutApi = {
     api.post<UserPayoutRequest>(`/admin/wallet/payouts/${id}/approve`, {}),
   reject: (id: string, body: { reason: string }) =>
     api.post<UserPayoutRequest>(`/admin/wallet/payouts/${id}/reject`, body),
+  /** SUPER_ADMIN (`PROCESS_PAYOUT`): settle a PROCESSING / PAID_UNRECONCILED payout by hand. */
+  resolve: (id: string, body: ResolvePayoutBody) =>
+    api.post<{ data: UserPayoutRequest; message?: string }>(
+      `/admin/wallet/payouts/${id}/resolve`,
+      body,
+      { withMeta: true },
+    ),
+  /** `withMeta` so callers can read the response `message` (race-guard / unreconciled cases). */
   process: (id: string, idempotencyKey: string) =>
-    api.post<UserPayoutRequest>(`/admin/wallet/payouts/${id}/process`, {}, {
-      headers: { "Idempotency-Key": idempotencyKey },
-    }),
+    api.post<{ data: UserPayoutRequest; message?: string }>(
+      `/admin/wallet/payouts/${id}/process`,
+      {},
+      { headers: { "Idempotency-Key": idempotencyKey }, withMeta: true },
+    ),
 };
 
 export type AdjustWalletBody = {
@@ -211,6 +231,8 @@ export type AdjustWalletResult = {
 
 /** Admin wallet balance adjust — `ADJUST_POINTS`. */
 export const adminWalletApi = {
-  adjust: (body: AdjustWalletBody) =>
-    api.post<AdjustWalletResult | Wallet>("/admin/wallet/adjust", body),
+  adjust: (body: AdjustWalletBody, idempotencyKey: string) =>
+    api.post<AdjustWalletResult | Wallet>("/admin/wallet/adjust", body, {
+      headers: { "Idempotency-Key": idempotencyKey },
+    }),
 };

@@ -770,8 +770,8 @@ function LoyaltySection({ summary }: { summary: CommissionTypeSummary<LoyaltyCom
 
 function CommissionReportInner() {
   const { t } = useLanguage();
-  const { canMutatePermission } = useAuth();
-  const canMarkPaid = canMutatePermission("APPROVE_MLM");
+  const { canApprovePermission } = useAuth();
+  const canMarkPaid = canApprovePermission("APPROVE_MLM");
   const tr = (k: string) => t(`admin.mlm.commissionReport.${k}`);
 
   const [inputYm, setInputYm] = useState("");

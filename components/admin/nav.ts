@@ -29,6 +29,7 @@ import {
   Star,
   Store,
   Shield,
+  Undo2,
   UserCog,
   Users,
   Wallet,
@@ -133,6 +134,14 @@ export const adminNavItems: AdminNavItem[] = [
     icon: ShoppingBag,
     permissions: ["FORCE_CANCEL_ORDER", "CONFIRM_ORDER", "VIEW_ORDER"],
     roles: ["CS", "WAREHOUSE", "ADMIN", "SUPER_ADMIN"],
+    group: "sales_crm",
+  },
+  {
+    href: "/admin/orders/refund-obligations",
+    labelKey: "admin.nav.refundObligations",
+    icon: Undo2,
+    permissions: ["APPROVE_PAYOUT"],
+    roles: ["ACCOUNTANT", "ADMIN", "SUPER_ADMIN"],
     group: "sales_crm",
   },
   {

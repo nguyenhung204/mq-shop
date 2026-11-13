@@ -8,11 +8,13 @@ export function walletPayoutStatusBadgeClass(status: PayoutRequestStatus): strin
     case "PENDING":
       return "mq-badge mq-badge-cyan";
     case "APPROVED":
+    case "PROCESSING":
       return "mq-badge mq-badge-teal";
     case "COMPLETED":
       return "mq-badge mq-badge-muted";
     case "REJECTED":
     case "PAY_FAILED":
+    case "PAID_UNRECONCILED":
       return "mq-badge mq-badge-pink";
     default:
       return "mq-badge mq-badge-muted";

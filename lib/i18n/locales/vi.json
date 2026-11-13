@@ -621,7 +621,7 @@
       "passwordUpdated": "Đã cập nhật mật khẩu. Bạn có thể đăng nhập.",
       "invalidOtp": "OTP không hợp lệ hoặc đã hết hạn.",
       "otpExpired": "OTP đã hết hạn. Vui lòng yêu cầu mã mới.",
-      "tooManyRequests": "Quá nhiều lần thử. Vui lòng đợi rồi thử lại.",
+      "tooManyRequests": "Quá nhiều lần thử. Vui lòng đợi rồi thử lại (nhập sai OTP nhiều lần sẽ bị khoá 15 phút).",
       "requestFailed": "Không gửi được OTP. Vui lòng thử lại.",
       "resetFailed": "Không đặt lại được mật khẩu. Vui lòng thử lại."
     },
@@ -828,7 +828,8 @@
       "dsar": "DSAR",
       "inbox": "Hộp thư",
       "notifyAdmin": "Thông báo admin",
-      "reviews": "Đánh giá"
+      "reviews": "Đánh giá",
+      "refundObligations": "Nghĩa vụ hoàn tiền"
     },
     "common": {
       "create": "Tạo mới",
@@ -1619,6 +1620,7 @@
       "upholdRejectDesc": "Giữ từ chối kiểm hàng của seller. Seller phải gửi hàng về lại người mua (không hoàn tiền). Đơn về Đã giao sau khi người mua xác nhận.",
       "tracking": "Mã vận đơn hoàn",
       "inspectionNote": "Ghi chú kiểm hàng",
+      "refundAmount": "Số tiền hoàn",
       "forceCloseAbandoned": "Đóng (người mua không gửi hàng)",
       "forceReceive": "Đánh dấu đã nhận hàng (can thiệp)",
       "forceAccept": "Chấp nhận hàng (can thiệp) → chờ hoàn",
@@ -1700,6 +1702,19 @@
         "VOIDED": "Đã hủy (hoàn tiền)"
       }
     },
+    "refundObligations": {
+      "title": "Nghĩa vụ hoàn tiền",
+      "description": "Các khoản hoàn tiền sàn còn nợ người mua (chỉ xem).",
+      "hint": "Chỉ xem. Việc hoàn tiền được thực hiện và ghi nhận ngoài màn hình này.",
+      "empty": "Không có nghĩa vụ hoàn tiền đang mở.",
+      "backToOrders": "Về danh sách đơn",
+      "buyer": "Người mua",
+      "reason": "Lý do",
+      "amount": "Số tiền",
+      "status": {
+        "OPEN": "Đang mở"
+      }
+    },
     "walletPayouts": {
       "title": "Rút ví cá nhân",
       "description": "Hàng đợi rút ví — duyệt, từ chối hoặc process stub bank.",
@@ -1717,7 +1732,30 @@
       "viewDetail": "Xem chi tiết →",
       "gatewayRef": "Gateway ref",
       "createdAt": "Tạo lúc",
-      "updatedAt": "Cập nhật"
+      "updatedAt": "Cập nhật",
+      "resolve": "Xử lý thủ công",
+      "resolveHint": "Khoản rút bị kẹt. Hãy đối soát với ngân hàng hoặc cổng thanh toán rồi xử lý thủ công.",
+      "resolveTitle": "Xử lý thủ công khoản rút ví",
+      "resolveDesc": "Chỉ dùng sau khi đã xác nhận với ngân hàng hoặc cổng thanh toán. Không thể hoàn tác.",
+      "outcome": {
+        "COMPLETED": "Hoàn tất - tiền đã chuyển",
+        "FAILED": "Thất bại - tiền chưa chuyển"
+      },
+      "outcomeConsequence": {
+        "COMPLETED": "Số dư đang đóng băng được tiêu hao (khoản rút là cuối cùng).",
+        "FAILED": "Số dư đóng băng được trả về số dư khả dụng của người dùng."
+      },
+      "gatewayRefRequiredLabel": "Mã tham chiếu cổng (bắt buộc khi hoàn tất)",
+      "gatewayRefOptionalLabel": "Mã tham chiếu cổng (tuỳ chọn)",
+      "failedNotAllowed": "Không thể chọn Thất bại: cổng đã chi trả khoản rút này. Chỉ được chọn Hoàn tất.",
+      "resolveNote": "Ghi chú (3-500 ký tự)",
+      "resolveConfirm": "Xác nhận xử lý",
+      "resolveErrors": {
+        "outcomeNotAllowed": "Kết quả này không khả dụng cho khoản rút này.",
+        "gatewayRefRequired": "Nhập mã tham chiếu cổng để hoàn tất khoản rút đang PROCESSING.",
+        "gatewayRefTooLong": "Mã tham chiếu cổng tối đa 128 ký tự.",
+        "noteInvalid": "Ghi chú phải từ 3-500 ký tự."
+      }
     },
     "walletAdjust": {
       "title": "Điều chỉnh ví",
@@ -2278,7 +2316,9 @@
       "uploadQr": "Tải QR lên",
       "replaceQr": "Đổi QR",
       "qrHint": "JPEG / PNG / WebP / GIF · ≤5MB. Buyer thấy khi checkout. Lưu WebP (không cắt).",
-      "saveBankInfo": "Lưu thông tin ngân hàng"
+      "saveBankInfo": "Lưu thông tin ngân hàng",
+      "bankPin": "PIN ví",
+      "bankPinHint": "PIN ví 6 số, bắt buộc khi đổi tài khoản nhận tiền của shop."
     },
     "productsPage": {
       "pendingReview": "Chờ duyệt",
@@ -2600,7 +2640,9 @@
       "APPROVED": "Đã duyệt",
       "COMPLETED": "Hoàn tất",
       "REJECTED": "Từ chối",
-      "PAY_FAILED": "Thanh toán lỗi"
+      "PAY_FAILED": "Thanh toán lỗi",
+      "PROCESSING": "Đang xử lý",
+      "PAID_UNRECONCILED": "Đã chi - cần đối soát"
     },
     "networkIntro": "Downline theo độ sâu (F1, F2, …). Chỉ hiện mạng của bạn.",
     "networkTotal": "Downline",
@@ -2713,7 +2755,8 @@
     "withdrawRegionApprox": "≈ {amount} theo khu vực ({currency})",
     "fiatApproxRegion": "≈ {amount} ({currency})",
     "commissionsPayoutNote": "Số bên phải là điểm đã/ sắp ghi có ví. Cơ sở đơn là TWD từ doanh số đã ghi nhận (sau 7 ngày đổi trả), không theo ngày đặt hàng.",
-    "commissionPayout": "Ghi có (điểm)"
+    "commissionPayout": "Ghi có (điểm)",
+    "commissionValueTwd": "Giá trị (TWD)"
   },
   "toast": {
     "somethingWentWrong": "Đã xảy ra lỗi",
@@ -2722,7 +2765,24 @@
     "accountLocked": "Tài khoản này đã bị khoá.",
     "sessionExpired": "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.",
     "emailAlreadyInUse": "Email này đã được sử dụng.",
-    "tooManyRequests": "Quá nhiều lần thử. Vui lòng đợi rồi thử lại.",
+    "tooManyRequests": "Quá nhiều lần thử. Vui lòng đợi rồi thử lại (nhập sai PIN hoặc OTP nhiều lần sẽ bị khoá 15 phút).",
+    "walletPayoutUnreconciled": "Cổng đã chi trả nhưng việc ghi nhận vào ví chưa hoàn tất. Khoản rút bị gắn PAID_UNRECONCILED: hãy xử lý thủ công.",
+    "walletPayoutStillProcessing": "Khoản rút vẫn đang PROCESSING. Kiểm tra cổng thanh toán rồi xử lý thủ công nếu cần.",
+    "walletPayoutPaidAfterResolve": "Cổng đã chi trả khoản rút này nhưng nó đã được xử lý thủ công trước đó. Ví không bị thay đổi lần nữa: hãy đối soát ngân hàng thủ công.",
+    "walletPayoutPayFailed": "Chi trả khoản rút thất bại. Số tiền đã được trả về số dư khả dụng của người dùng.",
+    "walletPayoutProcessUnknown": "Phản hồi có trạng thái khoản rút không mong đợi. Hãy tải lại danh sách và kiểm tra khoản rút trước khi thử lại.",
+    "payoutPaidCannotFail": "Cổng đã chi trả khoản rút này nên không thể đánh dấu thất bại. Hãy xử lý là hoàn tất.",
+    "walletPayoutResolved": "Đã xử lý khoản rút",
+    "walletPayoutAlreadyResolved": "Khoản rút này đã được xử lý trước đó; không có thay đổi.",
+    "walletPayoutResolveFailed": "Không thể xử lý khoản rút",
+    "payoutGatewayRefRequired": "Cần mã tham chiếu cổng để hoàn tất khoản rút đang PROCESSING.",
+    "productNotActive": "Sản phẩm này chưa hoạt động nên không thể dùng ở đây.",
+    "inventoryTransferReceiveMismatch": "Số lượng nhận không khớp với phiếu chuyển kho.",
+    "walletAmountInvalid": "Nhập số tiền hợp lệ lớn hơn 0.",
+    "csrfOriginRejected": "Yêu cầu bị chặn: không đến từ trang được phép. Hãy tải lại trang và thử lại.",
+    "categoryParentCycle": "Không thể chuyển danh mục vào chính nó hoặc danh mục con của nó.",
+    "reviewNotAllowed": "Không thể thực hiện thao tác này với đánh giá (chỉ được đánh giá đơn đã giao, và đánh giá bị kiểm duyệt ẩn thì không xoá được).",
+    "invalidShopDocument": "Tài liệu không hợp lệ hoặc bị thiếu. Hãy tải lên ảnh JPEG, PNG, WebP hoặc tệp PDF thật.",
     "registrationNotFound": "Phiên đăng ký hết hạn. Vui lòng đăng ký lại.",
     "registrationFailed": "Đăng ký thất bại.",
     "verificationFailed": "Xác minh thất bại.",

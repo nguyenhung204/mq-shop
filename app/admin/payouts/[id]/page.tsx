@@ -20,6 +20,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { canShowSellerPayoutReview } from "@/lib/auth/payout-access";
 
 function statusBadgeClass(status: SellerPayout["status"]): string {
   switch (status) {
@@ -45,8 +46,8 @@ function formatWhen(iso: string | null | undefined): string {
 
 function PayoutDetailInner({ payoutId }: { payoutId: string }) {
   const { t } = useLanguage();
-  const { canMutatePermission } = useAuth();
-  const canWritePayout = canMutatePermission("PAYOUT_SELLER");
+  const { user, canApprovePermission } = useAuth();
+  const canApprovePayout = canApprovePermission("PAYOUT_SELLER");
   const { data: payout, isLoading, isError, error } = useAdminPayout(payoutId);
   const { data: shopsPage } = useAdminShops("APPROVED", 1, 100);
   const shops = shopsPage?.items ?? [];
@@ -90,7 +91,7 @@ function PayoutDetailInner({ payoutId }: { payoutId: string }) {
                     {t(`admin.payouts.status.${payout.status}`)}
                   </span>
                 </div>
-                {payout.status === "PENDING" && canWritePayout ? (
+                {canShowSellerPayoutReview(user, payout.status, canApprovePayout) ? (
                   <AdminActions>
                     <AdminIconButton
                       label={t("admin.common.approve")}

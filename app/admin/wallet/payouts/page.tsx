@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Check, Play, X } from "lucide-react";
+import { Check, Play, ShieldCheck, X } from "lucide-react";
 import type { PayoutRequestStatus } from "@/lib/api/wallet";
 import { formatMoney, formatPoints } from "@/lib/api/utils";
 import {
@@ -10,17 +10,20 @@ import {
   useApproveWalletPayout,
   useProcessWalletPayout,
   useRejectWalletPayout,
+  useResolveWalletPayout,
 } from "@/lib/queries/wallet";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
+import { AdminResolvePayoutModal } from "@/components/admin/AdminResolvePayoutModal";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
+import { canShowPayoutResolve } from "@/lib/auth/payout-access";
 
 const STATUSES: Array<PayoutRequestStatus | ""> = [
   "",
@@ -29,6 +32,8 @@ const STATUSES: Array<PayoutRequestStatus | ""> = [
   "COMPLETED",
   "REJECTED",
   "PAY_FAILED",
+  "PROCESSING",
+  "PAID_UNRECONCILED",
 ];
 
 function statusBadgeClass(status: PayoutRequestStatus): string {
@@ -36,11 +41,13 @@ function statusBadgeClass(status: PayoutRequestStatus): string {
     case "PENDING":
       return "mq-badge mq-badge-cyan";
     case "APPROVED":
+    case "PROCESSING":
       return "mq-badge mq-badge-teal";
     case "COMPLETED":
       return "mq-badge mq-badge-muted";
     case "REJECTED":
     case "PAY_FAILED":
+    case "PAID_UNRECONCILED":
       return "mq-badge mq-badge-pink";
     default:
       return "mq-badge mq-badge-muted";
@@ -57,14 +64,19 @@ function formatWhen(iso: string): string {
 
 function WalletPayoutsInner() {
   const { t } = useLanguage();
-  const { canMutatePermission } = useAuth();
-  const canApproveWallet = canMutatePermission("APPROVE_PAYOUT");
+  const { user, canMutatePermission, canApprovePermission } = useAuth();
+  const canApproveWallet = canApprovePermission("APPROVE_PAYOUT");
   const canProcess = canMutatePermission("PROCESS_PAYOUT");
 
   const [status, setStatus] = useState<PayoutRequestStatus | "">("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [rejectId, setRejectId] = useState<string | null>(null);
+  const [resolveTarget, setResolveTarget] = useState<{
+    id: string;
+    status: PayoutRequestStatus;
+    gatewayRef?: string | null;
+  } | null>(null);
 
   const { data, isLoading, isError, error, isFetching } = useAdminWalletPayouts({
     status: status || undefined,
@@ -78,6 +90,7 @@ function WalletPayoutsInner() {
   const approve = useApproveWalletPayout();
   const reject = useRejectWalletPayout();
   const process = useProcessWalletPayout();
+  const resolve = useResolveWalletPayout();
 
   return (
     <>
@@ -204,6 +217,15 @@ function WalletPayoutsInner() {
                   disabled={process.isPending}
                 />
               ) : null}
+              {canShowPayoutResolve(user, row.status) ? (
+                <AdminIconButton
+                  label={t("admin.walletPayouts.resolve")}
+                  icon={ShieldCheck}
+                  tone="secondary"
+                  onClick={() => setResolveTarget({ id: row.id, status: row.status, gatewayRef: row.gatewayRef })}
+                  disabled={resolve.isPending}
+                />
+              ) : null}
             </AdminActions>
           </div>
         ))}
@@ -224,6 +246,23 @@ function WalletPayoutsInner() {
           setRejectId(null);
         }}
       />
+      {resolveTarget ? (
+        <AdminResolvePayoutModal
+          open
+          status={resolveTarget.status}
+          payoutGatewayRef={resolveTarget.gatewayRef}
+          busy={resolve.isPending}
+          onClose={() => setResolveTarget(null)}
+          onConfirm={async (body) => {
+            try {
+              await resolve.mutateAsync({ id: resolveTarget.id, ...body });
+              setResolveTarget(null);
+            } catch {
+              // toast shown by the mutation; keep the dialog open to retry
+            }
+          }}
+        />
+      ) : null}
     </>
   );
 }
