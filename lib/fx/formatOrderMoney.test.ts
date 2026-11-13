@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatOrderMoney } from "./formatOrderMoney";
+import { formatOrderLineMoney, formatOrderMoney } from "./formatOrderMoney";
 
 describe("formatOrderMoney", () => {
   it("uses displayTotal for snapshot total", () => {
@@ -43,5 +43,22 @@ describe("formatOrderMoney", () => {
     });
     expect(result.primary).toContain("200");
     expect(result.showCurrencySuffix).toBe(true);
+  });
+});
+
+describe("formatOrderLineMoney", () => {
+  it("uses the line total, not the order total (legacy TWD order)", () => {
+    const line = formatOrderLineMoney({ currency: "TWD" }, 89.97);
+    expect(line.primary).toContain("89.97");
+    expect(line.primary).not.toContain("2,094.97");
+  });
+
+  it("converts the line total with the FX snapshot, ignoring displayTotal", () => {
+    const line = formatOrderLineMoney(
+      { displayCurrency: "USD", fxRate: 0.03, displayTotal: 62.85 },
+      2000,
+    );
+    expect(line.primary).toContain("60.00");
+    expect(line.ledgerHint).toContain("2,000");
   });
 });

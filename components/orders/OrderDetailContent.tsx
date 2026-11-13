@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { formatMoney } from "@/lib/api/utils";
-import { formatOrderMoney } from "@/lib/fx/formatOrderMoney";
+import { formatOrderLineMoney, formatOrderMoney } from "@/lib/fx/formatOrderMoney";
 import {
   canCancelOrder,
   canRequestRma,
@@ -216,6 +216,12 @@ function OrderDetailInner() {
     }
     return formatOrderMoney(base, "total", intlLocale).primary;
   };
+
+  /** Per-line amount: uses the line's own total, never the order total. */
+  const formatLineAmount = (lineTwd: number) =>
+    order
+      ? formatOrderLineMoney(order, lineTwd, intlLocale).primary
+      : formatMoney(lineTwd);
 
   const orderTotalMoney = order
     ? formatOrderMoney(order, "total", intlLocale)
@@ -959,7 +965,7 @@ function OrderDetailInner() {
                       />
                     ) : null}
                   </div>
-                  <span className="shrink-0 font-medium">{formatOrderAmount(item.lineTotal)}</span>
+                  <span className="shrink-0 font-medium">{formatLineAmount(item.lineTotal)}</span>
                 </li>
               ))}
             </ul>

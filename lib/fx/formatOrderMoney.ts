@@ -68,3 +68,15 @@ export function formatOrderMoney(
     showCurrencySuffix: true,
   };
 }
+
+/**
+ * Format one line's own TWD amount (e.g. `lineTotal`) with the order's FX snapshot.
+ * Never reuses the order `total` / `displayTotal`.
+ */
+export function formatOrderLineMoney(
+  order: Omit<OrderMoneyFields, "total">,
+  lineTwd: number,
+  locale = "en-US",
+): FormattedOrderMoney {
+  return formatOrderMoney({ ...order, total: lineTwd, displayTotal: null }, "total", locale);
+}
