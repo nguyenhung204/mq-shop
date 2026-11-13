@@ -37,7 +37,10 @@ describe("UI wiring to tested helpers", () => {
     expect(c).not.toContain("formatOrderAmount(item.lineTotal)");
   });
   it("commission page and P2P use the display helpers", () => {
-    expect(src("components/wallet/WalletCommissions.tsx")).toContain("commissionAmounts(row,");
+    const c = src("components/wallet/WalletCommissions.tsx");
+    expect(c).toContain('commissionAmounts(row, t("common.pointUnit")).main');
+    expect(c).toContain('commissionAmounts(row, t("common.pointUnit")).twd');
+    expect(c).not.toContain("row.payoutAmount");
     const p2p = src("components/wallet/WalletP2p.tsx");
     expect(p2p).toContain("transferPreviewLabel(preview)");
     expect(p2p).toContain("{ email: email.trim() }");
