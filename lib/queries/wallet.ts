@@ -41,7 +41,7 @@ import { createIdempotencyKeyStore } from "@/lib/api/idempotency";
 import { asArray, parsePage } from "@/lib/api/utils";
 import { formatSettlementDayGmt8 } from "@/lib/i18n/locale-format";
 import { tt } from "@/lib/i18n/tt";
-import { processResultKind } from "@/lib/wallet/payout-resolve";
+import { processToast, resolveToast } from "@/lib/wallet/payout-resolve";
 import { suppressNotificationToasts } from "@/lib/notifications/suppress-toast";
 import { getErrorMessage } from "@/lib/queries/utils";
 
@@ -457,23 +457,8 @@ export function useProcessWalletPayout() {
     onSuccess: (res) => {
       idempotency.invalidate();
       suppressNotificationToasts();
-      // 200 responses that are not a clean success: check status AND message.
-      switch (processResultKind(res.data?.status, res.message)) {
-        case "unreconciled":
-          toast.warning(tt("toast.walletPayoutUnreconciled"));
-          break;
-        case "resolvedElsewhere":
-          toast.warning(tt("toast.walletPayoutPaidAfterResolve"));
-          break;
-        case "processing":
-          toast.warning(tt("toast.walletPayoutStillProcessing"));
-          break;
-        case "failed":
-          toast.error(tt("toast.walletPayoutPayFailed"));
-          break;
-        default:
-          toast.success(tt("toast.walletPayoutProcessed"));
-      }
+      const spec = processToast(res);
+      toast[spec.level](tt(spec.key));
       void qc.invalidateQueries({ queryKey: adminWalletKeys.all });
     },
     onError: (e) => {
@@ -491,12 +476,8 @@ export function useResolveWalletPayout() {
       adminWalletPayoutApi.resolve(id, body),
     onSuccess: (res) => {
       suppressNotificationToasts();
-      // Repeating the same outcome is a 200 "already resolved" no-op.
-      if (/already resolved/i.test(res.message ?? "")) {
-        toast.info(tt("toast.walletPayoutAlreadyResolved"));
-      } else {
-        toast.success(tt("toast.walletPayoutResolved"));
-      }
+      const spec = resolveToast(res);
+      toast[spec.level](tt(spec.key));
       void qc.invalidateQueries({ queryKey: adminWalletKeys.all });
     },
     onError: (e) =>

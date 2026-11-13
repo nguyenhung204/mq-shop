@@ -38,21 +38,53 @@ export type ProcessResultKind =
   | "unreconciled"
   | "processing"
   | "failed"
-  | "resolvedElsewhere";
+  | "resolvedElsewhere"
+  | "unknown";
 
 /**
- * How to report a `process` response (HTTP 200 in all cases): only a clean
- * COMPLETED is a success. The message is checked first because the race guard
- * ("paid by the gateway but had already been resolved manually") returns the
- * manually-resolved row, whose status is COMPLETED or PAY_FAILED.
+ * How to report a `process` response (HTTP 200 in all cases). Fails closed:
+ * ONLY an explicit COMPLETED is a success; any other or missing status is not.
+ * The message is checked first because the race guard ("paid by the gateway but
+ * had already been resolved manually") returns the manually-resolved row,
+ * whose status is COMPLETED or PAY_FAILED.
  */
 export function processResultKind(
-  status: PayoutRequestStatus | undefined,
+  status: PayoutRequestStatus | string | undefined | null,
   message?: string | null,
 ): ProcessResultKind {
   if (/already been resolved/i.test(message ?? "")) return "resolvedElsewhere";
   if (status === "PAID_UNRECONCILED") return "unreconciled";
   if (status === "PROCESSING") return "processing";
   if (status === "PAY_FAILED") return "failed";
-  return "success";
+  if (status === "COMPLETED") return "success";
+  return "unknown";
+}
+
+export type ToastSpec = {
+  level: "success" | "info" | "warning" | "error";
+  key: string;
+};
+
+const PROCESS_TOASTS: Record<ProcessResultKind, ToastSpec> = {
+  success: { level: "success", key: "toast.walletPayoutProcessed" },
+  unreconciled: { level: "warning", key: "toast.walletPayoutUnreconciled" },
+  resolvedElsewhere: { level: "warning", key: "toast.walletPayoutPaidAfterResolve" },
+  processing: { level: "warning", key: "toast.walletPayoutStillProcessing" },
+  failed: { level: "error", key: "toast.walletPayoutPayFailed" },
+  unknown: { level: "warning", key: "toast.walletPayoutProcessUnknown" },
+};
+
+/** Toast for a `process` response: the normal "processed" success only for a clean COMPLETED. */
+export function processToast(res: {
+  data?: { status?: string | null } | null;
+  message?: string | null;
+} | null | undefined): ToastSpec {
+  return PROCESS_TOASTS[processResultKind(res?.data?.status, res?.message)];
+}
+
+/** Toast for a `resolve` response: repeating the same outcome is an info "already resolved". */
+export function resolveToast(res: { message?: string | null } | null | undefined): ToastSpec {
+  return /already resolved/i.test(res?.message ?? "")
+    ? { level: "info", key: "toast.walletPayoutAlreadyResolved" }
+    : { level: "success", key: "toast.walletPayoutResolved" };
 }

@@ -2768,6 +2768,7 @@
     "walletPayoutStillProcessing": "This payout is still PROCESSING. Check the gateway, then resolve it if needed.",
     "walletPayoutPaidAfterResolve": "The gateway paid this payout, but it had already been resolved manually. The wallet was not changed again: reconcile with the bank by hand.",
     "walletPayoutPayFailed": "Payout payment failed. Funds were returned to the user's available balance.",
+    "walletPayoutProcessUnknown": "Unexpected payout status in the response. Reload the list and check the payout before retrying.",
     "walletPayoutResolved": "Payout resolved",
     "walletPayoutAlreadyResolved": "This payout was already resolved; nothing changed.",
     "walletPayoutResolveFailed": "Could not resolve the payout",

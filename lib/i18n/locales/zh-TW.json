@@ -2768,6 +2768,7 @@
     "walletPayoutStillProcessing": "此提領仍在處理中（PROCESSING）。請先確認金流，必要時手動處理。",
     "walletPayoutPaidAfterResolve": "金流已付款，但此提領先前已被手動處理。錢包未再變動：請與銀行手動對帳。",
     "walletPayoutPayFailed": "提領付款失敗，資金已退回使用者的可用餘額。",
+    "walletPayoutProcessUnknown": "回應中的提領狀態異常。請重新載入清單並確認該提領後再重試。",
     "walletPayoutResolved": "已處理提領",
     "walletPayoutAlreadyResolved": "此提領先前已處理，未有任何變更。",
     "walletPayoutResolveFailed": "無法處理提領",

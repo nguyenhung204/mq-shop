@@ -2768,6 +2768,7 @@
     "walletPayoutStillProcessing": "Khoản rút vẫn đang PROCESSING. Kiểm tra cổng thanh toán rồi xử lý thủ công nếu cần.",
     "walletPayoutPaidAfterResolve": "Cổng đã chi trả khoản rút này nhưng nó đã được xử lý thủ công trước đó. Ví không bị thay đổi lần nữa: hãy đối soát ngân hàng thủ công.",
     "walletPayoutPayFailed": "Chi trả khoản rút thất bại. Số tiền đã được trả về số dư khả dụng của người dùng.",
+    "walletPayoutProcessUnknown": "Phản hồi có trạng thái khoản rút không mong đợi. Hãy tải lại danh sách và kiểm tra khoản rút trước khi thử lại.",
     "walletPayoutResolved": "Đã xử lý khoản rút",
     "walletPayoutAlreadyResolved": "Khoản rút này đã được xử lý trước đó; không có thay đổi.",
     "walletPayoutResolveFailed": "Không thể xử lý khoản rút",
