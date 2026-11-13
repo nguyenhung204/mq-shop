@@ -370,7 +370,30 @@ export const orderApi = {
     api.post(`/orders/${orderId}/fulfillment-complaint`, { reason }),
 };
 
+/** `GET /admin/orders/refund-obligations` item (read only). */
+export type RefundObligationView = {
+  id: string;
+  orderId: string;
+  orderCode: string;
+  orderStatus: string;
+  shopId: string;
+  buyerId: string;
+  buyerName: string | null;
+  amount: string;
+  currency: string;
+  reason: string;
+  createdBy: string | null;
+  status: "OPEN" | string;
+  createdAt: string;
+};
+
 export const adminOrdersApi = {
+  refundObligations: (query?: { status?: string; page?: number; pageSize?: number }) =>
+    api.get<PageEnvelope<RefundObligationView>>("/admin/orders/refund-obligations", {
+      query,
+      withMeta: true,
+    }),
+
   list: (query?: AdminListOrdersParams) =>
     api.get<PageEnvelope<OrderView>>("/admin/orders", { query, withMeta: true }),
 
