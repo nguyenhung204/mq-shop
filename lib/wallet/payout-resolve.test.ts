@@ -5,6 +5,7 @@ import zh from "@/lib/i18n/locales/zh-TW.json";
 import {
   allowedResolveOutcomes,
   canResolvePayoutStatus,
+  prepareResolveSubmit,
   processResultKind,
   processToast,
   resolveToast,
@@ -115,5 +116,30 @@ describe("payout resolve helpers", () => {
     expect(allowedResolveOutcomes("PROCESSING", "TX1")).toEqual(["COMPLETED"]);
     expect(allowedResolveOutcomes("PAID_UNRECONCILED", null)).toEqual(["COMPLETED"]);
     expect(allowedResolveOutcomes("PAID_UNRECONCILED", "TX1")).toEqual(["COMPLETED"]);
+  });
+
+  it("prepareResolveSubmit table", () => {
+    const ok = (o: Parameters<typeof prepareResolveSubmit>[0]) => prepareResolveSubmit(o);
+    const base = { status: "PROCESSING", payoutGatewayRef: null, outcome: "FAILED", gatewayRef: "", note: "bank said no" } as const;
+    // disallowed outcome refused
+    expect(ok({ ...base, status: "PAID_UNRECONCILED", payoutGatewayRef: "TX1" })).toEqual({ ok: false, error: "outcomeNotAllowed" });
+    expect(ok({ ...base, status: "PROCESSING", payoutGatewayRef: "TX1" })).toEqual({ ok: false, error: "outcomeNotAllowed" });
+    // PROCESSING without gatewayRef: FAILED fine, body trimmed, no empty gatewayRef
+    expect(ok({ ...base, note: "  bank said no  " })).toEqual({ ok: true, body: { outcome: "FAILED", note: "bank said no" } });
+    // COMPLETED needs gatewayRef when payout has none
+    expect(ok({ ...base, outcome: "COMPLETED" })).toEqual({ ok: false, error: "gatewayRefRequired" });
+    expect(ok({ ...base, outcome: "COMPLETED", gatewayRef: " TX9 " })).toEqual({ ok: true, body: { outcome: "COMPLETED", gatewayRef: "TX9", note: "bank said no" } });
+    // ...but not when the payout already carries one
+    expect(ok({ ...base, outcome: "COMPLETED", payoutGatewayRef: "TX1" })).toEqual({ ok: true, body: { outcome: "COMPLETED", note: "bank said no" } });
+    // PAID_UNRECONCILED only COMPLETED, no gatewayRef input needed
+    expect(ok({ ...base, status: "PAID_UNRECONCILED", payoutGatewayRef: "TX1", outcome: "COMPLETED" }).ok).toBe(true);
+    expect(ok({ ...base, status: "PAID_UNRECONCILED", outcome: "FAILED" })).toEqual({ ok: false, error: "outcomeNotAllowed" });
+    // note length 3-500
+    expect(ok({ ...base, note: "ab" })).toEqual({ ok: false, error: "noteInvalid" });
+    expect(ok({ ...base, note: "abc" }).ok).toBe(true);
+    expect(ok({ ...base, note: "x".repeat(500) }).ok).toBe(true);
+    expect(ok({ ...base, note: "x".repeat(501) })).toEqual({ ok: false, error: "noteInvalid" });
+    // gatewayRef max 128
+    expect(ok({ ...base, outcome: "COMPLETED", gatewayRef: "g".repeat(129) })).toEqual({ ok: false, error: "gatewayRefTooLong" });
   });
 });

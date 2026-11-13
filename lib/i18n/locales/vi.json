@@ -1751,6 +1751,7 @@
       "resolveNote": "Ghi chú (3-500 ký tự)",
       "resolveConfirm": "Xác nhận xử lý",
       "resolveErrors": {
+        "outcomeNotAllowed": "Kết quả này không khả dụng cho khoản rút này.",
         "gatewayRefRequired": "Nhập mã tham chiếu cổng để hoàn tất khoản rút đang PROCESSING.",
         "gatewayRefTooLong": "Mã tham chiếu cổng tối đa 128 ký tự.",
         "noteInvalid": "Ghi chú phải từ 3-500 ký tự."

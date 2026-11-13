@@ -1751,6 +1751,7 @@
       "resolveNote": "備註（3-500 字元）",
       "resolveConfirm": "確認處理",
       "resolveErrors": {
+        "outcomeNotAllowed": "此結果不適用於這筆提領。",
         "gatewayRefRequired": "完成處理中的提領須填寫金流參考編號。",
         "gatewayRefTooLong": "金流參考編號最多 128 字元。",
         "noteInvalid": "備註須為 3-500 字元。"

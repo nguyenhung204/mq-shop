@@ -1751,6 +1751,7 @@
       "resolveNote": "Note (3-500 characters)",
       "resolveConfirm": "Confirm resolution",
       "resolveErrors": {
+        "outcomeNotAllowed": "This outcome is not available for this payout.",
         "gatewayRefRequired": "Enter the gateway reference to complete a PROCESSING payout.",
         "gatewayRefTooLong": "Gateway reference is at most 128 characters.",
         "noteInvalid": "Note must be 3-500 characters."

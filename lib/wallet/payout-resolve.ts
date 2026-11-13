@@ -2,7 +2,7 @@ import type { PayoutRequestStatus } from "@/lib/api/wallet";
 
 export type ResolveOutcome = "COMPLETED" | "FAILED";
 
-export type ResolveFormError = "gatewayRefRequired" | "gatewayRefTooLong" | "noteInvalid";
+export type ResolveFormError = "outcomeNotAllowed" | "gatewayRefRequired" | "gatewayRefTooLong" | "noteInvalid";
 
 export const RESOLVE_NOTE_MIN = 3;
 export const RESOLVE_NOTE_MAX = 500;
@@ -34,12 +34,19 @@ export function validateResolveForm(input: {
   outcome: ResolveOutcome;
   gatewayRef: string;
   note: string;
+  /** gatewayRef already stored on the payout (satisfies the requirement). */
+  payoutGatewayRef?: string | null;
 }): ResolveFormError | null {
   const note = input.note.trim();
   if (note.length < RESOLVE_NOTE_MIN || note.length > RESOLVE_NOTE_MAX) return "noteInvalid";
   const ref = input.gatewayRef.trim();
   if (ref.length > RESOLVE_GATEWAY_REF_MAX) return "gatewayRefTooLong";
-  if (input.outcome === "COMPLETED" && input.status === "PROCESSING" && !ref) {
+  if (
+    input.outcome === "COMPLETED" &&
+    input.status === "PROCESSING" &&
+    !ref &&
+    !input.payoutGatewayRef?.trim()
+  ) {
     return "gatewayRefRequired";
   }
   return null;
@@ -99,4 +106,35 @@ export function resolveToast(res: { message?: string | null } | null | undefined
   return /already resolved/i.test(res?.message ?? "")
     ? { level: "info", key: "toast.walletPayoutAlreadyResolved" }
     : { level: "success", key: "toast.walletPayoutResolved" };
+}
+
+export type ResolveSubmit =
+  | { ok: true; body: { outcome: ResolveOutcome; gatewayRef?: string; note: string } }
+  | { ok: false; error: ResolveFormError };
+
+/**
+ * Everything the Resolve modal does on submit: refuse an outcome the API would
+ * reject (FAILED on an already-paid payout), validate, and build the request body.
+ */
+export function prepareResolveSubmit(input: {
+  status: PayoutRequestStatus;
+  payoutGatewayRef?: string | null;
+  outcome: ResolveOutcome;
+  gatewayRef: string;
+  note: string;
+}): ResolveSubmit {
+  if (!allowedResolveOutcomes(input.status, input.payoutGatewayRef).includes(input.outcome)) {
+    return { ok: false, error: "outcomeNotAllowed" };
+  }
+  const error = validateResolveForm(input);
+  if (error) return { ok: false, error };
+  const ref = input.gatewayRef.trim();
+  return {
+    ok: true,
+    body: {
+      outcome: input.outcome,
+      ...(ref ? { gatewayRef: ref } : {}),
+      note: input.note.trim(),
+    },
+  };
 }

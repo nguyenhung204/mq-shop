@@ -7,7 +7,7 @@ import {
   RESOLVE_GATEWAY_REF_MAX,
   RESOLVE_NOTE_MAX,
   allowedResolveOutcomes,
-  validateResolveForm,
+  prepareResolveSubmit,
   type ResolveOutcome,
 } from "@/lib/wallet/payout-resolve";
 
@@ -51,15 +51,13 @@ export function AdminResolvePayoutModal({ open, status, payoutGatewayRef, busy =
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!outcomes.includes(outcome)) return;
-    const err = validateResolveForm({ status, outcome, gatewayRef, note });
-    if (err) {
-      setError(t(`admin.walletPayouts.resolveErrors.${err}`));
+    const r = prepareResolveSubmit({ status, payoutGatewayRef, outcome, gatewayRef, note });
+    if (!r.ok) {
+      setError(t(`admin.walletPayouts.resolveErrors.${r.error}`));
       return;
     }
     setError("");
-    const ref = gatewayRef.trim();
-    await onConfirm({ outcome, ...(ref ? { gatewayRef: ref } : {}), note: note.trim() });
+    await onConfirm(r.body);
   };
 
   return (
@@ -110,7 +108,7 @@ export function AdminResolvePayoutModal({ open, status, payoutGatewayRef, busy =
           </fieldset>
 
           <label className="mq-admin-modal-label">
-            {outcome === "COMPLETED" && status === "PROCESSING"
+            {outcome === "COMPLETED" && status === "PROCESSING" && !payoutGatewayRef?.trim()
               ? t("admin.walletPayouts.gatewayRefRequiredLabel")
               : t("admin.walletPayouts.gatewayRefOptionalLabel")}
           </label>
