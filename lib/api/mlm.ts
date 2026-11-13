@@ -78,7 +78,10 @@ export type CommissionRow = {
   periodYearMonth: string | null;
   baseAmount: string;
   ratePercent: string;
+  /** TWD value of the commission (secondary figure). */
   payoutAmount: string;
+  /** Credited PTS from ledger meta; `null` for legacy rows without meta. */
+  points?: number | null;
   status: CommissionLedgerStatus;
   creditedAt: string | null;
   createdAt: string;

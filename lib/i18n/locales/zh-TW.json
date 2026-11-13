@@ -2717,7 +2717,8 @@
     "withdrawRegionApprox": "≈ {amount}（您的地區 {currency}）",
     "fiatApproxRegion": "≈ {amount}（{currency}）",
     "commissionsPayoutNote": "右側金額為錢包入帳的點數。訂單基礎為已確認營業額的 TWD（7 天退貨期後），非下單日。",
-    "commissionPayout": "入帳（點數）"
+    "commissionPayout": "入帳（點數）",
+    "commissionValueTwd": "價值（TWD）"
   },
   "toast": {
     "somethingWentWrong": "發生錯誤",

@@ -2717,7 +2717,8 @@
     "withdrawRegionApprox": "≈ {amount} theo khu vực ({currency})",
     "fiatApproxRegion": "≈ {amount} ({currency})",
     "commissionsPayoutNote": "Số bên phải là điểm đã/ sắp ghi có ví. Cơ sở đơn là TWD từ doanh số đã ghi nhận (sau 7 ngày đổi trả), không theo ngày đặt hàng.",
-    "commissionPayout": "Ghi có (điểm)"
+    "commissionPayout": "Ghi có (điểm)",
+    "commissionValueTwd": "Giá trị (TWD)"
   },
   "toast": {
     "somethingWentWrong": "Đã xảy ra lỗi",

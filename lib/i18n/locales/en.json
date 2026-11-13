@@ -2717,7 +2717,8 @@
     "withdrawRegionApprox": "≈ {amount} in your region ({currency})",
     "fiatApproxRegion": "≈ {amount} ({currency})",
     "commissionsPayoutNote": "Amounts on the right are points credited to the wallet. Order bases stay TWD from recognized sales (after the 7-day return window), not from the purchase date.",
-    "commissionPayout": "Credit (points)"
+    "commissionPayout": "Credit (points)",
+    "commissionValueTwd": "Value (TWD)"
   },
   "toast": {
     "somethingWentWrong": "Something went wrong",

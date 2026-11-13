@@ -128,7 +128,12 @@ function CommissionsPanel({ embedded = false }: { embedded?: boolean }) {
             <p className="text-[11px] uppercase tracking-wide text-mq-text-muted">
               {t("wallet.commissionPayout")}
             </p>
-            <p className="tabular-nums font-medium">{formatPoints(row.payoutAmount, t("common.pointUnit"))}</p>
+            <p className="tabular-nums font-medium">
+              {row.points == null ? "—" : formatPoints(row.points, t("common.pointUnit"))}
+            </p>
+            <p className="text-xs text-mq-text-muted tabular-nums">
+              {t("wallet.commissionValueTwd")}: {formatMoney(row.payoutAmount)}
+            </p>
           </div>
         </div>
       ))}
