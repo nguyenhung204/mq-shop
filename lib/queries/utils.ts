@@ -62,6 +62,15 @@ export const API_ERROR_I18N: Record<string, string> = {
   PROMOTION_RULE_INVALID_RANK_ORDER: "toast.promotionRuleInvalidRankOrder",
   PROMOTION_RULE_DUPLICATE: "toast.promotionRuleDuplicate",
   SELLER_CLOSURE_BLOCKED: "toast.sellerClosureBlocked",
+  PRODUCT_NOT_ACTIVE: "toast.productNotActive",
+  INVENTORY_TRANSFER_RECEIVE_MISMATCH: "toast.inventoryTransferReceiveMismatch",
+  WALLET_AMOUNT_INVALID: "toast.walletAmountInvalid",
+  CSRF_ORIGIN_REJECTED: "toast.csrfOriginRejected",
+  CATEGORY_PARENT_CYCLE: "toast.categoryParentCycle",
+  PAYOUT_GATEWAY_REF_REQUIRED: "toast.payoutGatewayRefRequired",
+  MLM_USER_PAYOUT_INVALID_STATUS: "toast.mlmUserPayoutInvalidStatus",
+  REVIEW_NOT_ALLOWED: "toast.reviewNotAllowed",
+  INVALID_SHOP_DOCUMENT: "toast.invalidShopDocument",
 };
 
 const STATUS_TOKENS_BY_DOMAIN: Record<string, string[]> = {

@@ -828,7 +828,8 @@
       "dsar": "DSAR",
       "inbox": "Hộp thư",
       "notifyAdmin": "Thông báo admin",
-      "reviews": "Đánh giá"
+      "reviews": "Đánh giá",
+      "refundObligations": "Nghĩa vụ hoàn tiền"
     },
     "common": {
       "create": "Tạo mới",
@@ -1700,6 +1701,19 @@
         "VOIDED": "Đã hủy (hoàn tiền)"
       }
     },
+    "refundObligations": {
+      "title": "Nghĩa vụ hoàn tiền",
+      "description": "Các khoản hoàn tiền sàn còn nợ người mua (chỉ xem).",
+      "hint": "Chỉ xem. Việc hoàn tiền được thực hiện và ghi nhận ngoài màn hình này.",
+      "empty": "Không có nghĩa vụ hoàn tiền đang mở.",
+      "backToOrders": "Về danh sách đơn",
+      "buyer": "Người mua",
+      "reason": "Lý do",
+      "amount": "Số tiền",
+      "status": {
+        "OPEN": "Đang mở"
+      }
+    },
     "walletPayouts": {
       "title": "Rút ví cá nhân",
       "description": "Hàng đợi rút ví — duyệt, từ chối hoặc process stub bank.",
@@ -1717,7 +1731,28 @@
       "viewDetail": "Xem chi tiết →",
       "gatewayRef": "Gateway ref",
       "createdAt": "Tạo lúc",
-      "updatedAt": "Cập nhật"
+      "updatedAt": "Cập nhật",
+      "resolve": "Xử lý thủ công",
+      "resolveHint": "Khoản rút bị kẹt. Hãy đối soát với ngân hàng hoặc cổng thanh toán rồi xử lý thủ công.",
+      "resolveTitle": "Xử lý thủ công khoản rút ví",
+      "resolveDesc": "Chỉ dùng sau khi đã xác nhận với ngân hàng hoặc cổng thanh toán. Không thể hoàn tác.",
+      "outcome": {
+        "COMPLETED": "Hoàn tất - tiền đã chuyển",
+        "FAILED": "Thất bại - tiền chưa chuyển"
+      },
+      "outcomeConsequence": {
+        "COMPLETED": "Số dư đang đóng băng được tiêu hao (khoản rút là cuối cùng).",
+        "FAILED": "Số dư đóng băng được trả về số dư khả dụng của người dùng."
+      },
+      "gatewayRefRequiredLabel": "Mã tham chiếu cổng (bắt buộc khi hoàn tất)",
+      "gatewayRefOptionalLabel": "Mã tham chiếu cổng (tuỳ chọn)",
+      "resolveNote": "Ghi chú (3-500 ký tự)",
+      "resolveConfirm": "Xác nhận xử lý",
+      "resolveErrors": {
+        "gatewayRefRequired": "Nhập mã tham chiếu cổng để hoàn tất khoản rút đang PROCESSING.",
+        "gatewayRefTooLong": "Mã tham chiếu cổng tối đa 128 ký tự.",
+        "noteInvalid": "Ghi chú phải từ 3-500 ký tự."
+      }
     },
     "walletAdjust": {
       "title": "Điều chỉnh ví",
@@ -2727,7 +2762,20 @@
     "accountLocked": "Tài khoản này đã bị khoá.",
     "sessionExpired": "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.",
     "emailAlreadyInUse": "Email này đã được sử dụng.",
-    "tooManyRequests": "Quá nhiều lần thử. Vui lòng đợi rồi thử lại.",
+    "tooManyRequests": "Quá nhiều lần thử. Vui lòng đợi rồi thử lại (nhập sai PIN hoặc OTP nhiều lần sẽ bị khoá 15 phút).",
+    "walletPayoutUnreconciled": "Cổng đã chi trả nhưng việc ghi nhận vào ví chưa hoàn tất. Khoản rút bị gắn PAID_UNRECONCILED: hãy xử lý thủ công.",
+    "walletPayoutStillProcessing": "Khoản rút vẫn đang PROCESSING. Kiểm tra cổng thanh toán rồi xử lý thủ công nếu cần.",
+    "walletPayoutResolved": "Đã xử lý khoản rút",
+    "walletPayoutAlreadyResolved": "Khoản rút này đã được xử lý trước đó; không có thay đổi.",
+    "walletPayoutResolveFailed": "Không thể xử lý khoản rút",
+    "payoutGatewayRefRequired": "Cần mã tham chiếu cổng để hoàn tất khoản rút đang PROCESSING.",
+    "productNotActive": "Sản phẩm này chưa hoạt động nên không thể dùng ở đây.",
+    "inventoryTransferReceiveMismatch": "Số lượng nhận không khớp với phiếu chuyển kho.",
+    "walletAmountInvalid": "Nhập số tiền hợp lệ lớn hơn 0.",
+    "csrfOriginRejected": "Yêu cầu bị chặn: không đến từ trang được phép. Hãy tải lại trang và thử lại.",
+    "categoryParentCycle": "Không thể chuyển danh mục vào chính nó hoặc danh mục con của nó.",
+    "reviewNotAllowed": "Không thể thực hiện thao tác này với đánh giá (đánh giá bị kiểm duyệt ẩn thì không xoá được).",
+    "invalidShopDocument": "Tài liệu không hợp lệ. Hãy tải lên tệp PDF hoặc ảnh thật.",
     "registrationNotFound": "Phiên đăng ký hết hạn. Vui lòng đăng ký lại.",
     "registrationFailed": "Đăng ký thất bại.",
     "verificationFailed": "Xác minh thất bại.",

@@ -828,7 +828,8 @@
       "dsar": "DSAR",
       "inbox": "收件匣",
       "notifyAdmin": "管理員通知",
-      "reviews": "評價"
+      "reviews": "評價",
+      "refundObligations": "退款義務"
     },
     "common": {
       "create": "建立",
@@ -1700,6 +1701,19 @@
         "VOIDED": "已作廢（退款）"
       }
     },
+    "refundObligations": {
+      "title": "退款義務",
+      "description": "平台尚須退還買家的未結退款（唯讀）。",
+      "hint": "唯讀。退款在此畫面之外執行並記錄。",
+      "empty": "目前沒有未結退款義務。",
+      "backToOrders": "返回訂單",
+      "buyer": "買家",
+      "reason": "原因",
+      "amount": "金額",
+      "status": {
+        "OPEN": "未結"
+      }
+    },
     "walletPayouts": {
       "title": "錢包提領",
       "description": "個人提領佇列 — 核准、拒絕或處理 stub bank。",
@@ -1717,7 +1731,28 @@
       "viewDetail": "查看詳情 →",
       "gatewayRef": "Gateway ref",
       "createdAt": "建立時間",
-      "updatedAt": "更新時間"
+      "updatedAt": "更新時間",
+      "resolve": "手動處理",
+      "resolveHint": "此提領卡住。請先向銀行或金流確認，再手動處理。",
+      "resolveTitle": "手動處理錢包提領",
+      "resolveDesc": "僅在向銀行或金流確認實際結果後使用，無法復原。",
+      "outcome": {
+        "COMPLETED": "完成 - 款項已匯出",
+        "FAILED": "失敗 - 款項未匯出"
+      },
+      "outcomeConsequence": {
+        "COMPLETED": "凍結資金將被扣除（提領為最終結果）。",
+        "FAILED": "凍結資金將釋放回使用者的可用餘額。"
+      },
+      "gatewayRefRequiredLabel": "金流參考編號（完成時必填）",
+      "gatewayRefOptionalLabel": "金流參考編號（選填）",
+      "resolveNote": "備註（3-500 字元）",
+      "resolveConfirm": "確認處理",
+      "resolveErrors": {
+        "gatewayRefRequired": "完成處理中的提領須填寫金流參考編號。",
+        "gatewayRefTooLong": "金流參考編號最多 128 字元。",
+        "noteInvalid": "備註須為 3-500 字元。"
+      }
     },
     "walletAdjust": {
       "title": "錢包調整",
@@ -2727,7 +2762,20 @@
     "accountLocked": "此帳號已被鎖定。",
     "sessionExpired": "工作階段已過期，請重新登入。",
     "emailAlreadyInUse": "此電子郵件已被使用。",
-    "tooManyRequests": "嘗試次數過多，請稍後再試。",
+    "tooManyRequests": "嘗試次數過多，請稍後再試（PIN 或 OTP 連續輸入錯誤將鎖定 15 分鐘）。",
+    "walletPayoutUnreconciled": "金流已付款，但錢包結算未完成。此提領已標記為 PAID_UNRECONCILED，請手動處理。",
+    "walletPayoutStillProcessing": "此提領仍在處理中（PROCESSING）。請先確認金流，必要時手動處理。",
+    "walletPayoutResolved": "已處理提領",
+    "walletPayoutAlreadyResolved": "此提領先前已處理，未有任何變更。",
+    "walletPayoutResolveFailed": "無法處理提領",
+    "payoutGatewayRefRequired": "完成處理中的提領須填寫金流參考編號。",
+    "productNotActive": "此商品尚未上架，無法在此使用。",
+    "inventoryTransferReceiveMismatch": "收貨數量與調撥單不符。",
+    "walletAmountInvalid": "請輸入大於 0 的有效金額。",
+    "csrfOriginRejected": "請求已被封鎖：並非來自允許的網站。請重新整理頁面後再試。",
+    "categoryParentCycle": "分類不可移到自己或其子分類之下。",
+    "reviewNotAllowed": "不允許此評價操作（被管理員隱藏的評價無法刪除）。",
+    "invalidShopDocument": "文件無效，請上傳真實的 PDF 或圖片檔。",
     "registrationNotFound": "註冊工作階段已過期，請重新註冊。",
     "registrationFailed": "註冊失敗。",
     "verificationFailed": "驗證失敗。",

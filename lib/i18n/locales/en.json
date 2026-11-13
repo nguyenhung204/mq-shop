@@ -828,7 +828,8 @@
       "dsar": "DSAR",
       "inbox": "Inbox",
       "notifyAdmin": "Admin notifications",
-      "reviews": "Reviews"
+      "reviews": "Reviews",
+      "refundObligations": "Refund obligations"
     },
     "common": {
       "create": "Create",
@@ -1700,6 +1701,19 @@
         "VOIDED": "Voided (refunded)"
       }
     },
+    "refundObligations": {
+      "title": "Refund obligations",
+      "description": "Open refunds the platform owes to buyers (read only).",
+      "hint": "Read only. Refunds are paid and recorded outside this screen.",
+      "empty": "No open refund obligations.",
+      "backToOrders": "Back to orders",
+      "buyer": "Buyer",
+      "reason": "Reason",
+      "amount": "Amount",
+      "status": {
+        "OPEN": "Open"
+      }
+    },
     "walletPayouts": {
       "title": "Wallet payouts",
       "description": "Personal withdraw queue — approve, reject, or process stub bank payouts.",
@@ -1717,7 +1731,28 @@
       "viewDetail": "View detail →",
       "gatewayRef": "Gateway ref",
       "createdAt": "Created",
-      "updatedAt": "Updated"
+      "updatedAt": "Updated",
+      "resolve": "Resolve",
+      "resolveHint": "Payout is stuck. Settle it manually after checking the bank or gateway.",
+      "resolveTitle": "Resolve wallet payout",
+      "resolveDesc": "Use only after confirming with the bank or gateway what really happened. This cannot be undone.",
+      "outcome": {
+        "COMPLETED": "Completed - money was sent",
+        "FAILED": "Failed - money was not sent"
+      },
+      "outcomeConsequence": {
+        "COMPLETED": "Frozen funds are consumed (the withdrawal is final).",
+        "FAILED": "Frozen funds are released back to the user's available balance."
+      },
+      "gatewayRefRequiredLabel": "Gateway reference (required to complete)",
+      "gatewayRefOptionalLabel": "Gateway reference (optional)",
+      "resolveNote": "Note (3-500 characters)",
+      "resolveConfirm": "Confirm resolution",
+      "resolveErrors": {
+        "gatewayRefRequired": "Enter the gateway reference to complete a PROCESSING payout.",
+        "gatewayRefTooLong": "Gateway reference is at most 128 characters.",
+        "noteInvalid": "Note must be 3-500 characters."
+      }
     },
     "walletAdjust": {
       "title": "Wallet adjust",
@@ -2727,7 +2762,20 @@
     "accountLocked": "This account is locked.",
     "sessionExpired": "Session expired. Please sign in again.",
     "emailAlreadyInUse": "This email is already in use.",
-    "tooManyRequests": "Too many attempts. Please wait and try again.",
+    "tooManyRequests": "Too many attempts. Please wait and try again (after repeated wrong PIN or OTP entries, retry in 15 minutes).",
+    "walletPayoutUnreconciled": "The gateway paid this payout but wallet settlement did not finish. It is flagged PAID_UNRECONCILED: resolve it manually.",
+    "walletPayoutStillProcessing": "This payout is still PROCESSING. Check the gateway, then resolve it if needed.",
+    "walletPayoutResolved": "Payout resolved",
+    "walletPayoutAlreadyResolved": "This payout was already resolved; nothing changed.",
+    "walletPayoutResolveFailed": "Could not resolve the payout",
+    "payoutGatewayRefRequired": "A gateway reference is required to complete a PROCESSING payout.",
+    "productNotActive": "This product is not active and cannot be used here.",
+    "inventoryTransferReceiveMismatch": "Received quantities do not match the transfer.",
+    "walletAmountInvalid": "Enter a valid amount greater than zero.",
+    "csrfOriginRejected": "Request blocked: it did not come from an allowed site. Reload the page and try again.",
+    "categoryParentCycle": "A category cannot be moved under itself or one of its descendants.",
+    "reviewNotAllowed": "This review action is not allowed (a review hidden by a moderator cannot be deleted).",
+    "invalidShopDocument": "Invalid document. Upload a real PDF or image file.",
     "registrationNotFound": "Registration session expired. Please register again.",
     "registrationFailed": "Registration failed.",
     "verificationFailed": "Verification failed.",
