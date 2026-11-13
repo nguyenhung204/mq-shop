@@ -1,28 +1,90 @@
 import { describe, expect, it } from "vitest";
-import type { AuthUser } from "@/lib/api/types";
-import { canReviewSellerPayout } from "./payout-access";
+import type { AuthUser, Role } from "@/lib/api/types";
+import {
+  canResolveWalletPayout,
+  canReviewSellerPayout,
+  canShowPayoutResolve,
+  canShowSellerPayoutReview,
+} from "./payout-access";
 
-const u = (p: Partial<AuthUser>) => p as AuthUser;
+type Scope = NonNullable<AuthUser["permissionScopes"]>[string];
+const ROLES: Role[] = ["BUYER", "SELLER", "WAREHOUSE", "CS", "ACCOUNTANT", "ADMIN", "SUPER_ADMIN"];
+const SCOPES: Array<Scope | undefined> = [undefined, "NONE", "APPROVE", "SELF", "SHOP", "ALL"];
 
-describe("canReviewSellerPayout", () => {
-  it("denies SELLER with SHOP scope", () => {
-    expect(
-      canReviewSellerPayout(u({ roles: ["SELLER"], permissionScopes: { PAYOUT_SELLER: "SHOP" } })),
-    ).toBe(false);
-  });
-  it("denies SELF scope and anonymous", () => {
-    expect(
-      canReviewSellerPayout(u({ roles: ["BUYER"], permissionScopes: { PAYOUT_SELLER: "SELF" } })),
-    ).toBe(false);
+const user = (role: Role, perm: string, scope: Scope | undefined, withScopes = true) =>
+  ({
+    roles: [role],
+    ...(withScopes ? { permissionScopes: scope ? { [perm]: scope } : {} } : {}),
+  }) as unknown as AuthUser;
+
+describe("canReviewSellerPayout (role x scope)", () => {
+  for (const role of ROLES) {
+    for (const scope of SCOPES) {
+      const expected = role === "SUPER_ADMIN" || scope === "ALL" || scope === "APPROVE";
+      it(`${role} / ${scope ?? "no scope"} -> ${expected}`, () => {
+        expect(canReviewSellerPayout(user(role, "PAYOUT_SELLER", scope))).toBe(expected);
+      });
+    }
+    it(`${role} with permissionScopes missing (legacy cache) fails closed except SUPER_ADMIN`, () => {
+      expect(canReviewSellerPayout(user(role, "PAYOUT_SELLER", undefined, false))).toBe(
+        role === "SUPER_ADMIN",
+      );
+    });
+  }
+  it("denies anonymous", () => {
     expect(canReviewSellerPayout(null)).toBe(false);
+    expect(canReviewSellerPayout(undefined)).toBe(false);
   });
-  it("allows APPROVE scope (accountant checker route), ALL scope and SUPER_ADMIN", () => {
-    expect(
-      canReviewSellerPayout(u({ roles: ["ACCOUNTANT"], permissionScopes: { PAYOUT_SELLER: "APPROVE" } })),
-    ).toBe(true);
-    expect(
-      canReviewSellerPayout(u({ roles: ["ADMIN"], permissionScopes: { PAYOUT_SELLER: "ALL" } })),
-    ).toBe(true);
-    expect(canReviewSellerPayout(u({ roles: ["SUPER_ADMIN"] }))).toBe(true);
+});
+
+describe("canShowSellerPayoutReview", () => {
+  const sa = user("SUPER_ADMIN", "PAYOUT_SELLER", "ALL");
+  const seller = user("SELLER", "PAYOUT_SELLER", "SHOP");
+  it("only PENDING, with approve permission, for a reviewer", () => {
+    expect(canShowSellerPayoutReview(sa, "PENDING", true)).toBe(true);
+    expect(canShowSellerPayoutReview(sa, "APPROVED", true)).toBe(false);
+    expect(canShowSellerPayoutReview(sa, "PENDING", false)).toBe(false);
   });
+  it("hidden for SELLER even when canApprovePermission is true (SHOP scope)", () => {
+    expect(canShowSellerPayoutReview(seller, "PENDING", true)).toBe(false);
+  });
+});
+
+describe("canResolveWalletPayout (role x scope)", () => {
+  for (const role of ROLES) {
+    for (const scope of SCOPES) {
+      const expected = role === "SUPER_ADMIN" || scope === "ALL";
+      it(`${role} / ${scope ?? "no scope"} -> ${expected}`, () => {
+        expect(canResolveWalletPayout(user(role, "PROCESS_PAYOUT", scope))).toBe(expected);
+      });
+    }
+    it(`${role} without permissionScopes fails closed except SUPER_ADMIN`, () => {
+      expect(canResolveWalletPayout(user(role, "PROCESS_PAYOUT", undefined, false))).toBe(
+        role === "SUPER_ADMIN",
+      );
+    });
+  }
+  it("ACCOUNTANT/ADMIN with only APPROVE_PAYOUT never resolve", () => {
+    expect(canResolveWalletPayout(user("ADMIN", "PROCESS_PAYOUT", "APPROVE"))).toBe(false);
+    expect(canResolveWalletPayout(null)).toBe(false);
+  });
+});
+
+describe("canShowPayoutResolve (role x status)", () => {
+  const sa = user("SUPER_ADMIN", "PROCESS_PAYOUT", "ALL");
+  const admin = user("ADMIN", "PROCESS_PAYOUT", "APPROVE");
+  const statuses = [
+    "PENDING",
+    "APPROVED",
+    "COMPLETED",
+    "REJECTED",
+    "PAY_FAILED",
+    "PROCESSING",
+    "PAID_UNRECONCILED",
+  ] as const;
+  for (const st of statuses) {
+    const stuck = st === "PROCESSING" || st === "PAID_UNRECONCILED";
+    it(`SUPER_ADMIN ${st} -> ${stuck}`, () => expect(canShowPayoutResolve(sa, st)).toBe(stuck));
+    it(`ADMIN ${st} -> false`, () => expect(canShowPayoutResolve(admin, st)).toBe(false));
+  }
 });

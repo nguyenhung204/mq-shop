@@ -23,7 +23,7 @@ import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
-import { canResolvePayoutStatus } from "@/lib/wallet/payout-resolve";
+import { canShowPayoutResolve } from "@/lib/auth/payout-access";
 
 const STATUSES: Array<PayoutRequestStatus | ""> = [
   "",
@@ -64,11 +64,9 @@ function formatWhen(iso: string): string {
 
 function WalletPayoutsInner() {
   const { t } = useLanguage();
-  const { canMutatePermission, canApprovePermission } = useAuth();
+  const { user, canMutatePermission, canApprovePermission } = useAuth();
   const canApproveWallet = canApprovePermission("APPROVE_PAYOUT");
   const canProcess = canMutatePermission("PROCESS_PAYOUT");
-  // Resolve is SUPER_ADMIN only (PROCESS_PAYOUT): accountants only hold APPROVE.
-  const canResolve = canProcess;
 
   const [status, setStatus] = useState<PayoutRequestStatus | "">("");
   const [search, setSearch] = useState("");
@@ -218,7 +216,7 @@ function WalletPayoutsInner() {
                   disabled={process.isPending}
                 />
               ) : null}
-              {canResolvePayoutStatus(row.status) && canResolve ? (
+              {canShowPayoutResolve(user, row.status) ? (
                 <AdminIconButton
                   label={t("admin.walletPayouts.resolve")}
                   icon={ShieldCheck}
