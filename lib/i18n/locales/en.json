@@ -1747,6 +1747,7 @@
       },
       "gatewayRefRequiredLabel": "Gateway reference (required to complete)",
       "gatewayRefOptionalLabel": "Gateway reference (optional)",
+      "failedNotAllowed": "Mark as failed is not available: the gateway already paid this payout. Only \"Completed\" is allowed.",
       "resolveNote": "Note (3-500 characters)",
       "resolveConfirm": "Confirm resolution",
       "resolveErrors": {
@@ -2769,6 +2770,7 @@
     "walletPayoutPaidAfterResolve": "The gateway paid this payout, but it had already been resolved manually. The wallet was not changed again: reconcile with the bank by hand.",
     "walletPayoutPayFailed": "Payout payment failed. Funds were returned to the user's available balance.",
     "walletPayoutProcessUnknown": "Unexpected payout status in the response. Reload the list and check the payout before retrying.",
+    "payoutPaidCannotFail": "The gateway already paid this payout, so it cannot be marked as failed. Resolve it as completed.",
     "walletPayoutResolved": "Payout resolved",
     "walletPayoutAlreadyResolved": "This payout was already resolved; nothing changed.",
     "walletPayoutResolveFailed": "Could not resolve the payout",

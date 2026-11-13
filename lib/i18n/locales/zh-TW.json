@@ -1747,6 +1747,7 @@
       },
       "gatewayRefRequiredLabel": "金流參考編號（完成時必填）",
       "gatewayRefOptionalLabel": "金流參考編號（選填）",
+      "failedNotAllowed": "無法選擇失敗：金流已付款，僅能選擇完成。",
       "resolveNote": "備註（3-500 字元）",
       "resolveConfirm": "確認處理",
       "resolveErrors": {
@@ -2769,6 +2770,7 @@
     "walletPayoutPaidAfterResolve": "金流已付款，但此提領先前已被手動處理。錢包未再變動：請與銀行手動對帳。",
     "walletPayoutPayFailed": "提領付款失敗，資金已退回使用者的可用餘額。",
     "walletPayoutProcessUnknown": "回應中的提領狀態異常。請重新載入清單並確認該提領後再重試。",
+    "payoutPaidCannotFail": "金流已付款，無法標記為失敗，請以完成處理。",
     "walletPayoutResolved": "已處理提領",
     "walletPayoutAlreadyResolved": "此提領先前已處理，未有任何變更。",
     "walletPayoutResolveFailed": "無法處理提領",

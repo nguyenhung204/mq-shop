@@ -1747,6 +1747,7 @@
       },
       "gatewayRefRequiredLabel": "Mã tham chiếu cổng (bắt buộc khi hoàn tất)",
       "gatewayRefOptionalLabel": "Mã tham chiếu cổng (tuỳ chọn)",
+      "failedNotAllowed": "Không thể chọn Thất bại: cổng đã chi trả khoản rút này. Chỉ được chọn Hoàn tất.",
       "resolveNote": "Ghi chú (3-500 ký tự)",
       "resolveConfirm": "Xác nhận xử lý",
       "resolveErrors": {
@@ -2769,6 +2770,7 @@
     "walletPayoutPaidAfterResolve": "Cổng đã chi trả khoản rút này nhưng nó đã được xử lý thủ công trước đó. Ví không bị thay đổi lần nữa: hãy đối soát ngân hàng thủ công.",
     "walletPayoutPayFailed": "Chi trả khoản rút thất bại. Số tiền đã được trả về số dư khả dụng của người dùng.",
     "walletPayoutProcessUnknown": "Phản hồi có trạng thái khoản rút không mong đợi. Hãy tải lại danh sách và kiểm tra khoản rút trước khi thử lại.",
+    "payoutPaidCannotFail": "Cổng đã chi trả khoản rút này nên không thể đánh dấu thất bại. Hãy xử lý là hoàn tất.",
     "walletPayoutResolved": "Đã xử lý khoản rút",
     "walletPayoutAlreadyResolved": "Khoản rút này đã được xử lý trước đó; không có thay đổi.",
     "walletPayoutResolveFailed": "Không thể xử lý khoản rút",

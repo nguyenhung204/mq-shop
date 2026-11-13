@@ -68,6 +68,7 @@ export const API_ERROR_I18N: Record<string, string> = {
   CSRF_ORIGIN_REJECTED: "toast.csrfOriginRejected",
   CATEGORY_PARENT_CYCLE: "toast.categoryParentCycle",
   PAYOUT_GATEWAY_REF_REQUIRED: "toast.payoutGatewayRefRequired",
+  PAYOUT_PAID_CANNOT_FAIL: "toast.payoutPaidCannotFail",
   MLM_USER_PAYOUT_INVALID_STATUS: "toast.mlmUserPayoutInvalidStatus",
   REVIEW_NOT_ALLOWED: "toast.reviewNotAllowed",
   INVALID_SHOP_DOCUMENT: "toast.invalidShopDocument",

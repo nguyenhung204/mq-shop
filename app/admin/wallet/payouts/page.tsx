@@ -75,6 +75,7 @@ function WalletPayoutsInner() {
   const [resolveTarget, setResolveTarget] = useState<{
     id: string;
     status: PayoutRequestStatus;
+    gatewayRef?: string | null;
   } | null>(null);
 
   const { data, isLoading, isError, error, isFetching } = useAdminWalletPayouts({
@@ -221,7 +222,7 @@ function WalletPayoutsInner() {
                   label={t("admin.walletPayouts.resolve")}
                   icon={ShieldCheck}
                   tone="secondary"
-                  onClick={() => setResolveTarget({ id: row.id, status: row.status })}
+                  onClick={() => setResolveTarget({ id: row.id, status: row.status, gatewayRef: row.gatewayRef })}
                   disabled={resolve.isPending}
                 />
               ) : null}
@@ -249,6 +250,7 @@ function WalletPayoutsInner() {
         <AdminResolvePayoutModal
           open
           status={resolveTarget.status}
+          payoutGatewayRef={resolveTarget.gatewayRef}
           busy={resolve.isPending}
           onClose={() => setResolveTarget(null)}
           onConfirm={async (body) => {

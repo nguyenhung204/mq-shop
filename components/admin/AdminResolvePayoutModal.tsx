@@ -6,6 +6,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import {
   RESOLVE_GATEWAY_REF_MAX,
   RESOLVE_NOTE_MAX,
+  allowedResolveOutcomes,
   validateResolveForm,
   type ResolveOutcome,
 } from "@/lib/wallet/payout-resolve";
@@ -13,6 +14,8 @@ import {
 type Props = {
   open: boolean;
   status: PayoutRequestStatus;
+  /** Existing gateway reference on the payout (already paid by the gateway). */
+  payoutGatewayRef?: string | null;
   busy?: boolean;
   onClose: () => void;
   onConfirm: (body: {
@@ -26,12 +29,13 @@ type Props = {
  * Confirm dialog for manually resolving a PROCESSING / PAID_UNRECONCILED wallet payout.
  * Mount it only while open so the form state resets on each use.
  */
-export function AdminResolvePayoutModal({ open, status, busy = false, onClose, onConfirm }: Props) {
+export function AdminResolvePayoutModal({ open, status, payoutGatewayRef, busy = false, onClose, onConfirm }: Props) {
   const { t } = useLanguage();
   const [outcome, setOutcome] = useState<ResolveOutcome>("COMPLETED");
   const [gatewayRef, setGatewayRef] = useState("");
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
+  const outcomes = allowedResolveOutcomes(status, payoutGatewayRef);
   const titleId = useId();
 
   useEffect(() => {
@@ -47,6 +51,7 @@ export function AdminResolvePayoutModal({ open, status, busy = false, onClose, o
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!outcomes.includes(outcome)) return;
     const err = validateResolveForm({ status, outcome, gatewayRef, note });
     if (err) {
       setError(t(`admin.walletPayouts.resolveErrors.${err}`));
@@ -78,7 +83,7 @@ export function AdminResolvePayoutModal({ open, status, busy = false, onClose, o
         </header>
         <form className="mq-admin-modal-body" onSubmit={(e) => void submit(e)}>
           <fieldset className="space-y-2 text-sm">
-            {(["COMPLETED", "FAILED"] as const).map((o) => (
+            {outcomes.map((o) => (
               <label key={o} className="flex items-start gap-2">
                 <input
                   type="radio"
@@ -97,6 +102,11 @@ export function AdminResolvePayoutModal({ open, status, busy = false, onClose, o
                 </span>
               </label>
             ))}
+            {outcomes.length === 1 ? (
+              <p className="text-xs text-mq-text-muted">
+                {t("admin.walletPayouts.failedNotAllowed")}
+              </p>
+            ) : null}
           </fieldset>
 
           <label className="mq-admin-modal-label">

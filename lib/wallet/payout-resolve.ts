@@ -14,6 +14,18 @@ export function canResolvePayoutStatus(status: PayoutRequestStatus): boolean {
 }
 
 /**
+ * Outcomes the API accepts: a payout the gateway already paid (PAID_UNRECONCILED
+ * or any gatewayRef) can only be COMPLETED (FAILED -> 409 PAYOUT_PAID_CANNOT_FAIL).
+ */
+export function allowedResolveOutcomes(
+  status: PayoutRequestStatus,
+  gatewayRef?: string | null,
+): ResolveOutcome[] {
+  const paid = status === "PAID_UNRECONCILED" || Boolean(gatewayRef?.trim());
+  return paid ? ["COMPLETED"] : ["COMPLETED", "FAILED"];
+}
+
+/**
  * Client-side mirror of the API rules: note 3-500, gatewayRef <= 128 and
  * required when completing a PROCESSING payout (PAID_UNRECONCILED already has one).
  */

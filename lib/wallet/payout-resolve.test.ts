@@ -3,6 +3,7 @@ import en from "@/lib/i18n/locales/en.json";
 import vi from "@/lib/i18n/locales/vi.json";
 import zh from "@/lib/i18n/locales/zh-TW.json";
 import {
+  allowedResolveOutcomes,
   canResolvePayoutStatus,
   processResultKind,
   processToast,
@@ -105,5 +106,14 @@ describe("payout resolve helpers", () => {
     for (const loc of [en, vi, zh]) {
       for (const k of keys) expect((loc as { toast: Record<string, string> }).toast[k], k).toBeTruthy();
     }
+  });
+
+  it("allowedResolveOutcomes: FAILED only for PROCESSING without gatewayRef", () => {
+    expect(allowedResolveOutcomes("PROCESSING", null)).toEqual(["COMPLETED", "FAILED"]);
+    expect(allowedResolveOutcomes("PROCESSING", undefined)).toEqual(["COMPLETED", "FAILED"]);
+    expect(allowedResolveOutcomes("PROCESSING", "  ")).toEqual(["COMPLETED", "FAILED"]);
+    expect(allowedResolveOutcomes("PROCESSING", "TX1")).toEqual(["COMPLETED"]);
+    expect(allowedResolveOutcomes("PAID_UNRECONCILED", null)).toEqual(["COMPLETED"]);
+    expect(allowedResolveOutcomes("PAID_UNRECONCILED", "TX1")).toEqual(["COMPLETED"]);
   });
 });

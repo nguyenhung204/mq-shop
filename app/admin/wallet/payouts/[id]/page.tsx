@@ -148,6 +148,7 @@ function WalletPayoutDetailInner({ payoutId }: { payoutId: string }) {
         <AdminResolvePayoutModal
           open
           status={payout.status}
+          payoutGatewayRef={payout.gatewayRef}
           busy={resolve.isPending}
           onClose={() => setResolveOpen(false)}
           onConfirm={async (body) => {
