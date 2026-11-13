@@ -32,7 +32,15 @@ describe("payout resolve helpers", () => {
   it("flags process results that are not a plain success", () => {
     expect(processResultKind("PAID_UNRECONCILED")).toBe("unreconciled");
     expect(processResultKind("PROCESSING")).toBe("processing");
+    expect(processResultKind("PAY_FAILED")).toBe("failed");
     expect(processResultKind("COMPLETED")).toBe("success");
     expect(processResultKind(undefined)).toBe("success");
+  });
+
+  it("race guard (already resolved manually) is never a success, whatever the status", () => {
+    const msg =
+      "Payout was paid by the gateway but had already been resolved manually; flagged for manual reconcile";
+    expect(processResultKind("COMPLETED", msg)).toBe("resolvedElsewhere");
+    expect(processResultKind("PAY_FAILED", msg)).toBe("resolvedElsewhere");
   });
 });

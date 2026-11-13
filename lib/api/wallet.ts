@@ -205,10 +205,13 @@ export const adminWalletPayoutApi = {
       body,
       { withMeta: true },
     ),
+  /** `withMeta` so callers can read the response `message` (race-guard / unreconciled cases). */
   process: (id: string, idempotencyKey: string) =>
-    api.post<UserPayoutRequest>(`/admin/wallet/payouts/${id}/process`, {}, {
-      headers: { "Idempotency-Key": idempotencyKey },
-    }),
+    api.post<{ data: UserPayoutRequest; message?: string }>(
+      `/admin/wallet/payouts/${id}/process`,
+      {},
+      { headers: { "Idempotency-Key": idempotencyKey }, withMeta: true },
+    ),
 };
 
 export type AdjustWalletBody = {

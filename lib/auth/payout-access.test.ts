@@ -10,13 +10,16 @@ describe("canReviewSellerPayout", () => {
       canReviewSellerPayout(u({ roles: ["SELLER"], permissionScopes: { PAYOUT_SELLER: "SHOP" } })),
     ).toBe(false);
   });
-  it("denies APPROVE scope and anonymous", () => {
+  it("denies SELF scope and anonymous", () => {
     expect(
-      canReviewSellerPayout(u({ roles: ["ACCOUNTANT"], permissionScopes: { PAYOUT_SELLER: "APPROVE" } })),
+      canReviewSellerPayout(u({ roles: ["BUYER"], permissionScopes: { PAYOUT_SELLER: "SELF" } })),
     ).toBe(false);
     expect(canReviewSellerPayout(null)).toBe(false);
   });
-  it("allows ALL scope and SUPER_ADMIN", () => {
+  it("allows APPROVE scope (accountant checker route), ALL scope and SUPER_ADMIN", () => {
+    expect(
+      canReviewSellerPayout(u({ roles: ["ACCOUNTANT"], permissionScopes: { PAYOUT_SELLER: "APPROVE" } })),
+    ).toBe(true);
     expect(
       canReviewSellerPayout(u({ roles: ["ADMIN"], permissionScopes: { PAYOUT_SELLER: "ALL" } })),
     ).toBe(true);

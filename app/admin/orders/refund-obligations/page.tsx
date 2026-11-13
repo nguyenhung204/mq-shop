@@ -69,13 +69,13 @@ function RefundObligationsInner() {
             <div className="space-y-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <Link
-                  href={`/admin/orders?orderId=${row.orderId}`}
+                  href={`/orders/${row.orderId}`}
                   className="font-medium text-mq-accent hover:underline"
                 >
                   {row.orderCode}
                 </Link>
                 <span className="mq-badge mq-badge-pink">
-                  {t(`admin.refundObligations.status.${row.status}`)}
+                  {row.status === "OPEN" ? t("admin.refundObligations.status.OPEN") : row.status}
                 </span>
               </div>
               <p className="text-xs text-mq-text-muted">

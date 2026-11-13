@@ -33,11 +33,26 @@ export function validateResolveForm(input: {
   return null;
 }
 
-/** How to report a `process` response: only non-flagged results are a plain success. */
+export type ProcessResultKind =
+  | "success"
+  | "unreconciled"
+  | "processing"
+  | "failed"
+  | "resolvedElsewhere";
+
+/**
+ * How to report a `process` response (HTTP 200 in all cases): only a clean
+ * COMPLETED is a success. The message is checked first because the race guard
+ * ("paid by the gateway but had already been resolved manually") returns the
+ * manually-resolved row, whose status is COMPLETED or PAY_FAILED.
+ */
 export function processResultKind(
   status: PayoutRequestStatus | undefined,
-): "success" | "unreconciled" | "processing" {
+  message?: string | null,
+): ProcessResultKind {
+  if (/already been resolved/i.test(message ?? "")) return "resolvedElsewhere";
   if (status === "PAID_UNRECONCILED") return "unreconciled";
   if (status === "PROCESSING") return "processing";
+  if (status === "PAY_FAILED") return "failed";
   return "success";
 }

@@ -454,17 +454,25 @@ export function useProcessWalletPayout() {
         id,
         idempotency.keyFor({ payoutId: id, action: "process" }),
       ),
-    onSuccess: (payout) => {
+    onSuccess: (res) => {
       idempotency.invalidate();
       suppressNotificationToasts();
-      // PAID_UNRECONCILED / PROCESSING are 200 responses but not a clean success.
-      const kind = processResultKind(payout?.status);
-      if (kind === "unreconciled") {
-        toast.warning(tt("toast.walletPayoutUnreconciled"));
-      } else if (kind === "processing") {
-        toast.warning(tt("toast.walletPayoutStillProcessing"));
-      } else {
-        toast.success(tt("toast.walletPayoutProcessed"));
+      // 200 responses that are not a clean success: check status AND message.
+      switch (processResultKind(res.data?.status, res.message)) {
+        case "unreconciled":
+          toast.warning(tt("toast.walletPayoutUnreconciled"));
+          break;
+        case "resolvedElsewhere":
+          toast.warning(tt("toast.walletPayoutPaidAfterResolve"));
+          break;
+        case "processing":
+          toast.warning(tt("toast.walletPayoutStillProcessing"));
+          break;
+        case "failed":
+          toast.error(tt("toast.walletPayoutPayFailed"));
+          break;
+        default:
+          toast.success(tt("toast.walletPayoutProcessed"));
       }
       void qc.invalidateQueries({ queryKey: adminWalletKeys.all });
     },
