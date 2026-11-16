@@ -23,6 +23,7 @@ import {
   RotateCcw,
   Scale,
   Settings,
+  SlidersHorizontal,
   ShieldAlert,
   ShieldCheck,
   ShoppingBag,
@@ -286,6 +287,14 @@ export const adminNavItems: AdminNavItem[] = [
     icon: ClipboardList,
     permissions: ["VIEW_AUDIT_LOG"],
     roles: ["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"],
+    group: "system",
+  },
+  {
+    href: "/admin/settings",
+    labelKey: "admin.nav.settings",
+    icon: SlidersHorizontal,
+    permissions: ["CONFIG_SYS"],
+    roles: ["ADMIN", "SUPER_ADMIN"],
     group: "system",
   },
   {

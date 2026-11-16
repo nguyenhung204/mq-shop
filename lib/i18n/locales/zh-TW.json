@@ -829,7 +829,8 @@
       "inbox": "收件匣",
       "notifyAdmin": "管理員通知",
       "reviews": "評價",
-      "refundObligations": "退款義務"
+      "refundObligations": "退款義務",
+      "settings": "系統設定"
     },
     "common": {
       "create": "建立",
@@ -2070,6 +2071,62 @@
       "unhide": "取消隱藏",
       "hideTitle": "隱藏評價",
       "hideDesc": "隱藏後的評價不會出現在商品頁。原因為選填。"
+    },
+    "settings": {
+      "title": "系統設定",
+      "description": "可設定的業務參數。每次變更都需要填寫原因並記錄於歷史。",
+      "descriptionReadOnly": "可設定的業務參數（唯讀）。僅超級管理員可變更。",
+      "empty": "目前沒有設定。",
+      "setting": "設定",
+      "value": "數值",
+      "default": "預設值",
+      "rangeHead": "允許範圍",
+      "updated": "最後變更",
+      "unset": "未設定",
+      "isDefault": "使用預設值",
+      "history": "歷史",
+      "edit": "編輯",
+      "historyEmpty": "尚無變更記錄。",
+      "historyAt": "時間（GMT+8）",
+      "historyChange": "變更",
+      "editTitle": "編輯：{name}",
+      "range": "介於 {min} 與 {max} 的整數。",
+      "clearValue": "清除數值（不設定）",
+      "save": "儲存設定",
+      "errors": {
+        "required": "請輸入數值。",
+        "notInteger": "數值必須為整數。",
+        "belowMin": "數值不得小於 {min}。",
+        "aboveMax": "數值不得大於 {max}。",
+        "notNullable": "此設定不可清除。"
+      },
+      "reasonErrors": {
+        "required": "請輸入原因。",
+        "tooShort": "原因至少需 3 個字元。",
+        "tooLong": "原因最多 500 個字元。"
+      },
+      "keys": {
+        "dividendEditWindowDays": {
+          "label": "股利名額可編輯天數",
+          "description": "季度結束後仍可編輯該季名額分配的天數。窗口結束後次日 00:01（台北時間）鎖定該季。",
+          "nullMeaning": "未設定：視為 0，該季於結束後次日 00:01 鎖定。"
+        },
+        "proofStaleAutoCancelDays": {
+          "label": "未處理帳單自動取消天數",
+          "description": "賣家超過此天數未處理付款帳單的待處理訂單將自動取消。",
+          "nullMeaning": "自動取消已關閉（仍會發送提醒）。"
+        },
+        "maxSlotsPerAccount": {
+          "label": "每帳戶名額上限",
+          "description": "單一根帳戶可持有的股利名額上限。",
+          "nullMeaning": "無上限。"
+        },
+        "maxTotalSlots": {
+          "label": "名額總上限",
+          "description": "所有帳戶合計的股利名額上限。",
+          "nullMeaning": "無上限。"
+        }
+      }
     }
   },
   "seller": {

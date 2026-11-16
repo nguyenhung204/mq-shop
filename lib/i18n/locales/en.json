@@ -829,7 +829,8 @@
       "inbox": "Inbox",
       "notifyAdmin": "Admin notifications",
       "reviews": "Reviews",
-      "refundObligations": "Refund obligations"
+      "refundObligations": "Refund obligations",
+      "settings": "System settings"
     },
     "common": {
       "create": "Create",
@@ -2070,6 +2071,62 @@
       "unhide": "Unhide",
       "hideTitle": "Hide review",
       "hideDesc": "Hidden reviews are removed from the public product page. Reason is optional."
+    },
+    "settings": {
+      "title": "System settings",
+      "description": "Configurable business parameters. Every change needs a reason and is recorded in the history.",
+      "descriptionReadOnly": "Configurable business parameters (read only). Only a Super Admin can change them.",
+      "empty": "No settings available.",
+      "setting": "Setting",
+      "value": "Value",
+      "default": "Default",
+      "rangeHead": "Allowed range",
+      "updated": "Last changed",
+      "unset": "Not set",
+      "isDefault": "Using the default",
+      "history": "History",
+      "edit": "Edit",
+      "historyEmpty": "No changes recorded yet.",
+      "historyAt": "When (GMT+8)",
+      "historyChange": "Change",
+      "editTitle": "Edit: {name}",
+      "range": "Whole number from {min} to {max}.",
+      "clearValue": "Clear the value (not set)",
+      "save": "Save setting",
+      "errors": {
+        "required": "Enter a value.",
+        "notInteger": "The value must be a whole number.",
+        "belowMin": "The value must be at least {min}.",
+        "aboveMax": "The value must not exceed {max}.",
+        "notNullable": "This setting cannot be cleared."
+      },
+      "reasonErrors": {
+        "required": "Enter a reason.",
+        "tooShort": "The reason must be at least 3 characters.",
+        "tooLong": "The reason must be at most 500 characters."
+      },
+      "keys": {
+        "dividendEditWindowDays": {
+          "label": "Dividend edit window (days)",
+          "description": "Days after a quarter ends during which slot allocations of that quarter can still be edited. The quarter locks at 00:01 (Taipei time) on the day after the window ends.",
+          "nullMeaning": "Not configured: treated as 0, so the quarter locks at 00:01 on the day right after it ends."
+        },
+        "proofStaleAutoCancelDays": {
+          "label": "Auto-cancel unhandled bills after (days)",
+          "description": "A pending order whose payment bill has not been handled by the seller for this many days is cancelled automatically.",
+          "nullMeaning": "Auto-cancel is off (reminders still run)."
+        },
+        "maxSlotsPerAccount": {
+          "label": "Maximum slots per account",
+          "description": "Maximum dividend slots one root account may hold.",
+          "nullMeaning": "No cap."
+        },
+        "maxTotalSlots": {
+          "label": "Maximum total slots",
+          "description": "Maximum dividend slots across all accounts.",
+          "nullMeaning": "No cap."
+        }
+      }
     }
   },
   "seller": {

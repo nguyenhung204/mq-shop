@@ -829,7 +829,8 @@
       "inbox": "Hộp thư",
       "notifyAdmin": "Thông báo admin",
       "reviews": "Đánh giá",
-      "refundObligations": "Nghĩa vụ hoàn tiền"
+      "refundObligations": "Nghĩa vụ hoàn tiền",
+      "settings": "Cài đặt hệ thống"
     },
     "common": {
       "create": "Tạo mới",
@@ -2070,6 +2071,62 @@
       "unhide": "Hiện lại",
       "hideTitle": "Ẩn đánh giá",
       "hideDesc": "Đánh giá ẩn sẽ không hiện trên trang sản phẩm. Lý do là tùy chọn."
+    },
+    "settings": {
+      "title": "Cài đặt hệ thống",
+      "description": "Các tham số nghiệp vụ có thể cấu hình. Mọi thay đổi cần có lý do và được ghi vào lịch sử.",
+      "descriptionReadOnly": "Các tham số nghiệp vụ (chỉ xem). Chỉ Super Admin mới được thay đổi.",
+      "empty": "Chưa có cài đặt nào.",
+      "setting": "Cài đặt",
+      "value": "Giá trị",
+      "default": "Mặc định",
+      "rangeHead": "Phạm vi cho phép",
+      "updated": "Thay đổi lần cuối",
+      "unset": "Chưa đặt",
+      "isDefault": "Đang dùng mặc định",
+      "history": "Lịch sử",
+      "edit": "Sửa",
+      "historyEmpty": "Chưa có thay đổi nào.",
+      "historyAt": "Thời điểm (GMT+8)",
+      "historyChange": "Thay đổi",
+      "editTitle": "Sửa: {name}",
+      "range": "Số nguyên từ {min} đến {max}.",
+      "clearValue": "Xóa giá trị (không đặt)",
+      "save": "Lưu cài đặt",
+      "errors": {
+        "required": "Hãy nhập giá trị.",
+        "notInteger": "Giá trị phải là số nguyên.",
+        "belowMin": "Giá trị phải từ {min} trở lên.",
+        "aboveMax": "Giá trị không được vượt quá {max}.",
+        "notNullable": "Cài đặt này không thể để trống."
+      },
+      "reasonErrors": {
+        "required": "Hãy nhập lý do.",
+        "tooShort": "Lý do phải có ít nhất 3 ký tự.",
+        "tooLong": "Lý do tối đa 500 ký tự."
+      },
+      "keys": {
+        "dividendEditWindowDays": {
+          "label": "Thời hạn sửa suất cổ tức (ngày)",
+          "description": "Số ngày sau khi quý kết thúc mà việc phân bổ suất của quý đó vẫn được sửa. Quý khóa lúc 00:01 (giờ Đài Bắc) của ngày sau khi hết thời hạn.",
+          "nullMeaning": "Chưa cấu hình: coi như 0, quý khóa lúc 00:01 ngay ngày sau khi kết thúc."
+        },
+        "proofStaleAutoCancelDays": {
+          "label": "Tự hủy đơn có bill chưa xử lý sau (ngày)",
+          "description": "Đơn đang chờ mà người bán chưa xử lý bill thanh toán sau số ngày này sẽ bị tự động hủy.",
+          "nullMeaning": "Tắt tự hủy (vẫn gửi nhắc)."
+        },
+        "maxSlotsPerAccount": {
+          "label": "Số suất tối đa mỗi tài khoản",
+          "description": "Số suất cổ tức tối đa một tài khoản gốc được giữ.",
+          "nullMeaning": "Không giới hạn."
+        },
+        "maxTotalSlots": {
+          "label": "Tổng số suất tối đa",
+          "description": "Số suất cổ tức tối đa trên toàn bộ tài khoản.",
+          "nullMeaning": "Không giới hạn."
+        }
+      }
     }
   },
   "seller": {
