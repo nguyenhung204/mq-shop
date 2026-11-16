@@ -59,3 +59,10 @@ describe("formatOrderMoney with payable fields", () => {
     expect(formatOrderLineMoney(usdOrder, 200).primary).not.toBe("$31.50");
   });
 });
+
+describe("payableView TWD with a stray rate", () => {
+  it("never shows a rate line for a TWD payable, even if fxRateLocked is set", () => {
+    const v = payableView({ total: 500, currency: "TWD", payableAmount: 500, payableCurrency: "TWD", fxRateLocked: 1 });
+    expect(v.lockedRate).toBeNull();
+  });
+});

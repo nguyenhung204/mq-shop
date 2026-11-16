@@ -42,6 +42,23 @@ describe("RmaApproveModal (rendered)", () => {
     expect(html).toContain("admin.rmaPage.approveModal.loadingTotal");
     expect(html).not.toContain("placeholder=");
   });
+  it("a partial amount shows the partial wording and button; the full remaining amount does not", () => {
+    const partial = render({ defaultAmount: "250" });
+    expect(partial).toContain("admin.rmaPage.approveModal.partialNote");
+    expect(partial).toContain("admin.rmaPage.approveModal.confirmPartial");
+    expect(partial).not.toContain("admin.rmaPage.approveModal.confirmFull");
+    const full = render({ defaultAmount: "1000" });
+    expect(full).toContain("admin.rmaPage.approveModal.confirmFull");
+    expect(full).not.toContain("admin.rmaPage.approveModal.confirmPartial");
+  });
+  it("busy: input and submit are disabled so the approve cannot be sent twice", () => {
+    const html = render({ busy: true });
+    expect(html).toMatch(/<input[^>]*disabled/);
+    expect(html).toMatch(/<button[^>]*type="submit"[^>]*disabled|<button[^>]*disabled[^>]*type="submit"/);
+    expect(html).toContain("admin.common.working");
+    const idle = render();
+    expect(idle).not.toMatch(/<input[^>]*disabled/);
+  });
   it("UI1: without partial permission there is no amount input at all", () => {
     const html = render({ canPartial: false });
     expect(html).not.toContain("<input");

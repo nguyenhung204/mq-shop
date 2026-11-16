@@ -59,3 +59,21 @@ describe("cents formatting", () => {
     expect(formatCentsDisplay(123456, "vi-VN")).toBe("1.234,56");
   });
 });
+
+describe("money boundaries", () => {
+  it("12 digits is the maximum whole part; 13 digits is refused", () => {
+    expect(parseDecimalToCents("999999999999.99")).toBe(99999999999999);
+    expect(parseDecimalToCents("1000000000000")).toBeNull();
+    expect(parseDecimalToCents("1000000000000.00")).toBeNull();
+  });
+  it("every parsed amount is a safe integer", () => {
+    expect(Number.isSafeInteger(parseDecimalToCents("999999999999.99"))).toBe(true);
+  });
+  it("an unsafe integer is refused, never shown as 0.00", () => {
+    expect(() => centsToDecimalString(2 ** 53)).toThrow(RangeError);
+    expect(() => centsToDecimalString(1.5)).toThrow(RangeError);
+    expect(() => centsToDecimalString(Number.NaN)).toThrow(RangeError);
+    expect(centsToDecimalString(Number.MAX_SAFE_INTEGER)).toBe("90071992547409.91");
+    expect(formatCentsDisplay(2 ** 53)).toBe("—");
+  });
+});

@@ -22,8 +22,8 @@ describe("settings page wiring (U1)", () => {
   it("modal validates before submit and the hook sends the idempotency key", () => {
     expect(src("components/admin/SettingEditModal.tsx")).toContain("validateSettingEdit(setting, { raw, clear, reason })");
     const q = src("lib/queries/settings.ts");
-    expect(q).toContain("idempotency.keyFor(vars)");
-    expect(q).toContain("adminSettingsApi.update(vars.key, vars.body,");
+    expect(q).toContain("idempotency.run(vars,");
+    expect(q).toContain("adminSettingsApi.update(v.key, v.body, key)");
   });
   it("nav entry is gated by role and permission", () => {
     const nav = src("components/admin/nav.ts");
@@ -49,7 +49,9 @@ describe("dividend rates page wiring (U2)", () => {
   });
   it("write hooks go through the idempotency store", () => {
     const q = src("lib/queries/dividend.ts");
-    expect(q).toContain("run(vars, idempotency.keyFor(vars))");
+    expect(q).toContain("idempotency.run(vars, run)");
+    expect(q).toContain("idempotency.onSuccess()");
+    expect(q).toContain("idempotency.onError(e)");
     const a = src("lib/api/dividend.ts");
     expect(a).toContain('api.post<DividendRate>("/admin/dividend/rates", body, idem(idempotencyKey))');
     expect(a).toContain('"/admin/dividend/slots", body, idem(idempotencyKey)');

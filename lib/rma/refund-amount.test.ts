@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ApiError } from "@/lib/api/client";
-import { remainingFromError, validateRefundAmount } from "./refund-amount";
+import { approveBody, decideApprove, remainingFromError, validateRefundAmount } from "./refund-amount";
 
 describe("validateRefundAmount", () => {
   it("empty means refund everything left (nothing is sent)", () => {
@@ -47,5 +47,32 @@ describe("remainingFromError", () => {
     expect(remainingFromError(err(undefined))).toBeNull();
     expect(remainingFromError(err({ orderTotal: "100.00", alreadyRefunded: "200.00" }))).toBeNull();
     expect(remainingFromError(err({ orderTotal: "abc", alreadyRefunded: "1" }))).toBeNull();
+  });
+});
+
+describe("fully refunded order", () => {
+  const err = (details: unknown) => new ApiError(400, "x", { message: "x", data: { code: "RMA_REFUND_AMOUNT_INVALID", details } } as never);
+  it("alreadyRefunded == orderTotal gives remaining 0 (cap 0), not 'unknown'", () => {
+    const r = remainingFromError(err({ orderTotal: "500.00", alreadyRefunded: "500.00", requested: "1" }));
+    expect(r?.remainingCents).toBe(0);
+    expect(validateRefundAmount("0.01", r!.remainingCents)).toEqual({ ok: false, error: "exceeds" });
+  });
+});
+
+describe("decideApprove and approveBody", () => {
+  it("non-staff never send an amount, even if one is passed", () => {
+    expect(decideApprove(false, "250", 100000)).toEqual({ ok: true, refundAmount: undefined, partial: false });
+  });
+  it("staff over the cap are blocked with the translated error key", () => {
+    expect(decideApprove(true, "1000.01", 100000)).toEqual({ ok: false, errorKey: "admin.rmaPage.approveModal.errors.exceeds" });
+    expect(decideApprove(true, "abc", 100000)).toEqual({ ok: false, errorKey: "admin.rmaPage.approveModal.errors.invalid" });
+  });
+  it("staff partial amount is normalised and flagged partial; empty means full", () => {
+    expect(decideApprove(true, "250", 100000)).toEqual({ ok: true, refundAmount: "250.00", partial: true });
+    expect(decideApprove(true, "", 100000)).toEqual({ ok: true, refundAmount: undefined, partial: false });
+  });
+  it("the typed amount reaches the request body; no amount means no field", () => {
+    expect(approveBody("ok", "250.00")).toEqual({ note: "ok", refundAmount: "250.00" });
+    expect("refundAmount" in approveBody("ok", undefined)).toBe(false);
   });
 });

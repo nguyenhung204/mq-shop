@@ -14,7 +14,7 @@ const setting = (over: Partial<SystemSetting> = {}): SystemSetting => ({
   max: 1000000,
   nullable: true,
   description: "",
-  nullMeaning: null,
+  nullMeaning: "No cap.",
   updatedBy: null,
   updatedAt: null,
   ...over,
@@ -41,7 +41,9 @@ describe("SettingEditModal (rendered)", () => {
     expect(html).toContain("admin.settings.range");
     expect(html).toContain("<textarea");
     expect(html).toContain('type="checkbox"');
-    expect(html).toContain("admin.settings.keys.maxTotalSlots.nullMeaning");
+    // A key the locale files do not know falls back to the API text instead of showing a raw i18n key.
+    expect(html).toContain("No cap.");
+    expect(html).not.toContain("admin.settings.keys.");
   });
   it("hides the clear option when the setting is not nullable", () => {
     expect(render(setting({ nullable: false }))).not.toContain('type="checkbox"');

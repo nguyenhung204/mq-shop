@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { SystemSetting } from "@/lib/api/settings";
-import { isSameValue, validateSettingEdit } from "./edit";
+import { validateSettingEdit } from "./edit";
 
 const def = (over: Partial<SystemSetting> = {}): SystemSetting => ({
   key: "dividendEditWindowDays",
@@ -61,9 +61,5 @@ describe("validateSettingEdit", () => {
     const r = validateSettingEdit(def(), { raw: "999", clear: false, reason: "" });
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.errors.map((e) => e.field).sort()).toEqual(["reason", "value"]);
-  });
-  it("isSameValue compares with the stored value", () => {
-    expect(isSameValue(def({ value: 7 }), { value: 7 })).toBe(true);
-    expect(isSameValue(def({ value: 7 }), { value: null })).toBe(false);
   });
 });

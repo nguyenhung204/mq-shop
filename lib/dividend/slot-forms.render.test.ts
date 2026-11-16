@@ -39,6 +39,22 @@ describe("slot forms (rendered)", () => {
       expect(html).not.toMatch(/<textarea(?![^>]*disabled)/);
     }
   });
+  it("UI3 locked quarter: EVERY interactive control (expiry, both pickers, buttons) is disabled", () => {
+    for (const html of [set(true), transfer(true)]) {
+      const controls = (html.match(/<(input|textarea|select|button)\b[^>]*>/g) ?? []).filter((c) => !c.includes('aria-hidden="true"'));
+      expect(controls.length).toBeGreaterThanOrEqual(4);
+      const enabled = controls.filter((c) => !/\bdisabled\b/.test(c));
+      expect(enabled).toEqual([]);
+    }
+    // the transfer form has two pickers and they are among the controls
+    const transferControls = transfer(true).match(/<button[^>]*aria-expanded[^>]*>/g) ?? [];
+    expect(transferControls).toHaveLength(2);
+  });
+  it("open quarter: the pickers are enabled", () => {
+    const pickers = transfer(false).match(/<button[^>]*aria-expanded[^>]*>/g) ?? [];
+    expect(pickers).toHaveLength(2);
+    for (const p of pickers) expect(p).not.toMatch(/\bdisabled\b/);
+  });
   it("the set form has an optional expiry and the transfer form has two account pickers", () => {
     expect(set(false)).toContain('type="datetime-local"');
     expect(transfer(false)).toContain("admin.dividend.slots.from");

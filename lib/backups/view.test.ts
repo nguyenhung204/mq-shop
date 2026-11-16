@@ -33,3 +33,11 @@ describe("pruned backups", () => {
     expect(canDownloadBackup({ status: "RUNNING" })).toBe(false);
   });
 });
+
+describe("system actor rule", () => {
+  it("the all-zero UUID is the system actor even when scheduled is false", () => {
+    expect(SYSTEM_BACKUP_ACTOR_ID).toBe("00000000-0000-0000-0000-000000000000");
+    expect(backupCreator({ scheduled: false, createdBy: "00000000-0000-0000-0000-000000000000" })).toEqual({ kind: "system" });
+    expect(backupCreator({ scheduled: false, createdBy: "00000000-0000-0000-0000-000000000001" })).toEqual({ kind: "user", id: "00000000" });
+  });
+});
