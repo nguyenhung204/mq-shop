@@ -11,6 +11,11 @@ export function canWriteSettings(user: AuthUser | null | undefined): boolean {
 
 export const canWriteDividend = canWriteSettings;
 
+/** /admin/users needs VIEW_USERS: ADMIN and SUPER_ADMIN only (the account pickers fall back to known holders). */
+export function canSearchUsers(user: AuthUser | null | undefined): boolean {
+  return Boolean(user?.roles?.some((r) => r === "ADMIN" || r === "SUPER_ADMIN"));
+}
+
 /** Staff allowed to enter a partial refund amount on RMA approval (the API refuses everyone else). */
 export function canSetPartialRefund(user: AuthUser | null | undefined): boolean {
   return Boolean(user?.roles?.some((r) => r === "ADMIN" || r === "SUPER_ADMIN"));

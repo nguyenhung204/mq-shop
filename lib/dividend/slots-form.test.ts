@@ -105,6 +105,9 @@ describe("account id case (lowercase everywhere)", () => {
     expect(codes(validateTransfer({ fromUserId: UP, toUserId: B, slots: "9", reason: "Merge" }, heldCtx(5)))).toEqual(["slots:insufficient"]);
     const ok = validateTransfer({ fromUserId: UP, toUserId: B, slots: "5", reason: "Merge" }, heldCtx(5));
     expect(ok.ok && ok.body.fromUserId).toBe(LA);
+    const toLA = "ABCDEFAC-1111-4111-8111-111111111111";
+    const t2 = validateTransfer({ fromUserId: LA, toUserId: toLA, slots: "5", reason: "Merge" }, heldCtx(5));
+    expect(t2.ok && t2.body.toUserId).toBe(toLA.toLowerCase());
     expect(codes(validateTransfer({ fromUserId: UP, toUserId: B, slots: "2", reason: "Merge" }, heldCtx(5, "2027-03-01T00:00:00.000Z")))).toEqual(["slots:expiring"]);
   });
   it("the unchanged guard works for an uppercase id and the body carries the lowercase id", () => {

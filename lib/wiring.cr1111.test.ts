@@ -151,3 +151,50 @@ describe("forms keep their input when the server rejects the write", () => {
     }
   });
 });
+
+describe("call sites of the approve path (the glue the pure tests cannot see)", () => {
+  it("modal submit goes through submitApprove with the staff flag, amount, cap and its own onConfirm", () => {
+    expect(src("components/admin/RmaApproveModal.tsx")).toContain("submitApprove({ canPartial, amount, cap, onConfirm })");
+  });
+  it("flow passes the typed amount to the mutation", () => {
+    expect(src("components/admin/RmaApproveFlow.tsx")).toContain("decision.mutateAsync(approveVars(target.rmaId, refundAmount))");
+  });
+  it("the hook sends the variables unchanged through sendRmaDecision to the admin client", () => {
+    expect(src("lib/queries/orders.ts")).toContain("mutationFn: (vars: RmaDecisionVars) => sendRmaDecision(adminOrdersApi, vars)");
+  });
+});
+
+describe("settings hook and labels wiring", () => {
+  it("useUpdateSetting rotates the key on success and on error", () => {
+    const q = src("lib/queries/settings.ts");
+    expect(q).toContain("idempotency.onSuccess()");
+    expect(q).toContain("idempotency.onError(e)");
+  });
+  it("settings page and modal (title and body) read texts through settingTexts", () => {
+    const page = src("app/admin/settings/page.tsx");
+    expect(page).toContain("settingTexts(t, s)");
+    expect(page).toContain("texts(s).label");
+    const modal = src("components/admin/SettingEditModal.tsx");
+    expect(modal).toContain("settingTexts(t, setting)");
+    expect(modal).toContain('t("admin.settings.editTitle", { name: texts.label })');
+    expect(modal).toContain("{texts.nullMeaning}");
+    expect(modal).not.toMatch(/t\(`admin\.settings\.keys/);
+  });
+});
+
+describe("account picker gating", () => {
+  it("every AccountPicker receives the search flag", () => {
+    for (const f of ["components/admin/dividend/SlotForms.tsx", "app/admin/dividend/slots/page.tsx"]) {
+      const code = src(f);
+      const pickers = code.match(/<AccountPicker[\s\S]*?\/>/g) ?? [];
+      expect(pickers.length, f).toBeGreaterThan(0);
+      for (const p of pickers) expect(p, f).toMatch(/\bsearch=\{/);
+    }
+    const page = src("app/admin/dividend/slots/page.tsx");
+    expect(page).toContain("const searchUsers = canSearchUsers(user)");
+    expect(page.match(/searchUsers=\{searchUsers\}/g)).toHaveLength(2);
+  });
+  it("the picker query is enabled only through pickerQueryOptions", () => {
+    expect(src("components/admin/dividend/AccountPicker.tsx")).toContain("...pickerQueryOptions(search, q)");
+  });
+});

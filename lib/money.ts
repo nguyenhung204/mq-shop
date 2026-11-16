@@ -34,6 +34,15 @@ export function centsToDecimalString(cents: number): string {
 /** 1250 -> "12.50"; bps share the same 2-decimal layout. */
 export const bpsToPercentString = centsToDecimalString;
 
+/** Display "12.50%" for API basis points; "-" for a malformed value instead of crashing the page. */
+export function formatBpsPercent(bps: number): string {
+  try {
+    return `${bpsToPercentString(bps)}%`;
+  } catch {
+    return "-";
+  }
+}
+
 /**
  * Normalise an API decimal (string or number, 2 dp expected) to integer cents
  * without float math on strings; numbers are only rounded to the cent.

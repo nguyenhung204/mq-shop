@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   bpsToPercentString,
   centsToDecimalString,
+  formatBpsPercent,
   formatCentsDisplay,
   parseDecimalToCents,
   parsePercentToBps,
@@ -75,5 +76,15 @@ describe("money boundaries", () => {
     expect(() => centsToDecimalString(Number.NaN)).toThrow(RangeError);
     expect(centsToDecimalString(Number.MAX_SAFE_INTEGER)).toBe("90071992547409.91");
     expect(formatCentsDisplay(2 ** 53)).toBe("—");
+  });
+});
+
+describe("formatBpsPercent (display call sites)", () => {
+  it("formats valid basis points", () => {
+    expect(formatBpsPercent(1250)).toBe("12.50%");
+    expect(formatBpsPercent(0)).toBe("0.00%");
+  });
+  it("a malformed value shows '-' and never throws", () => {
+    for (const bad of [Number.NaN, Number.POSITIVE_INFINITY, 1.5, 2 ** 53]) expect(formatBpsPercent(bad), String(bad)).toBe("-");
   });
 });

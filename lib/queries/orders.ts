@@ -24,7 +24,7 @@ import { currentLocale, tt } from "@/lib/i18n/tt";
 import { statusLabel } from "@/lib/i18n/status";
 import { suppressNotificationToasts } from "@/lib/notifications/suppress-toast";
 import { getErrorMessage } from "@/lib/queries/utils";
-import { approveBody } from "@/lib/rma/refund-amount";
+import { sendRmaDecision, type RmaDecisionVars } from "@/lib/rma/approve-flow";
 
 export const orderKeys = {
   all: ["orders"] as const,
@@ -504,23 +504,7 @@ export function useAdminRmaDetail(rmaId: string) {
 export function useAdminRmaDecision() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({
-      id,
-      decision,
-      note,
-      refundAmount,
-    }: {
-      id: string;
-      decision: "APPROVED" | "REJECTED";
-      note?: string;
-      /** Staff partial refund (2 dp string); omit for the full remaining amount. */
-      refundAmount?: string;
-    }) => {
-      if (decision === "APPROVED") {
-        return adminOrdersApi.approveRma(id, approveBody(note, refundAmount));
-      }
-      return adminOrdersApi.rejectRma(id, { note: note || "Rejected" });
-    },
+    mutationFn: (vars: RmaDecisionVars) => sendRmaDecision(adminOrdersApi, vars),
     onSuccess: (_d, vars) => {
       invalidateRmaQueries(queryClient, vars.id);
       suppressNotificationToasts();

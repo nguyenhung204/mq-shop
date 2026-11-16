@@ -79,7 +79,7 @@ export function SetSlotsForm({
   const reasonId = useId();
   const errId = useId();
   const ctx: SlotsContext = { quarter, locked, holdings };
-  const held = holdings.find((h) => h.userId === userId);
+  const held = holdings.find((h) => h.userId.toLowerCase() === userId.toLowerCase());
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();

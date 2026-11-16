@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { AuthUser } from "@/lib/api/types";
-import { canSetPartialRefund, canWriteDividend, canWriteSettings } from "./admin-write";
+import { canSearchUsers, canSetPartialRefund, canWriteDividend, canWriteSettings } from "./admin-write";
 
 const u = (...roles: string[]) => ({ roles }) as unknown as AuthUser;
 
@@ -23,5 +23,13 @@ describe("admin write gates", () => {
     }
     expect(canSetPartialRefund(u("SELLER", "CS"))).toBe(false);
     expect(canSetPartialRefund(null)).toBe(false);
+  });
+  it("user search (the account pickers) is for ADMIN / SUPER_ADMIN only", () => {
+    expect(canSearchUsers(u("ADMIN"))).toBe(true);
+    expect(canSearchUsers(u("SUPER_ADMIN"))).toBe(true);
+    for (const r of ["ACCOUNTANT", "SELLER", "BUYER", "CS", "WAREHOUSE"]) expect(canSearchUsers(u(r)), r).toBe(false);
+    expect(canSearchUsers(u("ACCOUNTANT", "ADMIN"))).toBe(true);
+    expect(canSearchUsers(null)).toBe(false);
+    expect(canSearchUsers({} as AuthUser)).toBe(false);
   });
 });

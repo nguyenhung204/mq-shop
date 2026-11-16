@@ -5,6 +5,7 @@ import { RmaApproveModal } from "@/components/admin/RmaApproveModal";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { canSetPartialRefund } from "@/lib/auth/admin-write";
 import { toCents } from "@/lib/money";
+import { approveVars } from "@/lib/rma/approve-flow";
 import { remainingFromError } from "@/lib/rma/refund-amount";
 import { useAdminRmaDecision, useOrder } from "@/lib/queries/orders";
 
@@ -37,7 +38,7 @@ function Flow({ target, onClose }: { target: { rmaId: string; orderId: string };
       onClose={onClose}
       onConfirm={async (refundAmount) => {
         try {
-          await decision.mutateAsync({ id: target.rmaId, decision: "APPROVED", refundAmount });
+          await decision.mutateAsync(approveVars(target.rmaId, refundAmount));
           onClose();
         } catch (e) {
           // RMA_REFUND_AMOUNT_INVALID carries what is really left: use it as the cap from now on.

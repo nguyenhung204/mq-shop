@@ -54,4 +54,10 @@ describe("buildReportRows", () => {
     expect(v.refundsAfterLock).toEqual({ amount: "123.45 TWD", orderCount: 2 });
     expect(buildReportRows(report({ refundsAfterLock: undefined })).refundsAfterLock).toBeNull();
   });
+  it("a malformed rateBps from the API does not crash the view", () => {
+    const base = report();
+    const bad = report({ byRateInterval: [{ ...base.byRateInterval[0]!, rateBps: Number.NaN }] });
+    expect(() => buildReportRows(bad)).not.toThrow();
+    expect(buildReportRows(bad).intervals[0]!.ratePercent).toBe("-");
+  });
 });

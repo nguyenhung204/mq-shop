@@ -10,7 +10,7 @@ import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButto
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { TableSkeleton } from "@/components/ui/Skeleton";
-import { canWriteDividend } from "@/lib/auth/admin-write";
+import { canSearchUsers, canWriteDividend } from "@/lib/auth/admin-write";
 import { currentQuarter, quarterOptions } from "@/lib/dividend/dates";
 import { formatDateTimeGmt8 } from "@/lib/i18n/gmt8-calendar";
 import { toIntlLocale } from "@/lib/i18n/locale-format";
@@ -31,7 +31,7 @@ function SlotsInner() {
   const { user } = useAuth();
   const canWrite = canWriteDividend(user);
   // /admin/users needs VIEW_USERS (ADMIN / SUPER_ADMIN); ACCOUNTANT only gets the holders already on the page.
-  const canSearchUsers = Boolean(user?.roles?.some((r) => r === "ADMIN" || r === "SUPER_ADMIN"));
+  const searchUsers = canSearchUsers(user);
   const intl = toIntlLocale(locale);
   const [now] = useState(() => new Date());
   const options = useMemo(() => quarterOptions(now, 8, 0), [now]);
@@ -159,7 +159,7 @@ function SlotsInner() {
               locked={locked}
               holdings={items}
               initialUserId={setTarget}
-              searchUsers={canSearchUsers}
+              searchUsers={searchUsers}
               busy={setSlots.isPending}
               onSubmit={async (body) => {
                 try {
@@ -175,7 +175,7 @@ function SlotsInner() {
               locked={locked}
               holdings={items}
               busy={transfer.isPending}
-              searchUsers={canSearchUsers}
+              searchUsers={searchUsers}
               onSubmit={async (body) => {
                 try {
                   await transfer.mutateAsync(body);
@@ -197,7 +197,7 @@ function SlotsInner() {
               ariaLabel={t("admin.dividend.slots.historyFilter")}
               placeholder={t("admin.dividend.slots.historyFilter")}
               known={items}
-              search={canSearchUsers}
+              search={searchUsers}
             />
             {historyUser ? (
               <button type="button" className="text-xs underline mt-1" onClick={() => setHistoryUser("")}>

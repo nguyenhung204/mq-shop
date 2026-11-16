@@ -10,7 +10,7 @@ import type { DividendRateStatus } from "@/lib/api/dividend";
 import { canWriteDividend } from "@/lib/auth/admin-write";
 import { formatDateTimeGmt8 } from "@/lib/i18n/gmt8-calendar";
 import { toIntlLocale } from "@/lib/i18n/locale-format";
-import { bpsToPercentString } from "@/lib/money";
+import { formatBpsPercent } from "@/lib/money";
 import { useCreateDividendRate, useDividendRates } from "@/lib/queries/dividend";
 import { getErrorMessage } from "@/lib/queries/utils";
 
@@ -46,12 +46,12 @@ function RatesInner() {
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-lg border border-mq-border bg-mq-surface p-4">
               <p className="text-xs text-mq-text-muted">{t("admin.dividend.rates.current")}</p>
-              <p className="text-2xl font-semibold tabular-nums">{bpsToPercentString(data.current.rateBps)}%</p>
+              <p className="text-2xl font-semibold tabular-nums">{formatBpsPercent(data.current.rateBps)}</p>
               <p className="text-[11px] text-mq-text-muted mt-1">{t("admin.dividend.rates.today", { date: data.today })}</p>
             </div>
             <div className="rounded-lg border border-mq-border bg-mq-surface p-4">
               <p className="text-xs text-mq-text-muted">{t("admin.dividend.rates.default")}</p>
-              <p className="text-2xl font-semibold tabular-nums">{bpsToPercentString(data.default.rateBps)}%</p>
+              <p className="text-2xl font-semibold tabular-nums">{formatBpsPercent(data.default.rateBps)}</p>
             </div>
           </div>
         ) : null}
@@ -91,7 +91,7 @@ function RatesInner() {
               <tbody>
                 {items.map((r) => (
                   <tr key={r.id} className="border-t border-mq-border align-top">
-                    <td className="p-3 font-semibold tabular-nums">{bpsToPercentString(r.rateBps)}%</td>
+                    <td className="p-3 font-semibold tabular-nums">{formatBpsPercent(r.rateBps)}</td>
                     <td className="p-3 whitespace-nowrap">{r.effectiveDate}</td>
                     <td className="p-3 whitespace-nowrap">
                       <span className={STATUS_BADGE[r.status] ?? "mq-badge mq-badge-muted"}>

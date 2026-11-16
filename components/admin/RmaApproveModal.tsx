@@ -3,7 +3,8 @@
 import { FormEvent, useEffect, useId, useState } from "react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { centsToDecimalString } from "@/lib/money";
-import { decideApprove, validateRefundAmount } from "@/lib/rma/refund-amount";
+import { submitApprove } from "@/lib/rma/approve-flow";
+import { validateRefundAmount } from "@/lib/rma/refund-amount";
 
 type Props = {
   open: boolean;
@@ -31,6 +32,7 @@ function RmaApproveForm({ canPartial, orderTotalCents, remainingCents = null, bu
   const [error, setError] = useState<string | null>(null);
   const titleId = useId();
   const amountId = useId();
+  const errorId = useId();
   const cap = remainingCents ?? orderTotalCents;
   const live = canPartial ? validateRefundAmount(amount, cap) : null;
 
@@ -44,13 +46,8 @@ function RmaApproveForm({ canPartial, orderTotalCents, remainingCents = null, bu
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    const res = decideApprove(canPartial, amount, cap);
-    if (!res.ok) {
-      setError(res.errorKey);
-      return;
-    }
-    setError(null);
-    await onConfirm(res.refundAmount);
+    const res = await submitApprove({ canPartial, amount, cap, onConfirm });
+    setError(res.errorKey);
   };
 
   const isPartial = Boolean(live && live.ok && live.partial && live.refundAmount !== undefined);
@@ -78,6 +75,8 @@ function RmaApproveForm({ canPartial, orderTotalCents, remainingCents = null, bu
                 autoComplete="off"
                 value={amount}
                 disabled={busy}
+                aria-invalid={error ? true : undefined}
+                aria-describedby={error ? errorId : undefined}
                 placeholder={cap !== null ? centsToDecimalString(cap) : undefined}
                 onChange={(e) => setAmount(e.target.value)}
               />
@@ -98,7 +97,7 @@ function RmaApproveForm({ canPartial, orderTotalCents, remainingCents = null, bu
             <p className="text-xs">{t("admin.rmaPage.approveModal.fullNote")}</p>
           )}
           {error ? (
-            <p className="mq-admin-modal-error" role="alert">
+            <p id={errorId} className="mq-admin-modal-error" role="alert">
               {t(error)}
             </p>
           ) : null}

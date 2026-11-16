@@ -13,6 +13,11 @@ function label(u: Pick<AuthUser, "email" | "fullName">): string {
   return name ? `${name} · ${u.email}` : u.email;
 }
 
+/** Query options of the user search: a picker without search permission must never call /admin/users. */
+export function pickerQueryOptions(search: boolean, q: string) {
+  return { enabled: search, queryKey: ["admin", "users", "dividend-picker", q] as const };
+}
+
 /** Root-account picker backed by the admin user search (server-side filter by email / name). */
 export function AccountPicker({
   value,
@@ -36,8 +41,7 @@ export function AccountPicker({
   const [query, setQuery] = useState("");
   const q = useDebounce(query.trim(), 300);
   const { data } = useQuery({
-    enabled: search,
-    queryKey: ["admin", "users", "dividend-picker", q],
+    ...pickerQueryOptions(search, q),
     queryFn: async () => parsePage<AuthUser>(await adminApi.users({ page: 1, pageSize: 20, q: q || undefined })),
   });
 

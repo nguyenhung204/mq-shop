@@ -1,5 +1,5 @@
 import type { DividendReport } from "@/lib/api/dividend";
-import { bpsToPercentString, formatCentsDisplay, formatWholeDisplay } from "@/lib/money";
+import { formatBpsPercent, formatCentsDisplay, formatWholeDisplay } from "@/lib/money";
 
 export const REPORT_CURRENCY = "TWD";
 
@@ -37,7 +37,7 @@ export function buildReportRows(r: DividendReport, locale = "en-US"): ReportRows
     intervals: r.byRateInterval.map((iv, i) => ({
       key: `${iv.from}-${iv.to}-${i}`,
       period: `${iv.from} → ${iv.to}`,
-      ratePercent: `${bpsToPercentString(iv.rateBps)}%`,
+      ratePercent: formatBpsPercent(iv.rateBps),
       isDefaultRate: iv.isDefaultRate,
       orderCount: iv.orderCount,
       salesBase: money(iv.salesBaseCents),
