@@ -360,7 +360,7 @@
     "paymentMock": "MOCK (PAID ngay — dev)",
     "paymentCod": "COD (PENDING đến khi trả)",
     "paymentHint": "Chuyển khoản vào tài khoản seller, rồi tải ảnh chứng từ trên trang đơn hàng. Thanh toán ghi sổ bằng TWD; giá hiển thị theo tiền tệ khu vực.",
-    "displayCurrencyNote": "Bạn thanh toán {amount} TWD. Hiển thị: {currency}.",
+    "displayCurrencyNote": "Ước tính bằng {currency} theo tỷ giá hôm nay. Số tiền bạn thanh toán được chốt bằng {currency} khi đặt hàng. Tổng trong sổ cái của shop: {amount} TWD.",
     "fxRateChanged": "Tỷ giá đã được cập nhật. Vui lòng xem lại giá hiển thị và đặt hàng lại.",
     "fxUnavailable": "Không thể tải tỷ giá. Thanh toán theo tiền khu vực tạm khóa. Thử lại sau hoặc chuyển sang Taiwan (TWD).",
     "paymentStubNote": "Thanh toán stub (COD → PENDING, MOCK → PAID). Không redirect PSP.",

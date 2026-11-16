@@ -10,8 +10,9 @@ export function backupCreator(b: Pick<ApiBackup, "scheduled" | "createdBy">): { 
 }
 
 /** A pruned scheduled backup keeps its history row but its file is gone. */
-export function isBackupPruned(b: Pick<ApiBackup, "prunedAt" | "storageKey">): boolean {
-  return Boolean(b.prunedAt) || b.storageKey === null;
+export function isBackupPruned(b: Pick<ApiBackup, "status" | "prunedAt" | "storageKey">): boolean {
+  // QUEUED / RUNNING / FAILED rows also have no storage key; only a SUCCESS row without one lost its file.
+  return Boolean(b.prunedAt) || (b.status === "SUCCESS" && b.storageKey === null);
 }
 
 export function canDownloadBackup(b: Pick<ApiBackup, "status" | "prunedAt" | "storageKey">): boolean {

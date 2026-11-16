@@ -129,3 +129,23 @@ describe("R5 UI wiring (U8)", () => {
     expect(p).not.toContain('b.status !== "SUCCESS" ||');
   });
 });
+
+describe("forms keep their input when the server rejects the write", () => {
+  it("pages resolve false on error and forms clear only after a non-false result", () => {
+    for (const f of ["app/admin/dividend/rates/page.tsx", "app/admin/dividend/slots/page.tsx"]) {
+      const p = src(f);
+      expect(p, f).toContain("return true;");
+      expect(p, f).toContain("return false;");
+    }
+    expect(src("components/admin/dividend/DividendRateForm.tsx")).toContain("(await onSubmit(res.body)) === false");
+    const slots = src("components/admin/dividend/SlotForms.tsx");
+    expect((slots.match(/\(await onSubmit\(res\.body\)\) === false/g) ?? []).length).toBe(2);
+  });
+  it("the checkout estimate note no longer tells the buyer to pay TWD", () => {
+    for (const loc of ["en", "vi", "zh-TW"]) {
+      const text = (JSON.parse(raw(`lib/i18n/locales/${loc}.json`)) as { checkout: { displayCurrencyNote: string } }).checkout.displayCurrencyNote;
+      expect(text, loc).toContain("{currency}");
+      expect(text, loc).not.toMatch(/You pay \{amount\}|thanh toán \{amount\} TWD\.|支付 \{amount\} TWD/);
+    }
+  });
+});

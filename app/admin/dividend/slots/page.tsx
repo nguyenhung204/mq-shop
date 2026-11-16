@@ -161,8 +161,9 @@ function SlotsInner() {
               onSubmit={async (body) => {
                 try {
                   await setSlots.mutateAsync(body);
+                  return true;
                 } catch {
-                  /* toast shown by the hook */
+                  return false; // toast shown by the hook; keep the form filled
                 }
               }}
             />
@@ -174,8 +175,9 @@ function SlotsInner() {
               onSubmit={async (body) => {
                 try {
                   await transfer.mutateAsync(body);
+                  return true;
                 } catch {
-                  /* toast shown by the hook */
+                  return false; // toast shown by the hook; keep the form filled
                 }
               }}
             />

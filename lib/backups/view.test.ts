@@ -15,10 +15,15 @@ describe("backupCreator", () => {
 
 describe("pruned backups", () => {
   it("prunedAt or a null storage key means the file is gone", () => {
-    expect(isBackupPruned({ prunedAt: "2026-11-16T00:00:00Z", storageKey: "k" })).toBe(true);
-    expect(isBackupPruned({ prunedAt: null, storageKey: null })).toBe(true);
-    expect(isBackupPruned({ prunedAt: null, storageKey: "k" })).toBe(false);
-    expect(isBackupPruned({})).toBe(false);
+    expect(isBackupPruned({ status: "SUCCESS", prunedAt: "2026-11-16T00:00:00Z", storageKey: "k" })).toBe(true);
+    expect(isBackupPruned({ status: "SUCCESS", prunedAt: null, storageKey: null })).toBe(true);
+    expect(isBackupPruned({ status: "SUCCESS", prunedAt: null, storageKey: "k" })).toBe(false);
+    expect(isBackupPruned({ status: "SUCCESS" })).toBe(false);
+  });
+  it("live and failed rows have no storage key yet and are NOT pruned", () => {
+    for (const status of ["QUEUED", "RUNNING", "FAILED"]) {
+      expect(isBackupPruned({ status, prunedAt: null, storageKey: null }), status).toBe(false);
+    }
   });
   it("download only for SUCCESS rows that still have a file", () => {
     expect(canDownloadBackup({ status: "SUCCESS", storageKey: "k", prunedAt: null })).toBe(true);

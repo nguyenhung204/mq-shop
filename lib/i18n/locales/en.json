@@ -360,7 +360,7 @@
     "paymentMock": "MOCK (instant PAID — dev)",
     "paymentCod": "COD (PENDING until paid)",
     "paymentHint": "Transfer to the seller’s bank account, then upload your payment proof on the order page. Charged in TWD (ledger); display prices follow your region currency.",
-    "displayCurrencyNote": "You pay {amount} TWD at checkout. Display: {currency}.",
+    "displayCurrencyNote": "Estimate in {currency} at today's rate. The amount you pay is fixed in {currency} when you place the order. Shop ledger total: {amount} TWD.",
     "fxRateChanged": "Exchange rates were updated. Please review the new prices and place your order again.",
     "fxUnavailable": "Exchange rates are unavailable. Checkout in your region currency is temporarily disabled. Try again later or switch to Taiwan (TWD).",
     "paymentStubNote": "Payment is stubbed (COD → PENDING, MOCK → PAID). No PSP redirect.",

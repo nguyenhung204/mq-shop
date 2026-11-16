@@ -360,7 +360,7 @@
     "paymentMock": "MOCK（立即 PAID — 開發用）",
     "paymentCod": "COD（PENDING 至付款）",
     "paymentHint": "請匯款至賣家銀行帳戶，並於訂單頁上傳付款憑證。結帳以 TWD 入帳；顯示價格依區域幣別換算。",
-    "displayCurrencyNote": "結帳支付 {amount} TWD。顯示幣別：{currency}.",
+    "displayCurrencyNote": "以 {currency} 依今日匯率估算。下單時才會以 {currency} 鎖定您應付的金額。商店帳本總額：{amount} TWD。",
     "fxRateChanged": "匯率已更新。請重新確認價格後再下單。",
     "fxUnavailable": "無法載入匯率，暫停以所在地幣別結帳。請稍後再試或切換至台灣 (TWD)。",
     "paymentStubNote": "付款為 stub（COD → PENDING，MOCK → PAID），無 PSP 導轉。",

@@ -11,7 +11,8 @@ type Props = {
   busy?: boolean;
   /** Server "today" (Asia/Taipei) when known; otherwise computed from the clock. */
   today?: string;
-  onSubmit: (body: CreateDividendRateBody) => void | Promise<void>;
+  /** Resolve true on success: the form clears only then, so a rejected write keeps what was typed. */
+  onSubmit: (body: CreateDividendRateBody) => void | boolean | Promise<void | boolean>;
 };
 
 function errorKey(e: RateFormError): string {
@@ -39,7 +40,7 @@ export function DividendRateForm({ busy = false, today, onSubmit }: Props) {
       return;
     }
     setErrors([]);
-    await onSubmit(res.body);
+    if ((await onSubmit(res.body)) === false) return;
     setRatePercent("");
     setEffectiveDate("");
     setReason("");

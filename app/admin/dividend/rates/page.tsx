@@ -63,8 +63,9 @@ function RatesInner() {
             onSubmit={async (body) => {
               try {
                 await create.mutateAsync(body);
+                return true;
               } catch {
-                /* toast shown by the hook */
+                return false; // toast shown by the hook; keep the form filled
               }
             }}
           />

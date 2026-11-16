@@ -54,7 +54,11 @@ export function SetSlotsForm({
   busy = false,
   initialUserId = "",
   onSubmit,
-}: CommonProps & { initialUserId?: string; onSubmit: (body: SetSlotsBody) => void | Promise<void> }) {
+}: CommonProps & {
+  initialUserId?: string;
+  /** Resolve false when the write failed: the form then keeps what was typed. */
+  onSubmit: (body: SetSlotsBody) => void | boolean | Promise<void | boolean>;
+}) {
   const { t } = useLanguage();
   const [userId, setUserId] = useState(initialUserId);
   const [slots, setSlots] = useState("");
@@ -75,7 +79,7 @@ export function SetSlotsForm({
       return;
     }
     setErrors([]);
-    await onSubmit(res.body);
+    if ((await onSubmit(res.body)) === false) return;
     setSlots("");
     setExpiresAtLocal("");
     setReason("");
@@ -138,7 +142,10 @@ export function TransferSlotsForm({
   holdings,
   busy = false,
   onSubmit,
-}: CommonProps & { onSubmit: (body: TransferSlotsBody) => void | Promise<void> }) {
+}: CommonProps & {
+  /** Resolve false when the write failed: the form then keeps what was typed. */
+  onSubmit: (body: TransferSlotsBody) => void | boolean | Promise<void | boolean>;
+}) {
   const { t } = useLanguage();
   const [fromUserId, setFrom] = useState("");
   const [toUserId, setTo] = useState("");
@@ -157,7 +164,7 @@ export function TransferSlotsForm({
       return;
     }
     setErrors([]);
-    await onSubmit(res.body);
+    if ((await onSubmit(res.body)) === false) return;
     setSlots("");
     setReason("");
   };
