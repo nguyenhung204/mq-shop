@@ -519,7 +519,8 @@
       "retentionNotice": "Biên lai sẽ được hệ thống xóa sau {days} ngày. Vui lòng lưu lại nếu cần.",
       "purgedPlaceholder": "Biên lai đã được hệ thống xóa do hết thời hạn lưu trữ.",
       "retentionBadgeNotice": "Sắp xóa biên lai",
-      "retentionBadgePurged": "Biên lai đã xóa"
+      "retentionBadgePurged": "Biên lai đã xóa",
+      "needsHandling": "Cần xử lý"
     },
     "rma": {
       "title": "Yêu cầu đổi trả",
@@ -1205,7 +1206,12 @@
       "size": "Dung lượng",
       "created": "Tạo lúc",
       "download": "Tải ZIP",
-      "maintenanceNote": "Khi đang chạy backup, API ghi có thể tạm ngưng phục vụ (bảo trì mềm). Truy vấn đọc vẫn hoạt động."
+      "maintenanceNote": "Khi đang chạy backup, API ghi có thể tạm ngưng phục vụ (bảo trì mềm). Truy vấn đọc vẫn hoạt động.",
+      "createdBy": "Người tạo",
+      "system": "Hệ thống (theo lịch)",
+      "scheduled": "Theo lịch",
+      "pruned": "Đã xóa tệp",
+      "prunedAt": "Đã xóa {date}"
     },
     "rbac": {
       "title": "Bảng phân quyền",

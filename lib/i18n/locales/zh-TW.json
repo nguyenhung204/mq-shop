@@ -519,7 +519,8 @@
       "retentionNotice": "系統將於 {days} 天後刪除憑證。若仍需要請先自行存檔。",
       "purgedPlaceholder": "憑證已因超過保存期限由系統刪除。",
       "retentionBadgeNotice": "憑證即將刪除",
-      "retentionBadgePurged": "憑證已刪除"
+      "retentionBadgePurged": "憑證已刪除",
+      "needsHandling": "需處理"
     },
     "rma": {
       "title": "申請退貨",
@@ -1205,7 +1206,12 @@
       "size": "大小",
       "created": "建立時間",
       "download": "下載 ZIP",
-      "maintenanceNote": "備份進行中時，寫入操作可能暫時無法使用（軟維護模式）。讀取請求仍正常運作。"
+      "maintenanceNote": "備份進行中時，寫入操作可能暫時無法使用（軟維護模式）。讀取請求仍正常運作。",
+      "createdBy": "建立者",
+      "system": "系統（排程）",
+      "scheduled": "排程",
+      "pruned": "檔案已刪除",
+      "prunedAt": "於 {date} 刪除"
     },
     "rbac": {
       "title": "權限設定",

@@ -8,6 +8,7 @@ import { X } from "lucide-react";
 import { formatMoney } from "@/lib/api/utils";
 import { formatOrderLineMoney, formatOrderMoney } from "@/lib/fx/formatOrderMoney";
 import { PayableLine } from "@/components/orders/PayableLine";
+import { NeedsHandlingBadge } from "@/components/orders/NeedsHandlingBadge";
 import {
   canCancelOrder,
   canRequestRma,
@@ -325,6 +326,7 @@ function OrderDetailInner() {
               <h1 className="text-xl font-bold text-mq-text">{order.displayName}</h1>
               <span className="font-mono text-sm text-mq-text-muted">{order.code}</span>
               <span className="mq-badge mq-badge-cyan">{translateStatus(t, "order", order.status)}</span>
+              {!isBuyer ? <NeedsHandlingBadge order={order} /> : null}
               <span className="mq-badge mq-badge-teal">{translateStatus(t, "paymentMethod", order.paymentMethod)}</span>
               {isPaymentProofRejected(order) ? (
                 <span className="mq-badge mq-badge-orange">{t("orders.payment.rejectedBadge")}</span>

@@ -56,3 +56,18 @@ describe("resolveNotificationRoute proof retention", () => {
     ).toBeNull();
   });
 });
+
+describe("resolveNotificationRoute stale bill reminder (R5)", () => {
+  it("routes the seller to the order from meta.orderId", () => {
+    expect(
+      resolveNotificationRoute(
+        { type: "ORDER_STALE_BILL_REMINDER", meta: { orderId: "order-9", shopId: "s1", orderCode: "ORD-9" } },
+        { roles: ["SELLER"] },
+      ),
+    ).toBe("/orders/order-9");
+  });
+  it("falls back to the seller order list without meta, and to nothing for a buyer-only account", () => {
+    expect(resolveNotificationRoute({ type: "ORDER_STALE_BILL_REMINDER", meta: {} }, { roles: ["SELLER"] })).toBe("/seller/orders");
+    expect(resolveNotificationRoute({ type: "ORDER_STALE_BILL_REMINDER", meta: {} }, { roles: ["BUYER"] })).toBeNull();
+  });
+});

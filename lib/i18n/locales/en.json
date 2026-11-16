@@ -519,7 +519,8 @@
       "retentionNotice": "Receipt files will be deleted in {days} days. Please save a copy if you still need them.",
       "purgedPlaceholder": "Receipt files were deleted because the storage period ended.",
       "retentionBadgeNotice": "Receipt expiring",
-      "retentionBadgePurged": "Receipt deleted"
+      "retentionBadgePurged": "Receipt deleted",
+      "needsHandling": "Needs handling"
     },
     "rma": {
       "title": "Request return",
@@ -1205,7 +1206,12 @@
       "size": "Size",
       "created": "Created",
       "download": "Download ZIP",
-      "maintenanceNote": "While a backup is running, write operations may be temporarily unavailable (soft maintenance). Read requests still work."
+      "maintenanceNote": "While a backup is running, write operations may be temporarily unavailable (soft maintenance). Read requests still work.",
+      "createdBy": "Created by",
+      "system": "System (scheduled)",
+      "scheduled": "Scheduled",
+      "pruned": "File deleted",
+      "prunedAt": "Deleted {date}"
     },
     "rbac": {
       "title": "Access rights",

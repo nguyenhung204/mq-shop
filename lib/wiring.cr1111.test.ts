@@ -114,3 +114,18 @@ describe("payable amount wiring (U7, R4)", () => {
     expect(src("components/orders/OrdersListContent.tsx")).toContain('formatOrderMoney(o, "total", intlLocale)');
   });
 });
+
+describe("R5 UI wiring (U8)", () => {
+  it("seller list, admin list and non-buyer order detail show the needs-handling badge", () => {
+    expect(src("app/seller/orders/page.tsx")).toContain("<NeedsHandlingBadge order={o}");
+    expect(src("app/admin/orders/page.tsx")).toContain("<NeedsHandlingBadge order={o}");
+    expect(src("components/orders/OrderDetailContent.tsx")).toContain("{!isBuyer ? <NeedsHandlingBadge order={order} /> : null}");
+  });
+  it("backups page shows the creator, the scheduled/pruned markers and gates download with canDownloadBackup", () => {
+    const p = src("app/admin/backups/page.tsx");
+    expect(p).toContain("backupCreator(b)");
+    expect(p).toContain("!canDownloadBackup(b) ||");
+    expect(p).toContain("isBackupPruned(b)");
+    expect(p).not.toContain('b.status !== "SUCCESS" ||');
+  });
+});
