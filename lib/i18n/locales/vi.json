@@ -3096,7 +3096,18 @@
     "fulfillmentComplaintSent": "Đã gửi khiếu nại giao hàng",
     "fulfillmentComplaintFailed": "Gửi khiếu nại thất bại",
     "paymentDisputeSent": "Đã gửi khiếu nại — Admin đã được báo",
-    "paymentDisputeFailed": "Không gửi được khiếu nại chứng từ"
+    "paymentDisputeFailed": "Không gửi được khiếu nại chứng từ",
+    "settingInvalid": "Giá trị này nằm ngoài phạm vi cho phép của cài đặt.",
+    "settingNotFound": "Không tìm thấy cài đặt.",
+    "settingSaved": "Đã lưu cài đặt.",
+    "settingUnchanged": "Cài đặt không thay đổi.",
+    "dividendInputInvalid": "Dữ liệu cổ tức không hợp lệ. Kiểm tra lại giá trị và thử lại.",
+    "dividendUserNotFound": "Không tìm thấy tài khoản.",
+    "dividendRateConflict": "Mức tỷ lệ với ngày hiệu lực này xung đột với mức đã có.",
+    "dividendQuarterLocked": "Quý này đã khóa và không thể chỉnh sửa nữa.",
+    "dividendSlotCapExceeded": "Vượt quá giới hạn số suất.",
+    "dividendSlotInsufficient": "Tài khoản nguồn không đủ số suất.",
+    "rmaRefundAmountInvalid": "Số tiền hoàn không hợp lệ (phải lớn hơn 0 và không vượt quá số còn được hoàn)."
   },
   "superAdmin": {
     "title": "Quản trị hệ thống",

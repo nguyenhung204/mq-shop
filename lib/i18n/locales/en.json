@@ -3096,7 +3096,18 @@
     "fulfillmentComplaintSent": "Fulfillment complaint sent",
     "fulfillmentComplaintFailed": "Could not send fulfillment complaint",
     "paymentDisputeSent": "Dispute sent — Admin was notified",
-    "paymentDisputeFailed": "Could not send payment dispute"
+    "paymentDisputeFailed": "Could not send payment dispute",
+    "settingInvalid": "This value is outside the allowed range for this setting.",
+    "settingNotFound": "Setting not found.",
+    "settingSaved": "Setting saved.",
+    "settingUnchanged": "Setting unchanged.",
+    "dividendInputInvalid": "The dividend input is not valid. Check the values and try again.",
+    "dividendUserNotFound": "Account not found.",
+    "dividendRateConflict": "A rate with this effective date conflicts with an existing one.",
+    "dividendQuarterLocked": "This quarter is locked and can no longer be edited.",
+    "dividendSlotCapExceeded": "The slot cap would be exceeded.",
+    "dividendSlotInsufficient": "The source account does not hold enough slots.",
+    "rmaRefundAmountInvalid": "The refund amount is not valid (it must be greater than 0 and not exceed the remaining refundable amount)."
   },
   "superAdmin": {
     "title": "System administration",

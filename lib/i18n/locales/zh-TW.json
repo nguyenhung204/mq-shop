@@ -3096,7 +3096,18 @@
     "fulfillmentComplaintSent": "已送出未出貨申訴",
     "fulfillmentComplaintFailed": "送出申訴失敗",
     "paymentDisputeSent": "已送出申訴 — 已通知管理員",
-    "paymentDisputeFailed": "無法送出付款申訴"
+    "paymentDisputeFailed": "無法送出付款申訴",
+    "settingInvalid": "此數值超出該設定允許的範圍。",
+    "settingNotFound": "找不到該設定。",
+    "settingSaved": "設定已儲存。",
+    "settingUnchanged": "設定未變更。",
+    "dividendInputInvalid": "股利輸入無效，請檢查後重試。",
+    "dividendUserNotFound": "找不到該帳戶。",
+    "dividendRateConflict": "此生效日期的比率與現有比率衝突。",
+    "dividendQuarterLocked": "此季度已鎖定，無法再編輯。",
+    "dividendSlotCapExceeded": "將超過名額上限。",
+    "dividendSlotInsufficient": "來源帳戶的名額不足。",
+    "rmaRefundAmountInvalid": "退款金額無效（須大於 0 且不得超過剩餘可退金額）。"
   },
   "superAdmin": {
     "title": "系統管理",

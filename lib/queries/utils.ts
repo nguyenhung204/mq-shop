@@ -72,6 +72,15 @@ export const API_ERROR_I18N: Record<string, string> = {
   MLM_USER_PAYOUT_INVALID_STATUS: "toast.mlmUserPayoutInvalidStatus",
   REVIEW_NOT_ALLOWED: "toast.reviewNotAllowed",
   INVALID_SHOP_DOCUMENT: "toast.invalidShopDocument",
+  SETTING_INVALID: "toast.settingInvalid",
+  SETTING_NOT_FOUND: "toast.settingNotFound",
+  DIVIDEND_INPUT_INVALID: "toast.dividendInputInvalid",
+  DIVIDEND_USER_NOT_FOUND: "toast.dividendUserNotFound",
+  DIVIDEND_RATE_CONFLICT: "toast.dividendRateConflict",
+  DIVIDEND_QUARTER_LOCKED: "toast.dividendQuarterLocked",
+  DIVIDEND_SLOT_CAP_EXCEEDED: "toast.dividendSlotCapExceeded",
+  DIVIDEND_SLOT_INSUFFICIENT: "toast.dividendSlotInsufficient",
+  RMA_REFUND_AMOUNT_INVALID: "toast.rmaRefundAmountInvalid",
 };
 
 const STATUS_TOKENS_BY_DOMAIN: Record<string, string[]> = {
