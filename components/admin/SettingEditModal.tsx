@@ -21,8 +21,24 @@ function errorKey(e: SettingEditError): string {
 }
 
 export function SettingEditModal({ open, setting, busy = false, onClose, onConfirm }: Props) {
+  if (!open || !setting) return null;
+  // Mounted fresh on every open, so the form state needs no reset effect.
+  return <SettingEditForm key={setting.key} setting={setting} busy={busy} onClose={onClose} onConfirm={onConfirm} />;
+}
+
+function SettingEditForm({
+  setting,
+  busy,
+  onClose,
+  onConfirm,
+}: {
+  setting: SystemSetting;
+  busy: boolean;
+  onClose: () => void;
+  onConfirm: Props["onConfirm"];
+}) {
   const { t } = useLanguage();
-  const [raw, setRaw] = useState("");
+  const [raw, setRaw] = useState(setting.value == null ? "" : String(setting.value));
   const [clear, setClear] = useState(false);
   const [reason, setReason] = useState("");
   const [errors, setErrors] = useState<SettingEditError[]>([]);
@@ -31,19 +47,12 @@ export function SettingEditModal({ open, setting, busy = false, onClose, onConfi
   const reasonId = useId();
 
   useEffect(() => {
-    if (!open || !setting) return;
-    setRaw(setting.value == null ? "" : String(setting.value));
-    setClear(false);
-    setReason("");
-    setErrors([]);
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape" && !busy) onClose();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [open, setting, busy, onClose]);
-
-  if (!open || !setting) return null;
+  }, [busy, onClose]);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
