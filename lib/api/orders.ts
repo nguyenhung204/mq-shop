@@ -421,7 +421,8 @@ export const adminOrdersApi = {
   getRma: (rmaId: string) =>
     api.get<AdminRmaDetailView>(`/admin/rma/${rmaId}`),
 
-  approveRma: (rmaId: string, body?: { note?: string }) =>
+  /** `refundAmount` (staff only, 2 dp string) = partial refund; omitted = the whole remaining amount. */
+  approveRma: (rmaId: string, body?: { note?: string; refundAmount?: string }) =>
     api.post<RmaView>(`/admin/rma/${rmaId}/approve`, body ?? {}),
 
   rejectRma: (rmaId: string, body: { note: string }) =>

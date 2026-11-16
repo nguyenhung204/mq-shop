@@ -75,3 +75,30 @@ describe("dividend slots page wiring (U3)", () => {
     expect(src("lib/queries/dividend.ts")).toContain('e.code === "DIVIDEND_QUARTER_LOCKED"');
   });
 });
+
+describe("RMA partial refund wiring (U5, UI1)", () => {
+  it("only the admin client knows refundAmount; the seller client, hook and page never do", () => {
+    const api = src("lib/api/orders.ts");
+    const sellerBlock = api.slice(api.indexOf("export const orderApi"), api.indexOf("export const adminOrdersApi"));
+    expect(sellerBlock).not.toContain("refundAmount");
+    expect(api.slice(api.indexOf("export const adminOrdersApi"))).toContain("refundAmount?: string");
+    const q = src("lib/queries/orders.ts");
+    const sellerHook = q.slice(q.indexOf("export function useShopRmaAction"), q.indexOf("export function useBuyerRmaAction"));
+    expect(sellerHook).not.toContain("refundAmount");
+    for (const f of ["app/seller/rma/page.tsx"]) {
+      expect(src(f), f).not.toContain("refundAmount");
+      expect(src(f), f).not.toContain("RmaApproveModal");
+    }
+  });
+  it("admin pages open the amount dialog only for ADMIN / SUPER_ADMIN (canSetPartialRefund)", () => {
+    for (const f of ["app/admin/rma/page.tsx", "app/admin/rma/[id]/page.tsx"]) {
+      const p = src(f);
+      expect(p, f).toContain("const staffApprove = canSetPartialRefund(user)");
+      expect(p, f).toContain("<RmaApproveFlow");
+    }
+    expect(src("components/admin/RmaApproveFlow.tsx")).toContain("const canPartial = canSetPartialRefund(user)");
+  });
+  it("modal validates with validateRefundAmount before confirming", () => {
+    expect(src("components/admin/RmaApproveModal.tsx")).toContain("validateRefundAmount(amount, cap)");
+  });
+});

@@ -1642,7 +1642,24 @@
       "reopenDisputeDesc": "在驗收拒絕或自動結案後重新開啟，供客服／管理員再次處理。",
       "refundProofTitle": "退款匯款憑證",
       "refundProofAlt": "退款匯款憑證",
-      "forceCloseGoodsReturned": "結案（商品已退回買家）"
+      "forceCloseGoodsReturned": "結案（商品已退回買家）",
+      "approveModal": {
+        "title": "核准退款",
+        "desc": "核准後將記錄應退給買家的款項。您可以退少於剩餘全額的金額。",
+        "amountLabel": "退款金額（TWD，選填）",
+        "totalHint": "留空代表退還剩餘全額。上限 {amount}（訂單總額；確認時會再核對先前的部分退款）。",
+        "remainingHint": "留空代表退還剩餘全額。此訂單最多還可退 {amount}。",
+        "loadingTotal": "正在載入訂單總額…",
+        "fullNote": "全額退款：退還剩餘全額，訂單將標記為已退款。",
+        "partialNote": "部分退款 {amount}：訂單維持已送達，佣金不會被沖銷。",
+        "confirmFull": "核准全額退款",
+        "confirmPartial": "核准部分退款",
+        "errors": {
+          "invalid": "請輸入如 250 或 250.50 的金額（最多兩位小數）。",
+          "zero": "退款金額須大於 0。",
+          "exceeds": "退款金額超過此訂單剩餘可退金額。"
+        }
+      }
     },
     "financePage": {
       "payoutBatches": "撥款批次",

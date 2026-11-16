@@ -507,13 +507,19 @@ export function useAdminRmaDecision() {
       id,
       decision,
       note,
+      refundAmount,
     }: {
       id: string;
       decision: "APPROVED" | "REJECTED";
       note?: string;
+      /** Staff partial refund (2 dp string); omit for the full remaining amount. */
+      refundAmount?: string;
     }) => {
       if (decision === "APPROVED") {
-        return adminOrdersApi.approveRma(id, { note });
+        return adminOrdersApi.approveRma(id, {
+          note,
+          ...(refundAmount !== undefined ? { refundAmount } : {}),
+        });
       }
       return adminOrdersApi.rejectRma(id, { note: note || "Rejected" });
     },

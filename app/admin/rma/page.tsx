@@ -17,6 +17,9 @@ import {
   AdminIconLink,
 } from "@/components/admin/AdminIconButton";
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
+import { RmaApproveFlow } from "@/components/admin/RmaApproveFlow";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { canSetPartialRefund } from "@/lib/auth/admin-write";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
@@ -31,6 +34,9 @@ type FilterValue = RmaStatus | "ESCALATED" | "";
 function RmaInner() {
   const { t } = useLanguage();
   const [filter, setFilter] = useState<FilterValue>("REQUESTED");
+  const { user } = useAuth();
+  const staffApprove = canSetPartialRefund(user);
+  const [approveTarget, setApproveTarget] = useState<{ rmaId: string; orderId: string } | null>(null);
   const [rejectId, setRejectId] = useState<string | null>(null);
   const [disputeCloseId, setDisputeCloseId] = useState<string | null>(null);
   const escalatedOnly = filter === "ESCALATED";
@@ -117,7 +123,9 @@ function RmaInner() {
                     tone="approve"
                     disabled={busy}
                     onClick={() =>
-                      void rmaDecision.mutateAsync({ id: r.id, decision: "APPROVED" })
+                      staffApprove
+                        ? setApproveTarget({ rmaId: r.id, orderId: r.orderId })
+                        : void rmaDecision.mutateAsync({ id: r.id, decision: "APPROVED" })
                     }
                   />
                   <AdminIconButton
@@ -159,6 +167,8 @@ function RmaInner() {
           <p className="text-sm text-mq-text-muted">{t("admin.rmaPage.empty")}</p>
         ) : null}
       </div>
+
+      <RmaApproveFlow target={approveTarget} onClose={() => setApproveTarget(null)} />
 
       <AdminReasonModal
         open={Boolean(rejectId)}

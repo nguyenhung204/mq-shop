@@ -1642,7 +1642,24 @@
       "reopenDisputeDesc": "Reopen after inspection reject or auto-close so Admin/CS can resolve again.",
       "refundProofTitle": "Refund transfer proof",
       "refundProofAlt": "Refund transfer proof",
-      "forceCloseGoodsReturned": "Close (goods returned to buyer)"
+      "forceCloseGoodsReturned": "Close (goods returned to buyer)",
+      "approveModal": {
+        "title": "Approve refund",
+        "desc": "Approving records the refund owed to the buyer. You can refund less than the full remaining amount.",
+        "amountLabel": "Refund amount (TWD, optional)",
+        "totalHint": "Leave empty to refund everything that is left. At most {amount} (order total; earlier partial refunds are checked when you confirm).",
+        "remainingHint": "Leave empty to refund everything that is left. At most {amount} is still refundable on this order.",
+        "loadingTotal": "Loading the order total…",
+        "fullNote": "Full refund: the whole remaining amount is refunded and the order is marked refunded.",
+        "partialNote": "Partial refund of {amount}: the order stays delivered and commissions are not reversed.",
+        "confirmFull": "Approve full refund",
+        "confirmPartial": "Approve partial refund",
+        "errors": {
+          "invalid": "Enter an amount like 250 or 250.50 (at most 2 decimals).",
+          "zero": "The refund must be greater than 0.",
+          "exceeds": "The refund is more than what is left to refund on this order."
+        }
+      }
     },
     "financePage": {
       "payoutBatches": "Payout batches",
