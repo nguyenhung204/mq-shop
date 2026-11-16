@@ -42,8 +42,3 @@ export function validateSettingEdit(def: SystemSetting, input: SettingEditInput)
   if (errors.length > 0 || !reason.ok) return { ok: false, errors };
   return { ok: true, body: { value, reason: reason.value } };
 }
-
-/** True when the new value equals the stored one (the server answers "unchanged"). */
-export function isSameValue(def: SystemSetting, body: { value: number | null }): boolean {
-  return def.value === body.value;
-}

@@ -18,6 +18,8 @@ type CommonProps = {
   locked: boolean;
   holdings: SlotHolding[];
   busy?: boolean;
+  /** Allow searching /admin/users in the account pickers. */
+  searchUsers?: boolean;
 };
 
 function errorKey(e: SlotsFormError): string {
@@ -26,11 +28,17 @@ function errorKey(e: SlotsFormError): string {
     : `admin.dividend.slots.errors.${e.field}.${e.code}`;
 }
 
-function ErrorList({ errors }: { errors: SlotsFormError[] }) {
+/** aria props linking a control to the error list when it has an error of its own. */
+function a11y(errors: SlotsFormError[], errId: string, ...fields: string[]) {
+  const bad = errors.some((e) => fields.includes(e.field));
+  return { "aria-invalid": bad || undefined, "aria-describedby": bad ? errId : undefined } as const;
+}
+
+function ErrorList({ errors, id }: { errors: SlotsFormError[]; id: string }) {
   const { t } = useLanguage();
   if (errors.length === 0) return null;
   return (
-    <ul className="mq-admin-modal-error" role="alert">
+    <ul id={id} className="mq-admin-modal-error" role="alert">
       {errors.map((e) => (
         <li key={`${e.field}-${e.code}`}>{t(errorKey(e))}</li>
       ))}
@@ -52,6 +60,7 @@ export function SetSlotsForm({
   locked,
   holdings,
   busy = false,
+  searchUsers = true,
   initialUserId = "",
   onSubmit,
 }: CommonProps & {
@@ -68,6 +77,7 @@ export function SetSlotsForm({
   const slotsId = useId();
   const expId = useId();
   const reasonId = useId();
+  const errId = useId();
   const ctx: SlotsContext = { quarter, locked, holdings };
   const held = holdings.find((h) => h.userId === userId);
 
@@ -99,6 +109,7 @@ export function SetSlotsForm({
           placeholder={t("admin.dividend.slots.accountPh")}
           disabled={locked || busy}
           known={holdings}
+          search={searchUsers}
         />
         {userId ? (
           <p className="text-[11px] text-mq-text-muted mt-1">
@@ -111,14 +122,14 @@ export function SetSlotsForm({
           <label htmlFor={slotsId} className="mq-admin-modal-label">
             {t("admin.dividend.slots.slotsAbsolute")}
           </label>
-          <input id={slotsId} className="mq-input" inputMode="numeric" autoComplete="off" value={slots} disabled={locked || busy} onChange={(e) => setSlots(e.target.value)} />
+          <input id={slotsId} className="mq-input" inputMode="numeric" autoComplete="off" value={slots} disabled={locked || busy} {...a11y(errors, errId, "slots")} onChange={(e) => setSlots(e.target.value)} />
           <p className="text-[11px] text-mq-text-muted mt-1">{t("admin.dividend.slots.slotsAbsoluteHint")}</p>
         </div>
         <div>
           <label htmlFor={expId} className="mq-admin-modal-label">
             {t("admin.dividend.slots.expiresAt")}
           </label>
-          <input id={expId} type="datetime-local" className="mq-input" value={expiresAtLocal} disabled={locked || busy} onChange={(e) => setExpiresAtLocal(e.target.value)} />
+          <input id={expId} type="datetime-local" className="mq-input" value={expiresAtLocal} disabled={locked || busy} {...a11y(errors, errId, "expiresAt")} onChange={(e) => setExpiresAtLocal(e.target.value)} />
           <p className="text-[11px] text-mq-text-muted mt-1">{t("admin.dividend.slots.expiresAtHint")}</p>
         </div>
       </div>
@@ -126,9 +137,9 @@ export function SetSlotsForm({
         <label htmlFor={reasonId} className="mq-admin-modal-label">
           {t("admin.common.reason")}
         </label>
-        <textarea id={reasonId} className="mq-input mq-admin-modal-textarea" rows={2} maxLength={REASON_MAX} value={reason} disabled={locked || busy} placeholder={`3–${REASON_MAX}`} onChange={(e) => setReason(e.target.value.slice(0, REASON_MAX))} />
+        <textarea id={reasonId} className="mq-input mq-admin-modal-textarea" rows={2} maxLength={REASON_MAX} value={reason} disabled={locked || busy} {...a11y(errors, errId, "reason")} placeholder={`3–${REASON_MAX}`} onChange={(e) => setReason(e.target.value.slice(0, REASON_MAX))} />
       </div>
-      <ErrorList errors={errors} />
+      <ErrorList errors={errors} id={errId} />
       <button type="submit" className="mq-btn mq-btn-primary" disabled={locked || busy}>
         {busy ? t("admin.common.working") : t("admin.dividend.slots.setSubmit")}
       </button>
@@ -141,6 +152,7 @@ export function TransferSlotsForm({
   locked,
   holdings,
   busy = false,
+  searchUsers = true,
   onSubmit,
 }: CommonProps & {
   /** Resolve false when the write failed: the form then keeps what was typed. */
@@ -154,6 +166,7 @@ export function TransferSlotsForm({
   const [errors, setErrors] = useState<SlotsFormError[]>([]);
   const slotsId = useId();
   const reasonId = useId();
+  const errId = useId();
   const ctx: SlotsContext = { quarter, locked, holdings };
 
   const submit = async (e: FormEvent) => {
@@ -177,26 +190,28 @@ export function TransferSlotsForm({
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <span className="mq-admin-modal-label">{t("admin.dividend.slots.from")}</span>
-          <AccountPicker value={fromUserId} onChange={setFrom} ariaLabel={t("admin.dividend.slots.from")} placeholder={t("admin.dividend.slots.accountPh")} disabled={locked || busy} known={holdings} />
+          <AccountPicker value={fromUserId} onChange={setFrom} ariaLabel={t("admin.dividend.slots.from")} placeholder={t("admin.dividend.slots.accountPh")} disabled={locked || busy} known={holdings}
+          search={searchUsers} />
         </div>
         <div>
           <span className="mq-admin-modal-label">{t("admin.dividend.slots.to")}</span>
-          <AccountPicker value={toUserId} onChange={setTo} ariaLabel={t("admin.dividend.slots.to")} placeholder={t("admin.dividend.slots.accountPh")} disabled={locked || busy} known={holdings} />
+          <AccountPicker value={toUserId} onChange={setTo} ariaLabel={t("admin.dividend.slots.to")} placeholder={t("admin.dividend.slots.accountPh")} disabled={locked || busy} known={holdings}
+          search={searchUsers} />
         </div>
       </div>
       <div>
         <label htmlFor={slotsId} className="mq-admin-modal-label">
           {t("admin.dividend.slots.transferSlots")}
         </label>
-        <input id={slotsId} className="mq-input" inputMode="numeric" autoComplete="off" value={slots} disabled={locked || busy} onChange={(e) => setSlots(e.target.value)} />
+        <input id={slotsId} className="mq-input" inputMode="numeric" autoComplete="off" value={slots} disabled={locked || busy} {...a11y(errors, errId, "slots")} onChange={(e) => setSlots(e.target.value)} />
       </div>
       <div>
         <label htmlFor={reasonId} className="mq-admin-modal-label">
           {t("admin.common.reason")}
         </label>
-        <textarea id={reasonId} className="mq-input mq-admin-modal-textarea" rows={2} maxLength={REASON_MAX} value={reason} disabled={locked || busy} placeholder={`3–${REASON_MAX}`} onChange={(e) => setReason(e.target.value.slice(0, REASON_MAX))} />
+        <textarea id={reasonId} className="mq-input mq-admin-modal-textarea" rows={2} maxLength={REASON_MAX} value={reason} disabled={locked || busy} {...a11y(errors, errId, "reason")} placeholder={`3–${REASON_MAX}`} onChange={(e) => setReason(e.target.value.slice(0, REASON_MAX))} />
       </div>
-      <ErrorList errors={errors} />
+      <ErrorList errors={errors} id={errId} />
       <button type="submit" className="mq-btn mq-btn-primary" disabled={locked || busy}>
         {busy ? t("admin.common.working") : t("admin.dividend.slots.transferSubmit")}
       </button>

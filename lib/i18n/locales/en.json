@@ -1211,7 +1211,8 @@
       "system": "System (scheduled)",
       "scheduled": "Scheduled",
       "pruned": "File deleted",
-      "prunedAt": "Deleted {date}"
+      "prunedAt": "Deleted {date}",
+      "userShort": "User {id}"
     },
     "rbac": {
       "title": "Access rights",
@@ -2058,20 +2059,10 @@
         "colPaid": "Paid",
         "colCompanyKept": "Company Kept",
         "colStatus": "Status",
-        "colMonth": "Month",
         "colPv": "PV",
-        "colQualified": "Status",
         "buyerLabel": "Buyer",
         "referrerLabel": "Referrer",
         "tierEmpty": "No eligible recipients — pool retained by company.",
-        "colMaxOrder": "Max order",
-        "colQualifyingOrder": "Qualifying order",
-        "colStreak": "Streak after",
-        "colCycle": "Cycle",
-        "colConsecutive": "Consecutive months",
-        "pvQualified": "Qualified",
-        "pvReset": "Reset",
-        "pvNoData": "No orders",
         "summaryGmv": "GMV",
         "summaryReferral": "Referral",
         "summaryTeam": "Team",
@@ -2278,7 +2269,8 @@
           },
           "expiresAt": {
             "invalid": "The expiry is not a valid date and time.",
-            "withZero": "An expiry makes no sense with 0 slots."
+            "withZero": "An expiry makes no sense with 0 slots.",
+            "beforeQuarter": "The expiry must be after the start of the quarter the change applies from."
           }
         }
       },
@@ -2309,7 +2301,7 @@
         "remainderLabel": "Income from difference calculation",
         "remainderHint": "What is left after rounding each share down to a whole NTD. It is shown as its own line and is not dropped.",
         "pendingRefunds": "{count} orders with a pending refund are left out of the sales base.",
-        "refundsAfterLock": "For information only: partial refunds of {amount} ({count} orders) were completed after the quarter locked. They are NOT applied to this pool."
+        "refundsAfterLock": "For information only: refunds of {amount} ({count} orders) were completed after the quarter locked. They are NOT applied to this pool."
       }
     }
   },
@@ -2921,7 +2913,7 @@
     "rankProgressDone": "Condition met — waiting for the system to promote you.",
     "bonusGuide": {
       "title": "How rewards work",
-      "intro": "Four reward types. Amounts are calculated in TWD from recognized sales (not from the purchase or delivery date), then converted to points when credited (1 point = {usd} USD, via FX). Withdraw later converts points back to TWD. Rank upgrades (Distributor+) require an approved shop.",
+      "intro": "Three reward types. Amounts are calculated in TWD from recognized sales (not from the purchase or delivery date), then converted to points when credited (1 point = {usd} USD, via FX). Withdraw later converts points back to TWD. Rank upgrades (Distributor+) require an approved shop.",
       "policyTitle": "When an order counts toward rewards",
       "policyEligible": "Commission, rank PV, and shop reconciliation only use recognized sales: the order is paid, delivered and received, the 7-day return window has ended, and there is no open return or refund. Until then the order is not in GMV for rewards.",
       "policyPeriod": "The reward month is the calendar month (GMT+8) when the order becomes recognized — not the month you placed or paid for it. Example: buy and receive on 31 Aug → recognized on 7 Sep → that order counts in September, not August.",

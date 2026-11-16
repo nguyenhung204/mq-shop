@@ -146,7 +146,7 @@ function BackupsInner() {
                       {(() => {
                         const who = backupCreator(b);
                         if (!who) return "—";
-                        return who.kind === "system" ? t("admin.backups.system") : who.id;
+                        return who.kind === "system" ? t("admin.backups.system") : t("admin.backups.userShort", { id: who.id });
                       })()}
                       {b.prunedAt ? (
                         <p className="text-[11px] text-mq-text-muted">

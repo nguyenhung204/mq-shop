@@ -30,6 +30,11 @@ export function DividendRateForm({ busy = false, today, onSubmit }: Props) {
   const rateId = useId();
   const dateId = useId();
   const reasonId = useId();
+  const errId = useId();
+  const a11y = (field: string) => {
+    const bad = errors.some((e) => e.field === field);
+    return { "aria-invalid": bad || undefined, "aria-describedby": bad ? errId : undefined } as const;
+  };
   const minDate = today ?? todayGmt8();
 
   const submit = async (e: FormEvent) => {
@@ -66,6 +71,7 @@ export function DividendRateForm({ busy = false, today, onSubmit }: Props) {
             autoComplete="off"
             value={ratePercent}
             disabled={busy}
+            {...a11y("ratePercent")}
             onChange={(e) => setRatePercent(e.target.value)}
           />
           <p className="text-[11px] text-mq-text-muted mt-1">{t("admin.dividend.rates.ratePercentHint")}</p>
@@ -81,6 +87,7 @@ export function DividendRateForm({ busy = false, today, onSubmit }: Props) {
             min={minDate}
             value={effectiveDate}
             disabled={busy}
+            {...a11y("effectiveDate")}
             onChange={(e) => setEffectiveDate(e.target.value)}
           />
         </div>
@@ -96,12 +103,13 @@ export function DividendRateForm({ busy = false, today, onSubmit }: Props) {
           maxLength={REASON_MAX}
           value={reason}
           disabled={busy}
+          {...a11y("reason")}
           placeholder={`3–${REASON_MAX}`}
           onChange={(e) => setReason(e.target.value.slice(0, REASON_MAX))}
         />
       </div>
       {errors.length > 0 ? (
-        <ul className="mq-admin-modal-error" role="alert">
+        <ul id={errId} className="mq-admin-modal-error" role="alert">
           {errors.map((e) => (
             <li key={`${e.field}-${e.code}`}>{t(errorKey(e))}</li>
           ))}

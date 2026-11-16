@@ -1,6 +1,6 @@
 import { validateReason, type ReasonError } from "@/lib/admin/reason";
 import type { SetSlotsBody, SlotHolding, TransferSlotsBody } from "@/lib/api/dividend";
-import { gmt8DateTimeLocalToIso } from "@/lib/i18n/gmt8-calendar";
+import { gmt8DateTimeLocalToIso, gmt8DayStartIso } from "@/lib/i18n/gmt8-calendar";
 import { currentQuarter, isQuarterLabel } from "./dates";
 
 export const MAX_SLOTS = 1_000_000;
@@ -21,7 +21,7 @@ export type SlotsFormError =
   | { field: "userId" | "fromUserId" | "toUserId"; code: "required" | "invalid" }
   | { field: "toUserId"; code: "same" }
   | { field: "slots"; code: "required" | "notInteger" | "tooLow" | "tooHigh" | "unchanged" | "insufficient" | "expiring" }
-  | { field: "expiresAt"; code: "invalid" | "withZero" }
+  | { field: "expiresAt"; code: "invalid" | "withZero" | "beforeQuarter" }
   | { field: "reason"; code: ReasonError };
 
 type Result<B> = { ok: true; body: B } | { ok: false; errors: SlotsFormError[] };
@@ -49,6 +49,13 @@ function slotsError(raw: string, min: number): { value: number | null; error: Sl
   return { value: n, error: null };
 }
 
+/** First instant (Asia/Taipei midnight) of a quarter label such as 2026Q4. */
+export function quarterStartIso(quarter: string): string {
+  const y = quarter.slice(0, 4);
+  const startMonth = (Number(quarter.slice(5)) - 1) * 3 + 1;
+  return gmt8DayStartIso(`${y}-${String(startMonth).padStart(2, "0")}-01`);
+}
+
 export type SetSlotsInput = { userId: string; slots: string; expiresAtLocal: string; reason: string };
 
 /** Mirror of POST /admin/dividend/slots (absolute slots, optional expiry, reason, quarter not locked / not in the future). */
@@ -59,17 +66,22 @@ export function validateSetSlots(input: SetSlotsInput, ctx: SlotsContext): Resul
   const s = slotsError(input.slots, 0);
   if (s.error) errors.push(s.error);
 
+  const userId = input.userId.trim().toLowerCase();
   let expiresAt: string | undefined;
   if (input.expiresAtLocal.trim() !== "") {
     const iso = gmt8DateTimeLocalToIso(input.expiresAtLocal.trim());
     if (!iso) errors.push({ field: "expiresAt", code: "invalid" });
-    else expiresAt = iso;
+    else if (isQuarterLabel(ctx.quarter) && Date.parse(iso) <= Date.parse(quarterStartIso(ctx.quarter))) {
+      // Server rule: the expiry must be after the start of the quarter the change applies from.
+      // (The server does not refuse an expiry already in the past, so neither do we.)
+      errors.push({ field: "expiresAt", code: "beforeQuarter" });
+    } else expiresAt = iso;
   }
 
   if (expiresAt !== undefined && s.value === 0) errors.push({ field: "expiresAt", code: "withZero" });
 
   if (!id && s.value !== null && !s.error) {
-    const held = ctx.holdings.find((h) => h.userId === input.userId.trim());
+    const held = ctx.holdings.find((h) => h.userId.toLowerCase() === userId);
     const heldExpiry = held?.expiresAt ? Date.parse(held.expiresAt) : null;
     const newExpiry = expiresAt ? Date.parse(expiresAt) : null;
     if ((held?.slots ?? 0) === s.value && (s.value === 0 || heldExpiry === newExpiry)) {
@@ -84,7 +96,7 @@ export function validateSetSlots(input: SetSlotsInput, ctx: SlotsContext): Resul
   return {
     ok: true,
     body: {
-      userId: input.userId.trim(),
+      userId,
       slots: s.value,
       quarter: ctx.quarter,
       ...(expiresAt ? { expiresAt } : {}),
@@ -109,7 +121,7 @@ export function validateTransfer(input: TransferInput, ctx: SlotsContext): Resul
   if (s.error) errors.push(s.error);
 
   if (!from && s.value !== null && !s.error) {
-    const held = ctx.holdings.find((h) => h.userId === input.fromUserId.trim());
+    const held = ctx.holdings.find((h) => h.userId.toLowerCase() === input.fromUserId.trim().toLowerCase());
     if (held?.expiresAt) errors.push({ field: "slots", code: "expiring" });
     else if ((held?.slots ?? 0) < s.value) errors.push({ field: "slots", code: "insufficient" });
   }
@@ -121,8 +133,8 @@ export function validateTransfer(input: TransferInput, ctx: SlotsContext): Resul
   return {
     ok: true,
     body: {
-      fromUserId: input.fromUserId.trim(),
-      toUserId: input.toUserId.trim(),
+      fromUserId: input.fromUserId.trim().toLowerCase(),
+      toUserId: input.toUserId.trim().toLowerCase(),
       slots: s.value,
       quarter: ctx.quarter,
       reason: reason.value,

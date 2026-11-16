@@ -391,7 +391,6 @@ export const adminMlmApi = {
       `/admin/commission/periods/${yearMonth}/mark-paid`,
       {},
     ),
-
 };
 
 // ─── Commission Report types (mirrors monthly-commission.job.ts on BE) ────────

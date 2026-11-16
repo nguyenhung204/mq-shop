@@ -1211,7 +1211,8 @@
       "system": "系統（排程）",
       "scheduled": "排程",
       "pruned": "檔案已刪除",
-      "prunedAt": "於 {date} 刪除"
+      "prunedAt": "於 {date} 刪除",
+      "userShort": "使用者 {id}"
     },
     "rbac": {
       "title": "權限設定",
@@ -2058,20 +2059,10 @@
         "colPaid": "已付",
         "colCompanyKept": "公司保留",
         "colStatus": "狀態",
-        "colMonth": "月份",
         "colPv": "PV",
-        "colQualified": "狀態",
         "buyerLabel": "買家",
         "referrerLabel": "推薦人",
         "tierEmpty": "無符合資格受益人 — 獎金池由公司保留。",
-        "colMaxOrder": "最大單筆",
-        "colQualifyingOrder": "達標訂單",
-        "colStreak": "當月後連績",
-        "colCycle": "週期",
-        "colConsecutive": "連續月數",
-        "pvQualified": "達標",
-        "pvReset": "重置",
-        "pvNoData": "無訂單",
         "summaryGmv": "GMV",
         "summaryReferral": "推薦",
         "summaryTeam": "團隊",
@@ -2278,7 +2269,8 @@
           },
           "expiresAt": {
             "invalid": "到期時間無效。",
-            "withZero": "名額為 0 時不能設定到期日。"
+            "withZero": "名額為 0 時不能設定到期日。",
+            "beforeQuarter": "到期時間必須晚於變更適用季度的開始時間。"
           }
         }
       },
@@ -2309,7 +2301,7 @@
         "remainderLabel": "差額計算收入",
         "remainderHint": "每筆分配額無條件捨去為整數 NTD 後的剩餘金額，單獨列示，不會被捨棄。",
         "pendingRefunds": "{count} 筆待退款訂單未計入銷售基數。",
-        "refundsAfterLock": "僅供參考：季度鎖定後完成的部分退款 {amount}（{count} 筆訂單），並未套用於此股利池。"
+        "refundsAfterLock": "僅供參考：季度鎖定後完成的退款 {amount}（{count} 筆訂單），並未套用於此股利池。"
       }
     }
   },
@@ -2921,7 +2913,7 @@
     "rankProgressDone": "條件已達成 — 等待系統升級。",
     "bonusGuide": {
       "title": "如何獲得獎金",
-      "intro": "共四種獎金。金額依「已確認營業額」以 TWD 計算（非下單日或配達日），入帳時再依 FX 換成點數（1 點 = {usd} USD）。提領時點數再換回 TWD。升階（經銷商以上）需已核准商店。",
+      "intro": "共三種獎金。金額依「已確認營業額」以 TWD 計算（非下單日或配達日），入帳時再依 FX 換成點數（1 點 = {usd} USD）。提領時點數再換回 TWD。升階（經銷商以上）需已核准商店。",
       "policyTitle": "訂單何時計入獎金",
       "policyEligible": "佣金、等級 PV 與店家對帳僅採用已確認營業額：訂單已付款、已配達簽收、7 天退貨期結束，且無進行中退貨／退款。在此之前不計入獎金 GMV。",
       "policyPeriod": "獎金所屬月份為訂單「確認」當月（GMT+8 日曆月），不是下單或付款月份。例如：8/31 購買並收貨 → 9/7 確認 → 該筆計入 9 月，而非 8 月。",

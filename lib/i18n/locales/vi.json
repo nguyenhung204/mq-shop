@@ -1211,7 +1211,8 @@
       "system": "Hệ thống (theo lịch)",
       "scheduled": "Theo lịch",
       "pruned": "Đã xóa tệp",
-      "prunedAt": "Đã xóa {date}"
+      "prunedAt": "Đã xóa {date}",
+      "userShort": "Người dùng {id}"
     },
     "rbac": {
       "title": "Bảng phân quyền",
@@ -2058,20 +2059,10 @@
         "colPaid": "Đã trả",
         "colCompanyKept": "Công ty giữ",
         "colStatus": "Trạng thái",
-        "colMonth": "Tháng",
         "colPv": "PV",
-        "colQualified": "Trạng thái",
         "buyerLabel": "Người mua",
         "referrerLabel": "Người giới thiệu",
         "tierEmpty": "Không có người đủ điều kiện — quỹ công ty giữ lại.",
-        "colMaxOrder": "Đơn lớn nhất",
-        "colQualifyingOrder": "Đơn đạt chuẩn",
-        "colStreak": "Chuỗi sau tháng",
-        "colCycle": "Chu kỳ",
-        "colConsecutive": "Tháng liên tiếp",
-        "pvQualified": "Đạt",
-        "pvReset": "Reset",
-        "pvNoData": "Không có đơn",
         "summaryGmv": "GMV",
         "summaryReferral": "Giới thiệu",
         "summaryTeam": "Đội nhóm",
@@ -2278,7 +2269,8 @@
           },
           "expiresAt": {
             "invalid": "Thời điểm hết hạn không hợp lệ.",
-            "withZero": "Không thể đặt hạn khi số suất là 0."
+            "withZero": "Không thể đặt hạn khi số suất là 0.",
+            "beforeQuarter": "Thời điểm hết hạn phải sau thời điểm bắt đầu của quý áp dụng."
           }
         }
       },
@@ -2309,7 +2301,7 @@
         "remainderLabel": "khoản thu từ tính toán chênh lệch",
         "remainderHint": "Phần còn lại sau khi làm tròn xuống từng phần chia thành NTD nguyên. Hiển thị thành một dòng riêng, không bị bỏ đi.",
         "pendingRefunds": "{count} đơn đang chờ hoàn tiền không được tính vào cơ sở doanh số.",
-        "refundsAfterLock": "Chỉ để tham khảo: các khoản hoàn một phần {amount} ({count} đơn) hoàn tất sau khi quý khóa. KHÔNG được áp dụng vào quỹ này."
+        "refundsAfterLock": "Chỉ để tham khảo: các khoản hoàn tiền {amount} ({count} đơn) hoàn tất sau khi quý khóa. KHÔNG được áp dụng vào quỹ này."
       }
     }
   },
@@ -2921,7 +2913,7 @@
     "rankProgressDone": "Đã đủ điều kiện — chờ hệ thống nâng cấp.",
     "bonusGuide": {
       "title": "Cách nhận thưởng",
-      "intro": "Có bốn loại thưởng. Số tiền tính bằng TWD từ doanh số đã ghi nhận (không theo ngày đặt hay ngày giao), rồi quy đổi sang điểm khi ghi có ví (1 điểm = {usd} USD, qua FX). Khi rút, điểm đổi lại TWD. Lộ trình thăng cấp (Nhà phân phối trở lên) cần shop được duyệt.",
+      "intro": "Có ba loại thưởng. Số tiền tính bằng TWD từ doanh số đã ghi nhận (không theo ngày đặt hay ngày giao), rồi quy đổi sang điểm khi ghi có ví (1 điểm = {usd} USD, qua FX). Khi rút, điểm đổi lại TWD. Lộ trình thăng cấp (Nhà phân phối trở lên) cần shop được duyệt.",
       "policyTitle": "Khi nào đơn được tính thưởng",
       "policyEligible": "Hoa hồng, PV hạng và đối soát shop chỉ dùng doanh số đã ghi nhận: đơn đã thanh toán, đã giao nhận, hết 7 ngày đổi trả, và không còn yêu cầu trả hàng / hoàn tiền đang mở. Trước đó đơn chưa vào GMV thưởng.",
       "policyPeriod": "Tháng thưởng là tháng dương lịch (GMT+8) khi đơn được ghi nhận — không phải tháng bạn đặt hay thanh toán. Ví dụ: mua và nhận ngày 31/08 → ghi nhận 07/09 → đơn tính vào tháng 9, không phải tháng 8.",

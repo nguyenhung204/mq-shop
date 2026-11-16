@@ -30,6 +30,8 @@ function SlotsInner() {
   const { t, locale } = useLanguage();
   const { user } = useAuth();
   const canWrite = canWriteDividend(user);
+  // /admin/users needs VIEW_USERS (ADMIN / SUPER_ADMIN); ACCOUNTANT only gets the holders already on the page.
+  const canSearchUsers = Boolean(user?.roles?.some((r) => r === "ADMIN" || r === "SUPER_ADMIN"));
   const intl = toIntlLocale(locale);
   const [now] = useState(() => new Date());
   const options = useMemo(() => quarterOptions(now, 8, 0), [now]);
@@ -157,6 +159,7 @@ function SlotsInner() {
               locked={locked}
               holdings={items}
               initialUserId={setTarget}
+              searchUsers={canSearchUsers}
               busy={setSlots.isPending}
               onSubmit={async (body) => {
                 try {
@@ -172,6 +175,7 @@ function SlotsInner() {
               locked={locked}
               holdings={items}
               busy={transfer.isPending}
+              searchUsers={canSearchUsers}
               onSubmit={async (body) => {
                 try {
                   await transfer.mutateAsync(body);
@@ -193,6 +197,7 @@ function SlotsInner() {
               ariaLabel={t("admin.dividend.slots.historyFilter")}
               placeholder={t("admin.dividend.slots.historyFilter")}
               known={items}
+              search={canSearchUsers}
             />
             {historyUser ? (
               <button type="button" className="text-xs underline mt-1" onClick={() => setHistoryUser("")}>

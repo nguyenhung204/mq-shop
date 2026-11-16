@@ -21,6 +21,7 @@ export function AccountPicker({
   placeholder,
   disabled,
   known = [],
+  search = true,
 }: {
   value: string;
   onChange: (userId: string) => void;
@@ -29,10 +30,13 @@ export function AccountPicker({
   disabled?: boolean;
   /** Accounts already known to the page (holders) so the selected one always has a label. */
   known?: Array<{ userId: string; email: string | null; fullName: string | null }>;
+  /** Query /admin/users (needs VIEW_USERS: ADMIN / SUPER_ADMIN). Otherwise only `known` accounts are offered. */
+  search?: boolean;
 }) {
   const [query, setQuery] = useState("");
   const q = useDebounce(query.trim(), 300);
   const { data } = useQuery({
+    enabled: search,
     queryKey: ["admin", "users", "dividend-picker", q],
     queryFn: async () => parsePage<AuthUser>(await adminApi.users({ page: 1, pageSize: 20, q: q || undefined })),
   });

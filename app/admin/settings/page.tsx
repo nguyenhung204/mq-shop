@@ -10,6 +10,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 import type { SystemSetting } from "@/lib/api/settings";
+import { settingTexts } from "@/lib/settings/labels";
 import { canWriteSettings } from "@/lib/auth/admin-write";
 import { formatDateTimeGmt8 } from "@/lib/i18n/gmt8-calendar";
 import { toIntlLocale } from "@/lib/i18n/locale-format";
@@ -62,12 +63,7 @@ function SettingsInner() {
   const intl = toIntlLocale(locale);
   const items = data ?? [];
 
-  const label = (s: SystemSetting) => t(`admin.settings.keys.${s.key}.label`);
-  const known = (s: SystemSetting) => t(`admin.settings.keys.${s.key}.label`) !== `admin.settings.keys.${s.key}.label`;
-  const desc = (s: SystemSetting) =>
-    known(s) ? t(`admin.settings.keys.${s.key}.description`) : s.description;
-  const nullMeaning = (s: SystemSetting) =>
-    known(s) ? t(`admin.settings.keys.${s.key}.nullMeaning`) : (s.nullMeaning ?? "");
+  const texts = (s: SystemSetting) => settingTexts(t, s);
 
   return (
     <>
@@ -101,14 +97,14 @@ function SettingsInner() {
                   <Fragment key={s.key}>
                     <tr className="border-t border-mq-border align-top">
                       <td className="p-3 max-w-md">
-                        <p className="font-medium">{known(s) ? label(s) : s.key}</p>
-                        <p className="text-xs text-mq-text-muted mt-1">{desc(s)}</p>
+                        <p className="font-medium">{texts(s).label}</p>
+                        <p className="text-xs text-mq-text-muted mt-1">{texts(s).description}</p>
                       </td>
                       <td className="p-3">
                         {s.value == null ? (
                           <>
                             <span className="mq-badge mq-badge-muted">{t("admin.settings.unset")}</span>
-                            <p className="text-xs text-mq-text-muted mt-1 max-w-xs">{nullMeaning(s)}</p>
+                            <p className="text-xs text-mq-text-muted mt-1 max-w-xs">{texts(s).nullMeaning}</p>
                           </>
                         ) : (
                           <span className="font-semibold tabular-nums">{s.value}</span>

@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/client";
-import { createIdempotencyKeyStore } from "@/lib/api/idempotency";
+import { createIdempotentRunner } from "@/lib/queries/idempotent-run";
 import {
   adminDividendApi,
   type CreateDividendRateBody,
@@ -56,17 +56,17 @@ function useDividendMutation<V, R>(
   invalidate: (qc: ReturnType<typeof useQueryClient>) => void,
 ) {
   const queryClient = useQueryClient();
-  const idempotency = useMemo(() => createIdempotencyKeyStore(), []);
+  const idempotency = useMemo(() => createIdempotentRunner(), []);
   return useMutation({
-    mutationFn: (vars: V) => run(vars, idempotency.keyFor(vars)),
+    mutationFn: (vars: V) => idempotency.run(vars, run),
     onSuccess: () => {
       // The write is done: an identical later submit is a new operation and needs a new key.
-      idempotency.invalidate();
+      idempotency.onSuccess();
       invalidate(queryClient);
       toast.success(tt(successToast));
     },
     onError: (e) => {
-      if (e instanceof ApiError && e.code === "IDEMPOTENCY_KEY_REUSE_MISMATCH") idempotency.invalidate();
+      idempotency.onError(e);
       // The quarter locked while the form was open: refresh so the page turns read-only.
       if (e instanceof ApiError && e.code === "DIVIDEND_QUARTER_LOCKED") {
         void queryClient.invalidateQueries({ queryKey: dividendKeys.all });

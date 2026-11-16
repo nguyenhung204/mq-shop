@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useId, useState } from "react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import type { SystemSetting } from "@/lib/api/settings";
 import { REASON_MAX } from "@/lib/admin/reason";
+import { settingTexts } from "@/lib/settings/labels";
 import { validateSettingEdit, type SettingEditError } from "@/lib/settings/edit";
 
 type Props = {
@@ -45,6 +46,11 @@ function SettingEditForm({
   const titleId = useId();
   const valueId = useId();
   const reasonId = useId();
+  const errId = useId();
+  const a11y = (field: string) => {
+    const bad = errors.some((e) => e.field === field);
+    return { "aria-invalid": bad || undefined, "aria-describedby": bad ? errId : undefined } as const;
+  };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -65,7 +71,7 @@ function SettingEditForm({
     await onConfirm(res.body);
   };
 
-  const label = t(`admin.settings.keys.${setting.key}.label`);
+  const texts = settingTexts(t, setting);
 
   return (
     <div className="mq-admin-modal-root" role="presentation">
@@ -79,7 +85,7 @@ function SettingEditForm({
       <div className="mq-admin-modal" role="dialog" aria-modal="true" aria-labelledby={titleId}>
         <header className="mq-admin-modal-head" style={{ flexDirection: "column", alignItems: "flex-start" }}>
           <h2 id={titleId} className="mq-admin-modal-title">
-            {t("admin.settings.editTitle", { name: label })}
+            {t("admin.settings.editTitle", { name: texts.label })}
           </h2>
           <p className="mq-admin-modal-desc">
             {t("admin.settings.range", { min: String(setting.min), max: String(setting.max) })}
@@ -96,6 +102,7 @@ function SettingEditForm({
             autoComplete="off"
             value={raw}
             disabled={clear || busy}
+            {...a11y("value")}
             onChange={(e) => setRaw(e.target.value)}
           />
           {setting.nullable ? (
@@ -109,7 +116,7 @@ function SettingEditForm({
               <span>
                 {t("admin.settings.clearValue")}
                 <span className="block text-xs text-mq-text-muted">
-                  {t(`admin.settings.keys.${setting.key}.nullMeaning`)}
+                  {texts.nullMeaning}
                 </span>
               </span>
             </label>
@@ -124,6 +131,7 @@ function SettingEditForm({
             maxLength={REASON_MAX}
             value={reason}
             disabled={busy}
+            {...a11y("reason")}
             placeholder={`3–${REASON_MAX}`}
             onChange={(e) => setReason(e.target.value.slice(0, REASON_MAX))}
           />
@@ -133,7 +141,7 @@ function SettingEditForm({
             </span>
           </div>
           {errors.length > 0 ? (
-            <ul className="mq-admin-modal-error" role="alert">
+            <ul id={errId} className="mq-admin-modal-error" role="alert">
               {errors.map((e) => (
                 <li key={`${e.field}-${e.code}`}>
                   {t(errorKey(e), { min: String(setting.min), max: String(setting.max) })}

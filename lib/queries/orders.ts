@@ -24,6 +24,7 @@ import { currentLocale, tt } from "@/lib/i18n/tt";
 import { statusLabel } from "@/lib/i18n/status";
 import { suppressNotificationToasts } from "@/lib/notifications/suppress-toast";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { approveBody } from "@/lib/rma/refund-amount";
 
 export const orderKeys = {
   all: ["orders"] as const,
@@ -516,10 +517,7 @@ export function useAdminRmaDecision() {
       refundAmount?: string;
     }) => {
       if (decision === "APPROVED") {
-        return adminOrdersApi.approveRma(id, {
-          note,
-          ...(refundAmount !== undefined ? { refundAmount } : {}),
-        });
+        return adminOrdersApi.approveRma(id, approveBody(note, refundAmount));
       }
       return adminOrdersApi.rejectRma(id, { note: note || "Rejected" });
     },

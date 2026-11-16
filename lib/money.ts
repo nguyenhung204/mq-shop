@@ -23,7 +23,7 @@ export function parsePercentToBps(input: string): number | null {
 
 /** 1234 -> "12.34" (integer split; negative values keep the sign). */
 export function centsToDecimalString(cents: number): string {
-  if (!Number.isSafeInteger(cents)) return "0.00";
+  if (!Number.isSafeInteger(cents)) throw new RangeError("amount outside the safe integer range");
   const neg = cents < 0;
   const abs = Math.abs(cents);
   const whole = Math.floor(abs / 100);
@@ -47,7 +47,12 @@ export function toCents(value: string | number | null | undefined): number | nul
 
 /** Display with grouping for the locale and exactly 2 decimals, via integer split. */
 export function formatCentsDisplay(cents: number, locale = "en-US", currency?: string): string {
-  const dec = centsToDecimalString(cents);
+  let dec: string;
+  try {
+    dec = centsToDecimalString(cents);
+  } catch {
+    return "—"; // never show a wrong amount
+  }
   const neg = dec.startsWith("-");
   const [whole, frac] = (neg ? dec.slice(1) : dec).split(".");
   const wholeFmt = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(Number(whole));

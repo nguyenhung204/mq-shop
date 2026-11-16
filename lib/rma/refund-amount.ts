@@ -24,6 +24,23 @@ export function validateRefundAmount(input: string, maxCents: number | null): Re
   return { ok: true, refundAmount: centsToDecimalString(cents), partial: maxCents === null || cents < maxCents };
 }
 
+export type ApproveDecision =
+  | { ok: true; refundAmount: string | undefined; partial: boolean }
+  | { ok: false; errorKey: string };
+
+/** Submit decision of the approve dialog: non-staff never send an amount; staff are validated first. */
+export function decideApprove(canPartial: boolean, amount: string, maxCents: number | null): ApproveDecision {
+  if (!canPartial) return { ok: true, refundAmount: undefined, partial: false };
+  const res = validateRefundAmount(amount, maxCents);
+  if (!res.ok) return { ok: false, errorKey: `admin.rmaPage.approveModal.errors.${res.error}` };
+  return { ok: true, refundAmount: res.refundAmount, partial: res.partial };
+}
+
+/** Request body of the admin approve call: `refundAmount` is present only when staff typed one. */
+export function approveBody(note: string | undefined, refundAmount: string | undefined) {
+  return { note, ...(refundAmount !== undefined ? { refundAmount } : {}) };
+}
+
 export type RefundInvalidDetails = { orderTotal: string; alreadyRefunded: string; requested: string | null };
 
 /** Remaining refundable cents from a 400 RMA_REFUND_AMOUNT_INVALID `details`, or null when absent. */

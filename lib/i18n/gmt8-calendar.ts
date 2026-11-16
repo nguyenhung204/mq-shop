@@ -86,9 +86,19 @@ export function gmt8DateTimeLocalToIso(local: string): string {
   const hh = Number(match[4]);
   const mm = Number(match[5]);
   const ss = Number(match[6] || "0");
-  return new Date(
-    Date.UTC(y, mo - 1, d, hh, mm, ss, 0) - OFFSET_MS,
-  ).toISOString();
+  const utc = new Date(Date.UTC(y, mo - 1, d, hh, mm, ss, 0));
+  // Reject impossible dates / times (2026-02-30, 25:61) instead of letting Date roll them over.
+  if (
+    utc.getUTCFullYear() !== y ||
+    utc.getUTCMonth() !== mo - 1 ||
+    utc.getUTCDate() !== d ||
+    utc.getUTCHours() !== hh ||
+    utc.getUTCMinutes() !== mm ||
+    utc.getUTCSeconds() !== ss
+  ) {
+    return "";
+  }
+  return new Date(utc.getTime() - OFFSET_MS).toISOString();
 }
 
 /** ISO → `yyyy-mm-ddTHH:mm` in GMT+8 for datetime-local inputs. */

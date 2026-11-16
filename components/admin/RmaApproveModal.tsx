@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useId, useState } from "react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { centsToDecimalString } from "@/lib/money";
-import { validateRefundAmount } from "@/lib/rma/refund-amount";
+import { decideApprove, validateRefundAmount } from "@/lib/rma/refund-amount";
 
 type Props = {
   open: boolean;
@@ -14,6 +14,8 @@ type Props = {
   /** Remaining refundable cents learnt from a server rejection; overrides the order total as the cap. */
   remainingCents?: number | null;
   busy?: boolean;
+  /** Pre-filled amount (tests / re-open after a rejection). */
+  defaultAmount?: string;
   onClose: () => void;
   onConfirm: (refundAmount: string | undefined) => void | Promise<void>;
 };
@@ -23,9 +25,9 @@ export function RmaApproveModal(props: Props) {
   return <RmaApproveForm {...props} />;
 }
 
-function RmaApproveForm({ canPartial, orderTotalCents, remainingCents = null, busy = false, onClose, onConfirm }: Props) {
+function RmaApproveForm({ canPartial, orderTotalCents, remainingCents = null, busy = false, defaultAmount = "", onClose, onConfirm }: Props) {
   const { t } = useLanguage();
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState(defaultAmount);
   const [error, setError] = useState<string | null>(null);
   const titleId = useId();
   const amountId = useId();
@@ -42,9 +44,9 @@ function RmaApproveForm({ canPartial, orderTotalCents, remainingCents = null, bu
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    const res = canPartial ? validateRefundAmount(amount, cap) : ({ ok: true, refundAmount: undefined } as const);
+    const res = decideApprove(canPartial, amount, cap);
     if (!res.ok) {
-      setError(`admin.rmaPage.approveModal.errors.${res.error}`);
+      setError(res.errorKey);
       return;
     }
     setError(null);

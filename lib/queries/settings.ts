@@ -3,8 +3,7 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ApiError } from "@/lib/api/client";
-import { createIdempotencyKeyStore } from "@/lib/api/idempotency";
+import { createIdempotentRunner } from "@/lib/queries/idempotent-run";
 import {
   adminSettingsApi,
   type SettingKey,
@@ -37,20 +36,18 @@ export function useSettingHistory(key: SettingKey | null) {
 
 export function useUpdateSetting() {
   const queryClient = useQueryClient();
-  const idempotency = useMemo(() => createIdempotencyKeyStore(), []);
+  const idempotency = useMemo(() => createIdempotentRunner(), []);
 
   return useMutation({
     mutationFn: (vars: { key: SettingKey; body: UpdateSettingBody }) =>
-      adminSettingsApi.update(vars.key, vars.body, idempotency.keyFor(vars)),
+      idempotency.run(vars, (v, key) => adminSettingsApi.update(v.key, v.body, key)),
     onSuccess: (res) => {
-      idempotency.invalidate();
+      idempotency.onSuccess();
       void queryClient.invalidateQueries({ queryKey: settingsKeys.all });
       toast.success(tt(res.changed ? "toast.settingSaved" : "toast.settingUnchanged"));
     },
     onError: (e) => {
-      if (e instanceof ApiError && e.code === "IDEMPOTENCY_KEY_REUSE_MISMATCH") {
-        idempotency.invalidate();
-      }
+      idempotency.onError(e);
       toast.error(getErrorMessage(e, tt("admin.common.failed")));
     },
   });
