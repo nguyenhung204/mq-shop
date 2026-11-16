@@ -68,3 +68,14 @@ describe("localizeNotification point unit", () => {
     expect(localizeNotification(n, "en").body.toLowerCase()).toMatch(/seller/);
   });
 });
+
+describe("ORDER_STALE_BILL_REMINDER copy (R5)", () => {
+  const n = { type: "ORDER_STALE_BILL_REMINDER", title: "Server", body: "Server body", meta: { orderId: "uuid", orderCode: "ORD-9", shopId: "s" } };
+  it("renders the order code in every language, not the server text", () => {
+    for (const loc of ["en", "vi", "zh-TW"] as const) {
+      const out = localizeNotification(n, loc);
+      expect(out.body, loc).toContain("ORD-9");
+      expect(out.title, loc).not.toBe("Server");
+    }
+  });
+});

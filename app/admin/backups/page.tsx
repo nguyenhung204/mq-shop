@@ -7,6 +7,7 @@ import {
   useDownloadBackup,
 } from "@/lib/queries/compliance";
 import { isBackupInProgress } from "@/lib/api/compliance";
+import { backupCreator, canDownloadBackup, isBackupPruned } from "@/lib/backups/view";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
@@ -85,7 +86,7 @@ function BackupsInner() {
         </div>
 
         {isLoading ? (
-          <TableSkeleton rows={6} cols={5} />
+          <TableSkeleton rows={6} cols={6} />
         ) : items.length === 0 ? (
           <p className="text-sm text-mq-text-muted">{t("admin.backups.empty")}</p>
         ) : (
@@ -97,6 +98,7 @@ function BackupsInner() {
                   <th className="p-3">{t("admin.backups.progress")}</th>
                   <th className="p-3">{t("admin.backups.size")}</th>
                   <th className="p-3">{t("admin.backups.created")}</th>
+                  <th className="p-3">{t("admin.backups.createdBy")}</th>
                   <th className="p-3" />
                 </tr>
               </thead>
@@ -105,6 +107,14 @@ function BackupsInner() {
                   <tr key={b.id} className="border-t border-mq-border">
                     <td className="p-3">
                       <span className={statusBadgeClass(b.status)}>{translateStatus(t, "backup", b.status)}</span>
+                      {b.scheduled ? (
+                        <span className="mq-badge mq-badge-muted ml-1">{t("admin.backups.scheduled")}</span>
+                      ) : null}
+                      {isBackupPruned(b) ? (
+                        <span className="mq-badge mq-badge-orange ml-1">
+                          {t("admin.backups.pruned")}
+                        </span>
+                      ) : null}
                       {b.errorMessage ? (
                         <p className="text-[11px] text-mq-text-muted mt-1 max-w-xs truncate">
                           {b.errorMessage}
@@ -132,6 +142,18 @@ function BackupsInner() {
                     <td className="p-3 text-xs text-mq-text-muted whitespace-nowrap">
                       {b.createdAt ? new Date(b.createdAt).toLocaleString() : "—"}
                     </td>
+                    <td className="p-3 text-xs whitespace-nowrap">
+                      {(() => {
+                        const who = backupCreator(b);
+                        if (!who) return "—";
+                        return who.kind === "system" ? t("admin.backups.system") : t("admin.backups.userShort", { id: who.id });
+                      })()}
+                      {b.prunedAt ? (
+                        <p className="text-[11px] text-mq-text-muted">
+                          {t("admin.backups.prunedAt", { date: new Date(b.prunedAt).toLocaleString() })}
+                        </p>
+                      ) : null}
+                    </td>
                     <td className="p-3 whitespace-nowrap">
                       <AdminActions>
                         <AdminIconButton
@@ -139,7 +161,7 @@ function BackupsInner() {
                           icon={Download}
                           tone="secondary"
                           disabled={
-                            b.status !== "SUCCESS" ||
+                            !canDownloadBackup(b) ||
                             (download.isPending && download.variables?.id === b.id)
                           }
                           onClick={() => void download.mutateAsync(b)}

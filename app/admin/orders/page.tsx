@@ -22,6 +22,7 @@ import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
+import { NeedsHandlingBadge } from "@/components/orders/NeedsHandlingBadge";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
 import { CountrySelect } from "@/components/ui/CountrySelect";
@@ -449,6 +450,7 @@ function OrdersInner() {
                     {t("orders.payment.escalatedBadge")}
                   </span>
                 ) : null}
+                <NeedsHandlingBadge order={o} className="ml-2" />
                 <span className="ml-2 inline-flex align-middle">
                   <ProofRetentionBadge retention={o.paymentProofRetention} compact />
                 </span>

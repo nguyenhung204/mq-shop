@@ -23,6 +23,7 @@ import { WalletRankProgress } from "@/components/wallet/WalletRankProgress";
 import { buildReferralRegisterUrl } from "@/lib/mlm/referralLink";
 import { mlmRankLabel } from "@/lib/i18n/mlm-rank";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { labelOrLegacy } from "@/lib/wallet/legacy-labels";
 import { usePointsDisplayFx } from "@/lib/hooks/usePointsDisplayFx";
 
 const TX_REASONS: Array<WalletTxReason | ""> = [
@@ -34,7 +35,6 @@ const TX_REASONS: Array<WalletTxReason | ""> = [
   "REFERRAL",
   "TEAM",
   "GLOBAL",
-  "LOYALTY",
   "ADJUST",
   "SELLER_PAYOUT",
 ];
@@ -51,7 +51,7 @@ function reasonBadgeClass(reason: string): string {
   if (reason.startsWith("WITHDRAW")) return "mq-badge mq-badge-orange";
   if (reason === "P2P") return "mq-badge mq-badge-cyan";
   if (reason === "SELLER_PAYOUT") return "mq-badge mq-badge-green";
-  if (reason === "REFERRAL" || reason === "TEAM" || reason === "GLOBAL" || reason === "LOYALTY") {
+  if (reason === "REFERRAL" || reason === "TEAM" || reason === "GLOBAL") {
     return "mq-badge mq-badge-muted";
   }
   return "mq-badge mq-badge-muted";
@@ -219,7 +219,7 @@ function TxRow({ row }: { row: WalletTransaction }) {
       <div className="space-y-1 min-w-0">
         <div className="flex flex-wrap items-center gap-2">
           <span className={reasonBadgeClass(String(row.reason))}>
-            {t(`wallet.reasons.${row.reason}`)}
+            {labelOrLegacy(t, "wallet.reasons", String(row.reason))}
           </span>
           <span className="mq-badge mq-badge-muted">
             {translateStatus(t, "walletDirection", row.direction)}

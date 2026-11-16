@@ -15,6 +15,7 @@ import { WalletRankProgress } from "@/components/wallet/WalletRankProgress";
 import { WalletBonusGuide } from "@/components/wallet/WalletBonusGuide";
 import { mlmRankLabel } from "@/lib/i18n/mlm-rank";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { labelOrLegacy } from "@/lib/wallet/legacy-labels";
 
 
 const TYPES: Array<CommissionType | "ALL"> = [
@@ -22,7 +23,6 @@ const TYPES: Array<CommissionType | "ALL"> = [
   "REFERRAL",
   "TEAM",
   "GLOBAL",
-  "LOYALTY",
 ];
 
 function statusBadge(status: string): string {
@@ -82,7 +82,7 @@ function CommissionsPanel({ embedded = false }: { embedded?: boolean }) {
               setPage(1);
             }}
           >
-            {t(`wallet.commissionTypes.${tab}`)}
+            {labelOrLegacy(t, "wallet.commissionTypes", tab)}
           </button>
         ))}
       </div>
@@ -111,7 +111,7 @@ function CommissionsPanel({ embedded = false }: { embedded?: boolean }) {
           <div className="space-y-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <span className="mq-badge mq-badge-muted">
-                {t(`wallet.commissionTypes.${row.type}`)}
+                {labelOrLegacy(t, "wallet.commissionTypes", row.type)}
               </span>
               <span className={statusBadge(row.status)}>
                 {t(`wallet.commissionStatus.${row.status}`)}

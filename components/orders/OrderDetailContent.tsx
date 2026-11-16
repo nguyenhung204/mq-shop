@@ -7,6 +7,8 @@ import { useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { formatMoney } from "@/lib/api/utils";
 import { formatOrderLineMoney, formatOrderMoney } from "@/lib/fx/formatOrderMoney";
+import { PayableLine } from "@/components/orders/PayableLine";
+import { NeedsHandlingBadge } from "@/components/orders/NeedsHandlingBadge";
 import {
   canCancelOrder,
   canRequestRma,
@@ -210,6 +212,9 @@ function OrderDetailInner() {
       displayCurrency: order.displayCurrency,
       fxRate: order.fxRate,
       displayTotal: order.displayTotal,
+      payableAmount: order.payableAmount,
+      payableCurrency: order.payableCurrency,
+      fxRateLocked: order.fxRateLocked,
     };
     if (field !== "total") {
       return formatOrderMoney({ ...base, total: twd }, field, intlLocale).primary;
@@ -321,6 +326,7 @@ function OrderDetailInner() {
               <h1 className="text-xl font-bold text-mq-text">{order.displayName}</h1>
               <span className="font-mono text-sm text-mq-text-muted">{order.code}</span>
               <span className="mq-badge mq-badge-cyan">{translateStatus(t, "order", order.status)}</span>
+              {!isBuyer ? <NeedsHandlingBadge order={order} /> : null}
               <span className="mq-badge mq-badge-teal">{translateStatus(t, "paymentMethod", order.paymentMethod)}</span>
               {isPaymentProofRejected(order) ? (
                 <span className="mq-badge mq-badge-orange">{t("orders.payment.rejectedBadge")}</span>
@@ -974,6 +980,7 @@ function OrderDetailInner() {
               <div className="pt-4 border-t border-mq-border space-y-3">
                 <h2 className="text-sm font-semibold">{t("orders.payment.title")}</h2>
                 <p className="text-sm text-mq-text-secondary">{t("orders.payment.paySellerHint")}</p>
+                <PayableLine order={order} locale={intlLocale} />
                 {paymentProfile ? (
                   <div className="rounded-[var(--mq-radius-sm)] border border-mq-border bg-mq-surface-subtle p-4 text-sm space-y-2">
                     <p className="font-medium text-mq-text">

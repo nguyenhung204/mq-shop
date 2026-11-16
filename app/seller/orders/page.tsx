@@ -26,6 +26,7 @@ import { getErrorMessage } from "@/lib/queries/utils";
 import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
 import { UnpaidProofCountdown } from "@/components/orders/UnpaidProofCountdown";
 import { ProofRetentionBadge } from "@/components/orders/ProofRetention";
+import { NeedsHandlingBadge } from "@/components/orders/NeedsHandlingBadge";
 
 function SellerOrdersInner() {
   const { t } = useLanguage();
@@ -103,6 +104,7 @@ function SellerOrdersInner() {
             <Link href={`/orders/${o.id}`} className="hover:underline min-w-0">
               <span className="font-medium">{o.displayName}</span>
               <span className="mq-badge mq-badge-cyan ml-2">{translateStatus(t, "order", o.status)}</span>
+              <NeedsHandlingBadge order={o} className="ml-2" />
               {isPaymentProofRejected(o) ? (
                 <span className="mq-badge mq-badge-orange ml-2">
                   {t("orders.payment.rejectedBadge")}

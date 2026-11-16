@@ -360,7 +360,7 @@
     "paymentMock": "MOCK（立即 PAID — 開發用）",
     "paymentCod": "COD（PENDING 至付款）",
     "paymentHint": "請匯款至賣家銀行帳戶，並於訂單頁上傳付款憑證。結帳以 TWD 入帳；顯示價格依區域幣別換算。",
-    "displayCurrencyNote": "結帳支付 {amount} TWD。顯示幣別：{currency}.",
+    "displayCurrencyNote": "以 {currency} 依今日匯率估算。下單時才會以 {currency} 鎖定您應付的金額。商店帳本總額：{amount} TWD。",
     "fxRateChanged": "匯率已更新。請重新確認價格後再下單。",
     "fxUnavailable": "無法載入匯率，暫停以所在地幣別結帳。請稍後再試或切換至台灣 (TWD)。",
     "paymentStubNote": "付款為 stub（COD → PENDING，MOCK → PAID），無 PSP 導轉。",
@@ -519,7 +519,8 @@
       "retentionNotice": "系統將於 {days} 天後刪除憑證。若仍需要請先自行存檔。",
       "purgedPlaceholder": "憑證已因超過保存期限由系統刪除。",
       "retentionBadgeNotice": "憑證即將刪除",
-      "retentionBadgePurged": "憑證已刪除"
+      "retentionBadgePurged": "憑證已刪除",
+      "needsHandling": "需處理"
     },
     "rma": {
       "title": "申請退貨",
@@ -584,6 +585,11 @@
       "goodsReturnUpdateTrackingHint": "若運單填錯或更換物流，可在此更新。",
       "goodsReturnFixTrackingHint": "買家已回報問題 — 請更正運單以便其收貨。",
       "goodsReturnPendingBuyerHint": "不退款。賣家須將商品寄回 — 收到後請確認。"
+    },
+    "payable": {
+      "amountDue": "應付金額",
+      "rateLocked": "下單時鎖定的匯率：{rate}",
+      "ledgerNote": "訂單於商店帳本的總額：{twd}"
     }
   },
   "wishlist": {
@@ -829,7 +835,11 @@
       "inbox": "收件匣",
       "notifyAdmin": "管理員通知",
       "reviews": "評價",
-      "refundObligations": "退款義務"
+      "refundObligations": "退款義務",
+      "settings": "系統設定",
+      "dividendRates": "股利比率",
+      "dividendSlots": "股利名額",
+      "dividendReport": "股利報表"
     },
     "common": {
       "create": "建立",
@@ -894,7 +904,12 @@
       "allShops": "全部商店",
       "when": "時間",
       "reasonPrefix": "原因：",
-      "retry": "重試"
+      "retry": "重試",
+      "reasonErrors": {
+        "required": "請輸入原因。",
+        "tooShort": "原因至少需 3 個字元。",
+        "tooLong": "原因最多 500 個字元。"
+      }
     },
     "overview": {
       "title": "管理後台",
@@ -1003,7 +1018,7 @@
         },
         "monthly-commission": {
           "name": "計算上月佣金",
-          "description": "每月 1 日（台灣時間）：計算剛結束月份的團隊與忠誠佣金。全站獎勵另按季處理。",
+          "description": "每月 1 日（台灣時間）：計算剛結束月份的團隊佣金。全站獎勵另按季處理。",
           "schedule": "每月 1 日 02:00（GMT+8）"
         },
         "quarterly-global-rank-snapshot": {
@@ -1191,7 +1206,13 @@
       "size": "大小",
       "created": "建立時間",
       "download": "下載 ZIP",
-      "maintenanceNote": "備份進行中時，寫入操作可能暫時無法使用（軟維護模式）。讀取請求仍正常運作。"
+      "maintenanceNote": "備份進行中時，寫入操作可能暫時無法使用（軟維護模式）。讀取請求仍正常運作。",
+      "createdBy": "建立者",
+      "system": "系統（排程）",
+      "scheduled": "排程",
+      "pruned": "檔案已刪除",
+      "prunedAt": "於 {date} 刪除",
+      "userShort": "使用者 {id}"
     },
     "rbac": {
       "title": "權限設定",
@@ -1633,7 +1654,24 @@
       "reopenDisputeDesc": "在驗收拒絕或自動結案後重新開啟，供客服／管理員再次處理。",
       "refundProofTitle": "退款匯款憑證",
       "refundProofAlt": "退款匯款憑證",
-      "forceCloseGoodsReturned": "結案（商品已退回買家）"
+      "forceCloseGoodsReturned": "結案（商品已退回買家）",
+      "approveModal": {
+        "title": "核准退款",
+        "desc": "核准後將記錄應退給買家的款項。您可以退少於剩餘全額的金額。",
+        "amountLabel": "退款金額（TWD，選填）",
+        "totalHint": "留空代表退還剩餘全額。上限 {amount}（訂單總額；確認時會再核對先前的部分退款）。",
+        "remainingHint": "留空代表退還剩餘全額。此訂單最多還可退 {amount}。",
+        "loadingTotal": "正在載入訂單總額…",
+        "fullNote": "全額退款：退還剩餘全額，訂單將標記為已退款。",
+        "partialNote": "部分退款 {amount}：訂單維持已送達，佣金不會被沖銷。",
+        "confirmFull": "核准全額退款",
+        "confirmPartial": "核准部分退款",
+        "errors": {
+          "invalid": "請輸入如 250 或 250.50 的金額（最多兩位小數）。",
+          "zero": "退款金額須大於 0。",
+          "exceeds": "退款金額超過此訂單剩餘可退金額。"
+        }
+      }
     },
     "financePage": {
       "payoutBatches": "撥款批次",
@@ -1855,7 +1893,7 @@
       "rankName": "名稱",
       "payoutHoldBanner": "發放鎖定期間，新佣金可能維持 PENDING，需關閉 COMMISSION_PAYOUT_HOLD 並執行 flush。",
       "runMonthlyTitle": "執行月結獎金",
-      "runMonthlyHint": "選擇有已確認業績的 GMT+8 月份，再執行團隊與忠誠獎金。全球基金改為下方的季度作業。重跑安全（batch lock + ledger）。",
+      "runMonthlyHint": "選擇有已確認業績的 GMT+8 月份，再執行團隊獎金。全球基金改為下方的季度作業。重跑安全（batch lock + ledger）。",
       "runMonthly": "執行月結獎金",
       "runMonthlyDone": "已完成 {yearMonth} 月結（{timezone}）。GMT+8 期間自 {periodStart} 至 {periodEnd}（不含當日）。",
       "runQuarterlyTitle": "執行季度全球基金",
@@ -1876,10 +1914,9 @@
       "gmv": "GMV",
       "orders": "訂單",
       "globalFund": "全球池 / 層級",
-      "credited": "已入帳（團隊／忠誠）",
+      "credited": "已入帳（團隊）",
       "creditedTeam": "團隊",
       "creditedGlobal": "全球",
-      "creditedLoyalty": "忠誠",
       "suggestedAction": "建議",
       "selectMonth": "請選擇有 GMV 的月份。",
       "selectedMonth": "已選：{yearMonth}",
@@ -1963,7 +2000,7 @@
       "reconcileBatchDone": "已檢查 {checked} 人 · 升級 {promoted} 人。",
       "commissionReport": {
         "title": "佣金報告",
-        "description": "每月稽核推薦、團隊與忠誠；GLOBAL 為該月所屬日曆季。",
+        "description": "每月稽核推薦與團隊；GLOBAL 為該月所屬日曆季。",
         "yearMonthLabel": "期間 (YYYY-MM)",
         "yearMonthPlaceholder": "例：2026-07",
         "load": "載入報告",
@@ -1992,7 +2029,6 @@
         "referral": "推薦佣金",
         "team": "團隊佣金",
         "global": "全球利潤分享",
-        "loyalty": "忠誠度獎勵",
         "recipients": "{count} 位受益人",
         "viewDetail": "查看明細",
         "hideDetail": "收起明細",
@@ -2023,34 +2059,14 @@
         "colPaid": "已付",
         "colCompanyKept": "公司保留",
         "colStatus": "狀態",
-        "colMonth": "月份",
         "colPv": "PV",
-        "colQualified": "狀態",
         "buyerLabel": "買家",
         "referrerLabel": "推薦人",
         "tierEmpty": "無符合資格受益人 — 獎金池由公司保留。",
-        "loyaltyHistoryTitle": "達標記錄（近 12 個月）",
-        "loyaltyQualifyRule": "規則：單筆訂單 ≥ NT$2,000（不可累加）",
-        "loyaltyCurrentStreak": "目前連績",
-        "loyaltyLastQualified": "最近達標月份",
-        "loyaltyCompletedCycles": "已完成獎金週期",
-        "colMaxOrder": "最大單筆",
-        "colQualifyingOrder": "達標訂單",
-        "colStreak": "當月後連績",
-        "colCycle": "週期",
-        "colConsecutive": "連續月數",
-        "pvQualified": "達標",
-        "pvReset": "重置",
-        "pvNoData": "無訂單",
-        "loyaltyResetBelow": "未達單筆門檻",
-        "loyaltyResetGap": "月份中斷",
-        "loyaltyHistoryLoading": "載入歷史中…",
-        "loyaltyHistoryEmpty": "尚無達標歷史。",
         "summaryGmv": "GMV",
         "summaryReferral": "推薦",
         "summaryTeam": "團隊",
         "summaryGlobal": "全球",
-        "summaryLoyalty": "忠誠度",
         "summaryCompanyKept": "公司保留",
         "summaryGrandTotal": "總支付金額",
         "markPaidTitle": "標記期間已支付",
@@ -2082,6 +2098,211 @@
       "unhide": "取消隱藏",
       "hideTitle": "隱藏評價",
       "hideDesc": "隱藏後的評價不會出現在商品頁。原因為選填。"
+    },
+    "settings": {
+      "title": "系統設定",
+      "description": "可設定的業務參數。每次變更都需要填寫原因並記錄於歷史。",
+      "descriptionReadOnly": "可設定的業務參數（唯讀）。僅超級管理員可變更。",
+      "empty": "目前沒有設定。",
+      "setting": "設定",
+      "value": "數值",
+      "default": "預設值",
+      "rangeHead": "允許範圍",
+      "updated": "最後變更",
+      "unset": "未設定",
+      "isDefault": "使用預設值",
+      "history": "歷史",
+      "edit": "編輯",
+      "historyEmpty": "尚無變更記錄。",
+      "historyAt": "時間（GMT+8）",
+      "historyChange": "變更",
+      "editTitle": "編輯：{name}",
+      "range": "介於 {min} 與 {max} 的整數。",
+      "clearValue": "清除數值（不設定）",
+      "save": "儲存設定",
+      "errors": {
+        "required": "請輸入數值。",
+        "notInteger": "數值必須為整數。",
+        "belowMin": "數值不得小於 {min}。",
+        "aboveMax": "數值不得大於 {max}。",
+        "notNullable": "此設定不可清除。"
+      },
+      "keys": {
+        "dividendEditWindowDays": {
+          "label": "股利名額可編輯天數",
+          "description": "季度結束後仍可編輯該季名額分配的天數。窗口結束後次日 00:01（台北時間）鎖定該季。",
+          "nullMeaning": "未設定：視為 0，該季於結束後次日 00:01 鎖定。"
+        },
+        "proofStaleAutoCancelDays": {
+          "label": "未處理帳單自動取消天數",
+          "description": "賣家超過此天數未處理付款帳單的待處理訂單將自動取消。",
+          "nullMeaning": "自動取消已關閉（仍會發送提醒）。"
+        },
+        "maxSlotsPerAccount": {
+          "label": "每帳戶名額上限",
+          "description": "單一根帳戶可持有的股利名額上限。",
+          "nullMeaning": "無上限。"
+        },
+        "maxTotalSlots": {
+          "label": "名額總上限",
+          "description": "所有帳戶合計的股利名額上限。",
+          "nullMeaning": "無上限。"
+        }
+      }
+    },
+    "dividend": {
+      "readOnlyNote": "您只能檢視此頁面，僅超級管理員可進行變更。",
+      "rates": {
+        "title": "股利比率",
+        "description": "分配至股利池的銷售額比例。比率依生效日設定，不可修改或刪除：新紀錄自生效日起取代舊紀錄。",
+        "current": "目前比率",
+        "default": "預設比率（無適用紀錄時使用）",
+        "today": "台北今日：{date}",
+        "history": "比率歷史",
+        "empty": "尚未設定比率，目前使用預設值。",
+        "colRate": "比率",
+        "colEffective": "生效日",
+        "colStatus": "狀態",
+        "colReason": "原因",
+        "colCreated": "記錄時間",
+        "status": {
+          "effective": "已生效",
+          "upcoming": "即將生效",
+          "superseded": "已被取代"
+        },
+        "currentBadge": "目前",
+        "formTitle": "新增比率",
+        "formNote": "儲存後不可修改或刪除。為同一未來日期再新增比率，將取代該日期先前的紀錄。",
+        "ratePercent": "比率（%）",
+        "ratePercentHint": "0 至 100，最多兩位小數",
+        "effectiveDate": "生效日（台北時間）",
+        "submit": "儲存比率",
+        "created": "比率已儲存。",
+        "errors": {
+          "ratePercent": {
+            "required": "請輸入比率。",
+            "invalid": "比率須介於 0 至 100，且最多兩位小數。"
+          },
+          "effectiveDate": {
+            "required": "請選擇生效日。",
+            "invalid": "這不是有效的日期。",
+            "past": "生效日不得早於今日（台北時間）。"
+          }
+        }
+      },
+      "quarter": "季度",
+      "slots": {
+        "title": "股利名額",
+        "description": "各根帳戶持有的名額，依季度以絕對值設定，可附到期日。每次變更皆新增至歷史，不會覆寫。",
+        "locked": "已鎖定",
+        "open": "可編輯",
+        "lockedAt": "自 {date} 起鎖定",
+        "locksAt": "將於 {date} 鎖定",
+        "editWindow": "編輯期限：季度結束後 {days} 天",
+        "totalSlots": "名額總數",
+        "capPerAccount": "每帳戶上限",
+        "capTotal": "名額總上限",
+        "noCap": "無上限",
+        "empty": "此季度尚無帳戶持有名額。",
+        "account": "帳戶",
+        "accountPh": "以電子郵件或姓名搜尋…",
+        "colSlots": "名額",
+        "colExpires": "到期",
+        "colSince": "自季度",
+        "setRow": "設定名額",
+        "lockedNote": "{quarter} 已鎖定，僅供檢視，無法變更。",
+        "setTitle": "設定名額（自 {quarter} 起）",
+        "setNote": "輸入該帳戶自本季起應持有的總數；0 代表清除。此數值取代舊值，並非累加。",
+        "currentSlots": "目前持有 {slots} 個名額。",
+        "slotsAbsolute": "名額（總數）",
+        "slotsAbsoluteHint": "整數，0 至 1,000,000",
+        "expiresAt": "到期時間（選填，台北時間）",
+        "expiresAtHint": "此時間之後名額不再計算。有到期日的名額不可轉移。",
+        "setSubmit": "儲存名額",
+        "transferTitle": "轉移名額（於 {quarter}）",
+        "transferNote": "將名額從一個帳戶轉到另一帳戶，以兩筆相連紀錄一次完成。僅可轉移無到期日的名額。",
+        "from": "來源帳戶",
+        "to": "目標帳戶",
+        "transferSlots": "轉移名額數",
+        "transferSubmit": "轉移名額",
+        "saved": "名額已儲存。",
+        "transferred": "名額已轉移。",
+        "historyTitle": "完整歷史",
+        "historyFilter": "依帳戶篩選",
+        "historyClear": "顯示所有帳戶",
+        "historyEmpty": "尚無名額變更記錄。",
+        "hWhen": "時間（GMT+8）",
+        "hKind": "類型",
+        "kind": {
+          "SET": "設定",
+          "TRANSFER_OUT": "轉出",
+          "TRANSFER_IN": "轉入"
+        },
+        "transferRef": "轉移 {id}，對象 {other}",
+        "errors": {
+          "quarter": {
+            "locked": "此季度已鎖定，無法編輯。",
+            "future": "無法變更未來季度的名額。",
+            "invalid": "季度無效。"
+          },
+          "userId": {
+            "required": "請選擇帳戶。",
+            "invalid": "帳戶無效。"
+          },
+          "fromUserId": {
+            "required": "請選擇帳戶。",
+            "invalid": "帳戶無效。"
+          },
+          "toUserId": {
+            "required": "請選擇帳戶。",
+            "invalid": "帳戶無效。",
+            "same": "兩個帳戶必須不同。"
+          },
+          "slots": {
+            "required": "請輸入名額數。",
+            "notInteger": "名額必須為整數。",
+            "tooLow": "至少需 1 個名額。",
+            "tooHigh": "名額不得超過 1,000,000。",
+            "unchanged": "該帳戶自該季起已持有此名額數。",
+            "insufficient": "來源帳戶的名額不足。",
+            "expiring": "有到期日的名額不可轉移。"
+          },
+          "expiresAt": {
+            "invalid": "到期時間無效。",
+            "withZero": "名額為 0 時不能設定到期日。",
+            "beforeQuarter": "到期時間必須晚於變更適用季度的開始時間。"
+          }
+        }
+      },
+      "report": {
+        "title": "股利報表",
+        "description": "依季度列出股利池，按比率期間與根帳戶拆分。",
+        "previewNotice": "此為試算預覽，不會發放任何款項，也不會變更任何錢包或帳本。",
+        "projectionNote": "此季度尚未結束，數字為依目前已知名額與比率推估。",
+        "state": {
+          "projection": "推估（季度進行中）",
+          "closed": "季度已結束，仍可編輯",
+          "locked": "已鎖定（唯讀）"
+        },
+        "range": "期間：{from} 至 {to}",
+        "salesBase": "銷售基數",
+        "orders": "{count} 筆訂單",
+        "ordersCol": "訂單",
+        "pool": "股利池",
+        "totalSlots": "名額總數",
+        "distributed": "已分配（整數 NTD）",
+        "byInterval": "依比率期間",
+        "noIntervals": "此季度沒有比率期間。",
+        "period": "期間",
+        "defaultRate": "預設",
+        "byAccount": "依根帳戶",
+        "noAccounts": "此季度沒有帳戶持有有效名額，因此不分配。",
+        "share": "分配額",
+        "remainderLabel": "差額計算收入",
+        "remainderHint": "每筆分配額無條件捨去為整數 NTD 後的剩餘金額，單獨列示，不會被捨棄。",
+        "pendingRefunds": "{count} 筆待退款訂單未計入銷售基數。",
+        "refundsAfterLock": "僅供參考：季度鎖定後完成的退款 {amount}（{count} 筆訂單），並未套用於此股利池。"
+      }
     }
   },
   "seller": {
@@ -2139,7 +2360,7 @@
       "walletNetwork": "網絡",
       "walletNetworkDesc": "您的 MLM 下線樹。",
       "walletCommissions": "佣金",
-      "walletCommissionsDesc": "推薦、團隊、全球與忠誠獎勵。",
+      "walletCommissionsDesc": "推薦、團隊與全球獎勵。",
       "landingCost": "落地成本",
       "landingCostDesc": "依行項目、費用與折扣估算最終成本。",
       "promotions": "促銷",
@@ -2595,9 +2816,9 @@
       "REFERRAL": "推薦",
       "TEAM": "團隊",
       "GLOBAL": "全球",
-      "LOYALTY": "忠誠",
       "ADJUST": "調整",
-      "SELLER_PAYOUT": "商店對帳"
+      "SELLER_PAYOUT": "商店對帳",
+      "legacy": "其他（已停辦的獎勵）"
     },
     "pinRequiredBanner": "請先設定錢包 PIN 再繼續。",
     "p2pEmail": "收款人電子郵件",
@@ -2660,7 +2881,7 @@
       "REFERRAL": "推薦",
       "TEAM": "團隊",
       "GLOBAL": "全球",
-      "LOYALTY": "忠誠"
+      "legacy": "其他（已停辦）"
     },
     "commissionStatus": {
       "PENDING": "待入帳",
@@ -2671,7 +2892,6 @@
     "txReasonAll": "全部原因",
     "pillarReferral": "推薦 — 被推薦人完成 ≥ NT$2,000 訂單時即可抽成。總裁（等級 6）以上上限 10%。",
     "pillarTeam": "團隊 — 月底依網路業績差額獎金（不含自購）。",
-    "pillarLoyalty": "忠誠 — 每月至少一筆完成訂單 ≥ NT$2,000（小單不累加）；連續 12 個月 → NT$28,000 TWD 以點數入帳。漏月重置。",
     "pillarGlobal": "全球 — 平台業績 2% 依較高等級分配；空缺由公司保留。",
     "rankSeller": "買家",
     "rankLabel": "{name}",
@@ -2693,7 +2913,7 @@
     "rankProgressDone": "條件已達成 — 等待系統升級。",
     "bonusGuide": {
       "title": "如何獲得獎金",
-      "intro": "共四種獎金。金額依「已確認營業額」以 TWD 計算（非下單日或配達日），入帳時再依 FX 換成點數（1 點 = {usd} USD）。提領時點數再換回 TWD。升階（經銷商以上）需已核准商店。",
+      "intro": "共三種獎金。金額依「已確認營業額」以 TWD 計算（非下單日或配達日），入帳時再依 FX 換成點數（1 點 = {usd} USD）。提領時點數再換回 TWD。升階（經銷商以上）需已核准商店。",
       "policyTitle": "訂單何時計入獎金",
       "policyEligible": "佣金、等級 PV 與店家對帳僅採用已確認營業額：訂單已付款、已配達簽收、7 天退貨期結束，且無進行中退貨／退款。在此之前不計入獎金 GMV。",
       "policyPeriod": "獎金所屬月份為訂單「確認」當月（GMT+8 日曆月），不是下單或付款月份。例如：8/31 購買並收貨 → 9/7 確認 → 該筆計入 9 月，而非 8 月。",
@@ -2707,7 +2927,6 @@
       "teamRatesTitle": "各等級團隊 %",
       "teamNote": "您獲得您的 % 與同分支下線已有最高 %（max-below）之差額，乘以已確認網路業績。",
       "teamBody": "月底依您的團隊%與同支線下線最高%之差額（max-below），以該月已確認網路業績（TWD）計算。不含您本人消費。TWD 結果以點數入帳。",
-      "loyaltyBody": "每月至少一筆已確認訂單 ≥ NT$2,000 — 小單不累加，僅「已配達」仍不足。連續 12 個月可獲 NT$28,000 TWD，以點數入帳。漏月重置；發放後新週期重新起算。",
       "globalBody": "每季平台已確認 GMV 的一部分（管理員設定比例）進入可疊加的 TWD 基金。符合高階者分攤各層；空階由公司保留。您的份額以點數入帳。",
       "globalTiersTitle": "可參與分配的等級",
       "globalNote": "較高等級可能同時符合多個分配帶。空缺由公司保留。",
@@ -3096,7 +3315,18 @@
     "fulfillmentComplaintSent": "已送出未出貨申訴",
     "fulfillmentComplaintFailed": "送出申訴失敗",
     "paymentDisputeSent": "已送出申訴 — 已通知管理員",
-    "paymentDisputeFailed": "無法送出付款申訴"
+    "paymentDisputeFailed": "無法送出付款申訴",
+    "settingInvalid": "此數值超出該設定允許的範圍。",
+    "settingNotFound": "找不到該設定。",
+    "settingSaved": "設定已儲存。",
+    "settingUnchanged": "設定未變更。",
+    "dividendInputInvalid": "股利輸入無效，請檢查後重試。",
+    "dividendUserNotFound": "找不到該帳戶。",
+    "dividendRateConflict": "此生效日期的比率與現有比率衝突。",
+    "dividendQuarterLocked": "此季度已鎖定，無法再編輯。",
+    "dividendSlotCapExceeded": "將超過名額上限。",
+    "dividendSlotInsufficient": "來源帳戶的名額不足。",
+    "rmaRefundAmountInvalid": "退款金額無效（須大於 0 且不得超過剩餘可退金額）。"
   },
   "superAdmin": {
     "title": "系統管理",

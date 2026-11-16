@@ -208,6 +208,11 @@ export type OrderView = {
   fxRate?: number | null;
   fxAsOf?: string | null;
   displayTotal?: number | null;
+  /** R4: what the buyer must actually pay, in `payableCurrency` (2 dp). Absent on an older API. */
+  payableAmount?: number;
+  payableCurrency?: string;
+  /** Rate locked at order creation (1 TWD = x payableCurrency); null when there is no snapshot. */
+  fxRateLocked?: number | null;
   paymentMethod: PaymentMethod;
   /** Buyer-uploaded bank-transfer proof (OFF_PLATFORM / legacy COD). */
   paymentProofUrl?: string | null;
@@ -421,7 +426,8 @@ export const adminOrdersApi = {
   getRma: (rmaId: string) =>
     api.get<AdminRmaDetailView>(`/admin/rma/${rmaId}`),
 
-  approveRma: (rmaId: string, body?: { note?: string }) =>
+  /** `refundAmount` (staff only, 2 dp string) = partial refund; omitted = the whole remaining amount. */
+  approveRma: (rmaId: string, body?: { note?: string; refundAmount?: string }) =>
     api.post<RmaView>(`/admin/rma/${rmaId}/approve`, body ?? {}),
 
   rejectRma: (rmaId: string, body: { note: string }) =>

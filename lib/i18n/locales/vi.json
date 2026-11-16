@@ -360,7 +360,7 @@
     "paymentMock": "MOCK (PAID ngay — dev)",
     "paymentCod": "COD (PENDING đến khi trả)",
     "paymentHint": "Chuyển khoản vào tài khoản seller, rồi tải ảnh chứng từ trên trang đơn hàng. Thanh toán ghi sổ bằng TWD; giá hiển thị theo tiền tệ khu vực.",
-    "displayCurrencyNote": "Bạn thanh toán {amount} TWD. Hiển thị: {currency}.",
+    "displayCurrencyNote": "Ước tính bằng {currency} theo tỷ giá hôm nay. Số tiền bạn thanh toán được chốt bằng {currency} khi đặt hàng. Tổng trong sổ cái của shop: {amount} TWD.",
     "fxRateChanged": "Tỷ giá đã được cập nhật. Vui lòng xem lại giá hiển thị và đặt hàng lại.",
     "fxUnavailable": "Không thể tải tỷ giá. Thanh toán theo tiền khu vực tạm khóa. Thử lại sau hoặc chuyển sang Taiwan (TWD).",
     "paymentStubNote": "Thanh toán stub (COD → PENDING, MOCK → PAID). Không redirect PSP.",
@@ -519,7 +519,8 @@
       "retentionNotice": "Biên lai sẽ được hệ thống xóa sau {days} ngày. Vui lòng lưu lại nếu cần.",
       "purgedPlaceholder": "Biên lai đã được hệ thống xóa do hết thời hạn lưu trữ.",
       "retentionBadgeNotice": "Sắp xóa biên lai",
-      "retentionBadgePurged": "Biên lai đã xóa"
+      "retentionBadgePurged": "Biên lai đã xóa",
+      "needsHandling": "Cần xử lý"
     },
     "rma": {
       "title": "Yêu cầu đổi trả",
@@ -584,6 +585,11 @@
       "goodsReturnUpdateTrackingHint": "Cập nhật mã vận đơn nếu nhập sai hoặc đổi đơn vị vận chuyển.",
       "goodsReturnFixTrackingHint": "Buyer đã báo lỗi — hãy sửa mã vận đơn để họ nhận được hàng.",
       "goodsReturnPendingBuyerHint": "Không hoàn tiền. Người bán phải gửi lại hàng — bạn xác nhận khi nhận được."
+    },
+    "payable": {
+      "amountDue": "Số tiền cần thanh toán",
+      "rateLocked": "Tỷ giá đã chốt khi bạn đặt hàng: {rate}",
+      "ledgerNote": "Tổng đơn trong sổ cái của shop: {twd}"
     }
   },
   "wishlist": {
@@ -829,7 +835,11 @@
       "inbox": "Hộp thư",
       "notifyAdmin": "Thông báo admin",
       "reviews": "Đánh giá",
-      "refundObligations": "Nghĩa vụ hoàn tiền"
+      "refundObligations": "Nghĩa vụ hoàn tiền",
+      "settings": "Cài đặt hệ thống",
+      "dividendRates": "Tỷ lệ cổ tức",
+      "dividendSlots": "Suất cổ tức",
+      "dividendReport": "Báo cáo cổ tức"
     },
     "common": {
       "create": "Tạo mới",
@@ -894,7 +904,12 @@
       "allShops": "Tất cả shop",
       "when": "Thời điểm",
       "reasonPrefix": "Lý do: ",
-      "retry": "Thử lại"
+      "retry": "Thử lại",
+      "reasonErrors": {
+        "required": "Hãy nhập lý do.",
+        "tooShort": "Lý do phải có ít nhất 3 ký tự.",
+        "tooLong": "Lý do tối đa 500 ký tự."
+      }
     },
     "overview": {
       "title": "Quản trị",
@@ -1003,7 +1018,7 @@
         },
         "monthly-commission": {
           "name": "Tính hoa hồng tháng trước",
-          "description": "Ngày 1 hàng tháng (giờ Đài Loan): tính hoa hồng nhóm và hoa hồng trung thành cho tháng vừa kết thúc. Thưởng toàn hệ thống tính riêng theo quý.",
+          "description": "Ngày 1 hàng tháng (giờ Đài Loan): tính hoa hồng nhóm cho tháng vừa kết thúc. Thưởng toàn hệ thống tính riêng theo quý.",
           "schedule": "Ngày 1 hàng tháng lúc 02:00 (GMT+8)"
         },
         "quarterly-global-rank-snapshot": {
@@ -1191,7 +1206,13 @@
       "size": "Dung lượng",
       "created": "Tạo lúc",
       "download": "Tải ZIP",
-      "maintenanceNote": "Khi đang chạy backup, API ghi có thể tạm ngưng phục vụ (bảo trì mềm). Truy vấn đọc vẫn hoạt động."
+      "maintenanceNote": "Khi đang chạy backup, API ghi có thể tạm ngưng phục vụ (bảo trì mềm). Truy vấn đọc vẫn hoạt động.",
+      "createdBy": "Người tạo",
+      "system": "Hệ thống (theo lịch)",
+      "scheduled": "Theo lịch",
+      "pruned": "Đã xóa tệp",
+      "prunedAt": "Đã xóa {date}",
+      "userShort": "Người dùng {id}"
     },
     "rbac": {
       "title": "Bảng phân quyền",
@@ -1633,7 +1654,24 @@
       "reopenDisputeDesc": "Mở lại sau từ chối kiểm hàng hoặc auto-close để CS/Admin xử lý lại.",
       "refundProofTitle": "Minh chứng chuyển hoàn",
       "refundProofAlt": "Minh chứng chuyển hoàn",
-      "forceCloseGoodsReturned": "Đóng (đã trả hàng cho người mua)"
+      "forceCloseGoodsReturned": "Đóng (đã trả hàng cho người mua)",
+      "approveModal": {
+        "title": "Duyệt hoàn tiền",
+        "desc": "Duyệt sẽ ghi nhận khoản hoàn cho người mua. Bạn có thể hoàn ít hơn toàn bộ số tiền còn lại.",
+        "amountLabel": "Số tiền hoàn (TWD, tùy chọn)",
+        "totalHint": "Để trống để hoàn toàn bộ số còn lại. Tối đa {amount} (tổng đơn; các khoản hoàn một phần trước đó sẽ được kiểm tra khi xác nhận).",
+        "remainingHint": "Để trống để hoàn toàn bộ số còn lại. Đơn này còn tối đa {amount} có thể hoàn.",
+        "loadingTotal": "Đang tải tổng tiền đơn…",
+        "fullNote": "Hoàn toàn bộ: hoàn toàn bộ số còn lại và đơn được đánh dấu đã hoàn tiền.",
+        "partialNote": "Hoàn một phần {amount}: đơn vẫn ở trạng thái đã giao và hoa hồng không bị thu hồi.",
+        "confirmFull": "Duyệt hoàn toàn bộ",
+        "confirmPartial": "Duyệt hoàn một phần",
+        "errors": {
+          "invalid": "Nhập số tiền như 250 hoặc 250.50 (tối đa 2 số thập phân).",
+          "zero": "Số tiền hoàn phải lớn hơn 0.",
+          "exceeds": "Số tiền hoàn lớn hơn số còn được hoàn của đơn này."
+        }
+      }
     },
     "financePage": {
       "payoutBatches": "Lô chi trả",
@@ -1855,7 +1893,7 @@
       "rankName": "Tên",
       "payoutHoldBanner": "Payout hold có thể giữ hoa hồng ở PENDING cho đến khi tắt COMMISSION_PAYOUT_HOLD và chạy flush.",
       "runMonthlyTitle": "Chạy thưởng tháng",
-      "runMonthlyHint": "Chọn tháng GMT+8 có doanh số đã ghi nhận, rồi chạy thưởng đội và trung thành. Quỹ toàn hệ thống là job quý riêng bên dưới. Chạy lại an toàn (batch lock + ledger).",
+      "runMonthlyHint": "Chọn tháng GMT+8 có doanh số đã ghi nhận, rồi chạy thưởng đội. Quỹ toàn hệ thống là job quý riêng bên dưới. Chạy lại an toàn (batch lock + ledger).",
       "runMonthly": "Chạy thưởng tháng",
       "runMonthlyDone": "Đã chạy thưởng tháng {yearMonth} thành công ({timezone}). Kỳ GMT+8 từ {periodStart} đến trước {periodEnd}.",
       "runQuarterlyTitle": "Chạy quỹ toàn hệ thống theo quý",
@@ -1876,10 +1914,9 @@
       "gmv": "GMV",
       "orders": "Đơn",
       "globalFund": "Quỹ global / tier",
-      "credited": "Đã ghi nhận (đội / trung thành)",
+      "credited": "Đã ghi nhận (đội)",
       "creditedTeam": "Đội",
       "creditedGlobal": "Toàn cầu",
-      "creditedLoyalty": "Trung thành",
       "suggestedAction": "Gợi ý",
       "selectMonth": "Chọn tháng có GMV để chạy.",
       "selectedMonth": "Đang chọn: {yearMonth}",
@@ -1963,7 +2000,7 @@
       "reconcileBatchDone": "Đã kiểm {checked} user · thăng {promoted}.",
       "commissionReport": {
         "title": "Báo cáo hoa hồng",
-        "description": "Đối soát tháng: giới thiệu, đội, trung thành; GLOBAL theo quý chứa tháng đó.",
+        "description": "Đối soát tháng: giới thiệu và đội; GLOBAL theo quý chứa tháng đó.",
         "yearMonthLabel": "Kỳ (YYYY-MM)",
         "yearMonthPlaceholder": "VD: 2026-07",
         "load": "Tải báo cáo",
@@ -1992,7 +2029,6 @@
         "referral": "Hoa hồng giới thiệu",
         "team": "Hoa hồng đội nhóm",
         "global": "Chia sẻ lợi nhuận toàn cầu",
-        "loyalty": "Thưởng trung thành",
         "recipients": "{count} người nhận",
         "viewDetail": "Xem chi tiết",
         "hideDetail": "Ẩn chi tiết",
@@ -2023,34 +2059,14 @@
         "colPaid": "Đã trả",
         "colCompanyKept": "Công ty giữ",
         "colStatus": "Trạng thái",
-        "colMonth": "Tháng",
         "colPv": "PV",
-        "colQualified": "Trạng thái",
         "buyerLabel": "Người mua",
         "referrerLabel": "Người giới thiệu",
         "tierEmpty": "Không có người đủ điều kiện — quỹ công ty giữ lại.",
-        "loyaltyHistoryTitle": "Lịch sử đủ điều kiện (12 tháng)",
-        "loyaltyQualifyRule": "Điều kiện: một đơn ≥ NT$2.000 (không cộng dồn)",
-        "loyaltyCurrentStreak": "Chuỗi hiện tại",
-        "loyaltyLastQualified": "Tháng đạt gần nhất",
-        "loyaltyCompletedCycles": "Chu kỳ đã nhận thưởng",
-        "colMaxOrder": "Đơn lớn nhất",
-        "colQualifyingOrder": "Đơn đạt chuẩn",
-        "colStreak": "Chuỗi sau tháng",
-        "colCycle": "Chu kỳ",
-        "colConsecutive": "Tháng liên tiếp",
-        "pvQualified": "Đạt",
-        "pvReset": "Reset",
-        "pvNoData": "Không có đơn",
-        "loyaltyResetBelow": "Dưới ngưỡng max đơn",
-        "loyaltyResetGap": "Gián đoạn tháng",
-        "loyaltyHistoryLoading": "Đang tải lịch sử…",
-        "loyaltyHistoryEmpty": "Chưa có lịch sử đủ điều kiện.",
         "summaryGmv": "GMV",
         "summaryReferral": "Giới thiệu",
         "summaryTeam": "Đội nhóm",
         "summaryGlobal": "Toàn cầu",
-        "summaryLoyalty": "Trung thành",
         "summaryCompanyKept": "Công ty giữ",
         "summaryGrandTotal": "Tổng chi trả",
         "markPaidTitle": "Đánh dấu kỳ đã chi",
@@ -2082,6 +2098,211 @@
       "unhide": "Hiện lại",
       "hideTitle": "Ẩn đánh giá",
       "hideDesc": "Đánh giá ẩn sẽ không hiện trên trang sản phẩm. Lý do là tùy chọn."
+    },
+    "settings": {
+      "title": "Cài đặt hệ thống",
+      "description": "Các tham số nghiệp vụ có thể cấu hình. Mọi thay đổi cần có lý do và được ghi vào lịch sử.",
+      "descriptionReadOnly": "Các tham số nghiệp vụ (chỉ xem). Chỉ Super Admin mới được thay đổi.",
+      "empty": "Chưa có cài đặt nào.",
+      "setting": "Cài đặt",
+      "value": "Giá trị",
+      "default": "Mặc định",
+      "rangeHead": "Phạm vi cho phép",
+      "updated": "Thay đổi lần cuối",
+      "unset": "Chưa đặt",
+      "isDefault": "Đang dùng mặc định",
+      "history": "Lịch sử",
+      "edit": "Sửa",
+      "historyEmpty": "Chưa có thay đổi nào.",
+      "historyAt": "Thời điểm (GMT+8)",
+      "historyChange": "Thay đổi",
+      "editTitle": "Sửa: {name}",
+      "range": "Số nguyên từ {min} đến {max}.",
+      "clearValue": "Xóa giá trị (không đặt)",
+      "save": "Lưu cài đặt",
+      "errors": {
+        "required": "Hãy nhập giá trị.",
+        "notInteger": "Giá trị phải là số nguyên.",
+        "belowMin": "Giá trị phải từ {min} trở lên.",
+        "aboveMax": "Giá trị không được vượt quá {max}.",
+        "notNullable": "Cài đặt này không thể để trống."
+      },
+      "keys": {
+        "dividendEditWindowDays": {
+          "label": "Thời hạn sửa suất cổ tức (ngày)",
+          "description": "Số ngày sau khi quý kết thúc mà việc phân bổ suất của quý đó vẫn được sửa. Quý khóa lúc 00:01 (giờ Đài Bắc) của ngày sau khi hết thời hạn.",
+          "nullMeaning": "Chưa cấu hình: coi như 0, quý khóa lúc 00:01 ngay ngày sau khi kết thúc."
+        },
+        "proofStaleAutoCancelDays": {
+          "label": "Tự hủy đơn có bill chưa xử lý sau (ngày)",
+          "description": "Đơn đang chờ mà người bán chưa xử lý bill thanh toán sau số ngày này sẽ bị tự động hủy.",
+          "nullMeaning": "Tắt tự hủy (vẫn gửi nhắc)."
+        },
+        "maxSlotsPerAccount": {
+          "label": "Số suất tối đa mỗi tài khoản",
+          "description": "Số suất cổ tức tối đa một tài khoản gốc được giữ.",
+          "nullMeaning": "Không giới hạn."
+        },
+        "maxTotalSlots": {
+          "label": "Tổng số suất tối đa",
+          "description": "Số suất cổ tức tối đa trên toàn bộ tài khoản.",
+          "nullMeaning": "Không giới hạn."
+        }
+      }
+    },
+    "dividend": {
+      "readOnlyNote": "Bạn chỉ có thể xem trang này. Chỉ Super Admin mới được thay đổi.",
+      "rates": {
+        "title": "Tỷ lệ cổ tức",
+        "description": "Tỷ lệ doanh số dành cho quỹ cổ tức. Mỗi mức có ngày hiệu lực và không bao giờ bị sửa hoặc xóa: dòng mới thay thế dòng cũ kể từ ngày bắt đầu.",
+        "current": "Tỷ lệ hiện tại",
+        "default": "Tỷ lệ mặc định (dùng khi không có dòng nào áp dụng)",
+        "today": "Hôm nay ở Đài Bắc: {date}",
+        "history": "Lịch sử tỷ lệ",
+        "empty": "Chưa đặt mức nào, đang dùng mặc định.",
+        "colRate": "Tỷ lệ",
+        "colEffective": "Hiệu lực từ",
+        "colStatus": "Trạng thái",
+        "colReason": "Lý do",
+        "colCreated": "Ghi nhận",
+        "status": {
+          "effective": "Đang áp dụng",
+          "upcoming": "Sắp áp dụng",
+          "superseded": "Đã bị thay thế"
+        },
+        "currentBadge": "Hiện tại",
+        "formTitle": "Thêm mức tỷ lệ",
+        "formNote": "Đã lưu thì không thể sửa hoặc xóa. Thêm mức khác cho cùng một ngày tương lai sẽ thay thế mức trước của ngày đó.",
+        "ratePercent": "Tỷ lệ (%)",
+        "ratePercentHint": "Từ 0 đến 100, tối đa 2 số thập phân",
+        "effectiveDate": "Ngày hiệu lực (giờ Đài Bắc)",
+        "submit": "Lưu tỷ lệ",
+        "created": "Đã lưu tỷ lệ.",
+        "errors": {
+          "ratePercent": {
+            "required": "Hãy nhập tỷ lệ.",
+            "invalid": "Tỷ lệ phải từ 0 đến 100 và tối đa 2 số thập phân."
+          },
+          "effectiveDate": {
+            "required": "Hãy chọn ngày hiệu lực.",
+            "invalid": "Đây không phải ngày hợp lệ.",
+            "past": "Ngày hiệu lực không được trước hôm nay (giờ Đài Bắc)."
+          }
+        }
+      },
+      "quarter": "Quý",
+      "slots": {
+        "title": "Suất cổ tức",
+        "description": "Số suất của từng tài khoản gốc, đặt tuyệt đối theo quý, có thể có hạn. Mỗi thay đổi được ghi thêm vào lịch sử, không ghi đè.",
+        "locked": "Đã khóa",
+        "open": "Còn sửa được",
+        "lockedAt": "Đã khóa từ {date}",
+        "locksAt": "Khóa lúc {date}",
+        "editWindow": "Thời hạn sửa: {days} ngày sau khi quý kết thúc",
+        "totalSlots": "Tổng số suất",
+        "capPerAccount": "Giới hạn mỗi tài khoản",
+        "capTotal": "Giới hạn tổng số suất",
+        "noCap": "Không giới hạn",
+        "empty": "Chưa có tài khoản nào giữ suất trong quý này.",
+        "account": "Tài khoản",
+        "accountPh": "Tìm theo email hoặc tên…",
+        "colSlots": "Số suất",
+        "colExpires": "Hết hạn",
+        "colSince": "Từ quý",
+        "setRow": "Đặt số suất",
+        "lockedNote": "{quarter} đã khóa. Chỉ xem, không thể thay đổi.",
+        "setTitle": "Đặt số suất (từ {quarter})",
+        "setNote": "Nhập tổng số suất tài khoản nên giữ từ quý này; 0 là xóa. Con số này thay thế số cũ, không cộng thêm.",
+        "currentSlots": "Hiện đang giữ {slots} suất.",
+        "slotsAbsolute": "Số suất (tổng)",
+        "slotsAbsoluteHint": "Số nguyên, từ 0 đến 1.000.000",
+        "expiresAt": "Hết hạn lúc (tùy chọn, giờ Đài Bắc)",
+        "expiresAtHint": "Sau thời điểm này các suất không còn được tính. Suất có hạn không thể chuyển.",
+        "setSubmit": "Lưu số suất",
+        "transferTitle": "Chuyển suất (tại {quarter})",
+        "transferNote": "Chuyển suất từ tài khoản này sang tài khoản khác bằng hai bút toán liên kết trong một bước. Chỉ chuyển được suất không có hạn.",
+        "from": "Từ tài khoản",
+        "to": "Đến tài khoản",
+        "transferSlots": "Số suất chuyển",
+        "transferSubmit": "Chuyển suất",
+        "saved": "Đã lưu số suất.",
+        "transferred": "Đã chuyển suất.",
+        "historyTitle": "Toàn bộ lịch sử",
+        "historyFilter": "Lọc theo tài khoản",
+        "historyClear": "Hiện mọi tài khoản",
+        "historyEmpty": "Chưa có thay đổi suất nào.",
+        "hWhen": "Thời điểm (GMT+8)",
+        "hKind": "Loại",
+        "kind": {
+          "SET": "Đặt",
+          "TRANSFER_OUT": "Chuyển đi",
+          "TRANSFER_IN": "Nhận chuyển"
+        },
+        "transferRef": "Chuyển {id} với {other}",
+        "errors": {
+          "quarter": {
+            "locked": "Quý này đã khóa, không thể sửa.",
+            "future": "Không thể đổi số suất của quý tương lai.",
+            "invalid": "Quý không hợp lệ."
+          },
+          "userId": {
+            "required": "Hãy chọn tài khoản.",
+            "invalid": "Tài khoản không hợp lệ."
+          },
+          "fromUserId": {
+            "required": "Hãy chọn tài khoản.",
+            "invalid": "Tài khoản không hợp lệ."
+          },
+          "toUserId": {
+            "required": "Hãy chọn tài khoản.",
+            "invalid": "Tài khoản không hợp lệ.",
+            "same": "Hai tài khoản phải khác nhau."
+          },
+          "slots": {
+            "required": "Hãy nhập số suất.",
+            "notInteger": "Số suất phải là số nguyên.",
+            "tooLow": "Nhập ít nhất 1 suất.",
+            "tooHigh": "Số suất không được vượt quá 1.000.000.",
+            "unchanged": "Tài khoản đã có đúng số suất này từ quý đó.",
+            "insufficient": "Tài khoản nguồn không có đủ số suất.",
+            "expiring": "Suất có hạn không thể chuyển."
+          },
+          "expiresAt": {
+            "invalid": "Thời điểm hết hạn không hợp lệ.",
+            "withZero": "Không thể đặt hạn khi số suất là 0.",
+            "beforeQuarter": "Thời điểm hết hạn phải sau thời điểm bắt đầu của quý áp dụng."
+          }
+        }
+      },
+      "report": {
+        "title": "Báo cáo cổ tức",
+        "description": "Phân tích quỹ cổ tức theo quý, theo giai đoạn tỷ lệ và theo tài khoản gốc.",
+        "previewNotice": "Đây chỉ là bản tính xem trước. Không có khoản nào được chi trả và không có ví hay sổ cái nào bị thay đổi.",
+        "projectionNote": "Quý này chưa kết thúc nên số liệu chỉ là dự phóng theo số suất và tỷ lệ hiện biết.",
+        "state": {
+          "projection": "Dự phóng (quý đang chạy)",
+          "closed": "Quý đã kết thúc, còn sửa được",
+          "locked": "Đã khóa (chỉ xem)"
+        },
+        "range": "Giai đoạn: {from} đến {to}",
+        "salesBase": "Cơ sở doanh số",
+        "orders": "{count} đơn",
+        "ordersCol": "Đơn",
+        "pool": "Quỹ cổ tức",
+        "totalSlots": "Tổng số suất",
+        "distributed": "Đã chia (NTD nguyên)",
+        "byInterval": "Theo giai đoạn tỷ lệ",
+        "noIntervals": "Quý này chưa có giai đoạn tỷ lệ nào.",
+        "period": "Giai đoạn",
+        "defaultRate": "mặc định",
+        "byAccount": "Theo tài khoản gốc",
+        "noAccounts": "Không có tài khoản nào giữ suất hợp lệ trong quý này nên không chia khoản nào.",
+        "share": "Phần được chia",
+        "remainderLabel": "khoản thu từ tính toán chênh lệch",
+        "remainderHint": "Phần còn lại sau khi làm tròn xuống từng phần chia thành NTD nguyên. Hiển thị thành một dòng riêng, không bị bỏ đi.",
+        "pendingRefunds": "{count} đơn đang chờ hoàn tiền không được tính vào cơ sở doanh số.",
+        "refundsAfterLock": "Chỉ để tham khảo: các khoản hoàn tiền {amount} ({count} đơn) hoàn tất sau khi quý khóa. KHÔNG được áp dụng vào quỹ này."
+      }
     }
   },
   "seller": {
@@ -2139,7 +2360,7 @@
       "walletNetwork": "Mạng lưới",
       "walletNetworkDesc": "Cây tuyến dưới MLM của bạn.",
       "walletCommissions": "Thưởng",
-      "walletCommissionsDesc": "Hoa hồng referral, team, global và loyalty.",
+      "walletCommissionsDesc": "Hoa hồng referral, team và global.",
       "landingCost": "Chi phí landing",
       "landingCostDesc": "Ước tính chi phí cuối từ dòng hàng, phí và giảm giá.",
       "promotions": "Khuyến mãi",
@@ -2595,9 +2816,9 @@
       "REFERRAL": "Giới thiệu",
       "TEAM": "Đội nhóm",
       "GLOBAL": "Toàn cầu",
-      "LOYALTY": "Trung thành",
       "ADJUST": "Điều chỉnh",
-      "SELLER_PAYOUT": "Đối soát shop"
+      "SELLER_PAYOUT": "Đối soát shop",
+      "legacy": "Khác (loại thưởng đã ngừng)"
     },
     "pinRequiredBanner": "Cần đặt PIN ví trước khi tiếp tục.",
     "p2pEmail": "Email người nhận",
@@ -2660,7 +2881,7 @@
       "REFERRAL": "Giới thiệu",
       "TEAM": "Đội nhóm",
       "GLOBAL": "Toàn cầu",
-      "LOYALTY": "Trung thành"
+      "legacy": "Khác (đã ngừng)"
     },
     "commissionStatus": {
       "PENDING": "Chờ ghi có",
@@ -2671,7 +2892,6 @@
     "txReasonAll": "Tất cả lý do",
     "pillarReferral": "Giới thiệu — khi người bạn mời hoàn tất đơn ≥ NT$2.000, bạn nhận %. Trần 10% từ cấp Tổng tài (cấp 6) trở lên.",
     "pillarTeam": "Đội nhóm — thưởng chênh lệch cuối tháng trên doanh số mạng (không tính mua của chính bạn).",
-    "pillarLoyalty": "Trung thành — mỗi tháng cần ít nhất một đơn hoàn tất ≥ NT$2.000 (không cộng dồn đơn nhỏ); đủ 12 tháng liên tiếp → NT$28.000 TWD ghi có thành điểm. Gián đoạn tháng sẽ reset chuỗi.",
     "pillarGlobal": "Toàn cầu — 2% doanh số sàn chia theo các cấp cao; cấp trống công ty giữ.",
     "rankSeller": "Người mua hàng",
     "rankLabel": "{name}",
@@ -2693,7 +2913,7 @@
     "rankProgressDone": "Đã đủ điều kiện — chờ hệ thống nâng cấp.",
     "bonusGuide": {
       "title": "Cách nhận thưởng",
-      "intro": "Có bốn loại thưởng. Số tiền tính bằng TWD từ doanh số đã ghi nhận (không theo ngày đặt hay ngày giao), rồi quy đổi sang điểm khi ghi có ví (1 điểm = {usd} USD, qua FX). Khi rút, điểm đổi lại TWD. Lộ trình thăng cấp (Nhà phân phối trở lên) cần shop được duyệt.",
+      "intro": "Có ba loại thưởng. Số tiền tính bằng TWD từ doanh số đã ghi nhận (không theo ngày đặt hay ngày giao), rồi quy đổi sang điểm khi ghi có ví (1 điểm = {usd} USD, qua FX). Khi rút, điểm đổi lại TWD. Lộ trình thăng cấp (Nhà phân phối trở lên) cần shop được duyệt.",
       "policyTitle": "Khi nào đơn được tính thưởng",
       "policyEligible": "Hoa hồng, PV hạng và đối soát shop chỉ dùng doanh số đã ghi nhận: đơn đã thanh toán, đã giao nhận, hết 7 ngày đổi trả, và không còn yêu cầu trả hàng / hoàn tiền đang mở. Trước đó đơn chưa vào GMV thưởng.",
       "policyPeriod": "Tháng thưởng là tháng dương lịch (GMT+8) khi đơn được ghi nhận — không phải tháng bạn đặt hay thanh toán. Ví dụ: mua và nhận ngày 31/08 → ghi nhận 07/09 → đơn tính vào tháng 9, không phải tháng 8.",
@@ -2707,7 +2927,6 @@
       "teamRatesTitle": "% đội nhóm theo cấp",
       "teamNote": "Bạn nhận phần chênh lệch giữa % của bạn và % cao nhất đã có phía dưới trên nhánh (max-below), tính trên doanh số mạng đã ghi nhận.",
       "teamBody": "Cuối tháng bạn nhận phần chênh lệch giữa % đội nhóm của bạn và % cao nhất của downline trên cùng nhánh (max-below), trên doanh số mạng đã ghi nhận trong tháng (TWD). Đơn mua của chính bạn không tính. Kết quả TWD được ghi có thành điểm.",
-      "loyaltyBody": "Mỗi tháng cần ít nhất một đơn đã ghi nhận ≥ NT$2.000 — không cộng dồn đơn nhỏ, và “đã giao” chưa đủ. Đủ 12 tháng liên tiếp nhận NT$28.000 TWD, ghi có thành điểm. Bỏ lỡ một tháng sẽ reset chuỗi; sau khi nhận, chu kỳ mới bắt đầu.",
       "globalBody": "Mỗi quý một phần GMV sàn đã ghi nhận (% do admin cấu hình) vào các quỹ TWD cộng dồn. Thành viên đủ cấp cao chia từng quỹ; cấp trống công ty giữ. Phần của bạn được ghi có thành điểm.",
       "globalTiersTitle": "Ai được chia quỹ",
       "globalNote": "Cấp cao hơn có thể đủ điều kiện ở nhiều mức chia. Mức trống do công ty giữ.",
@@ -3096,7 +3315,18 @@
     "fulfillmentComplaintSent": "Đã gửi khiếu nại giao hàng",
     "fulfillmentComplaintFailed": "Gửi khiếu nại thất bại",
     "paymentDisputeSent": "Đã gửi khiếu nại — Admin đã được báo",
-    "paymentDisputeFailed": "Không gửi được khiếu nại chứng từ"
+    "paymentDisputeFailed": "Không gửi được khiếu nại chứng từ",
+    "settingInvalid": "Giá trị này nằm ngoài phạm vi cho phép của cài đặt.",
+    "settingNotFound": "Không tìm thấy cài đặt.",
+    "settingSaved": "Đã lưu cài đặt.",
+    "settingUnchanged": "Cài đặt không thay đổi.",
+    "dividendInputInvalid": "Dữ liệu cổ tức không hợp lệ. Kiểm tra lại giá trị và thử lại.",
+    "dividendUserNotFound": "Không tìm thấy tài khoản.",
+    "dividendRateConflict": "Mức tỷ lệ với ngày hiệu lực này xung đột với mức đã có.",
+    "dividendQuarterLocked": "Quý này đã khóa và không thể chỉnh sửa nữa.",
+    "dividendSlotCapExceeded": "Vượt quá giới hạn số suất.",
+    "dividendSlotInsufficient": "Tài khoản nguồn không đủ số suất.",
+    "rmaRefundAmountInvalid": "Số tiền hoàn không hợp lệ (phải lớn hơn 0 và không vượt quá số còn được hoàn)."
   },
   "superAdmin": {
     "title": "Quản trị hệ thống",

@@ -111,8 +111,6 @@ export const mlmKeys = {
     [...mlmKeys.all, "quarterly-overview", quartersBack] as const,
   commissionReport: (yearMonth?: string) =>
     [...mlmKeys.all, "commission-report", yearMonth ?? ""] as const,
-  loyaltyHistory: (userId: string, monthsBack = 12) =>
-    [...mlmKeys.all, "loyalty-history", userId, monthsBack] as const,
 };
 
 export const adminWalletKeys = {
@@ -736,18 +734,5 @@ export function useMarkCommissionPeriodPaid() {
     },
     onError: (e) =>
       toast.error(walletErrorMessage(e, tt("toast.commissionPeriodMarkFailed"))),
-  });
-}
-
-export function useLoyaltyHistory(
-  userId: string | null | undefined,
-  monthsBack = 12,
-  enabled = true,
-) {
-  return useQuery({
-    queryKey: mlmKeys.loyaltyHistory(userId ?? "", monthsBack),
-    queryFn: () =>
-      adminMlmApi.loyaltyHistory(userId!, { monthsBack }),
-    enabled: Boolean(enabled && userId),
   });
 }

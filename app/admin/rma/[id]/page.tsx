@@ -16,6 +16,9 @@ import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
+import { RmaApproveFlow } from "@/components/admin/RmaApproveFlow";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { canSetPartialRefund } from "@/lib/auth/admin-write";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
@@ -43,6 +46,9 @@ function RmaDetailInner({ id }: { id: string }) {
   const resolveDispute = useAdminResolveDispute();
   const reopenDispute = useAdminReopenDispute();
   const forceAction = useAdminRmaForceAction();
+  const { user } = useAuth();
+  const staffApprove = canSetPartialRefund(user);
+  const [approveOpen, setApproveOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [disputeCloseOpen, setDisputeCloseOpen] = useState(false);
   const [reopenOpen, setReopenOpen] = useState(false);
@@ -112,7 +118,9 @@ function RmaDetailInner({ id }: { id: string }) {
                     tone="approve"
                     disabled={busy}
                     onClick={() =>
-                      void rmaDecision.mutateAsync({ id: rma.id, decision: "APPROVED" })
+                      staffApprove
+                        ? setApproveOpen(true)
+                        : void rmaDecision.mutateAsync({ id: rma.id, decision: "APPROVED" })
                     }
                   />
                   <AdminIconButton
@@ -446,6 +454,11 @@ function RmaDetailInner({ id }: { id: string }) {
           </div>
         )}
       </div>
+
+      <RmaApproveFlow
+        target={approveOpen && rma ? { rmaId: rma.id, orderId: rma.orderId } : null}
+        onClose={() => setApproveOpen(false)}
+      />
 
       <AdminReasonModal
         open={rejectOpen}

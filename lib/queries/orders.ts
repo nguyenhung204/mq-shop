@@ -24,6 +24,7 @@ import { currentLocale, tt } from "@/lib/i18n/tt";
 import { statusLabel } from "@/lib/i18n/status";
 import { suppressNotificationToasts } from "@/lib/notifications/suppress-toast";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { sendRmaDecision, type RmaDecisionVars } from "@/lib/rma/approve-flow";
 
 export const orderKeys = {
   all: ["orders"] as const,
@@ -503,20 +504,7 @@ export function useAdminRmaDetail(rmaId: string) {
 export function useAdminRmaDecision() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({
-      id,
-      decision,
-      note,
-    }: {
-      id: string;
-      decision: "APPROVED" | "REJECTED";
-      note?: string;
-    }) => {
-      if (decision === "APPROVED") {
-        return adminOrdersApi.approveRma(id, { note });
-      }
-      return adminOrdersApi.rejectRma(id, { note: note || "Rejected" });
-    },
+    mutationFn: (vars: RmaDecisionVars) => sendRmaDecision(adminOrdersApi, vars),
     onSuccess: (_d, vars) => {
       invalidateRmaQueries(queryClient, vars.id);
       suppressNotificationToasts();

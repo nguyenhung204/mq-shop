@@ -52,3 +52,15 @@ describe("gmt8-calendar", () => {
     expect(text).toMatch(/1/);
   });
 });
+
+describe("gmt8DateTimeLocalToIso rejects impossible dates", () => {
+  it("converts a real Taipei wall-clock time", () => {
+    expect(gmt8DateTimeLocalToIso("2027-01-01T00:00")).toBe("2026-12-31T16:00:00.000Z");
+    expect(gmt8DateTimeLocalToIso("2028-02-29T23:59")).toBe("2028-02-29T15:59:00.000Z");
+  });
+  it("returns empty for dates and times that would roll over", () => {
+    for (const bad of ["2026-02-30T10:00", "2026-13-01T10:00", "2026-04-31T10:00", "2026-11-16T25:00", "2026-11-16T10:61", "2027-02-29T00:00", "junk", ""]) {
+      expect(gmt8DateTimeLocalToIso(bad), bad).toBe("");
+    }
+  });
+});

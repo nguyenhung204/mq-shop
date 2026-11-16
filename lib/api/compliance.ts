@@ -19,6 +19,13 @@ export type ApiBackup = {
   errorMessage?: string | null;
   fileName?: string | null;
   sizeBytes?: number | null;
+  /** R6: created by the daily scheduled job (createdBy is the all-zero system UUID). */
+  scheduled?: boolean;
+  createdBy?: string | null;
+  /** R6: the stored file of an old scheduled backup was deleted at this time. */
+  prunedAt?: string | null;
+  /** null once the file is deleted (pruned rows cannot be downloaded). */
+  storageKey?: string | null;
 };
 
 export type ListBackupsParams = {

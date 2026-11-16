@@ -20,7 +20,6 @@ export type WalletTxReason =
   | "REFERRAL"
   | "TEAM"
   | "GLOBAL"
-  | "LOYALTY"
   | "ADJUST"
   | "SELLER_PAYOUT";
 

@@ -133,6 +133,12 @@ export function resolveNotificationRoute(
       return seller && !buyerOnly ? "/seller/orders" : "/orders";
     }
 
+    case "ORDER_STALE_BILL_REMINDER": {
+      const m = requireMeta(meta, ["orderId"]);
+      if (m) return `/orders/${m.orderId}`;
+      return buyerOnly ? null : "/seller/orders";
+    }
+
     case "ORDER_PAYMENT_ESCALATED":
     case "ORDER_PAYMENT_DISPUTED": {
       const m = requireMeta(meta, ["orderId"]);
@@ -242,7 +248,6 @@ export function resolveNotificationRoute(
     case "COMMISSION_REFERRAL_CREDITED":
     case "COMMISSION_TEAM_CREDITED":
     case "COMMISSION_GLOBAL_CREDITED":
-    case "COMMISSION_LOYALTY_CREDITED":
     case "COMMISSION_REFERRAL_TRIGGERED":
       return buyerOnly ? null : "/wallet/commissions";
 

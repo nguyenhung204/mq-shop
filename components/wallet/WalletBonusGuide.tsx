@@ -8,7 +8,7 @@ import { usePointsDisplayFx } from "@/lib/hooks/usePointsDisplayFx";
 import { mlmRankLabel } from "@/lib/i18n/mlm-rank";
 
 type Pillar = {
-  type: "REFERRAL" | "TEAM" | "LOYALTY" | "GLOBAL";
+  type: "REFERRAL" | "TEAM" | "GLOBAL";
   bodyKey: string;
   timingKey: string;
 };
@@ -22,11 +22,6 @@ const PILLARS: Pillar[] = [
   {
     type: "TEAM",
     bodyKey: "wallet.bonusGuide.teamBody",
-    timingKey: "wallet.bonusGuide.timingMonthEnd",
-  },
-  {
-    type: "LOYALTY",
-    bodyKey: "wallet.bonusGuide.loyaltyBody",
     timingKey: "wallet.bonusGuide.timingMonthEnd",
   },
   {

@@ -9,6 +9,10 @@ export type OrderMoneyFields = {
   displayCurrency?: string | null;
   fxRate?: number | null;
   displayTotal?: number | null;
+  /** R4: what the buyer must pay; wins over displayTotal / fxRate for the order total. */
+  payableAmount?: number | null;
+  payableCurrency?: string | null;
+  fxRateLocked?: number | null;
 };
 
 export type OrderMoneyField = "total" | "subtotal" | "shippingFee";
@@ -46,6 +50,20 @@ export function formatOrderMoney(
 ): FormattedOrderMoney {
   const twd = twdForField(order, field);
 
+  if (
+    field === "total" &&
+    order.payableAmount != null &&
+    Number.isFinite(order.payableAmount) &&
+    order.payableCurrency &&
+    order.payableCurrency !== "TWD"
+  ) {
+    return {
+      primary: formatMoneyForCurrency(order.payableAmount, order.payableCurrency, locale),
+      ledgerHint: formatMoney(twd),
+      showCurrencySuffix: false,
+    };
+  }
+
   if (hasFxSnapshot(order)) {
     const displayCurrency = order.displayCurrency!;
     const fxRate = order.fxRate!;
@@ -78,5 +96,9 @@ export function formatOrderLineMoney(
   lineTwd: number,
   locale = "en-US",
 ): FormattedOrderMoney {
-  return formatOrderMoney({ ...order, total: lineTwd, displayTotal: null }, "total", locale);
+  return formatOrderMoney(
+    { ...order, total: lineTwd, displayTotal: null, payableAmount: null, payableCurrency: null },
+    "total",
+    locale,
+  );
 }

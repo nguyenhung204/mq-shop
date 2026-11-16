@@ -124,6 +124,10 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "Buyer disputed a rejected bill",
       body: "Order {orderId} — Admin will compare the payment proof.",
     },
+    ORDER_STALE_BILL_REMINDER: {
+      title: "Payment proof waiting for you",
+      body: "Order {orderId}: the payment proof is still waiting for your review. Please confirm or reject it.",
+    },
     ORDER_PROOF_RETENTION_WARNING: {
       title: "Receipt files will be deleted soon",
       body: "Receipt files for order {orderId} will be deleted in {daysLeft} days. Please save a copy if you still need them.",
@@ -287,10 +291,6 @@ export const NOTIFICATION_TYPE_COPY: Record<
     COMMISSION_GLOBAL_CREDITED: {
       title: "Global bonus",
       body: "Global bonus {amount} was credited to your wallet.",
-    },
-    COMMISSION_LOYALTY_CREDITED: {
-      title: "Loyalty bonus",
-      body: "Loyalty bonus {amount} was credited to your wallet.",
     },
     COMMISSION_REFERRAL_TRIGGERED: {
       title: "Referral commission triggered",
@@ -470,6 +470,10 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "Buyer khiếu nại reject bill",
       body: "Đơn {orderId} — Admin sẽ đối chiếu chứng từ thanh toán.",
     },
+    ORDER_STALE_BILL_REMINDER: {
+      title: "Bill thanh toán đang chờ bạn xử lý",
+      body: "Đơn {orderId}: bill thanh toán vẫn đang chờ bạn xem xét. Vui lòng xác nhận hoặc từ chối.",
+    },
     ORDER_PROOF_RETENTION_WARNING: {
       title: "Biên lai sắp hết hạn lưu trữ",
       body: "Biên lai sẽ được hệ thống xóa sau {daysLeft} ngày. Vui lòng lưu lại nếu cần.",
@@ -633,10 +637,6 @@ export const NOTIFICATION_TYPE_COPY: Record<
     COMMISSION_GLOBAL_CREDITED: {
       title: "Thưởng toàn cầu",
       body: "Thưởng toàn cầu {amount} đã vào ví.",
-    },
-    COMMISSION_LOYALTY_CREDITED: {
-      title: "Thưởng trung thành",
-      body: "Thưởng trung thành {amount} đã vào ví.",
     },
     COMMISSION_REFERRAL_TRIGGERED: {
       title: "Kích hoạt hoa hồng",
@@ -816,6 +816,10 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "買家申訴被拒憑證",
       body: "訂單 {orderId} — 管理員將核對付款憑證。",
     },
+    ORDER_STALE_BILL_REMINDER: {
+      title: "付款憑證等待您處理",
+      body: "訂單 {orderId}：付款憑證仍待您審核，請確認或拒絕。",
+    },
     ORDER_PROOF_RETENTION_WARNING: {
       title: "憑證即將到期刪除",
       body: "系統將於 {daysLeft} 天後刪除訂單 {orderId} 的憑證。若仍需要請先自行存檔。",
@@ -979,10 +983,6 @@ export const NOTIFICATION_TYPE_COPY: Record<
     COMMISSION_GLOBAL_CREDITED: {
       title: "全球獎金",
       body: "全球獎金 {amount} 已入帳。",
-    },
-    COMMISSION_LOYALTY_CREDITED: {
-      title: "忠誠獎金",
-      body: "忠誠獎金 {amount} 已入帳。",
     },
     COMMISSION_REFERRAL_TRIGGERED: {
       title: "推薦佣金已觸發",
