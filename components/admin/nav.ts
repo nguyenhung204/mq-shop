@@ -223,6 +223,14 @@ export const adminNavItems: AdminNavItem[] = [
     group: "finance_mlm",
   },
   {
+    href: "/admin/dividend/rates",
+    labelKey: "admin.nav.dividendRates",
+    icon: Percent,
+    permissions: ["VIEW_MLM_COMSN"],
+    roles: ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT"],
+    group: "finance_mlm",
+  },
+  {
     href: "/admin/landing-cost",
     labelKey: "admin.nav.landingCost",
     icon: Calculator,

@@ -34,3 +34,25 @@ describe("settings page wiring (U1)", () => {
     expect(block).toContain('roles: ["ADMIN", "SUPER_ADMIN"]');
   });
 });
+
+describe("dividend rates page wiring (U2)", () => {
+  it("is read for ADMIN/ACCOUNTANT/SUPER_ADMIN, form only for SUPER_ADMIN", () => {
+    const p = src("app/admin/dividend/rates/page.tsx");
+    expect(p).toContain('roles={["SUPER_ADMIN", "ADMIN", "ACCOUNTANT"]}');
+    expect(p).toContain("const canWrite = canWriteDividend(user)");
+    expect(p).toContain("{canWrite ? (\n          <DividendRateForm");
+  });
+  it("form validates with validateRateForm and rows have no edit or delete control", () => {
+    expect(src("components/admin/dividend/DividendRateForm.tsx")).toContain("validateRateForm({ ratePercent, effectiveDate, reason })");
+    const p = src("app/admin/dividend/rates/page.tsx");
+    expect(p).not.toMatch(/AdminIconButton|onDelete|onEdit|\.delete\(|\.put\(|\.patch\(/);
+  });
+  it("write hooks go through the idempotency store", () => {
+    const q = src("lib/queries/dividend.ts");
+    expect(q).toContain("run(vars, idempotency.keyFor(vars))");
+    const a = src("lib/api/dividend.ts");
+    expect(a).toContain('api.post<DividendRate>("/admin/dividend/rates", body, idem(idempotencyKey))');
+    expect(a).toContain('"/admin/dividend/slots", body, idem(idempotencyKey)');
+    expect(a).toContain('"/admin/dividend/slots/transfer", body, idem(idempotencyKey)');
+  });
+});

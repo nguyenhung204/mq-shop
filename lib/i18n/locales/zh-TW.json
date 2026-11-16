@@ -830,7 +830,8 @@
       "notifyAdmin": "管理員通知",
       "reviews": "評價",
       "refundObligations": "退款義務",
-      "settings": "系統設定"
+      "settings": "系統設定",
+      "dividendRates": "股利比率"
     },
     "common": {
       "create": "建立",
@@ -895,7 +896,12 @@
       "allShops": "全部商店",
       "when": "時間",
       "reasonPrefix": "原因：",
-      "retry": "重試"
+      "retry": "重試",
+      "reasonErrors": {
+        "required": "請輸入原因。",
+        "tooShort": "原因至少需 3 個字元。",
+        "tooLong": "原因最多 500 個字元。"
+      }
     },
     "overview": {
       "title": "管理後台",
@@ -2100,11 +2106,6 @@
         "aboveMax": "數值不得大於 {max}。",
         "notNullable": "此設定不可清除。"
       },
-      "reasonErrors": {
-        "required": "請輸入原因。",
-        "tooShort": "原因至少需 3 個字元。",
-        "tooLong": "原因最多 500 個字元。"
-      },
       "keys": {
         "dividendEditWindowDays": {
           "label": "股利名額可編輯天數",
@@ -2125,6 +2126,47 @@
           "label": "名額總上限",
           "description": "所有帳戶合計的股利名額上限。",
           "nullMeaning": "無上限。"
+        }
+      }
+    },
+    "dividend": {
+      "readOnlyNote": "您只能檢視此頁面，僅超級管理員可進行變更。",
+      "rates": {
+        "title": "股利比率",
+        "description": "分配至股利池的銷售額比例。比率依生效日設定，不可修改或刪除：新紀錄自生效日起取代舊紀錄。",
+        "current": "目前比率",
+        "default": "預設比率（無適用紀錄時使用）",
+        "today": "台北今日：{date}",
+        "history": "比率歷史",
+        "empty": "尚未設定比率，目前使用預設值。",
+        "colRate": "比率",
+        "colEffective": "生效日",
+        "colStatus": "狀態",
+        "colReason": "原因",
+        "colCreated": "記錄時間",
+        "status": {
+          "effective": "已生效",
+          "upcoming": "即將生效",
+          "superseded": "已被取代"
+        },
+        "currentBadge": "目前",
+        "formTitle": "新增比率",
+        "formNote": "儲存後不可修改或刪除。為同一未來日期再新增比率，將取代該日期先前的紀錄。",
+        "ratePercent": "比率（%）",
+        "ratePercentHint": "0 至 100，最多兩位小數",
+        "effectiveDate": "生效日（台北時間）",
+        "submit": "儲存比率",
+        "created": "比率已儲存。",
+        "errors": {
+          "ratePercent": {
+            "required": "請輸入比率。",
+            "invalid": "比率須介於 0 至 100，且最多兩位小數。"
+          },
+          "effectiveDate": {
+            "required": "請選擇生效日。",
+            "invalid": "這不是有效的日期。",
+            "past": "生效日不得早於今日（台北時間）。"
+          }
         }
       }
     }

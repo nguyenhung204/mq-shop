@@ -17,7 +17,7 @@ type Props = {
 function errorKey(e: SettingEditError): string {
   return e.field === "value"
     ? `admin.settings.errors.${e.code}`
-    : `admin.settings.reasonErrors.${e.code}`;
+    : `admin.common.reasonErrors.${e.code}`;
 }
 
 export function SettingEditModal({ open, setting, busy = false, onClose, onConfirm }: Props) {

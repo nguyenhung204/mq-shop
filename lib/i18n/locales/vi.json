@@ -830,7 +830,8 @@
       "notifyAdmin": "Thông báo admin",
       "reviews": "Đánh giá",
       "refundObligations": "Nghĩa vụ hoàn tiền",
-      "settings": "Cài đặt hệ thống"
+      "settings": "Cài đặt hệ thống",
+      "dividendRates": "Tỷ lệ cổ tức"
     },
     "common": {
       "create": "Tạo mới",
@@ -895,7 +896,12 @@
       "allShops": "Tất cả shop",
       "when": "Thời điểm",
       "reasonPrefix": "Lý do: ",
-      "retry": "Thử lại"
+      "retry": "Thử lại",
+      "reasonErrors": {
+        "required": "Hãy nhập lý do.",
+        "tooShort": "Lý do phải có ít nhất 3 ký tự.",
+        "tooLong": "Lý do tối đa 500 ký tự."
+      }
     },
     "overview": {
       "title": "Quản trị",
@@ -2100,11 +2106,6 @@
         "aboveMax": "Giá trị không được vượt quá {max}.",
         "notNullable": "Cài đặt này không thể để trống."
       },
-      "reasonErrors": {
-        "required": "Hãy nhập lý do.",
-        "tooShort": "Lý do phải có ít nhất 3 ký tự.",
-        "tooLong": "Lý do tối đa 500 ký tự."
-      },
       "keys": {
         "dividendEditWindowDays": {
           "label": "Thời hạn sửa suất cổ tức (ngày)",
@@ -2125,6 +2126,47 @@
           "label": "Tổng số suất tối đa",
           "description": "Số suất cổ tức tối đa trên toàn bộ tài khoản.",
           "nullMeaning": "Không giới hạn."
+        }
+      }
+    },
+    "dividend": {
+      "readOnlyNote": "Bạn chỉ có thể xem trang này. Chỉ Super Admin mới được thay đổi.",
+      "rates": {
+        "title": "Tỷ lệ cổ tức",
+        "description": "Tỷ lệ doanh số dành cho quỹ cổ tức. Mỗi mức có ngày hiệu lực và không bao giờ bị sửa hoặc xóa: dòng mới thay thế dòng cũ kể từ ngày bắt đầu.",
+        "current": "Tỷ lệ hiện tại",
+        "default": "Tỷ lệ mặc định (dùng khi không có dòng nào áp dụng)",
+        "today": "Hôm nay ở Đài Bắc: {date}",
+        "history": "Lịch sử tỷ lệ",
+        "empty": "Chưa đặt mức nào, đang dùng mặc định.",
+        "colRate": "Tỷ lệ",
+        "colEffective": "Hiệu lực từ",
+        "colStatus": "Trạng thái",
+        "colReason": "Lý do",
+        "colCreated": "Ghi nhận",
+        "status": {
+          "effective": "Đang áp dụng",
+          "upcoming": "Sắp áp dụng",
+          "superseded": "Đã bị thay thế"
+        },
+        "currentBadge": "Hiện tại",
+        "formTitle": "Thêm mức tỷ lệ",
+        "formNote": "Đã lưu thì không thể sửa hoặc xóa. Thêm mức khác cho cùng một ngày tương lai sẽ thay thế mức trước của ngày đó.",
+        "ratePercent": "Tỷ lệ (%)",
+        "ratePercentHint": "Từ 0 đến 100, tối đa 2 số thập phân",
+        "effectiveDate": "Ngày hiệu lực (giờ Đài Bắc)",
+        "submit": "Lưu tỷ lệ",
+        "created": "Đã lưu tỷ lệ.",
+        "errors": {
+          "ratePercent": {
+            "required": "Hãy nhập tỷ lệ.",
+            "invalid": "Tỷ lệ phải từ 0 đến 100 và tối đa 2 số thập phân."
+          },
+          "effectiveDate": {
+            "required": "Hãy chọn ngày hiệu lực.",
+            "invalid": "Đây không phải ngày hợp lệ.",
+            "past": "Ngày hiệu lực không được trước hôm nay (giờ Đài Bắc)."
+          }
         }
       }
     }

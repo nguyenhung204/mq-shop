@@ -830,7 +830,8 @@
       "notifyAdmin": "Admin notifications",
       "reviews": "Reviews",
       "refundObligations": "Refund obligations",
-      "settings": "System settings"
+      "settings": "System settings",
+      "dividendRates": "Dividend rates"
     },
     "common": {
       "create": "Create",
@@ -895,7 +896,12 @@
       "allShops": "All shops",
       "when": "When",
       "reasonPrefix": "Reason: ",
-      "retry": "Retry"
+      "retry": "Retry",
+      "reasonErrors": {
+        "required": "Enter a reason.",
+        "tooShort": "The reason must be at least 3 characters.",
+        "tooLong": "The reason must be at most 500 characters."
+      }
     },
     "overview": {
       "title": "Admin",
@@ -2100,11 +2106,6 @@
         "aboveMax": "The value must not exceed {max}.",
         "notNullable": "This setting cannot be cleared."
       },
-      "reasonErrors": {
-        "required": "Enter a reason.",
-        "tooShort": "The reason must be at least 3 characters.",
-        "tooLong": "The reason must be at most 500 characters."
-      },
       "keys": {
         "dividendEditWindowDays": {
           "label": "Dividend edit window (days)",
@@ -2125,6 +2126,47 @@
           "label": "Maximum total slots",
           "description": "Maximum dividend slots across all accounts.",
           "nullMeaning": "No cap."
+        }
+      }
+    },
+    "dividend": {
+      "readOnlyNote": "You can view this page. Only a Super Admin can make changes.",
+      "rates": {
+        "title": "Dividend rates",
+        "description": "The share of sales set aside for the dividend pool. Rates are effective-dated and never edited or deleted: a new row replaces the old one from its start date.",
+        "current": "Current rate",
+        "default": "Default rate (used when no row applies)",
+        "today": "Today in Taipei: {date}",
+        "history": "Rate history",
+        "empty": "No rate has been set yet; the default applies.",
+        "colRate": "Rate",
+        "colEffective": "Effective from",
+        "colStatus": "Status",
+        "colReason": "Reason",
+        "colCreated": "Recorded",
+        "status": {
+          "effective": "In effect",
+          "upcoming": "Upcoming",
+          "superseded": "Superseded"
+        },
+        "currentBadge": "Current",
+        "formTitle": "Add a rate",
+        "formNote": "A rate cannot be edited or deleted once saved. Adding another rate for the same future date replaces the earlier one for that date.",
+        "ratePercent": "Rate (%)",
+        "ratePercentHint": "0 to 100, up to 2 decimals",
+        "effectiveDate": "Effective date (Taipei time)",
+        "submit": "Save rate",
+        "created": "Rate saved.",
+        "errors": {
+          "ratePercent": {
+            "required": "Enter a rate.",
+            "invalid": "The rate must be between 0 and 100 with at most 2 decimals."
+          },
+          "effectiveDate": {
+            "required": "Pick an effective date.",
+            "invalid": "This is not a real calendar date.",
+            "past": "The effective date cannot be before today (Taipei time)."
+          }
         }
       }
     }

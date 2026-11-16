@@ -43,6 +43,7 @@ export function useUpdateSetting() {
     mutationFn: (vars: { key: SettingKey; body: UpdateSettingBody }) =>
       adminSettingsApi.update(vars.key, vars.body, idempotency.keyFor(vars)),
     onSuccess: (res) => {
+      idempotency.invalidate();
       void queryClient.invalidateQueries({ queryKey: settingsKeys.all });
       toast.success(tt(res.changed ? "toast.settingSaved" : "toast.settingUnchanged"));
     },
