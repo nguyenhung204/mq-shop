@@ -584,6 +584,11 @@
       "goodsReturnUpdateTrackingHint": "若運單填錯或更換物流，可在此更新。",
       "goodsReturnFixTrackingHint": "買家已回報問題 — 請更正運單以便其收貨。",
       "goodsReturnPendingBuyerHint": "不退款。賣家須將商品寄回 — 收到後請確認。"
+    },
+    "payable": {
+      "amountDue": "應付金額",
+      "rateLocked": "下單時鎖定的匯率：{rate}",
+      "ledgerNote": "訂單於商店帳本的總額：{twd}"
     }
   },
   "wishlist": {

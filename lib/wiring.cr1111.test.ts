@@ -102,3 +102,15 @@ describe("RMA partial refund wiring (U5, UI1)", () => {
     expect(src("components/admin/RmaApproveModal.tsx")).toContain("validateRefundAmount(amount, cap)");
   });
 });
+
+describe("payable amount wiring (U7, R4)", () => {
+  it("checkout result, order detail payment block and order list use the payable helpers", () => {
+    expect(src("components/cart/CheckoutContent.tsx")).toContain("<PayableLine order={placed.money}");
+    expect(src("components/cart/CheckoutContent.tsx")).toContain("payableAmount: order.payableAmount");
+    expect(src("components/cart/CheckoutContent.tsx")).not.toContain("formatDisplay(placed.total)");
+    const d = src("components/orders/OrderDetailContent.tsx");
+    expect(d).toContain("<PayableLine order={order}");
+    expect(d).toContain("payableAmount: order.payableAmount");
+    expect(src("components/orders/OrdersListContent.tsx")).toContain('formatOrderMoney(o, "total", intlLocale)');
+  });
+});

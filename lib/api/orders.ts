@@ -208,6 +208,11 @@ export type OrderView = {
   fxRate?: number | null;
   fxAsOf?: string | null;
   displayTotal?: number | null;
+  /** R4: what the buyer must actually pay, in `payableCurrency` (2 dp). Absent on an older API. */
+  payableAmount?: number;
+  payableCurrency?: string;
+  /** Rate locked at order creation (1 TWD = x payableCurrency); null when there is no snapshot. */
+  fxRateLocked?: number | null;
   paymentMethod: PaymentMethod;
   /** Buyer-uploaded bank-transfer proof (OFF_PLATFORM / legacy COD). */
   paymentProofUrl?: string | null;

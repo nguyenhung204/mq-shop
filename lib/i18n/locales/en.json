@@ -584,6 +584,11 @@
       "goodsReturnUpdateTrackingHint": "Update tracking if you entered the wrong code or changed carrier.",
       "goodsReturnFixTrackingHint": "Buyer reported a problem — correct the tracking so they can receive the goods.",
       "goodsReturnPendingBuyerHint": "No refund. The seller must ship your items back — you will confirm when they arrive."
+    },
+    "payable": {
+      "amountDue": "Amount to pay",
+      "rateLocked": "Exchange rate locked when you ordered: {rate}",
+      "ledgerNote": "Order total in the shop ledger: {twd}"
     }
   },
   "wishlist": {

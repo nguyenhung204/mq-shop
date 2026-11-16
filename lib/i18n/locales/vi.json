@@ -584,6 +584,11 @@
       "goodsReturnUpdateTrackingHint": "Cập nhật mã vận đơn nếu nhập sai hoặc đổi đơn vị vận chuyển.",
       "goodsReturnFixTrackingHint": "Buyer đã báo lỗi — hãy sửa mã vận đơn để họ nhận được hàng.",
       "goodsReturnPendingBuyerHint": "Không hoàn tiền. Người bán phải gửi lại hàng — bạn xác nhận khi nhận được."
+    },
+    "payable": {
+      "amountDue": "Số tiền cần thanh toán",
+      "rateLocked": "Tỷ giá đã chốt khi bạn đặt hàng: {rate}",
+      "ledgerNote": "Tổng đơn trong sổ cái của shop: {twd}"
     }
   },
   "wishlist": {

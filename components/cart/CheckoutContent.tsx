@@ -28,6 +28,9 @@ import { CountrySelect } from "@/components/ui/CountrySelect";
 import { PhoneInput } from "@/components/ui/PhoneInput";
 import { AddressRegionFields } from "@/components/ui/AddressRegionFields";
 import { QuantityStepper } from "@/components/ui/QuantityStepper";
+import { PayableLine } from "@/components/orders/PayableLine";
+import { toIntlLocale } from "@/lib/i18n/locale-format";
+import type { OrderMoneyFields } from "@/lib/fx/formatOrderMoney";
 import { Container, PageHero } from "@/components/ui/shared";
 import { FormAlerts } from "@/lib/ui/form-feedback";
 import {
@@ -45,6 +48,8 @@ type PlacedOrder = {
   code: string;
   displayName: string;
   total: number;
+  /** R4: what the buyer must pay, taken from the order DTO. */
+  money: OrderMoneyFields;
   proofUploaded: boolean;
   proofError: string | null;
 };
@@ -278,10 +283,9 @@ export function CheckoutContent() {
           <div>
             <h2 className="text-2xl text-mq-text mb-3">{t("checkout.thankYou")}</h2>
             <p className="text-mq-text-secondary mb-2">
-              {t("checkout.orderLabel")} <strong>{placed.displayName}</strong> ·{" "}
-              {formatDisplay(placed.total)}{" "}
-              <span className="text-mq-text-muted text-sm">({formatMoney(placed.total)})</span>
+              {t("checkout.orderLabel")} <strong>{placed.displayName}</strong>
             </p>
+            <PayableLine order={placed.money} locale={toIntlLocale(locale)} />
           </div>
 
           {placed.proofUploaded ? (
@@ -435,6 +439,16 @@ export function CheckoutContent() {
         code: order.code,
         displayName: order.displayName,
         total: order.total,
+        money: {
+          total: order.total,
+          currency: order.currency,
+          displayCurrency: order.displayCurrency,
+          fxRate: order.fxRate,
+          displayTotal: order.displayTotal,
+          payableAmount: order.payableAmount,
+          payableCurrency: order.payableCurrency,
+          fxRateLocked: order.fxRateLocked,
+        },
         proofUploaded,
         proofError,
       });
