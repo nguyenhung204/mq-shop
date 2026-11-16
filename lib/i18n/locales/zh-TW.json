@@ -831,7 +831,8 @@
       "reviews": "評價",
       "refundObligations": "退款義務",
       "settings": "系統設定",
-      "dividendRates": "股利比率"
+      "dividendRates": "股利比率",
+      "dividendSlots": "股利名額"
     },
     "common": {
       "create": "建立",
@@ -2166,6 +2167,89 @@
             "required": "請選擇生效日。",
             "invalid": "這不是有效的日期。",
             "past": "生效日不得早於今日（台北時間）。"
+          }
+        }
+      },
+      "quarter": "季度",
+      "slots": {
+        "title": "股利名額",
+        "description": "各根帳戶持有的名額，依季度以絕對值設定，可附到期日。每次變更皆新增至歷史，不會覆寫。",
+        "locked": "已鎖定",
+        "open": "可編輯",
+        "lockedAt": "自 {date} 起鎖定",
+        "locksAt": "將於 {date} 鎖定",
+        "editWindow": "編輯期限：季度結束後 {days} 天",
+        "totalSlots": "名額總數",
+        "capPerAccount": "每帳戶上限",
+        "capTotal": "名額總上限",
+        "noCap": "無上限",
+        "empty": "此季度尚無帳戶持有名額。",
+        "account": "帳戶",
+        "accountPh": "以電子郵件或姓名搜尋…",
+        "colSlots": "名額",
+        "colExpires": "到期",
+        "colSince": "自季度",
+        "setRow": "設定名額",
+        "lockedNote": "{quarter} 已鎖定，僅供檢視，無法變更。",
+        "setTitle": "設定名額（自 {quarter} 起）",
+        "setNote": "輸入該帳戶自本季起應持有的總數；0 代表清除。此數值取代舊值，並非累加。",
+        "currentSlots": "目前持有 {slots} 個名額。",
+        "slotsAbsolute": "名額（總數）",
+        "slotsAbsoluteHint": "整數，0 至 1,000,000",
+        "expiresAt": "到期時間（選填，台北時間）",
+        "expiresAtHint": "此時間之後名額不再計算。有到期日的名額不可轉移。",
+        "setSubmit": "儲存名額",
+        "transferTitle": "轉移名額（於 {quarter}）",
+        "transferNote": "將名額從一個帳戶轉到另一帳戶，以兩筆相連紀錄一次完成。僅可轉移無到期日的名額。",
+        "from": "來源帳戶",
+        "to": "目標帳戶",
+        "transferSlots": "轉移名額數",
+        "transferSubmit": "轉移名額",
+        "saved": "名額已儲存。",
+        "transferred": "名額已轉移。",
+        "historyTitle": "完整歷史",
+        "historyFilter": "依帳戶篩選",
+        "historyClear": "顯示所有帳戶",
+        "historyEmpty": "尚無名額變更記錄。",
+        "hWhen": "時間（GMT+8）",
+        "hKind": "類型",
+        "kind": {
+          "SET": "設定",
+          "TRANSFER_OUT": "轉出",
+          "TRANSFER_IN": "轉入"
+        },
+        "transferRef": "轉移 {id}，對象 {other}",
+        "errors": {
+          "quarter": {
+            "locked": "此季度已鎖定，無法編輯。",
+            "future": "無法變更未來季度的名額。",
+            "invalid": "季度無效。"
+          },
+          "userId": {
+            "required": "請選擇帳戶。",
+            "invalid": "帳戶無效。"
+          },
+          "fromUserId": {
+            "required": "請選擇帳戶。",
+            "invalid": "帳戶無效。"
+          },
+          "toUserId": {
+            "required": "請選擇帳戶。",
+            "invalid": "帳戶無效。",
+            "same": "兩個帳戶必須不同。"
+          },
+          "slots": {
+            "required": "請輸入名額數。",
+            "notInteger": "名額必須為整數。",
+            "tooLow": "至少需 1 個名額。",
+            "tooHigh": "名額不得超過 1,000,000。",
+            "unchanged": "該帳戶自該季起已持有此名額數。",
+            "insufficient": "來源帳戶的名額不足。",
+            "expiring": "有到期日的名額不可轉移。"
+          },
+          "expiresAt": {
+            "invalid": "到期時間無效。",
+            "withZero": "名額為 0 時不能設定到期日。"
           }
         }
       }

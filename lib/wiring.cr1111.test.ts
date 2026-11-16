@@ -56,3 +56,22 @@ describe("dividend rates page wiring (U2)", () => {
     expect(a).toContain('"/admin/dividend/slots/transfer", body, idem(idempotencyKey)');
   });
 });
+
+describe("dividend slots page wiring (U3)", () => {
+  it("forms are SUPER_ADMIN only and receive the server lock flag", () => {
+    const p = src("app/admin/dividend/slots/page.tsx");
+    expect(p).toContain("const canWrite = canWriteDividend(user)");
+    expect(p).toContain("{canWrite && data ? (");
+    expect(p).toContain("const locked = Boolean(data?.locked)");
+    expect(p).toContain("locked={locked}");
+    expect(p).toContain("{canWrite && !locked ? (");
+  });
+  it("forms validate with the pure helpers before submit", () => {
+    const f = src("components/admin/dividend/SlotForms.tsx");
+    expect(f).toContain("validateSetSlots({ userId, slots, expiresAtLocal, reason }, ctx)");
+    expect(f).toContain("validateTransfer({ fromUserId, toUserId, slots, reason }, ctx)");
+  });
+  it("a 409 DIVIDEND_QUARTER_LOCKED refreshes the lock state", () => {
+    expect(src("lib/queries/dividend.ts")).toContain('e.code === "DIVIDEND_QUARTER_LOCKED"');
+  });
+});

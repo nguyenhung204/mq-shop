@@ -67,6 +67,10 @@ function useDividendMutation<V, R>(
     },
     onError: (e) => {
       if (e instanceof ApiError && e.code === "IDEMPOTENCY_KEY_REUSE_MISMATCH") idempotency.invalidate();
+      // The quarter locked while the form was open: refresh so the page turns read-only.
+      if (e instanceof ApiError && e.code === "DIVIDEND_QUARTER_LOCKED") {
+        void queryClient.invalidateQueries({ queryKey: dividendKeys.all });
+      }
       toast.error(getErrorMessage(e, tt("admin.common.failed")));
     },
   });

@@ -1,0 +1,131 @@
+import { validateReason, type ReasonError } from "@/lib/admin/reason";
+import type { SetSlotsBody, SlotHolding, TransferSlotsBody } from "@/lib/api/dividend";
+import { gmt8DateTimeLocalToIso } from "@/lib/i18n/gmt8-calendar";
+import { currentQuarter, isQuarterLabel } from "./dates";
+
+export const MAX_SLOTS = 1_000_000;
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const INT_RE = /^\d{1,7}$/;
+
+export type SlotsContext = {
+  quarter: string;
+  /** Lock flag of the selected quarter as reported by the server (UI3: locked = read-only). */
+  locked: boolean;
+  holdings: SlotHolding[];
+  now?: Date;
+};
+
+export type SlotsFormError =
+  | { field: "quarter"; code: "locked" | "future" | "invalid" }
+  | { field: "userId" | "fromUserId" | "toUserId"; code: "required" | "invalid" }
+  | { field: "toUserId"; code: "same" }
+  | { field: "slots"; code: "required" | "notInteger" | "tooLow" | "tooHigh" | "unchanged" | "insufficient" | "expiring" }
+  | { field: "expiresAt"; code: "invalid" | "withZero" }
+  | { field: "reason"; code: ReasonError };
+
+type Result<B> = { ok: true; body: B } | { ok: false; errors: SlotsFormError[] };
+
+function quarterErrors(ctx: SlotsContext): SlotsFormError[] {
+  if (!isQuarterLabel(ctx.quarter)) return [{ field: "quarter", code: "invalid" }];
+  if (ctx.quarter > currentQuarter(ctx.now ?? new Date())) return [{ field: "quarter", code: "future" }];
+  if (ctx.locked) return [{ field: "quarter", code: "locked" }];
+  return [];
+}
+
+function idError(field: "userId" | "fromUserId" | "toUserId", v: string): SlotsFormError | null {
+  if (v.trim() === "") return { field, code: "required" };
+  if (!UUID_RE.test(v.trim())) return { field, code: "invalid" };
+  return null;
+}
+
+function slotsError(raw: string, min: number): { value: number | null; error: SlotsFormError | null } {
+  const text = raw.trim();
+  if (text === "") return { value: null, error: { field: "slots", code: "required" } };
+  if (!INT_RE.test(text)) return { value: null, error: { field: "slots", code: "notInteger" } };
+  const n = Number(text);
+  if (n < min) return { value: n, error: { field: "slots", code: "tooLow" } };
+  if (n > MAX_SLOTS) return { value: n, error: { field: "slots", code: "tooHigh" } };
+  return { value: n, error: null };
+}
+
+export type SetSlotsInput = { userId: string; slots: string; expiresAtLocal: string; reason: string };
+
+/** Mirror of POST /admin/dividend/slots (absolute slots, optional expiry, reason, quarter not locked / not in the future). */
+export function validateSetSlots(input: SetSlotsInput, ctx: SlotsContext): Result<SetSlotsBody> {
+  const errors: SlotsFormError[] = quarterErrors(ctx);
+  const id = idError("userId", input.userId);
+  if (id) errors.push(id);
+  const s = slotsError(input.slots, 0);
+  if (s.error) errors.push(s.error);
+
+  let expiresAt: string | undefined;
+  if (input.expiresAtLocal.trim() !== "") {
+    const iso = gmt8DateTimeLocalToIso(input.expiresAtLocal.trim());
+    if (!iso) errors.push({ field: "expiresAt", code: "invalid" });
+    else expiresAt = iso;
+  }
+
+  if (expiresAt !== undefined && s.value === 0) errors.push({ field: "expiresAt", code: "withZero" });
+
+  if (!id && s.value !== null && !s.error) {
+    const held = ctx.holdings.find((h) => h.userId === input.userId.trim());
+    const heldExpiry = held?.expiresAt ? Date.parse(held.expiresAt) : null;
+    const newExpiry = expiresAt ? Date.parse(expiresAt) : null;
+    if ((held?.slots ?? 0) === s.value && (s.value === 0 || heldExpiry === newExpiry)) {
+      errors.push({ field: "slots", code: "unchanged" });
+    }
+  }
+
+  const reason = validateReason(input.reason);
+  if (!reason.ok) errors.push({ field: "reason", code: reason.error });
+
+  if (errors.length > 0 || s.value === null || !reason.ok) return { ok: false, errors };
+  return {
+    ok: true,
+    body: {
+      userId: input.userId.trim(),
+      slots: s.value,
+      quarter: ctx.quarter,
+      ...(expiresAt ? { expiresAt } : {}),
+      reason: reason.value,
+    },
+  };
+}
+
+export type TransferInput = { fromUserId: string; toUserId: string; slots: string; reason: string };
+
+/** Mirror of POST /admin/dividend/slots/transfer (two accounts, slots >= 1, enough non-expiring slots). */
+export function validateTransfer(input: TransferInput, ctx: SlotsContext): Result<TransferSlotsBody> {
+  const errors: SlotsFormError[] = quarterErrors(ctx);
+  const from = idError("fromUserId", input.fromUserId);
+  const to = idError("toUserId", input.toUserId);
+  if (from) errors.push(from);
+  if (to) errors.push(to);
+  if (!from && !to && input.fromUserId.trim().toLowerCase() === input.toUserId.trim().toLowerCase()) {
+    errors.push({ field: "toUserId", code: "same" });
+  }
+  const s = slotsError(input.slots, 1);
+  if (s.error) errors.push(s.error);
+
+  if (!from && s.value !== null && !s.error) {
+    const held = ctx.holdings.find((h) => h.userId === input.fromUserId.trim());
+    if (held?.expiresAt) errors.push({ field: "slots", code: "expiring" });
+    else if ((held?.slots ?? 0) < s.value) errors.push({ field: "slots", code: "insufficient" });
+  }
+
+  const reason = validateReason(input.reason);
+  if (!reason.ok) errors.push({ field: "reason", code: reason.error });
+
+  if (errors.length > 0 || s.value === null || !reason.ok) return { ok: false, errors };
+  return {
+    ok: true,
+    body: {
+      fromUserId: input.fromUserId.trim(),
+      toUserId: input.toUserId.trim(),
+      slots: s.value,
+      quarter: ctx.quarter,
+      reason: reason.value,
+    },
+  };
+}

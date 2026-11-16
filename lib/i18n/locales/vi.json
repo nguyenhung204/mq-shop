@@ -831,7 +831,8 @@
       "reviews": "Đánh giá",
       "refundObligations": "Nghĩa vụ hoàn tiền",
       "settings": "Cài đặt hệ thống",
-      "dividendRates": "Tỷ lệ cổ tức"
+      "dividendRates": "Tỷ lệ cổ tức",
+      "dividendSlots": "Suất cổ tức"
     },
     "common": {
       "create": "Tạo mới",
@@ -2166,6 +2167,89 @@
             "required": "Hãy chọn ngày hiệu lực.",
             "invalid": "Đây không phải ngày hợp lệ.",
             "past": "Ngày hiệu lực không được trước hôm nay (giờ Đài Bắc)."
+          }
+        }
+      },
+      "quarter": "Quý",
+      "slots": {
+        "title": "Suất cổ tức",
+        "description": "Số suất của từng tài khoản gốc, đặt tuyệt đối theo quý, có thể có hạn. Mỗi thay đổi được ghi thêm vào lịch sử, không ghi đè.",
+        "locked": "Đã khóa",
+        "open": "Còn sửa được",
+        "lockedAt": "Đã khóa từ {date}",
+        "locksAt": "Khóa lúc {date}",
+        "editWindow": "Thời hạn sửa: {days} ngày sau khi quý kết thúc",
+        "totalSlots": "Tổng số suất",
+        "capPerAccount": "Giới hạn mỗi tài khoản",
+        "capTotal": "Giới hạn tổng số suất",
+        "noCap": "Không giới hạn",
+        "empty": "Chưa có tài khoản nào giữ suất trong quý này.",
+        "account": "Tài khoản",
+        "accountPh": "Tìm theo email hoặc tên…",
+        "colSlots": "Số suất",
+        "colExpires": "Hết hạn",
+        "colSince": "Từ quý",
+        "setRow": "Đặt số suất",
+        "lockedNote": "{quarter} đã khóa. Chỉ xem, không thể thay đổi.",
+        "setTitle": "Đặt số suất (từ {quarter})",
+        "setNote": "Nhập tổng số suất tài khoản nên giữ từ quý này; 0 là xóa. Con số này thay thế số cũ, không cộng thêm.",
+        "currentSlots": "Hiện đang giữ {slots} suất.",
+        "slotsAbsolute": "Số suất (tổng)",
+        "slotsAbsoluteHint": "Số nguyên, từ 0 đến 1.000.000",
+        "expiresAt": "Hết hạn lúc (tùy chọn, giờ Đài Bắc)",
+        "expiresAtHint": "Sau thời điểm này các suất không còn được tính. Suất có hạn không thể chuyển.",
+        "setSubmit": "Lưu số suất",
+        "transferTitle": "Chuyển suất (tại {quarter})",
+        "transferNote": "Chuyển suất từ tài khoản này sang tài khoản khác bằng hai bút toán liên kết trong một bước. Chỉ chuyển được suất không có hạn.",
+        "from": "Từ tài khoản",
+        "to": "Đến tài khoản",
+        "transferSlots": "Số suất chuyển",
+        "transferSubmit": "Chuyển suất",
+        "saved": "Đã lưu số suất.",
+        "transferred": "Đã chuyển suất.",
+        "historyTitle": "Toàn bộ lịch sử",
+        "historyFilter": "Lọc theo tài khoản",
+        "historyClear": "Hiện mọi tài khoản",
+        "historyEmpty": "Chưa có thay đổi suất nào.",
+        "hWhen": "Thời điểm (GMT+8)",
+        "hKind": "Loại",
+        "kind": {
+          "SET": "Đặt",
+          "TRANSFER_OUT": "Chuyển đi",
+          "TRANSFER_IN": "Nhận chuyển"
+        },
+        "transferRef": "Chuyển {id} với {other}",
+        "errors": {
+          "quarter": {
+            "locked": "Quý này đã khóa, không thể sửa.",
+            "future": "Không thể đổi số suất của quý tương lai.",
+            "invalid": "Quý không hợp lệ."
+          },
+          "userId": {
+            "required": "Hãy chọn tài khoản.",
+            "invalid": "Tài khoản không hợp lệ."
+          },
+          "fromUserId": {
+            "required": "Hãy chọn tài khoản.",
+            "invalid": "Tài khoản không hợp lệ."
+          },
+          "toUserId": {
+            "required": "Hãy chọn tài khoản.",
+            "invalid": "Tài khoản không hợp lệ.",
+            "same": "Hai tài khoản phải khác nhau."
+          },
+          "slots": {
+            "required": "Hãy nhập số suất.",
+            "notInteger": "Số suất phải là số nguyên.",
+            "tooLow": "Nhập ít nhất 1 suất.",
+            "tooHigh": "Số suất không được vượt quá 1.000.000.",
+            "unchanged": "Tài khoản đã có đúng số suất này từ quý đó.",
+            "insufficient": "Tài khoản nguồn không có đủ số suất.",
+            "expiring": "Suất có hạn không thể chuyển."
+          },
+          "expiresAt": {
+            "invalid": "Thời điểm hết hạn không hợp lệ.",
+            "withZero": "Không thể đặt hạn khi số suất là 0."
           }
         }
       }

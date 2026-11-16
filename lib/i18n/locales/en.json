@@ -831,7 +831,8 @@
       "reviews": "Reviews",
       "refundObligations": "Refund obligations",
       "settings": "System settings",
-      "dividendRates": "Dividend rates"
+      "dividendRates": "Dividend rates",
+      "dividendSlots": "Dividend slots"
     },
     "common": {
       "create": "Create",
@@ -2166,6 +2167,89 @@
             "required": "Pick an effective date.",
             "invalid": "This is not a real calendar date.",
             "past": "The effective date cannot be before today (Taipei time)."
+          }
+        }
+      },
+      "quarter": "Quarter",
+      "slots": {
+        "title": "Dividend slots",
+        "description": "Slots held by each root account, set absolutely per quarter, with optional expiry. Every change is appended to the history and never overwritten.",
+        "locked": "Locked",
+        "open": "Open for edits",
+        "lockedAt": "Locked since {date}",
+        "locksAt": "Locks at {date}",
+        "editWindow": "Edit window: {days} days after quarter end",
+        "totalSlots": "Total slots",
+        "capPerAccount": "Cap per account",
+        "capTotal": "Cap on total slots",
+        "noCap": "No cap",
+        "empty": "No account holds slots for this quarter.",
+        "account": "Account",
+        "accountPh": "Search by email or name…",
+        "colSlots": "Slots",
+        "colExpires": "Expires",
+        "colSince": "Since quarter",
+        "setRow": "Set slots",
+        "lockedNote": "{quarter} is locked. It is read-only and cannot be changed.",
+        "setTitle": "Set slots (from {quarter})",
+        "setNote": "Enter the total the account should hold from this quarter on; 0 clears it. This replaces the previous number, it is not added to it.",
+        "currentSlots": "Currently holds {slots} slots.",
+        "slotsAbsolute": "Slots (total)",
+        "slotsAbsoluteHint": "Whole number, 0 to 1,000,000",
+        "expiresAt": "Expires at (optional, Taipei time)",
+        "expiresAtHint": "After this moment the slots no longer count. Expiring slots cannot be transferred.",
+        "setSubmit": "Save slots",
+        "transferTitle": "Transfer slots (at {quarter})",
+        "transferNote": "Moves slots from one account to another as two linked entries in a single step. Only non-expiring slots can be moved.",
+        "from": "From account",
+        "to": "To account",
+        "transferSlots": "Slots to move",
+        "transferSubmit": "Transfer slots",
+        "saved": "Slots saved.",
+        "transferred": "Slots transferred.",
+        "historyTitle": "Full history",
+        "historyFilter": "Filter by account",
+        "historyClear": "Show all accounts",
+        "historyEmpty": "No slot changes recorded.",
+        "hWhen": "When (GMT+8)",
+        "hKind": "Type",
+        "kind": {
+          "SET": "Set",
+          "TRANSFER_OUT": "Transfer out",
+          "TRANSFER_IN": "Transfer in"
+        },
+        "transferRef": "Transfer {id} with {other}",
+        "errors": {
+          "quarter": {
+            "locked": "This quarter is locked and cannot be edited.",
+            "future": "Slots cannot be changed for a future quarter.",
+            "invalid": "The quarter is not valid."
+          },
+          "userId": {
+            "required": "Choose an account.",
+            "invalid": "The account is not valid."
+          },
+          "fromUserId": {
+            "required": "Choose an account.",
+            "invalid": "The account is not valid."
+          },
+          "toUserId": {
+            "required": "Choose an account.",
+            "invalid": "The account is not valid.",
+            "same": "The two accounts must be different."
+          },
+          "slots": {
+            "required": "Enter the number of slots.",
+            "notInteger": "Slots must be a whole number.",
+            "tooLow": "Enter at least 1 slot.",
+            "tooHigh": "Slots cannot exceed 1,000,000.",
+            "unchanged": "The account already holds this number from that quarter.",
+            "insufficient": "The source account does not hold that many slots.",
+            "expiring": "Expiring slots cannot be transferred."
+          },
+          "expiresAt": {
+            "invalid": "The expiry is not a valid date and time.",
+            "withZero": "An expiry makes no sense with 0 slots."
           }
         }
       }
