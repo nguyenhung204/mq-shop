@@ -242,7 +242,6 @@ export function resolveNotificationRoute(
     case "COMMISSION_REFERRAL_CREDITED":
     case "COMMISSION_TEAM_CREDITED":
     case "COMMISSION_GLOBAL_CREDITED":
-    case "COMMISSION_LOYALTY_CREDITED":
     case "COMMISSION_REFERRAL_TRIGGERED":
       return buyerOnly ? null : "/wallet/commissions";
 

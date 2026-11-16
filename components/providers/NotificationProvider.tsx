@@ -68,7 +68,6 @@ function isCommissionNotify(n: ApiNotification): boolean {
     title.includes("commission credited") ||
     title.includes("bonus credited") ||
     title.includes("referral bonus") ||
-    title.includes("loyalty bonus") ||
     title.includes("global bonus") ||
     title.includes("team commission") ||
     title.includes("commission not credited")

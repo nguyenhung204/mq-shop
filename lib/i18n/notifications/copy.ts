@@ -288,10 +288,6 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "Global bonus",
       body: "Global bonus {amount} was credited to your wallet.",
     },
-    COMMISSION_LOYALTY_CREDITED: {
-      title: "Loyalty bonus",
-      body: "Loyalty bonus {amount} was credited to your wallet.",
-    },
     COMMISSION_REFERRAL_TRIGGERED: {
       title: "Referral commission triggered",
       body: "A referral commission was triggered for order {orderId}.",
@@ -634,10 +630,6 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "Thưởng toàn cầu",
       body: "Thưởng toàn cầu {amount} đã vào ví.",
     },
-    COMMISSION_LOYALTY_CREDITED: {
-      title: "Thưởng trung thành",
-      body: "Thưởng trung thành {amount} đã vào ví.",
-    },
     COMMISSION_REFERRAL_TRIGGERED: {
       title: "Kích hoạt hoa hồng",
       body: "Hoa hồng giới thiệu được kích hoạt cho đơn {orderId}.",
@@ -979,10 +971,6 @@ export const NOTIFICATION_TYPE_COPY: Record<
     COMMISSION_GLOBAL_CREDITED: {
       title: "全球獎金",
       body: "全球獎金 {amount} 已入帳。",
-    },
-    COMMISSION_LOYALTY_CREDITED: {
-      title: "忠誠獎金",
-      body: "忠誠獎金 {amount} 已入帳。",
     },
     COMMISSION_REFERRAL_TRIGGERED: {
       title: "推薦佣金已觸發",

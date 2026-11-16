@@ -81,11 +81,6 @@ function creditedSummary(
       `${t("admin.mlm.creditedTeam")} ${formatMoney(row.credited.teamPayoutTotal)}×${row.credited.teamCount}`,
     );
   }
-  if (row.credited.loyaltyCount > 0) {
-    parts.push(
-      `${t("admin.mlm.creditedLoyalty")} ${formatMoney(row.credited.loyaltyPayoutTotal)}×${row.credited.loyaltyCount}`,
-    );
-  }
   return parts.length ? parts.join(" · ") : "—";
 }
 
@@ -463,7 +458,7 @@ function MlmAdminInner() {
   /**
    * CONFIG_MLM ALL: Super Admin (mutate ranks / promotion rules).
    * VIEW_MLM_COMSN: Accountant + Super Admin — monthly/quarterly fund reports (view/download).
-   * APPROVE_MLM ALL: run monthly TEAM/LOYALTY, run quarterly GLOBAL, flush pending.
+   * APPROVE_MLM ALL: run monthly TEAM, run quarterly GLOBAL, flush pending.
    * Super Admin can restore Accountant writes via Admin → RBAC matrix.
    */
   const canMutateConfig = canMutatePermission("CONFIG_MLM");

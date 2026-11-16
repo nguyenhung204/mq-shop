@@ -63,7 +63,7 @@ export type MlmRankProgress = {
   eligibleAsSeller?: boolean;
 };
 
-export type CommissionType = "REFERRAL" | "TEAM" | "GLOBAL" | "LOYALTY";
+export type CommissionType = "REFERRAL" | "TEAM" | "GLOBAL";
 
 export type CommissionLedgerStatus = "PENDING" | "CREDITED" | "VOID";
 
@@ -246,8 +246,6 @@ export type MonthlyCommissionOverviewRow = {
     teamPayoutTotal: string;
     globalCount: number;
     globalPayoutTotal: string;
-    loyaltyCount: number;
-    loyaltyPayoutTotal: string;
   };
   suggestedAction: MonthlyCommissionSuggestedAction;
 };
@@ -336,7 +334,7 @@ export const adminMlmApi = {
     api.get<QuarterlyGlobalOverview>("/admin/mlm/commissions/quarterly-overview", {
       query: { quartersBack: query?.quartersBack ?? 8 },
     }),
-  /** Demo/ops: run TEAM / LOYALTY for a period (default = previous GMT+8 month). */
+  /** Demo/ops: run TEAM for a period (default = previous GMT+8 month). */
   runMonthly: (
     body: { yearMonth?: string } | undefined,
     idempotencyKey: string,
@@ -394,12 +392,6 @@ export const adminMlmApi = {
       {},
     ),
 
-  /** Loyalty max-order qualify + streak history for one user. */
-  loyaltyHistory: (userId: string, query?: { monthsBack?: number }) =>
-    api.get<LoyaltyHistoryReport>(
-      `/admin/mlm/commissions/loyalty-history/${userId}`,
-      { query: { monthsBack: query?.monthsBack ?? 12 } },
-    ),
 };
 
 // ─── Commission Report types (mirrors monthly-commission.job.ts on BE) ────────
@@ -478,49 +470,6 @@ export type GenericCommissionEntry = {
   creditedAt?: string | Date | null;
 };
 
-export type LoyaltyCommissionEntry = {
-  ledgerId: string;
-  payoutAmount: string;
-  baseAmount: string;
-  maxOrderAmount: string;
-  qualifyingOrderId: string | null;
-  qualifyingOrderCode: string | null;
-  consecutiveMonths: number | null;
-  cycleNumber: number | null;
-  qualifyRule: "MAX_SINGLE_ORDER";
-  gapResetBeforeThisMonth: boolean;
-  meta?: Record<string, unknown> | null;
-  creditedAt: string | Date | null;
-};
-
-export type LoyaltyMonthRow = {
-  yearMonth: string;
-  personalPv: string;
-  maxOrderAmount: string;
-  qualifyingOrderId: string | null;
-  qualifyingOrderCode: string | null;
-  deliveredOrderCount: number;
-  qualified: boolean;
-  streakAfter: number;
-  status: "QUALIFIED" | "RESET" | "NO_DATA";
-  resetReason: "below_max_order_threshold" | "no_delivered_orders" | null;
-};
-
-export type LoyaltyHistoryReport = {
-  userId: string;
-  email: string;
-  fullName: string | null;
-  mlmRank: number;
-  rankName: string;
-  currentStreak: number;
-  lastLoyaltyQualifiedMonth: string | null;
-  completedCycles: number;
-  qualifyRule: "MAX_SINGLE_ORDER";
-  thresholdTwd: number;
-  months: LoyaltyMonthRow[];
-  bonusEntries: LoyaltyCommissionEntry[];
-};
-
 // ── Shared row / summary types ────────────────────────────────────────────────
 
 export type CommissionUserRow<E> = {
@@ -571,5 +520,4 @@ export type CommissionReport = {
   global: CommissionTypeSummary<GenericCommissionEntry> & {
     tiers: GlobalFundTierReport[];
   };
-  loyalty: CommissionTypeSummary<LoyaltyCommissionEntry>;
 };

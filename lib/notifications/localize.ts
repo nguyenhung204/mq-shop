@@ -17,7 +17,6 @@ const POINT_AMOUNT_TYPES = new Set([
   "COMMISSION_REFERRAL_CREDITED",
   "COMMISSION_TEAM_CREDITED",
   "COMMISSION_GLOBAL_CREDITED",
-  "COMMISSION_LOYALTY_CREDITED",
 ]);
 
 function pointUnitLabel(locale: Locale | null): string {
