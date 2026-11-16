@@ -832,7 +832,8 @@
       "refundObligations": "退款義務",
       "settings": "系統設定",
       "dividendRates": "股利比率",
-      "dividendSlots": "股利名額"
+      "dividendSlots": "股利名額",
+      "dividendReport": "股利報表"
     },
     "common": {
       "create": "建立",
@@ -2252,6 +2253,35 @@
             "withZero": "名額為 0 時不能設定到期日。"
           }
         }
+      },
+      "report": {
+        "title": "股利報表",
+        "description": "依季度列出股利池，按比率期間與根帳戶拆分。",
+        "previewNotice": "此為試算預覽，不會發放任何款項，也不會變更任何錢包或帳本。",
+        "projectionNote": "此季度尚未結束，數字為依目前已知名額與比率推估。",
+        "state": {
+          "projection": "推估（季度進行中）",
+          "closed": "季度已結束，仍可編輯",
+          "locked": "已鎖定（唯讀）"
+        },
+        "range": "期間：{from} 至 {to}",
+        "salesBase": "銷售基數",
+        "orders": "{count} 筆訂單",
+        "ordersCol": "訂單",
+        "pool": "股利池",
+        "totalSlots": "名額總數",
+        "distributed": "已分配（整數 NTD）",
+        "byInterval": "依比率期間",
+        "noIntervals": "此季度沒有比率期間。",
+        "period": "期間",
+        "defaultRate": "預設",
+        "byAccount": "依根帳戶",
+        "noAccounts": "此季度沒有帳戶持有有效名額，因此不分配。",
+        "share": "分配額",
+        "remainderLabel": "差額計算收入",
+        "remainderHint": "每筆分配額無條件捨去為整數 NTD 後的剩餘金額，單獨列示，不會被捨棄。",
+        "pendingRefunds": "{count} 筆待退款訂單未計入銷售基數。",
+        "refundsAfterLock": "僅供參考：季度鎖定後完成的部分退款 {amount}（{count} 筆訂單），並未套用於此股利池。"
       }
     }
   },

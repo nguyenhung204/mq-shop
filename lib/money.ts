@@ -58,3 +58,9 @@ export function formatCentsDisplay(cents: number, locale = "en-US", currency?: s
   const body = `${neg ? "-" : ""}${wholeFmt}${sep}${frac}`;
   return currency ? `${body} ${currency}` : body;
 }
+
+/** Whole-unit amount (e.g. NTD already floored by the server) with locale grouping. */
+export function formatWholeDisplay(whole: number, locale = "en-US", currency?: string): string {
+  const body = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(Number.isSafeInteger(whole) ? whole : 0);
+  return currency ? `${body} ${currency}` : body;
+}

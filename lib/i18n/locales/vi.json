@@ -832,7 +832,8 @@
       "refundObligations": "Nghĩa vụ hoàn tiền",
       "settings": "Cài đặt hệ thống",
       "dividendRates": "Tỷ lệ cổ tức",
-      "dividendSlots": "Suất cổ tức"
+      "dividendSlots": "Suất cổ tức",
+      "dividendReport": "Báo cáo cổ tức"
     },
     "common": {
       "create": "Tạo mới",
@@ -2252,6 +2253,35 @@
             "withZero": "Không thể đặt hạn khi số suất là 0."
           }
         }
+      },
+      "report": {
+        "title": "Báo cáo cổ tức",
+        "description": "Phân tích quỹ cổ tức theo quý, theo giai đoạn tỷ lệ và theo tài khoản gốc.",
+        "previewNotice": "Đây chỉ là bản tính xem trước. Không có khoản nào được chi trả và không có ví hay sổ cái nào bị thay đổi.",
+        "projectionNote": "Quý này chưa kết thúc nên số liệu chỉ là dự phóng theo số suất và tỷ lệ hiện biết.",
+        "state": {
+          "projection": "Dự phóng (quý đang chạy)",
+          "closed": "Quý đã kết thúc, còn sửa được",
+          "locked": "Đã khóa (chỉ xem)"
+        },
+        "range": "Giai đoạn: {from} đến {to}",
+        "salesBase": "Cơ sở doanh số",
+        "orders": "{count} đơn",
+        "ordersCol": "Đơn",
+        "pool": "Quỹ cổ tức",
+        "totalSlots": "Tổng số suất",
+        "distributed": "Đã chia (NTD nguyên)",
+        "byInterval": "Theo giai đoạn tỷ lệ",
+        "noIntervals": "Quý này chưa có giai đoạn tỷ lệ nào.",
+        "period": "Giai đoạn",
+        "defaultRate": "mặc định",
+        "byAccount": "Theo tài khoản gốc",
+        "noAccounts": "Không có tài khoản nào giữ suất hợp lệ trong quý này nên không chia khoản nào.",
+        "share": "Phần được chia",
+        "remainderLabel": "khoản thu từ tính toán chênh lệch",
+        "remainderHint": "Phần còn lại sau khi làm tròn xuống từng phần chia thành NTD nguyên. Hiển thị thành một dòng riêng, không bị bỏ đi.",
+        "pendingRefunds": "{count} đơn đang chờ hoàn tiền không được tính vào cơ sở doanh số.",
+        "refundsAfterLock": "Chỉ để tham khảo: các khoản hoàn một phần {amount} ({count} đơn) hoàn tất sau khi quý khóa. KHÔNG được áp dụng vào quỹ này."
       }
     }
   },

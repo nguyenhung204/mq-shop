@@ -832,7 +832,8 @@
       "refundObligations": "Refund obligations",
       "settings": "System settings",
       "dividendRates": "Dividend rates",
-      "dividendSlots": "Dividend slots"
+      "dividendSlots": "Dividend slots",
+      "dividendReport": "Dividend report"
     },
     "common": {
       "create": "Create",
@@ -2252,6 +2253,35 @@
             "withZero": "An expiry makes no sense with 0 slots."
           }
         }
+      },
+      "report": {
+        "title": "Dividend report",
+        "description": "Quarterly breakdown of the dividend pool by rate period and by root account.",
+        "previewNotice": "This is a calculation preview only. Nothing is paid out and no wallet or ledger is changed.",
+        "projectionNote": "This quarter is still running, so the figures are a projection from the slots and rates known today.",
+        "state": {
+          "projection": "Projection (quarter running)",
+          "closed": "Quarter ended, still editable",
+          "locked": "Locked (read-only)"
+        },
+        "range": "Period: {from} to {to}",
+        "salesBase": "Sales base",
+        "orders": "{count} orders",
+        "ordersCol": "Orders",
+        "pool": "Dividend pool",
+        "totalSlots": "Total slots",
+        "distributed": "Distributed (whole NTD)",
+        "byInterval": "By rate period",
+        "noIntervals": "No rate period in this quarter.",
+        "period": "Period",
+        "defaultRate": "default",
+        "byAccount": "By root account",
+        "noAccounts": "No account holds a valid slot in this quarter, so nothing is distributed.",
+        "share": "Share",
+        "remainderLabel": "Income from difference calculation",
+        "remainderHint": "What is left after rounding each share down to a whole NTD. It is shown as its own line and is not dropped.",
+        "pendingRefunds": "{count} orders with a pending refund are left out of the sales base.",
+        "refundsAfterLock": "For information only: partial refunds of {amount} ({count} orders) were completed after the quarter locked. They are NOT applied to this pool."
       }
     }
   },
