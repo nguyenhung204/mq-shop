@@ -41,12 +41,12 @@ describe("override button per role (the API lists OVERRIDE for every staff reade
   });
 });
 
-const rmaErr = (route: string) => new ApiError(409, "RMA_NOT_PENDING", { statusCode: 409, message: "Upload refund transfer proof", data: { code: "RMA_NOT_PENDING" } } as never);
+const rmaErr = () => new ApiError(409, "RMA_NOT_PENDING", { statusCode: 409, message: "Upload refund transfer proof", data: { code: "RMA_NOT_PENDING" } } as never);
 
 describe("RMA_NOT_PENDING on the refund case routes is translated", () => {
   it("mark-paid (party) and override map to their own keys", () => {
-    expect(caseRouteErrorKey(rmaErr("p"), "party")).toEqual({ key: "refundCases.errors.rmaProofFirst" });
-    expect(caseRouteErrorKey(rmaErr("o"), "override")).toEqual({ key: "refundCases.errors.rmaEscalateFirst" });
+    expect(caseRouteErrorKey(rmaErr(), "party")).toEqual({ key: "refundCases.errors.rmaProofFirst" });
+    expect(caseRouteErrorKey(rmaErr(), "override")).toEqual({ key: "refundCases.errors.rmaEscalateFirst" });
   });
   it("other errors keep their normal mapping; a 400 with the same code is not claimed", () => {
     const self = new ApiError(409, "REFUND_CASE_INVALID_TRANSITION", { data: { code: "REFUND_CASE_INVALID_TRANSITION", details: { reason: "SELF_DEALING" } } } as never);
