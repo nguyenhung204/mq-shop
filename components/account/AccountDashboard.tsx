@@ -14,6 +14,7 @@ import {
   ShieldAlert,
   Store,
   UserRound,
+  Users,
   Wallet,
 } from "lucide-react";
 import { authApi } from "@/lib/api/auth";
@@ -619,6 +620,20 @@ function AccountInner() {
                   <span>
                     <strong>{t("account.links.rma")}</strong>
                     <small>{t("account.links.rmaDesc")}</small>
+                  </span>
+                </Link>
+                <Link href="/dividend-credits" className="mq-account-link-card">
+                  <Wallet size={20} strokeWidth={1.75} />
+                  <span>
+                    <strong>{t("account.links.dividendCredits")}</strong>
+                    <small>{t("account.links.dividendCreditsDesc")}</small>
+                  </span>
+                </Link>
+                <Link href="/sub-accounts" className="mq-account-link-card">
+                  <Users size={20} strokeWidth={1.75} />
+                  <span>
+                    <strong>{t("account.links.subAccounts")}</strong>
+                    <small>{t("account.links.subAccountsDesc")}</small>
                   </span>
                 </Link>
                 <Link href="/refunds" className="mq-account-link-card">

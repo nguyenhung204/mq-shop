@@ -37,7 +37,7 @@ describe("C1 paid-at wiring", () => {
 describe("C1 settings wiring", () => {
   it("the table renders kind-aware values and the history uses the same formatter", () => {
     const p = src("app/admin/settings/page.tsx");
-    expect(p).toContain("settingValueText(t, settingKind(s), s.value)");
+    expect(p).toContain("settingValueText(t, settingKind(s), s.value, s.key)");
     expect(p).toContain("<HistoryPanel settingKey={s.key} kind={settingKind(s)} />");
   });
 });

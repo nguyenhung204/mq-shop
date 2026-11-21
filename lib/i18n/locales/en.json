@@ -775,7 +775,11 @@
       "network": "Network",
       "networkDesc": "Your MLM downline tree",
       "refunds": "My refunds",
-      "refundsDesc": "Refunds owed to you: confirm receipt or report a problem"
+      "refundsDesc": "Refunds owed to you: confirm receipt or report a problem",
+      "subAccounts": "Sub-accounts",
+      "subAccountsDesc": "Accounts you manage under your own: create, invite, withdraw",
+      "dividendCredits": "My dividend credits",
+      "dividendCreditsDesc": "Quarterly dividends credited to your wallet"
     },
     "otp": {
       "timeRemaining": "Time remaining",
@@ -866,7 +870,8 @@
       "dividendSlots": "Dividend slots",
       "dividendReport": "Dividend report",
       "refundCases": "Refund tracking",
-      "accountingExport": "Accounting export"
+      "accountingExport": "Accounting export",
+      "dividendSettlements": "Dividend settlements"
     },
     "common": {
       "create": "Create",
@@ -2155,7 +2160,8 @@
         "belowMin": "The value must be at least {min}.",
         "aboveMax": "The value must not exceed {max}.",
         "notNullable": "This setting cannot be cleared.",
-        "notDecimal": "Enter a number with at most 2 decimals (for example 5 or 5.25)."
+        "notDecimal": "Enter a number with at most 2 decimals (for example 5 or 5.25).",
+        "notQuarter": "Enter a quarter like 2026Q4 (or 20264): year 2000 to 2100 and quarter 1 to 4."
       },
       "keys": {
         "dividendEditWindowDays": {
@@ -2190,11 +2196,33 @@
         "taxRatePercent": {
           "label": "Tax rate (%)",
           "description": "Tax rate in percent (0 to 100, at most 2 decimals) used while the tax switch is on, for example 5 or 5.25."
+        },
+        "dividendAutoCreditEnabled": {
+          "label": "Automatic dividend credit",
+          "description": "When on, a locked dividend quarter is settled automatically: the pool is frozen once and every account is credited to its wallet. Off (default) = nothing is written and nothing is credited. Do NOT turn it on in a real environment before the client has answered Q1 and C3b, and set the first quarter first."
+        },
+        "dividendAutoCreditFromQuarter": {
+          "label": "First quarter of the automatic credit",
+          "description": "The first dividend quarter that may be settled automatically (2026Q4 or 20264). While it is empty nothing is settled even if the switch is on; earlier quarters are never settled. Set it BEFORE turning the switch on.",
+          "nullMeaning": "Not set: nothing is settled automatically."
+        },
+        "maxSubAccountsPerAccount": {
+          "label": "Sub-accounts per account (maximum)",
+          "description": "How many live sub-accounts one account may have (default 100). Pending ones count."
+        },
+        "maxSubAccountDepth": {
+          "label": "Sub-account depth (maximum)",
+          "description": "How many levels of sub-accounts below sub-accounts are allowed."
+        },
+        "subAccountCreationsPerHour": {
+          "label": "Sub-account creations per hour",
+          "description": "How many sub-accounts one person may create per hour (owner and admin paths)."
         }
       },
       "on": "On",
       "off": "Off",
-      "rangeDecimal": "Number from {min} to {max} with at most 2 decimals."
+      "rangeDecimal": "Number from {min} to {max} with at most 2 decimals.",
+      "rangeQuarter": "Quarter as 2026Q4 (or 20264), from 2000 Q1 to 2100 Q4."
     },
     "dividend": {
       "readOnlyNote": "You can view this page. Only a Super Admin can make changes.",
@@ -3506,7 +3534,8 @@
       "ACTIVE": "Active",
       "PENDING": "Pending",
       "LOCKED": "Locked",
-      "DELETED": "Deleted"
+      "DELETED": "Deleted",
+      "PENDING_ACTIVATION": "Waiting for confirmation"
     },
     "financeItem": {
       "PENDING": "Pending",
@@ -4022,7 +4051,8 @@
     "kinds": {
       "refund-cases": "Refund cases (with history)",
       "commission-ledger": "Commission ledger movements",
-      "wallet-transactions": "Wallet transactions"
+      "wallet-transactions": "Wallet transactions",
+      "dividend-settlements": "Dividend settlements (automatic credit)"
     },
     "from": "From (GMT+8)",
     "to": "To (GMT+8)",
@@ -4059,7 +4089,11 @@
       "direction": {
         "IN": "In",
         "OUT": "Out"
-      }
+      },
+      "pool": "Pool",
+      "remainder": "Remainder (difference income)",
+      "itemsTotal": "Total of the lines",
+      "settlements": "Settlements"
     },
     "formErrors": {
       "badFrom": "Enter a real start date.",
@@ -4070,7 +4104,8 @@
       "badRegion": "Choose one of the available regions.",
       "badReason": "Choose a valid reason.",
       "badBeneficiary": "The beneficiary ID must be a valid ID (UUID).",
-      "badUser": "The user ID must be a valid ID (UUID)."
+      "badUser": "The user ID must be a valid ID (UUID).",
+      "badQuarter": "Use a quarter like 2026Q3."
     },
     "errors": {
       "tooManyRows": "This export would have {rows} rows, above the limit of {max}. Narrow the date range or the filters, or split it into several files.",
@@ -4083,6 +4118,232 @@
       "aborted": "The download was interrupted and the file is incomplete, so it was not saved. Try again.",
       "incomplete": "The file ended with an error ({reason}) and is incomplete, so it was not saved. Try again or use a shorter range.",
       "notCsv": "The server did not return a complete CSV file (no TOTAL line at the end), so nothing was saved. Try again; if it keeps happening, tell an administrator."
+    },
+    "quarter": "Quarter (optional)",
+    "quarterHint": "Like 2026Q3. Empty = every settled quarter. This export has no date range and no region filter."
+  },
+  "subAccounts": {
+    "title": "Sub-accounts",
+    "intro": "Sub-accounts are separate accounts with their own e-mail and password that belong to your account. Their purchases follow the same referral and team rules as before. Each account can have a limited number of them.",
+    "counter": "Sub-accounts",
+    "nOfCap": "{n} of {cap}",
+    "pending": "Waiting for confirmation",
+    "pendingHint": "Waiting for the person at this e-mail to confirm. It is released automatically after {days} days.",
+    "empty": "You have no sub-accounts yet.",
+    "withdraw": "Withdraw",
+    "withdrawConfirm": {
+      "title": "Withdraw this sub-account?",
+      "desc": "The reservation for {email} is cancelled and its place is given back. The person can no longer confirm it."
+    },
+    "create": {
+      "title": "Create a sub-account",
+      "ownerExplain": "The sub-account stays waiting until the person at that e-mail confirms it with the code we e-mail to them. You never see the code or the password. Use only an address that person controls.",
+      "adminExplain": "Created on behalf of this account. It is active immediately. A reason is required and is recorded.",
+      "email": "E-mail",
+      "fullName": "Name (optional)",
+      "region": "Region",
+      "regionDefault": "Default (TW)",
+      "submit": "Create sub-account",
+      "atCap": "You have reached the maximum number of sub-accounts.",
+      "mailSent": "Created. The code was e-mailed to that address; the sub-account is active once the person confirms it.",
+      "mailNotSent": "Created, but the code e-mail was not sent right now. The person can request a code on the forgot-password page with that e-mail.",
+      "errors": {
+        "email": {
+          "required": "Enter an e-mail address.",
+          "invalid": "Enter a valid e-mail address.",
+          "tooLong": "The e-mail address is too long."
+        },
+        "fullName": {
+          "tooLong": "The name must have at most 200 characters.",
+          "invalid": "The name contains a character that is not allowed."
+        },
+        "regionCode": {
+          "invalid": "Choose one of the available regions."
+        }
+      }
+    },
+    "col": {
+      "email": "E-mail",
+      "name": "Name",
+      "status": "Status",
+      "region": "Region",
+      "created": "Created"
+    },
+    "invites": {
+      "title": "Invite links",
+      "explain": "An invite link lets one person register their own account as your sub-account. A link works once and expires after 7 days.",
+      "create": "Create invite link",
+      "newTitle": "Your new invite link",
+      "onceWarning": "Copy it now: for security it is shown only once and cannot be shown again.",
+      "link": "Invite link",
+      "expires": "Expires {date}",
+      "copy": "Copy link",
+      "copied": "Link copied.",
+      "copyFailed": "Copying failed. Select the link above and copy it by hand.",
+      "dismiss": "Hide",
+      "replayed": "This invite was already created, but its link can no longer be shown. Revoke it below and create a new one.",
+      "empty": "No invite links yet.",
+      "expiresCol": "Expires",
+      "revoke": "Revoke",
+      "status": {
+        "PENDING": "Open",
+        "USED": "Used",
+        "REVOKED": "Revoked",
+        "EXPIRED": "Expired"
+      }
+    },
+    "toast": {
+      "created": "Sub-account created.",
+      "withdrawn": "Sub-account withdrawn.",
+      "revoked": "Invite revoked.",
+      "discarded": "Pending sub-account discarded."
+    },
+    "errors": {
+      "limit": "The maximum number of sub-accounts for this account is reached.",
+      "depthLimit": "The maximum sub-account depth is reached.",
+      "parentInvalid": "This account cannot have sub-accounts.",
+      "hasChildren": "This account still has sub-accounts, so it cannot be removed.",
+      "reparentForbidden": "A sub-account cannot be moved to another sponsor.",
+      "inviteInvalid": "This invite link is not valid: it may be wrong, already used, revoked or expired. Ask the account owner for a new one.",
+      "inviteNotFound": "This invite was not found.",
+      "inviteLimit": "There are too many open invite links. Revoke one first.",
+      "notPending": "This sub-account is no longer waiting for confirmation.",
+      "declinedRecently": "This address cannot be added right now. Try again later or use a different address.",
+      "pendingActivation": "This account is waiting for its owner of the e-mail to confirm it, so this action is not available.",
+      "budget": "Too many sub-accounts were created recently. Try again later.",
+      "notFound": "Not found. It may already have been removed."
+    },
+    "register": {
+      "inviteBanner": "You are registering with a sub-account invite. The new account will belong to the person who invited you."
+    },
+    "decline": {
+      "title": "Decline an account",
+      "description": "Someone reserved an account for this e-mail address. Enter the 6-digit code from the message to refuse it.",
+      "code": "Code from the message",
+      "submit": "Decline the account",
+      "done": "Done. The reserved account was declined.",
+      "failed": "The account could not be declined.",
+      "acceptHint": "Want to accept it instead?",
+      "acceptLink": "Set your password here",
+      "errors": {
+        "email": "Enter a valid e-mail address.",
+        "code": "Enter the 6-digit code."
+      }
+    },
+    "admin": {
+      "title": "Sub-accounts of an account",
+      "back": "Back to users",
+      "root": "Root account",
+      "isSub": "This account is a sub-account (level {depth}).",
+      "isRoot": "This account is a root account.",
+      "readOnly": "Read only: only an Admin or Super Admin can create or discard sub-accounts.",
+      "empty": "This account has no sub-accounts.",
+      "discard": "Discard pending",
+      "discardTitle": "Discard the pending sub-account",
+      "discardDesc": "Cancels the reservation for {email}. A reason is required and is recorded.",
+      "truncated": "The list is cut at {limit} rows; narrow it by opening a sub-account.",
+      "open": "Sub-accounts"
     }
+  },
+  "dividendSettlements": {
+    "title": "Dividend settlements",
+    "description": "Quarterly dividend credited automatically to wallets: pool, remainder, every account line and its wallet transaction.",
+    "empty": "No quarter has been settled.",
+    "open": "Open",
+    "back": "Back to settlements",
+    "detailTitle": "Settlement",
+    "noItems": "No lines match this filter.",
+    "counts": "{credited} credited, {pending} pending, {skipped} skipped of {total}",
+    "armed": {
+      "label": "Automatic credit",
+      "armed": "Armed: it will settle locked quarters from the first quarter on",
+      "enabledNoQuarter": "Switch on but no first quarter: nothing is settled",
+      "off": "Off: nothing is settled",
+      "unknown": "State unknown",
+      "switch": "Switch",
+      "fromQuarter": "First quarter"
+    },
+    "warning": {
+      "title": "Do not turn the automatic dividend credit on in a real environment yet",
+      "body": "The switch must stay OFF until the client has answered Q1 (parallel with or replacing the global fund) and C3b (dividend per region). Turning it on credits real wallets and cannot be undone.",
+      "order": "Set the first quarter BEFORE turning the switch on: with the switch on and no first quarter nothing is settled; quarters before it are never settled."
+    },
+    "col": {
+      "quarter": "Quarter",
+      "status": "Status",
+      "pool": "Pool",
+      "remainder": "Remainder",
+      "paid": "Paid",
+      "items": "Lines",
+      "account": "Account",
+      "slots": "Slots",
+      "amount": "Amount",
+      "points": "Points",
+      "walletTx": "Wallet transaction"
+    },
+    "facts": {
+      "retained": "Kept by the company",
+      "slots": "Total slots",
+      "fx": "FX rate (TWD to USD)",
+      "peg": "Point value (USD)",
+      "tax": "Tax taken out",
+      "lockAt": "Quarter locked",
+      "snapshotAt": "Frozen at",
+      "finishedAt": "Finished",
+      "failedReason": "Reason"
+    },
+    "settlementStatus": {
+      "RUNNING": "Running",
+      "COMPLETED": "Completed",
+      "FAILED": "Failed"
+    },
+    "itemStatus": {
+      "PENDING": "Pending",
+      "CREDITED": "Credited",
+      "SKIPPED_ZERO": "Skipped (zero)",
+      "SKIPPED_NO_WALLET": "Skipped (cannot be paid)"
+    },
+    "skipReason": {
+      "NO_WALLET": "No wallet",
+      "DELETED": "Account deleted",
+      "PENDING_ACTIVATION": "Account not confirmed yet",
+      "NO_USER": "Account not found"
+    },
+    "run": {
+      "title": "Run a settlement now",
+      "explain": "Super Admin only. The run is synchronous: it freezes the quarter if needed and credits every account before it answers, so a big quarter can take a while. Keep this page open. Running again is safe: finished accounts are not paid twice.",
+      "quarter": "Quarter",
+      "badQuarter": "Enter a quarter like 2026Q4.",
+      "button": "Run now",
+      "running": "Running...",
+      "confirmTitle": "Run the {quarter} settlement now?",
+      "confirmDesc": "This credits real wallets. It runs until it is done; do not close the page.",
+      "readOnly": "Read only: only a Super Admin can run a settlement.",
+      "result": "Credited {credited}, skipped {skipped}, pending {pending}, errors {errors}.",
+      "partialHint": "Not everything was paid. Run again to continue.",
+      "outcome": {
+        "COMPLETED": "Completed",
+        "ALREADY_COMPLETED": "Already completed",
+        "PARTIAL": "Partly done"
+      }
+    },
+    "errors": {
+      "disabled": "The automatic dividend credit is switched off.",
+      "fromRequired": "Set the first quarter of the automatic credit first (in settings).",
+      "notLocked": "Quarter {quarter} is not locked yet, so it cannot be settled.",
+      "beforeStart": "Quarter {quarter} is before the first quarter of the automatic credit ({fromQuarter}), so it is never settled.",
+      "failed": "The {quarter} settlement failed its reconciliation check and needs a manual review; it cannot be run again.",
+      "notFound": "This quarter has no settlement.",
+      "creditNotFound": "This dividend line was not found."
+    }
+  },
+  "dividendCredits": {
+    "title": "My dividend credits",
+    "intro": "Quarterly dividends credited to your wallet. Amounts are in TWD and in wallet points.",
+    "empty": "No dividend has been credited to you yet.",
+    "detailTitle": "Dividend credit",
+    "back": "Back to my dividend credits",
+    "creditedAt": "Credited",
+    "settlement": "Settlement"
   }
 }

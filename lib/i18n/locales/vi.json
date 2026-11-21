@@ -775,7 +775,11 @@
       "network": "Mạng lưới",
       "networkDesc": "Cây downline MLM của bạn",
       "refunds": "Hoàn tiền của tôi",
-      "refundsDesc": "Các khoản hoàn tiền dành cho bạn: xác nhận đã nhận hoặc báo vấn đề"
+      "refundsDesc": "Các khoản hoàn tiền dành cho bạn: xác nhận đã nhận hoặc báo vấn đề",
+      "subAccounts": "Tài khoản phụ",
+      "subAccountsDesc": "Các tài khoản bạn quản lý dưới tài khoản của mình: tạo, mời, rút lại",
+      "dividendCredits": "Cổ tức đã nhận",
+      "dividendCreditsDesc": "Cổ tức theo quý đã ghi vào ví của bạn"
     },
     "otp": {
       "timeRemaining": "Thời gian còn lại",
@@ -866,7 +870,8 @@
       "dividendSlots": "Suất cổ tức",
       "dividendReport": "Báo cáo cổ tức",
       "refundCases": "Theo dõi hoàn tiền",
-      "accountingExport": "Xuất dữ liệu kế toán"
+      "accountingExport": "Xuất dữ liệu kế toán",
+      "dividendSettlements": "Quyết toán cổ tức"
     },
     "common": {
       "create": "Tạo mới",
@@ -2155,7 +2160,8 @@
         "belowMin": "Giá trị phải từ {min} trở lên.",
         "aboveMax": "Giá trị không được vượt quá {max}.",
         "notNullable": "Cài đặt này không thể để trống.",
-        "notDecimal": "Nhập số có tối đa 2 chữ số thập phân (ví dụ 5 hoặc 5.25)."
+        "notDecimal": "Nhập số có tối đa 2 chữ số thập phân (ví dụ 5 hoặc 5.25).",
+        "notQuarter": "Nhập quý dạng 2026Q4 (hoặc 20264): năm 2000 đến 2100 và quý 1 đến 4."
       },
       "keys": {
         "dividendEditWindowDays": {
@@ -2190,11 +2196,33 @@
         "taxRatePercent": {
           "label": "Thuế suất (%)",
           "description": "Thuế suất theo phần trăm (0 đến 100, tối đa 2 chữ số thập phân) dùng khi công tắc thuế đang bật, ví dụ 5 hoặc 5.25."
+        },
+        "dividendAutoCreditEnabled": {
+          "label": "Tự động ghi có cổ tức",
+          "description": "Khi bật, quý cổ tức đã khóa được quyết toán tự động: quỹ được chốt một lần và mọi tài khoản được ghi có vào ví. Tắt (mặc định) = không ghi gì và không ghi có. KHÔNG bật trên môi trường thật trước khi khách trả lời Q1 và C3b, và hãy đặt quý đầu tiên trước."
+        },
+        "dividendAutoCreditFromQuarter": {
+          "label": "Quý đầu tiên của việc tự động ghi có",
+          "description": "Quý cổ tức đầu tiên được phép quyết toán tự động (2026Q4 hoặc 20264). Khi để trống thì không quyết toán gì dù công tắc đang bật; các quý trước đó không bao giờ được quyết toán. Hãy đặt nó TRƯỚC khi bật công tắc.",
+          "nullMeaning": "Chưa đặt: không quyết toán tự động quý nào."
+        },
+        "maxSubAccountsPerAccount": {
+          "label": "Số tài khoản phụ tối đa mỗi tài khoản",
+          "description": "Một tài khoản được có bao nhiêu tài khoản phụ đang hoạt động (mặc định 100). Tài khoản chờ xác nhận cũng được tính."
+        },
+        "maxSubAccountDepth": {
+          "label": "Độ sâu tối đa của tài khoản phụ",
+          "description": "Cho phép bao nhiêu tầng tài khoản phụ nằm dưới tài khoản phụ."
+        },
+        "subAccountCreationsPerHour": {
+          "label": "Số tài khoản phụ được tạo mỗi giờ",
+          "description": "Một người được tạo tối đa bao nhiêu tài khoản phụ mỗi giờ (cả chủ tài khoản và admin)."
         }
       },
       "on": "Bật",
       "off": "Tắt",
-      "rangeDecimal": "Số từ {min} đến {max}, tối đa 2 chữ số thập phân."
+      "rangeDecimal": "Số từ {min} đến {max}, tối đa 2 chữ số thập phân.",
+      "rangeQuarter": "Quý dạng 2026Q4 (hoặc 20264), từ 2000 Q1 đến 2100 Q4."
     },
     "dividend": {
       "readOnlyNote": "Bạn chỉ có thể xem trang này. Chỉ Super Admin mới được thay đổi.",
@@ -3506,7 +3534,8 @@
       "ACTIVE": "Đang hoạt động",
       "PENDING": "Chờ xử lý",
       "LOCKED": "Đã khóa",
-      "DELETED": "Đã xóa"
+      "DELETED": "Đã xóa",
+      "PENDING_ACTIVATION": "Chờ xác nhận"
     },
     "financeItem": {
       "PENDING": "Chờ xử lý",
@@ -4022,7 +4051,8 @@
     "kinds": {
       "refund-cases": "Ca hoàn tiền (kèm lịch sử)",
       "commission-ledger": "Biến động sổ hoa hồng",
-      "wallet-transactions": "Giao dịch ví"
+      "wallet-transactions": "Giao dịch ví",
+      "dividend-settlements": "Quyết toán cổ tức (ghi có tự động)"
     },
     "from": "Từ ngày (GMT+8)",
     "to": "Đến ngày (GMT+8)",
@@ -4059,7 +4089,11 @@
       "direction": {
         "IN": "Vào",
         "OUT": "Ra"
-      }
+      },
+      "pool": "Quỹ",
+      "remainder": "Phần dư (thu nhập chênh lệch)",
+      "itemsTotal": "Tổng các dòng",
+      "settlements": "Số lần quyết toán"
     },
     "formErrors": {
       "badFrom": "Nhập ngày bắt đầu có thật.",
@@ -4070,7 +4104,8 @@
       "badRegion": "Chọn một trong các khu vực có sẵn.",
       "badReason": "Chọn lý do hợp lệ.",
       "badBeneficiary": "Mã người nhận phải là mã hợp lệ (UUID).",
-      "badUser": "Mã người dùng phải là mã hợp lệ (UUID)."
+      "badUser": "Mã người dùng phải là mã hợp lệ (UUID).",
+      "badQuarter": "Dùng quý dạng 2026Q3."
     },
     "errors": {
       "tooManyRows": "Bản xuất này có {rows} dòng, vượt giới hạn {max}. Hãy thu hẹp khoảng ngày hoặc bộ lọc, hoặc chia thành nhiều tệp.",
@@ -4083,6 +4118,232 @@
       "aborted": "Quá trình tải bị gián đoạn và tệp chưa đầy đủ nên không được lưu. Hãy thử lại.",
       "incomplete": "Tệp kết thúc bằng một lỗi ({reason}) và chưa đầy đủ nên không được lưu. Hãy thử lại hoặc dùng khoảng ngày ngắn hơn.",
       "notCsv": "Máy chủ không trả về tệp CSV đầy đủ (không có dòng TOTAL ở cuối) nên chưa lưu gì. Hãy thử lại; nếu vẫn lặp lại, báo cho quản trị viên."
+    },
+    "quarter": "Quý (không bắt buộc)",
+    "quarterHint": "Dạng 2026Q3. Để trống = mọi quý đã quyết toán. Bản xuất này không có khoảng ngày và không lọc khu vực."
+  },
+  "subAccounts": {
+    "title": "Tài khoản phụ",
+    "intro": "Tài khoản phụ là tài khoản riêng, có e-mail và mật khẩu riêng, thuộc về tài khoản của bạn. Đơn mua của chúng theo cùng quy tắc giới thiệu và nhóm như trước. Mỗi tài khoản chỉ có số lượng giới hạn.",
+    "counter": "Tài khoản phụ",
+    "nOfCap": "{n} trên {cap}",
+    "pending": "Chờ xác nhận",
+    "pendingHint": "Đang chờ người dùng e-mail này xác nhận. Sẽ tự giải phóng sau {days} ngày.",
+    "empty": "Bạn chưa có tài khoản phụ nào.",
+    "withdraw": "Rút lại",
+    "withdrawConfirm": {
+      "title": "Rút lại tài khoản phụ này?",
+      "desc": "Việc giữ chỗ cho {email} bị hủy và chỗ được trả lại. Người đó không thể xác nhận nữa."
+    },
+    "create": {
+      "title": "Tạo tài khoản phụ",
+      "ownerExplain": "Tài khoản phụ ở trạng thái chờ cho đến khi người dùng e-mail đó xác nhận bằng mã chúng tôi gửi cho họ. Bạn không bao giờ thấy mã hay mật khẩu. Chỉ dùng địa chỉ mà người đó kiểm soát.",
+      "adminExplain": "Tạo thay mặt tài khoản này. Có hiệu lực ngay. Bắt buộc có lý do và sẽ được ghi lại.",
+      "email": "E-mail",
+      "fullName": "Tên (không bắt buộc)",
+      "region": "Khu vực",
+      "regionDefault": "Mặc định (TW)",
+      "submit": "Tạo tài khoản phụ",
+      "atCap": "Bạn đã đạt số tài khoản phụ tối đa.",
+      "mailSent": "Đã tạo. Mã đã được gửi tới địa chỉ đó; tài khoản phụ hoạt động khi người đó xác nhận.",
+      "mailNotSent": "Đã tạo, nhưng lúc này chưa gửi được e-mail mã. Người đó có thể yêu cầu mã ở trang quên mật khẩu bằng e-mail đó.",
+      "errors": {
+        "email": {
+          "required": "Nhập địa chỉ e-mail.",
+          "invalid": "Nhập địa chỉ e-mail hợp lệ.",
+          "tooLong": "Địa chỉ e-mail quá dài."
+        },
+        "fullName": {
+          "tooLong": "Tên tối đa 200 ký tự.",
+          "invalid": "Tên chứa ký tự không được phép."
+        },
+        "regionCode": {
+          "invalid": "Chọn một trong các khu vực có sẵn."
+        }
+      }
+    },
+    "col": {
+      "email": "E-mail",
+      "name": "Tên",
+      "status": "Trạng thái",
+      "region": "Khu vực",
+      "created": "Ngày tạo"
+    },
+    "invites": {
+      "title": "Liên kết mời",
+      "explain": "Liên kết mời cho phép một người tự đăng ký tài khoản của họ làm tài khoản phụ của bạn. Mỗi liên kết dùng được một lần và hết hạn sau 7 ngày.",
+      "create": "Tạo liên kết mời",
+      "newTitle": "Liên kết mời mới của bạn",
+      "onceWarning": "Hãy sao chép ngay: vì bảo mật, liên kết chỉ hiện một lần và không thể xem lại.",
+      "link": "Liên kết mời",
+      "expires": "Hết hạn {date}",
+      "copy": "Sao chép liên kết",
+      "copied": "Đã sao chép liên kết.",
+      "copyFailed": "Sao chép thất bại. Hãy chọn liên kết ở trên và sao chép thủ công.",
+      "dismiss": "Ẩn",
+      "replayed": "Lời mời này đã được tạo, nhưng không thể hiện lại liên kết. Hãy thu hồi nó bên dưới và tạo lời mời mới.",
+      "empty": "Chưa có liên kết mời nào.",
+      "expiresCol": "Hết hạn",
+      "revoke": "Thu hồi",
+      "status": {
+        "PENDING": "Đang mở",
+        "USED": "Đã dùng",
+        "REVOKED": "Đã thu hồi",
+        "EXPIRED": "Hết hạn"
+      }
+    },
+    "toast": {
+      "created": "Đã tạo tài khoản phụ.",
+      "withdrawn": "Đã rút lại tài khoản phụ.",
+      "revoked": "Đã thu hồi lời mời.",
+      "discarded": "Đã hủy tài khoản phụ đang chờ."
+    },
+    "errors": {
+      "limit": "Đã đạt số tài khoản phụ tối đa của tài khoản này.",
+      "depthLimit": "Đã đạt độ sâu tối đa của tài khoản phụ.",
+      "parentInvalid": "Tài khoản này không thể có tài khoản phụ.",
+      "hasChildren": "Tài khoản này vẫn còn tài khoản phụ nên không thể xóa.",
+      "reparentForbidden": "Không thể chuyển tài khoản phụ sang người giới thiệu khác.",
+      "inviteInvalid": "Liên kết mời không hợp lệ: có thể sai, đã dùng, đã thu hồi hoặc hết hạn. Hãy xin chủ tài khoản liên kết mới.",
+      "inviteNotFound": "Không tìm thấy lời mời này.",
+      "inviteLimit": "Có quá nhiều liên kết mời đang mở. Hãy thu hồi bớt một liên kết.",
+      "notPending": "Tài khoản phụ này không còn chờ xác nhận.",
+      "declinedRecently": "Hiện chưa thể thêm địa chỉ này. Hãy thử lại sau hoặc dùng địa chỉ khác.",
+      "pendingActivation": "Tài khoản này đang chờ người dùng e-mail xác nhận nên không thực hiện được thao tác này.",
+      "budget": "Gần đây đã tạo quá nhiều tài khoản phụ. Hãy thử lại sau.",
+      "notFound": "Không tìm thấy. Có thể nó đã bị gỡ."
+    },
+    "register": {
+      "inviteBanner": "Bạn đang đăng ký bằng lời mời tài khoản phụ. Tài khoản mới sẽ thuộc về người đã mời bạn."
+    },
+    "decline": {
+      "title": "Từ chối tài khoản",
+      "description": "Có người đã giữ chỗ một tài khoản cho địa chỉ e-mail này. Nhập mã 6 số trong tin nhắn để từ chối.",
+      "code": "Mã trong tin nhắn",
+      "submit": "Từ chối tài khoản",
+      "done": "Xong. Tài khoản được giữ chỗ đã bị từ chối.",
+      "failed": "Không thể từ chối tài khoản.",
+      "acceptHint": "Muốn chấp nhận thay vào đó?",
+      "acceptLink": "Đặt mật khẩu tại đây",
+      "errors": {
+        "email": "Nhập địa chỉ e-mail hợp lệ.",
+        "code": "Nhập mã 6 số."
+      }
+    },
+    "admin": {
+      "title": "Tài khoản phụ của một tài khoản",
+      "back": "Quay lại người dùng",
+      "root": "Tài khoản gốc",
+      "isSub": "Tài khoản này là tài khoản phụ (cấp {depth}).",
+      "isRoot": "Tài khoản này là tài khoản gốc.",
+      "readOnly": "Chỉ xem: chỉ Admin hoặc Super Admin mới tạo hoặc hủy được tài khoản phụ.",
+      "empty": "Tài khoản này chưa có tài khoản phụ.",
+      "discard": "Hủy tài khoản chờ",
+      "discardTitle": "Hủy tài khoản phụ đang chờ",
+      "discardDesc": "Hủy việc giữ chỗ cho {email}. Bắt buộc có lý do và sẽ được ghi lại.",
+      "truncated": "Danh sách bị cắt ở {limit} dòng; hãy thu hẹp bằng cách mở một tài khoản phụ.",
+      "open": "Tài khoản phụ"
     }
+  },
+  "dividendSettlements": {
+    "title": "Quyết toán cổ tức",
+    "description": "Cổ tức theo quý được ghi tự động vào ví: quỹ, phần dư, từng dòng tài khoản và giao dịch ví của nó.",
+    "empty": "Chưa có quý nào được quyết toán.",
+    "open": "Mở",
+    "back": "Quay lại danh sách quyết toán",
+    "detailTitle": "Quyết toán",
+    "noItems": "Không có dòng nào khớp bộ lọc.",
+    "counts": "{credited} đã ghi có, {pending} đang chờ, {skipped} bỏ qua trên {total}",
+    "armed": {
+      "label": "Ghi có tự động",
+      "armed": "Đã sẵn sàng: sẽ quyết toán các quý đã khóa từ quý đầu tiên trở đi",
+      "enabledNoQuarter": "Công tắc bật nhưng chưa có quý đầu tiên: không quyết toán gì",
+      "off": "Tắt: không quyết toán gì",
+      "unknown": "Chưa rõ trạng thái",
+      "switch": "Công tắc",
+      "fromQuarter": "Quý đầu tiên"
+    },
+    "warning": {
+      "title": "Chưa được bật tự động ghi có cổ tức trên môi trường thật",
+      "body": "Công tắc phải để TẮT cho đến khi khách trả lời Q1 (song song hay thay thế quỹ toàn cầu) và C3b (cổ tức theo khu vực). Bật lên sẽ ghi có vào ví thật và không thể hoàn tác.",
+      "order": "Hãy đặt quý đầu tiên TRƯỚC khi bật công tắc: bật công tắc mà chưa có quý đầu tiên thì không quyết toán gì; các quý trước đó không bao giờ được quyết toán."
+    },
+    "col": {
+      "quarter": "Quý",
+      "status": "Trạng thái",
+      "pool": "Quỹ",
+      "remainder": "Phần dư",
+      "paid": "Đã trả",
+      "items": "Dòng",
+      "account": "Tài khoản",
+      "slots": "Suất",
+      "amount": "Số tiền",
+      "points": "Điểm",
+      "walletTx": "Giao dịch ví"
+    },
+    "facts": {
+      "retained": "Công ty giữ lại",
+      "slots": "Tổng số suất",
+      "fx": "Tỷ giá (TWD sang USD)",
+      "peg": "Giá trị điểm (USD)",
+      "tax": "Thuế đã loại",
+      "lockAt": "Quý bị khóa lúc",
+      "snapshotAt": "Chốt lúc",
+      "finishedAt": "Hoàn tất lúc",
+      "failedReason": "Lý do"
+    },
+    "settlementStatus": {
+      "RUNNING": "Đang chạy",
+      "COMPLETED": "Hoàn tất",
+      "FAILED": "Thất bại"
+    },
+    "itemStatus": {
+      "PENDING": "Đang chờ",
+      "CREDITED": "Đã ghi có",
+      "SKIPPED_ZERO": "Bỏ qua (bằng 0)",
+      "SKIPPED_NO_WALLET": "Bỏ qua (không thể trả)"
+    },
+    "skipReason": {
+      "NO_WALLET": "Không có ví",
+      "DELETED": "Tài khoản đã xóa",
+      "PENDING_ACTIVATION": "Tài khoản chưa được xác nhận",
+      "NO_USER": "Không tìm thấy tài khoản"
+    },
+    "run": {
+      "title": "Chạy quyết toán ngay",
+      "explain": "Chỉ Super Admin. Lệnh chạy đồng bộ: chốt quý nếu cần và ghi có cho mọi tài khoản trước khi trả lời, nên quý lớn có thể mất thời gian. Hãy giữ trang này mở. Chạy lại là an toàn: tài khoản đã trả sẽ không bị trả hai lần.",
+      "quarter": "Quý",
+      "badQuarter": "Nhập quý dạng 2026Q4.",
+      "button": "Chạy ngay",
+      "running": "Đang chạy...",
+      "confirmTitle": "Chạy quyết toán {quarter} ngay?",
+      "confirmDesc": "Việc này ghi có vào ví thật. Nó chạy đến khi xong; đừng đóng trang.",
+      "readOnly": "Chỉ xem: chỉ Super Admin mới chạy được quyết toán.",
+      "result": "Đã ghi có {credited}, bỏ qua {skipped}, đang chờ {pending}, lỗi {errors}.",
+      "partialHint": "Chưa trả hết. Hãy chạy lại để tiếp tục.",
+      "outcome": {
+        "COMPLETED": "Hoàn tất",
+        "ALREADY_COMPLETED": "Đã hoàn tất trước đó",
+        "PARTIAL": "Làm được một phần"
+      }
+    },
+    "errors": {
+      "disabled": "Tự động ghi có cổ tức đang tắt.",
+      "fromRequired": "Hãy đặt quý đầu tiên của việc tự động ghi có trước (trong phần thiết lập).",
+      "notLocked": "Quý {quarter} chưa bị khóa nên chưa thể quyết toán.",
+      "beforeStart": "Quý {quarter} nằm trước quý đầu tiên của việc tự động ghi có ({fromQuarter}) nên không bao giờ được quyết toán.",
+      "failed": "Quyết toán {quarter} không qua được bước đối soát và cần xem xét thủ công; không thể chạy lại.",
+      "notFound": "Quý này chưa có quyết toán.",
+      "creditNotFound": "Không tìm thấy dòng cổ tức này."
+    }
+  },
+  "dividendCredits": {
+    "title": "Cổ tức đã nhận",
+    "intro": "Cổ tức theo quý đã ghi vào ví của bạn. Số tiền tính bằng TWD và điểm ví.",
+    "empty": "Bạn chưa được ghi có cổ tức nào.",
+    "detailTitle": "Khoản cổ tức",
+    "back": "Quay lại cổ tức đã nhận",
+    "creditedAt": "Ghi có lúc",
+    "settlement": "Quyết toán"
   }
 }

@@ -256,6 +256,14 @@ export const adminNavItems: AdminNavItem[] = [
     group: "finance_mlm",
   },
   {
+    href: "/admin/dividend/settlements",
+    labelKey: "admin.nav.dividendSettlements",
+    icon: Coins,
+    permissions: ["VIEW_MLM_COMSN"],
+    roles: ["SUPER_ADMIN", "ADMIN", "ACCOUNTANT"],
+    group: "finance_mlm",
+  },
+  {
     href: "/admin/dividend/report",
     labelKey: "admin.nav.dividendReport",
     icon: FileBarChart2,

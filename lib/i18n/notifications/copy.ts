@@ -192,6 +192,14 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "Refund not received",
       body: "A buyer reports that a refund marked as transferred did not arrive.",
     },
+    DIVIDEND_CREDITED: {
+      title: "Dividend credited",
+      body: "Your {quarter} dividend of {amountTwd} TWD ({points} points) was credited to your wallet.",
+    },
+    DIVIDEND_SETTLEMENT_FAILED: {
+      title: "Dividend settlement failed",
+      body: "The {quarter} dividend settlement failed its reconciliation check. No further credit is made; please review it.",
+    },
     RMA_GOODS_RETURN_PENDING: {
       title: "Goods will be returned",
       body: "No refund for {rmaId}. Seller must ship your items back.",
@@ -550,6 +558,14 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "Chưa nhận được hoàn tiền",
       body: "Một người mua báo rằng khoản hoàn tiền đã đánh dấu chuyển nhưng chưa đến.",
     },
+    DIVIDEND_CREDITED: {
+      title: "Đã ghi có cổ tức",
+      body: "Cổ tức {quarter} của bạn là {amountTwd} TWD ({points} điểm) đã được ghi vào ví.",
+    },
+    DIVIDEND_SETTLEMENT_FAILED: {
+      title: "Quyết toán cổ tức thất bại",
+      body: "Quyết toán cổ tức {quarter} không qua được bước đối soát. Không ghi có thêm; vui lòng xem lại.",
+    },
     RMA_GOODS_RETURN_PENDING: {
       title: "Hàng sẽ được trả lại",
       body: "Không hoàn tiền cho {rmaId}. Người bán phải gửi lại hàng.",
@@ -907,6 +923,14 @@ export const NOTIFICATION_TYPE_COPY: Record<
     REFUND_CASE_DISPUTED: {
       title: "買家未收到退款",
       body: "有買家回報，已標記轉出的退款尚未到帳。",
+    },
+    DIVIDEND_CREDITED: {
+      title: "股利已入帳",
+      body: "你的 {quarter} 股利 {amountTwd} TWD（{points} 點）已入帳至錢包。",
+    },
+    DIVIDEND_SETTLEMENT_FAILED: {
+      title: "股利結算失敗",
+      body: "{quarter} 股利結算未通過對帳檢查，不再進行後續入帳，請檢視。",
     },
     RMA_GOODS_RETURN_PENDING: {
       title: "商品將寄回",

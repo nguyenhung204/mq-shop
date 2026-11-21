@@ -91,3 +91,24 @@ describe("resolveNotificationRoute refund case notices (C2)", () => {
     expect(route("REFUND_CASE_DISPUTED", ["SELLER"], { refundCaseId: "c-9" })).toBeNull();
   });
 });
+
+describe("resolveNotificationRoute dividend notices (C5)", () => {
+  const route = (type: string, roles: string[], meta: Record<string, string> = {}) =>
+    resolveNotificationRoute({ type, meta } as never, { roles } as never);
+  it("a credited dividend opens the line, or the list without meta; any signed-in role", () => {
+    for (const r of [["BUYER"], ["SELLER"], ["ADMIN"]]) {
+      expect(route("DIVIDEND_CREDITED", r, { itemId: "it-1", quarter: "2026Q4" })).toBe("/dividend-credits/it-1");
+      expect(route("DIVIDEND_CREDITED", r)).toBe("/dividend-credits");
+    }
+  });
+  it("a hostile item id is encoded", () => {
+    expect(route("DIVIDEND_CREDITED", ["BUYER"], { itemId: "a/../b?x" })).toBe("/dividend-credits/a%2F..%2Fb%3Fx");
+  });
+  it("a failed settlement goes to finance staff only, to the quarter when known", () => {
+    for (const r of ["ACCOUNTANT", "ADMIN", "SUPER_ADMIN"]) {
+      expect(route("DIVIDEND_SETTLEMENT_FAILED", [r], { quarter: "2026Q4" }), r).toBe("/admin/dividend/settlements/2026Q4");
+      expect(route("DIVIDEND_SETTLEMENT_FAILED", [r]), r).toBe("/admin/dividend/settlements");
+    }
+    for (const r of ["BUYER", "SELLER", "CS", "WAREHOUSE"]) expect(route("DIVIDEND_SETTLEMENT_FAILED", [r], { quarter: "2026Q4" }), r).toBeNull();
+  });
+});

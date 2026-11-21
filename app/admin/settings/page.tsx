@@ -10,6 +10,9 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 import type { SystemSetting } from "@/lib/api/settings";
+import { AutoCreditStateCard, AutoCreditWarning } from "@/components/dividend/SettlementViews";
+import { SETTING_AUTO_ENABLED, SETTING_FROM_QUARTER } from "@/lib/dividend/settlement";
+import { useDividendSettlements } from "@/lib/queries/dividend-settlements";
 import { settingTexts } from "@/lib/settings/labels";
 import { formatSettingValue, settingKind } from "@/lib/settings/edit";
 import type { SettingValue } from "@/lib/api/settings";
@@ -23,7 +26,7 @@ function HistoryPanel({ settingKey, kind }: { settingKey: string; kind: "int" | 
   const { t, locale } = useLanguage();
   const { data, isLoading, isError } = useSettingHistory(settingKey);
   const intl = toIntlLocale(locale);
-  const show = (v: SettingValue) => settingValueText(t, kind, v);
+  const show = (v: SettingValue) => settingValueText(t, kind, v, settingKey);
 
   if (isLoading) return <p className="text-xs text-mq-text-muted">{t("admin.common.loading")}</p>;
   if (isError) return <p className="text-xs text-mq-text-muted">{t("admin.common.failed")}</p>;
@@ -54,8 +57,8 @@ function HistoryPanel({ settingKey, kind }: { settingKey: string; kind: "int" | 
   );
 }
 
-function settingValueText(t: (k: string) => string, kind: "int" | "bool" | "decimal", v: SettingValue): string {
-  const f = formatSettingValue(kind, v);
+function settingValueText(t: (k: string) => string, kind: "int" | "bool" | "decimal", v: SettingValue, key?: string): string {
+  const f = formatSettingValue(kind, v, key);
   if (f.type === "unset") return t("admin.settings.unset");
   if (f.type === "bool") return f.on ? t("admin.settings.on") : t("admin.settings.off");
   return f.text;
@@ -71,6 +74,8 @@ function SettingsInner() {
   const [openHistory, setOpenHistory] = useState<string | null>(null);
   const intl = toIntlLocale(locale);
   const items = data ?? [];
+  const hasAutoCredit = items.some((s) => s.key === SETTING_AUTO_ENABLED || s.key === SETTING_FROM_QUARTER);
+  const settlements = useDividendSettlements(1, hasAutoCredit);
 
   const texts = (s: SystemSetting) => settingTexts(t, s);
 
@@ -81,6 +86,12 @@ function SettingsInner() {
         description={canWrite ? t("admin.settings.description") : t("admin.settings.descriptionReadOnly")}
       />
       <div className="space-y-6">
+        {hasAutoCredit ? (
+          <>
+            <AutoCreditWarning />
+            <AutoCreditStateCard state={settlements.data?.autoCredit ?? null} />
+          </>
+        ) : null}
         {isError && (
           <div className="mq-alert mq-alert-error">{getErrorMessage(error, t("admin.common.failed"))}</div>
         )}
@@ -116,14 +127,14 @@ function SettingsInner() {
                             <p className="text-xs text-mq-text-muted mt-1 max-w-xs">{texts(s).nullMeaning}</p>
                           </>
                         ) : (
-                          <span className="font-semibold tabular-nums">{settingValueText(t, settingKind(s), s.value)}</span>
+                          <span className="font-semibold tabular-nums">{settingValueText(t, settingKind(s), s.value, s.key)}</span>
                         )}
                         {s.isDefault ? (
                           <p className="text-[11px] text-mq-text-muted mt-1">{t("admin.settings.isDefault")}</p>
                         ) : null}
                       </td>
                       <td className="p-3 tabular-nums">
-                        {settingValueText(t, settingKind(s), s.default)}
+                        {settingValueText(t, settingKind(s), s.default, s.key)}
                       </td>
                       <td className="p-3 text-xs whitespace-nowrap">
                         {s.min == null || s.max == null ? "—" : `${s.min}–${s.max}`}

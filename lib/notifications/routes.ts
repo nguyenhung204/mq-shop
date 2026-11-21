@@ -218,6 +218,18 @@ export function resolveNotificationRoute(
       return caseId ? `/admin/refund-cases/${encodeURIComponent(caseId)}` : "/admin/refund-cases";
     }
 
+    // C5: automatic dividend credit. Owner: the credited line; finance staff: the failed settlement.
+    case "DIVIDEND_CREDITED": {
+      const itemId = metaStr(meta, "itemId");
+      return itemId ? `/dividend-credits/${encodeURIComponent(itemId)}` : "/dividend-credits";
+    }
+
+    case "DIVIDEND_SETTLEMENT_FAILED": {
+      if (!admin) return null;
+      const quarter = metaStr(meta, "quarter");
+      return quarter ? `/admin/dividend/settlements/${encodeURIComponent(quarter)}` : "/admin/dividend/settlements";
+    }
+
     case "REVIEW_NEW":
       return seller ? "/seller/reviews" : null;
 

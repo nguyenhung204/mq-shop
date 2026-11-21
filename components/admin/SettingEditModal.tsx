@@ -4,6 +4,8 @@ import { FormEvent, useEffect, useId, useState } from "react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import type { SettingValue, SystemSetting } from "@/lib/api/settings";
 import { REASON_MAX } from "@/lib/admin/reason";
+import { AutoCreditWarning } from "@/components/dividend/SettlementViews";
+import { SETTING_AUTO_ENABLED, SETTING_FROM_QUARTER } from "@/lib/dividend/settlement";
 import { settingTexts } from "@/lib/settings/labels";
 import {
   initialSettingFlag,
@@ -46,7 +48,7 @@ function SettingEditForm({
 }) {
   const { t } = useLanguage();
   const kind = settingKind(setting);
-  const [raw, setRaw] = useState(initialSettingText(setting));
+  const [raw, setRaw] = useState(initialSettingText({ key: setting.key, kind: setting.kind, value: setting.value }));
   const [flag, setFlag] = useState(initialSettingFlag(setting));
   const [clear, setClear] = useState(false);
   const [reason, setReason] = useState("");
@@ -97,7 +99,7 @@ function SettingEditForm({
           </h2>
           {kind === "bool" ? null : (
             <p className="mq-admin-modal-desc">
-              {t(kind === "decimal" ? "admin.settings.rangeDecimal" : "admin.settings.range", {
+              {t(setting.key === SETTING_FROM_QUARTER ? "admin.settings.rangeQuarter" : kind === "decimal" ? "admin.settings.rangeDecimal" : "admin.settings.range", {
                 min: String(setting.min),
                 max: String(setting.max),
               })}
@@ -105,6 +107,7 @@ function SettingEditForm({
           )}
         </header>
         <form className="mq-admin-modal-body" onSubmit={(e) => void submit(e)} noValidate>
+          {setting.key === SETTING_AUTO_ENABLED || setting.key === SETTING_FROM_QUARTER ? <AutoCreditWarning compact /> : null}
           {kind === "bool" ? (
             <label htmlFor={valueId} className="flex items-center gap-2 text-sm">
               <input
@@ -126,7 +129,7 @@ function SettingEditForm({
               <input
                 id={valueId}
                 className="mq-input"
-                inputMode={kind === "decimal" ? "decimal" : "numeric"}
+                inputMode={kind === "decimal" ? "decimal" : setting.key === SETTING_FROM_QUARTER ? "text" : "numeric"}
                 autoComplete="off"
                 value={raw}
                 disabled={clear || busy}

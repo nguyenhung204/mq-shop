@@ -1,5 +1,6 @@
 import { validateReason, type ReasonError } from "@/lib/admin/reason";
 import type { SettingValue, SystemSetting } from "@/lib/api/settings";
+import { SETTING_FROM_QUARTER, isValidQuarterCode, parseQuarterInput, quarterCodeLabel } from "@/lib/dividend/settlement";
 import { centsToDecimalString, parseDecimalToCents } from "@/lib/money";
 
 export type SettingEditInput = {
@@ -13,7 +14,7 @@ export type SettingEditInput = {
 };
 
 export type SettingEditError =
-  | { field: "value"; code: "required" | "notInteger" | "notDecimal" | "belowMin" | "aboveMax" | "notNullable" }
+  | { field: "value"; code: "required" | "notInteger" | "notDecimal" | "notQuarter" | "belowMin" | "aboveMax" | "notNullable" }
   | { field: "reason"; code: ReasonError };
 
 export type SettingEditResult =
@@ -28,7 +29,10 @@ export function settingKind(def: Pick<SystemSetting, "kind">): "int" | "bool" | 
 }
 
 /** Initial text of the value field: the stored number, or empty. Bool settings have no text field. */
-export function initialSettingText(def: Pick<SystemSetting, "kind" | "value">): string {
+export function initialSettingText(def: Pick<SystemSetting, "kind" | "value"> & { key?: string }): string {
+  if (def.key === SETTING_FROM_QUARTER && typeof def.value === "number" && isValidQuarterCode(def.value)) {
+    return `${Math.floor(def.value / 10)}Q${def.value % 10}`;
+  }
   return typeof def.value === "number" ? String(def.value) : "";
 }
 
@@ -60,6 +64,11 @@ export function validateSettingEdit(def: SystemSetting, input: SettingEditInput)
     if (!def.nullable) errors.push({ field: "value", code: "notNullable" });
   } else if (input.raw.trim() === "") {
     errors.push({ field: "value", code: "required" });
+  } else if (def.key === SETTING_FROM_QUARTER) {
+    // first quarter of the automatic dividend credit: 20264 or 2026Q4, range 20001..21004, last digit 1..4
+    const code = parseQuarterInput(input.raw);
+    if (code === null || !isValidQuarterCode(code)) errors.push({ field: "value", code: "notQuarter" });
+    else value = code;
   } else if (kind === "int") {
     if (!INT_RE.test(input.raw.trim())) errors.push({ field: "value", code: "notInteger" });
     else {
@@ -88,9 +97,11 @@ export function validateSettingEdit(def: SystemSetting, input: SettingEditInput)
 export function formatSettingValue(
   kind: "int" | "bool" | "decimal",
   v: SettingValue,
+  key?: string,
 ): { type: "unset" } | { type: "bool"; on: boolean } | { type: "text"; text: string } {
   if (v == null) return { type: "unset" };
   if (typeof v === "boolean") return { type: "bool", on: v };
+  if (key === SETTING_FROM_QUARTER && typeof v === "number") return { type: "text", text: quarterCodeLabel(v) };
   if (kind === "decimal") {
     const c = parseDecimalToCents(String(v));
     return { type: "text", text: c === null ? String(v) : centsToDecimalString(c) };
