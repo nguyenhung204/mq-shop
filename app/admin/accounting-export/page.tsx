@@ -78,6 +78,14 @@ function ExportInner() {
               ))}
             </select>
           </label>
+          {form.kind === "dividend-settlements" ? (
+            <label className="block space-y-1 max-w-xs">
+              <span className="text-xs text-mq-text-muted">{t("accountingExport.quarter")}</span>
+              <input className="mq-input" value={form.quarter} placeholder="2026Q3" autoComplete="off" disabled={busy} onChange={(e) => set({ quarter: e.target.value })} />
+              <span className="text-xs text-mq-text-muted">{t("accountingExport.quarterHint")}</span>
+            </label>
+          ) : (
+            <>
           <div className="grid gap-3 sm:grid-cols-3">
             <label className="space-y-1">
               <span className="text-xs text-mq-text-muted">{t("accountingExport.from")}</span>
@@ -101,6 +109,8 @@ function ExportInner() {
           </div>
           <p className="text-xs text-mq-text-muted">{t("accountingExport.rangeHint")}</p>
 
+            </>
+          )}
           {form.kind === "commission-ledger" ? (
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="space-y-1">

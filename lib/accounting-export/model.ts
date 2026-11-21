@@ -22,6 +22,8 @@ export type ExportForm = {
   /** wallet-transactions */
   walletReason: string;
   userId: string;
+  /** dividend-settlements: optional quarter like 2026Q3 (no dates, no region) */
+  quarter: string;
   /** refund-cases: the same filters as the tracking list (its own date window is the form's from/to). */
   refund: AdminFilterState;
 };
@@ -35,8 +37,12 @@ export const EMPTY_EXPORT_FORM: ExportForm = {
   beneficiaryId: "",
   walletReason: "",
   userId: "",
+  quarter: "",
   refund: EMPTY_ADMIN_FILTER,
 };
+
+/** Quarter of the dividend export: year and quarter 1..4, like the API (2026Q3). */
+export const QUARTER_RE = /^\d{4}Q[1-4]$/;
 
 export const LEDGER_TYPES = ["REFERRAL", "TEAM", "GLOBAL"] as const;
 /** Wallet reasons offered as a filter (the discontinued reward type is not offered). */
@@ -52,7 +58,7 @@ export const WALLET_REASONS = [
   "SELLER_PAYOUT",
 ] as const;
 
-export type ExportFormError = FilterError | "badRegion" | "badReason" | "badBeneficiary" | "badUser";
+export type ExportFormError = FilterError | "badQuarter" | "badRegion" | "badReason" | "badBeneficiary" | "badUser";
 
 /**
  * from and to are REQUIRED for every export (real calendar days, from <= to, at most 366 days),
@@ -61,6 +67,12 @@ export type ExportFormError = FilterError | "badRegion" | "badReason" | "badBene
 export function buildExportQuery(
   f: ExportForm,
 ): { ok: true; query: ExportQuery } | { ok: false; errors: ExportFormError[] } {
+  if (f.kind === "dividend-settlements") {
+    // the dividend export has no date window and no region: only an optional quarter (2026Q3)
+    const quarter = f.quarter.trim().toUpperCase();
+    if (quarter !== "" && !QUARTER_RE.test(quarter)) return { ok: false, errors: ["badQuarter"] };
+    return { ok: true, query: quarter ? { quarter } : {} };
+  }
   const errors: ExportFormError[] = validateDayRange(f.from, f.to, { required: true });
   const region = f.region.trim().toUpperCase();
   if (region !== "" && !(BUSINESS_REGION_CODES as readonly string[]).includes(region)) errors.push("badRegion");
@@ -98,7 +110,8 @@ export function buildExportQuery(
 }
 
 /** Name of the saved file; the Content-Disposition name is not readable across origins, so it is built here. */
-export function exportFileName(kind: ExportKind, q: { from?: string; to?: string; region?: string }): string {
+export function exportFileName(kind: ExportKind, q: { from?: string; to?: string; region?: string; quarter?: string }): string {
+  if (kind === "dividend-settlements") return `${kind}${q.quarter ? `-${q.quarter}` : ""}.csv`;
   const region = q.region ? `-${q.region}` : "";
   return `${kind}-${q.from}_${q.to}${region}.csv`;
 }

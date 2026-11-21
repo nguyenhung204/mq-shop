@@ -304,3 +304,62 @@ describe("summaryLines (no hard-coded words: every label goes through t)", () =>
     expect(r.rows[0]!.label).toContain("NEW_THING");
   });
 });
+
+
+describe("dividend settlements export (4th export)", () => {
+  const t = (k: string, v?: Record<string, string>) => (v ? `${k}${JSON.stringify(v)}` : k);
+  it("has no dates and no region: only an optional quarter, upper case, validated like the API (2026Q3)", () => {
+    expect(buildExportQuery(form({ kind: "dividend-settlements", from: "", to: "" }))).toEqual({ ok: true, query: {} });
+    expect(buildExportQuery(form({ kind: "dividend-settlements", from: "garbage", to: "", region: "VN", quarter: " 2026q3 " }))).toEqual({
+      ok: true,
+      query: { quarter: "2026Q3" },
+    });
+    for (const bad of ["2026Q5", "2026Q0", "2026", "Q3", "2026 Q3", "2026-Q3", "20263"]) {
+      expect(errs(form({ kind: "dividend-settlements", quarter: bad })), bad).toEqual(["badQuarter"]);
+    }
+  });
+  it("other kinds ignore a quarter typed earlier", () => {
+    expect(buildExportQuery(form({ kind: "wallet-transactions", quarter: "2026Q3" }))).toEqual({ ok: true, query: { from: "2026-11-01", to: "2026-11-30" } });
+  });
+  it("file name and route", () => {
+    expect(exportFileName("dividend-settlements", {})).toBe("dividend-settlements.csv");
+    expect(exportFileName("dividend-settlements", { quarter: "2026Q3" })).toBe("dividend-settlements-2026Q3.csv");
+  });
+  it("downloads and refuses by the same TOTAL rule", async () => {
+    const save = vi.fn();
+    const ok = await runExportDownload({ download: async () => new Blob(["\uFEFFq,u\r\nTOTAL CREDITED rows=1,5\r\nTOTAL POOL settlements=1,9\r\n"]), save }, "dividend-settlements", { quarter: "2026Q3" });
+    expect(ok).toEqual({ ok: true, fileName: "dividend-settlements-2026Q3.csv" });
+    const bad = await runExportDownload({ download: async () => new Blob(['{"statusCode":502}']), save }, "dividend-settlements", {});
+    expect(bad.ok).toBe(false);
+    expect(save).toHaveBeenCalledTimes(1);
+  });
+  it("summary lines: groups per status with TWD and points, pool, remainder, items total, settlements", () => {
+    const r = summaryLines(
+      "dividend-settlements",
+      {
+        rowCount: 3,
+        unit: "TWD",
+        groups: [{ status: "CREDITED", rows: 2, amountTwd: "900.00", points: "28.57" }, { status: "SKIPPED_ZERO", rows: 1, amountTwd: "0.00", points: "0.00" }],
+        itemsTotalTwd: "900.00",
+        settlements: 1,
+        poolTwd: "905.50",
+        remainderTwd: "5.50",
+      },
+      (k, v) => (k === "dividendSettlements.itemStatus.CREDITED" ? "Credited" : t(k, v)),
+    );
+    expect(r.rowCount).toBe(3);
+    expect(r.rows).toContainEqual({ label: "Credited (2)", value: "900.00 TWD / 28.57 common.pointUnit" });
+    expect(r.rows).toContainEqual({ label: "accountingExport.summary.pool", value: "905.50 TWD" });
+    expect(r.rows).toContainEqual({ label: "accountingExport.summary.remainder", value: "5.50 TWD" });
+    expect(r.rows).toContainEqual({ label: "accountingExport.summary.itemsTotal", value: "900.00 TWD" });
+    expect(r.rows).toContainEqual({ label: "accountingExport.summary.settlements", value: "1" });
+  });
+  it("the export page offers the new kind with a quarter field and hides dates and region for it", async () => {
+    const { readFileSync } = await import("node:fs");
+    const p = readFileSync(`${__dirname}/../../app/admin/accounting-export/page.tsx`, "utf8");
+    expect(p).toContain('form.kind === "dividend-settlements"');
+    expect(p).toContain('t("accountingExport.quarter")');
+    const { EXPORT_KINDS } = await import("@/lib/api/accounting-export");
+    expect(EXPORT_KINDS).toEqual(["refund-cases", "commission-ledger", "wallet-transactions", "dividend-settlements"]);
+  });
+});

@@ -1,5 +1,6 @@
 "use client";
 
+import { userStatusParam } from "@/lib/admin/user-status";
 import { useQuery } from "@tanstack/react-query";
 import { csApi } from "@/lib/api";
 import { parsePage } from "@/lib/api/utils";
@@ -21,7 +22,7 @@ export function useCsCustomers(q?: string, status?: string, page = 1, pageSize =
       parsePage<CsCustomerListItem>(
         await csApi.customers({
           q: q || undefined,
-          status: status || undefined,
+          status: userStatusParam(status),
           page,
           pageSize,
         }),

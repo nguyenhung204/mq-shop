@@ -49,10 +49,22 @@ export function summaryLines(kind: ExportKind, s: ExportSummary, t: T): { rowCou
     }
     return { rowCount: s.rowCount ?? 0, rows };
   }
+  if (kind === "dividend-settlements") {
+    for (const g of s.groups ?? []) {
+      const key = `dividendSettlements.itemStatus.${g.status}`;
+      const label = t(key) === key ? String(g.status) : t(key);
+      rows.push({ label: `${label} (${g.rows})`, value: `${amount(g.amountTwd)} TWD / ${amount(g.points)} ${pts}` });
+    }
+    if (s.poolTwd != null) rows.push({ label: t("accountingExport.summary.pool"), value: `${amount(s.poolTwd)} TWD` });
+    if (s.remainderTwd != null) rows.push({ label: t("accountingExport.summary.remainder"), value: `${amount(s.remainderTwd)} TWD` });
+    if (s.itemsTotalTwd != null) rows.push({ label: t("accountingExport.summary.itemsTotal"), value: `${amount(s.itemsTotalTwd)} TWD` });
+    if (s.settlements != null) rows.push({ label: t("accountingExport.summary.settlements"), value: String(s.settlements) });
+    return { rowCount: s.rowCount ?? 0, rows };
+  }
   for (const g of s.groups ?? []) {
-    const dir = g.direction === "IN" || g.direction === "OUT" ? t(`accountingExport.summary.direction.${g.direction}`) : g.direction;
+    const dir = g.direction === "IN" || g.direction === "OUT" ? t(`accountingExport.summary.direction.${g.direction}`) : (g.direction ?? "");
     const reasonKey = `wallet.reasons.${g.reason}`;
-    const reason = t(reasonKey) === reasonKey ? g.reason : t(reasonKey);
+    const reason = t(reasonKey) === reasonKey ? (g.reason ?? "") : t(reasonKey);
     rows.push({ label: `${dir} ${reason} (${g.rows})`, value: amount(g.amount) });
   }
   if (s.in != null) rows.push({ label: t("accountingExport.summary.in"), value: amount(s.in) });

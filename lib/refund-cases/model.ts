@@ -167,13 +167,23 @@ export function refundCaseErrorKey(e: unknown): { key: string; params?: Record<s
 }
 
 /**
+ * An RMA-sourced case that is OPEN and has no refund proof yet: the API withholds MARK_PAID until the
+ * seller uploads the transfer proof on the return request (page hint, not a button).
+ */
+export function needsRefundProofFirst(c: Pick<RefundCaseView, "source" | "status" | "hasRefundProof">): boolean {
+  return c.source === "RMA" && c.status === "OPEN" && c.hasRefundProof === false;
+}
+
+/**
  * Refund-case routes that run through the RMA answer 409 RMA_NOT_PENDING when the RMA is not in the
  * state the action needs: on mark-paid the refund proof is not uploaded yet; on override the RMA must
  * be escalated first. Scoped to these routes (the RMA pages have their own texts).
  */
-export function caseRouteErrorKey(e: unknown, route: "party" | "override"): { key: string; params?: Record<string, string> } | null {
-  if (e instanceof ApiError && e.status === 409 && e.code === "RMA_NOT_PENDING") {
-    return { key: route === "party" ? "refundCases.errors.rmaProofFirst" : "refundCases.errors.rmaEscalateFirst" };
+export function caseRouteErrorKey(e: unknown, _route: "party" | "override"): { key: string; params?: Record<string, string> } | null {
+  if (e instanceof ApiError && e.status === 409) {
+    // missing refund proof keeps RMA_NOT_PENDING; "requires prior SLA escalation" has its own code
+    if (e.code === "RMA_NOT_PENDING") return { key: "refundCases.errors.rmaProofFirst" };
+    if (e.code === "RMA_ESCALATION_REQUIRED") return { key: "refundCases.errors.rmaEscalateFirst" };
   }
   return refundCaseErrorKey(e);
 }

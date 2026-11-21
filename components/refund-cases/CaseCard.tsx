@@ -7,7 +7,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import type { RefundCaseAction, RefundCaseDetail, RefundCaseView } from "@/lib/api/refund-cases";
 import { formatDateTimeGmt8 } from "@/lib/i18n/gmt8-calendar";
 import { toIntlLocale } from "@/lib/i18n/locale-format";
-import { canDo, formatCaseAmount, partyEvents } from "@/lib/refund-cases/model";
+import { canDo, formatCaseAmount, needsRefundProofFirst, partyEvents } from "@/lib/refund-cases/model";
 
 export type PartyAction = Exclude<RefundCaseAction, "OVERRIDE">;
 
@@ -68,7 +68,7 @@ export function CaseCard({ c, side, busy = false, detail, onExpand, onAction }: 
             </p>
           ) : null}
           {c.selfDealing ? <p className="text-xs text-mq-accent-orange">{t("refundCases.selfDealing.note")}</p> : null}
-          {side === "seller" && c.source === "RMA" && canDo(c, "MARK_PAID") ? (
+          {needsRefundProofFirst(c) && side === "seller" ? (
             <p className="text-xs text-mq-text-muted">
               {t("refundCases.rma.hint")}{" "}
               <Link href="/seller/rma" className="underline">

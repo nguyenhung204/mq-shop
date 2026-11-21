@@ -1,8 +1,8 @@
 import { api } from "./client";
 
-export type ExportKind = "refund-cases" | "commission-ledger" | "wallet-transactions";
+export type ExportKind = "refund-cases" | "commission-ledger" | "wallet-transactions" | "dividend-settlements";
 
-export const EXPORT_KINDS: ExportKind[] = ["refund-cases", "commission-ledger", "wallet-transactions"];
+export const EXPORT_KINDS: ExportKind[] = ["refund-cases", "commission-ledger", "wallet-transactions", "dividend-settlements"];
 
 export type ExportQuery = Record<string, string | undefined>;
 
@@ -20,11 +20,25 @@ export type ExportSummary = {
   walletNet?: Record<string, unknown>;
   dateAxis?: string;
   /** wallet transactions */
-  groups?: Array<{ direction: string; reason: string; rows: number; amount: string }>;
+  groups?: Array<{
+    direction?: string;
+    reason?: string;
+    /** dividend settlements */
+    status?: string;
+    rows: number;
+    amount?: string;
+    amountTwd?: string;
+    points?: string;
+  }>;
   net?: string;
   in?: string;
   out?: string;
   unit?: string;
+  /** dividend settlements */
+  itemsTotalTwd?: string;
+  settlements?: number;
+  poolTwd?: string;
+  remainderTwd?: string;
 };
 
 const base = "/admin/accounting-export";

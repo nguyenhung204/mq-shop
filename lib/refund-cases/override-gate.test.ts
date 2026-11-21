@@ -7,7 +7,7 @@ import { CaseActionModal } from "@/components/refund-cases/CaseActionModal";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import { ApiError } from "@/lib/api/client";
 import type { RefundCaseAction, RefundCaseView } from "@/lib/api/refund-cases";
-import { canOverrideCase, caseRouteErrorKey } from "./model";
+import { canOverrideCase, caseRouteErrorKey, needsRefundProofFirst } from "./model";
 
 const wrap = (n: React.ReactElement) => renderToStaticMarkup(createElement(LanguageProvider, null, n));
 const button = (roles: string[], actions: RefundCaseAction[]) =>
@@ -41,18 +41,29 @@ describe("override button per role (the API lists OVERRIDE for every staff reade
   });
 });
 
-const rmaErr = () => new ApiError(409, "RMA_NOT_PENDING", { statusCode: 409, message: "Upload refund transfer proof", data: { code: "RMA_NOT_PENDING" } } as never);
+const apiErr = (status: number, code: string) => new ApiError(status, code, { statusCode: status, message: code, data: { code } } as never);
 
-describe("RMA_NOT_PENDING on the refund case routes is translated", () => {
-  it("mark-paid (party) and override map to their own keys", () => {
-    expect(caseRouteErrorKey(rmaErr(), "party")).toEqual({ key: "refundCases.errors.rmaProofFirst" });
-    expect(caseRouteErrorKey(rmaErr(), "override")).toEqual({ key: "refundCases.errors.rmaEscalateFirst" });
+describe("RMA refusals on the refund case routes are translated", () => {
+  it("RMA_NOT_PENDING (missing refund proof) maps to the proof text on both routes", () => {
+    expect(caseRouteErrorKey(apiErr(409, "RMA_NOT_PENDING"), "party")).toEqual({ key: "refundCases.errors.rmaProofFirst" });
+    expect(caseRouteErrorKey(apiErr(409, "RMA_NOT_PENDING"), "override")).toEqual({ key: "refundCases.errors.rmaProofFirst" });
   });
-  it("other errors keep their normal mapping; a 400 with the same code is not claimed", () => {
+  it("RMA_ESCALATION_REQUIRED (requires prior SLA escalation) maps to the escalation text", () => {
+    expect(caseRouteErrorKey(apiErr(409, "RMA_ESCALATION_REQUIRED"), "override")).toEqual({ key: "refundCases.errors.rmaEscalateFirst" });
+    expect(caseRouteErrorKey(apiErr(409, "RMA_ESCALATION_REQUIRED"), "party")).toEqual({ key: "refundCases.errors.rmaEscalateFirst" });
+  });
+  it("other errors keep their normal mapping; the same codes with another status are not claimed", () => {
     const self = new ApiError(409, "REFUND_CASE_INVALID_TRANSITION", { data: { code: "REFUND_CASE_INVALID_TRANSITION", details: { reason: "SELF_DEALING" } } } as never);
     expect(caseRouteErrorKey(self, "party")).toEqual({ key: "refundCases.errors.selfDealing" });
-    expect(caseRouteErrorKey(new ApiError(400, "RMA_NOT_PENDING", { data: { code: "RMA_NOT_PENDING" } } as never), "party")).toBeNull();
+    expect(caseRouteErrorKey(apiErr(400, "RMA_NOT_PENDING"), "party")).toBeNull();
+    expect(caseRouteErrorKey(apiErr(400, "RMA_ESCALATION_REQUIRED"), "override")).toBeNull();
     expect(caseRouteErrorKey(new Error("x"), "override")).toBeNull();
+  });
+  it("getErrorMessage shows a translated text for the escalation code in all three locales", async () => {
+    const { getErrorMessage } = await import("@/lib/queries/utils");
+    const out = new Set(["en", "vi", "zh-TW"].map((l) => getErrorMessage(apiErr(409, "RMA_ESCALATION_REQUIRED"), "fallback", l as "en")));
+    expect(out.size).toBe(3);
+    for (const m of out) expect(m).not.toMatch(/RMA_|fallback/);
   });
 });
 
@@ -65,16 +76,30 @@ const base: RefundCaseView = {
 const card = (c: Partial<RefundCaseView>, side: "buyer" | "seller") =>
   wrap(createElement(CaseCard, { c: { ...base, ...c }, side, detail: { isLoading: false, isError: false }, onExpand: () => {}, onAction: () => {} }));
 
-describe("seller hint for RMA-sourced cases", () => {
-  it("shows the hint with a link to the RMA page when MARK_PAID is offered on an RMA case", () => {
-    const html = card({}, "seller");
+describe("seller hint for RMA-sourced cases (hasRefundProof drives it)", () => {
+  const rmaOpen = { source: "RMA" as const, status: "OPEN" as const, hasRefundProof: false, actions: [] as RefundCaseAction[] };
+  it("an OPEN RMA case without the refund proof shows the hint and the link, even though MARK_PAID is withheld", () => {
+    const html = card(rmaOpen, "seller");
     expect(html).toContain("refundCases.rma.hint");
     expect(html).toContain('href="/seller/rma"');
+    expect(html).not.toContain("refundCases.action.MARK_PAID");
   });
-  it("no hint for a cancelled-order case, for the buyer, or without MARK_PAID", () => {
-    expect(card({ source: "CANCEL" }, "seller")).not.toContain("refundCases.rma.hint");
-    expect(card({}, "buyer")).not.toContain("refundCases.rma.hint");
-    expect(card({ actions: [] }, "seller")).not.toContain("refundCases.rma.hint");
+  it("no hint once the proof exists, for a cancel case (null), for another status or for the buyer", () => {
+    expect(card({ ...rmaOpen, hasRefundProof: true, actions: ["MARK_PAID"] }, "seller")).not.toContain("refundCases.rma.hint");
+    expect(card({ ...rmaOpen, source: "CANCEL", hasRefundProof: null }, "seller")).not.toContain("refundCases.rma.hint");
+    expect(card({ ...rmaOpen, hasRefundProof: undefined }, "seller")).not.toContain("refundCases.rma.hint");
+    expect(card({ ...rmaOpen, status: "SELLER_MARKED_PAID" }, "seller")).not.toContain("refundCases.rma.hint");
+    expect(card(rmaOpen, "buyer")).not.toContain("refundCases.rma.hint");
+  });
+  it("needsRefundProofFirst is exactly source RMA, status OPEN, hasRefundProof false", () => {
+    expect(needsRefundProofFirst({ source: "RMA", status: "OPEN", hasRefundProof: false })).toBe(true);
+    for (const c of [
+      { source: "RMA", status: "OPEN", hasRefundProof: true },
+      { source: "RMA", status: "OPEN", hasRefundProof: null },
+      { source: "RMA", status: "OPEN", hasRefundProof: undefined },
+      { source: "CANCEL", status: "OPEN", hasRefundProof: false },
+      { source: "RMA", status: "CLOSED", hasRefundProof: false },
+    ] as const) expect(needsRefundProofFirst(c as never), JSON.stringify(c)).toBe(false);
   });
 });
 

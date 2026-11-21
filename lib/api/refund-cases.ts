@@ -48,6 +48,8 @@ export type RefundCaseView = {
   updatedAt: string;
   ageDays: number;
   overdue: boolean;
+  /** RMA cases: whether the refund transfer proof is uploaded (seller and staff views); null on cancel cases; absent for the buyer. */
+  hasRefundProof?: boolean | null;
   /** Buyer is also the owner of the shop: only support can complete it. */
   selfDealing?: boolean;
   actions: RefundCaseAction[];
