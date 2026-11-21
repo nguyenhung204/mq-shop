@@ -9,7 +9,7 @@ import { authApi } from "@/lib/api/auth";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useRegion } from "@/components/providers/RegionProvider";
-import { withoutQueryParam } from "@/lib/url-params";
+import { stripParamFromLocation } from "@/lib/url-params";
 import { inviteTokenFromQuery, keepInviteToken, registerReferral } from "@/lib/sub-accounts/model";
 import { checkoutRegionCode } from "@/lib/i18n/region-sync";
 
@@ -26,8 +26,7 @@ export function RegisterContent() {
   if (kept !== keptInvite) setKeptInvite(kept);
   useEffect(() => {
     if (!inviteToken || typeof window === "undefined") return;
-    const clean = withoutQueryParam(window.location.href, "invite");
-    if (clean !== window.location.href) window.history.replaceState(window.history.state, "", clean);
+    stripParamFromLocation(window.location, window.history, "invite");
   }, [inviteToken]);
   const { region } = useRegion();
 

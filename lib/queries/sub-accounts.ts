@@ -23,6 +23,12 @@ export const subAccountKeys = {
   root: (id: string) => [...subAccountKeys.all, "root", id] as const,
 };
 
+/** The operation of a key: only sub-account creation (owner or admin) has the hourly budget; an invite or any other call does not. */
+export function subAccountOpOf(key: string): SubAccountOp {
+  if (key === subAccountOpKey.inviteCreate) return "other";
+  return key === subAccountOpKey.create || /^[^:]+:create$/.test(key) ? "create" : "other";
+}
+
 /** What the failing call was: only creation has the hourly budget; the other routes are plain rate limits. */
 export type SubAccountOp = "create" | "other";
 
@@ -77,10 +83,10 @@ function useSettle(runners: ReturnType<typeof createKeyedRunners>) {
       void queryClient.invalidateQueries({ queryKey: subAccountKeys.all });
       if (message) toast.success(tt(message));
     },
-    fail: (key: string, e: unknown, op: SubAccountOp = "other") => {
+    fail: (key: string, e: unknown) => {
       runners.forKey(key).onError(e);
       void queryClient.invalidateQueries({ queryKey: subAccountKeys.all });
-      toast.error(subAccountErrorText(e, op));
+      toast.error(subAccountErrorText(e, subAccountOpOf(key)));
     },
   };
 }
@@ -91,7 +97,7 @@ export function useCreateSubAccount() {
   return useMutation({
     mutationFn: (body: CreateSubAccountBody) => runners.forKey(subAccountOpKey.create).run(body, (b, key) => subAccountsApi.create(b, key)),
     onSuccess: () => s.ok(subAccountOpKey.create, "subAccounts.toast.created"),
-    onError: (e) => s.fail(subAccountOpKey.create, e, "create"),
+    onError: (e) => s.fail(subAccountOpKey.create, e),
   });
 }
 
@@ -145,7 +151,7 @@ export function useAdminCreateSubAccount(accountId: string) {
   return useMutation({
     mutationFn: (body: AdminCreateSubAccountBody) => runners.forKey(k).run(body, (b, key) => adminSubAccountsApi.create(accountId, b, key)),
     onSuccess: () => s.ok(k, "subAccounts.toast.created"),
-    onError: (e) => s.fail(k, e, "create"),
+    onError: (e) => s.fail(k, e),
   });
 }
 

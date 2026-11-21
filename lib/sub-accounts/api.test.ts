@@ -92,6 +92,16 @@ describe("Idempotency-Key per (resource, action)", () => {
     const keys = [k.create, k.withdraw("u1"), k.withdraw("u2"), k.inviteCreate, k.revoke("i1"), k.adminCreate("a1"), k.discard("u1")];
     expect(new Set(keys).size).toBe(keys.length);
     expect(k.withdraw("u1")).toBe(k.withdraw("u1"));
+    // the same id with different actions never shares a lifecycle
+    expect(k.withdraw("u1")).not.toBe(k.revoke("u1"));
+    expect(k.withdraw("u1")).not.toBe(k.discard("u1"));
+    expect(k.revoke("u1")).not.toBe(k.discard("u1"));
+  });
+  it("only creation (owner or admin) is budgeted; invite, withdraw, revoke and discard are plain rate limits", async () => {
+    const { subAccountOpKey: k, subAccountOpOf } = await import("@/lib/queries/sub-accounts");
+    expect(subAccountOpOf(k.create)).toBe("create");
+    expect(subAccountOpOf(k.adminCreate("acc-9"))).toBe("create");
+    for (const key of [k.inviteCreate, k.withdraw("u1"), k.revoke("i1"), k.discard("u1")]) expect(subAccountOpOf(key), key).toBe("other");
   });
 });
 

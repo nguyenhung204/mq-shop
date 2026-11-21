@@ -43,6 +43,8 @@ describe("C4 pages", () => {
     expect(r).toContain("...registerReferral(inviteToken, refCode || undefined)");
     expect(r).toContain("regionCode: checkoutRegionCode(region)");
     expect(r).toContain("subAccounts.register.inviteBanner");
+    // the token is removed from the address bar after it was read (behaviour of the function: lib/security-headers.test.ts)
+    expect(r).toContain('stripParamFromLocation(window.location, window.history, "invite")');
   });
   it("decline page is public, posts through the decline hook and only links to (does not change) forgot-password", () => {
     const d = src("components/pages/DeclineSubAccountContent.tsx");

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import nextConfig from "../next.config";
 import { SECURITY_HEADERS } from "./security-headers";
-import { withoutQueryParam } from "./url-params";
+import { stripParamFromLocation, withoutQueryParam } from "./url-params";
 import { inviteTokenFromQuery, keepInviteToken, registerReferral } from "./sub-accounts/model";
 
 describe("global response headers", () => {
@@ -31,6 +31,10 @@ describe("withoutQueryParam", () => {
     expect(withoutQueryParam("/my-account/register?ref=R1&invite=T0K", "invite")).toBe("/my-account/register?ref=R1");
     expect(withoutQueryParam("/my-account/register?invite=T0K", "invite")).toBe("/my-account/register");
   });
+  it("a relative URL keeps its hash", () => {
+    expect(withoutQueryParam("/r?invite=T&a=1#sec", "invite")).toBe("/r?a=1#sec");
+    expect(withoutQueryParam("/r?invite=T#sec", "invite")).toBe("/r#sec");
+  });
   it("leaves a URL without the parameter untouched (same string)", () => {
     for (const u of ["/my-account/register?ref=R1", "/my-account/register", "https://s.example/x?a=1#h"]) expect(withoutQueryParam(u, "invite")).toBe(u);
   });
@@ -53,5 +57,23 @@ describe("the invite token survives the removal from the URL", () => {
     const { token } = keepInviteToken("TOK", undefined);
     expect(registerReferral(token, "REF")).toEqual({ inviteToken: "TOK" });
     expect(registerReferral(undefined, "REF")).toEqual({ referrerCode: "REF" });
+  });
+});
+
+describe("stripParamFromLocation (the register page's address bar)", () => {
+  const fake = (href: string) => {
+    const calls: Array<[unknown, string, string | undefined]> = [];
+    return { loc: { href }, hist: { state: { idx: 3 }, replaceState: (a: unknown, b: string, c?: string) => void calls.push([a, b, c]) }, calls };
+  };
+  it("replaces the URL once (same history state, no new entry) without the token and keeps the referral code", () => {
+    const f = fake("https://s.example/my-account/register?invite=SECRET&ref=R1");
+    expect(stripParamFromLocation(f.loc, f.hist, "invite")).toBe(true);
+    expect(f.calls).toEqual([[{ idx: 3 }, "", "https://s.example/my-account/register?ref=R1"]]);
+    expect(f.calls[0]![2]).not.toContain("SECRET");
+  });
+  it("does nothing when the URL has no such parameter", () => {
+    const f = fake("https://s.example/my-account/register?ref=R1");
+    expect(stripParamFromLocation(f.loc, f.hist, "invite")).toBe(false);
+    expect(f.calls).toEqual([]);
   });
 });
