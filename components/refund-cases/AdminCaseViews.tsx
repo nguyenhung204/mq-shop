@@ -6,6 +6,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import type { RefundCaseDetail, RefundCaseSummary, RefundCaseView } from "@/lib/api/refund-cases";
 import { formatDateTimeGmt8 } from "@/lib/i18n/gmt8-calendar";
 import { toIntlLocale } from "@/lib/i18n/locale-format";
+import { translateStatus } from "@/lib/i18n/status";
 import { formatCaseAmount } from "@/lib/refund-cases/model";
 
 const COUNTERS = ["open", "awaitingBuyer", "disputed", "buyerConfirmed", "closed", "overdue", "total"] as const;
@@ -190,7 +191,7 @@ export function AdminCaseDetailView({ c }: { c: RefundCaseDetail }) {
           <p className="sm:col-span-2">
             <span className="text-mq-text-muted">{t("refundCases.detail.rma")}: </span>
             <Link href={`/admin/rma/${c.rma.id}`} className="underline">
-              {c.rma.status}
+              {translateStatus(t, "rma", c.rma.status)}
             </Link>
             {" · "}
             {c.rma.hasRefundProof ? t("refundCases.detail.proofYes") : t("refundCases.detail.proofNo")}

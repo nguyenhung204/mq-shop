@@ -51,6 +51,9 @@ describe("cents formatting", () => {
   it("normalises API values", () => {
     expect(toCents("250.00")).toBe(25000);
     expect(toCents(19.99)).toBe(1999);
+    expect(toCents(0)).toBe(0);
+    expect(toCents("0")).toBe(0);
+    expect(toCents(-0.01)).toBeNull();
     expect(toCents(null)).toBeNull();
     expect(toCents(-1)).toBeNull();
   });

@@ -6,12 +6,12 @@ import { ArrowLeft } from "lucide-react";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminCaseDetailView } from "@/components/refund-cases/AdminCaseViews";
+import { CaseDetailActions } from "@/components/refund-cases/CaseDetailActions";
 import { CaseActionModal } from "@/components/refund-cases/CaseActionModal";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { useAdminRefundCaseDetail, useOverrideRefundCase } from "@/lib/queries/refund-cases";
 import { getErrorMessage } from "@/lib/queries/utils";
-import { canDo } from "@/lib/refund-cases/model";
 
 function CaseDetailInner({ id }: { id: string }) {
   const { t } = useLanguage();
@@ -29,11 +29,7 @@ function CaseDetailInner({ id }: { id: string }) {
               <ArrowLeft size={16} aria-hidden />
               {t("refundCases.admin.back")}
             </Link>
-            {data && canDo(data, "OVERRIDE") ? (
-              <button type="button" className="mq-admin-btn mq-admin-btn-primary" onClick={() => setOpen(true)}>
-                {t("refundCases.action.OVERRIDE")}
-              </button>
-            ) : null}
+            {data ? <CaseDetailActions c={data} onOverride={() => setOpen(true)} /> : null}
           </>
         }
       />
@@ -45,6 +41,7 @@ function CaseDetailInner({ id }: { id: string }) {
         kind="override"
         caseId={id}
         currentStatus={data?.status ?? "OPEN"}
+        source={data?.source}
         busy={override.isPending}
         onClose={() => setOpen(false)}
         onSubmit={async (s) => {

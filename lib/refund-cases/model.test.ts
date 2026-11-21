@@ -203,6 +203,9 @@ describe("day ranges", () => {
   });
   it("from after to, and missing sides when required", () => {
     expect(validateDayRange("2026-11-05", "2026-11-01", { required: true })).toEqual(["rangeOrder"]);
+    // reversed by exactly one day (zero days between) is still reversed
+    expect(validateDayRange("2026-11-05", "2026-11-04", { required: true })).toEqual(["rangeOrder"]);
+    expect(validateDayRange("2026-11-05", "2026-11-05", { required: true })).toEqual([]);
     expect(validateDayRange("", "", { required: true })).toEqual(["badFrom", "badTo"]);
     expect(validateDayRange("2026-11-01", "", { required: true })).toEqual(["badTo"]);
     expect(validateDayRange("", "", { required: false })).toEqual([]);

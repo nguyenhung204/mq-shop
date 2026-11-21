@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useEffect, useId, useState } from "react";
+import { FormEvent, useEffect, useId, useRef, useState } from "react";
+import { useDialogFocus } from "@/components/ui/useDialogFocus";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import type { RefundCaseStatus } from "@/lib/api/refund-cases";
 import { NOTE_MAX, REFERENCE_MAX, overrideTargets, type CaseFormError } from "@/lib/refund-cases/model";
@@ -11,6 +12,8 @@ type Props = {
   kind: CaseFormKind;
   caseId: string;
   currentStatus: RefundCaseStatus;
+  /** Source of the case: an RMA-linked case is changed through the return request. */
+  source?: "CANCEL" | "RMA";
   busy?: boolean;
   onClose: () => void;
   /** Gets the validated variables; resolves true when the action was accepted (the parent then closes). */
@@ -22,13 +25,15 @@ export function CaseActionModal(props: Props) {
   return <CaseActionForm key={`${props.caseId}-${props.kind}`} {...props} />;
 }
 
-function CaseActionForm({ kind, caseId, currentStatus, busy = false, onClose, onSubmit }: Props) {
+function CaseActionForm({ kind, caseId, currentStatus, source, busy = false, onClose, onSubmit }: Props) {
   const { t } = useLanguage();
   const [note, setNote] = useState("");
   const [reference, setReference] = useState("");
   const [reason, setReason] = useState("");
   const [toStatus, setToStatus] = useState("");
   const [errors, setErrors] = useState<CaseFormError[]>([]);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialogFocus(dialogRef);
   const titleId = useId();
   const errId = useId();
   const noteId = useId();
@@ -67,7 +72,7 @@ function CaseActionForm({ kind, caseId, currentStatus, busy = false, onClose, on
   return (
     <div className="mq-admin-modal-root" role="presentation">
       <button type="button" className="mq-admin-modal-backdrop" aria-label={t("admin.common.close")} disabled={busy} onClick={onClose} />
-      <div className="mq-admin-modal" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+      <div ref={dialogRef} className="mq-admin-modal" role="dialog" aria-modal="true" aria-labelledby={titleId}>
         <header className="mq-admin-modal-head" style={{ flexDirection: "column", alignItems: "flex-start" }}>
           <h2 id={titleId} className="mq-admin-modal-title">
             {t(`refundCases.modal.${kind}.title`)}
@@ -96,6 +101,7 @@ function CaseActionForm({ kind, caseId, currentStatus, busy = false, onClose, on
                 ))}
               </select>
               <p className="text-[11px] text-mq-text-muted mt-1">{t("refundCases.modal.override.internalNote")}</p>
+              {source === "RMA" ? <p className="text-[11px] text-mq-text-muted mt-1">{t("refundCases.modal.override.rmaNote")}</p> : null}
             </>
           ) : null}
           {kind === "markPaid" ? (

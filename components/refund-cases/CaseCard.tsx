@@ -68,6 +68,14 @@ export function CaseCard({ c, side, busy = false, detail, onExpand, onAction }: 
             </p>
           ) : null}
           {c.selfDealing ? <p className="text-xs text-mq-accent-orange">{t("refundCases.selfDealing.note")}</p> : null}
+          {side === "seller" && c.source === "RMA" && canDo(c, "MARK_PAID") ? (
+            <p className="text-xs text-mq-text-muted">
+              {t("refundCases.rma.hint")}{" "}
+              <Link href="/seller/rma" className="underline">
+                {t("refundCases.rma.open")}
+              </Link>
+            </p>
+          ) : null}
         </div>
         <div className="flex flex-wrap gap-2 items-start">
           {ACTIONS.filter((a) => canDo(c, a)).map((a) => (

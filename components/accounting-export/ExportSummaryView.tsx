@@ -7,7 +7,7 @@ import { summaryLines } from "@/lib/accounting-export/summary";
 /** Row count and totals of the export for the current filters (read from the /summary route). */
 export function ExportSummaryView({ kind, summary }: { kind: ExportKind; summary: ExportSummary }) {
   const { t } = useLanguage();
-  const lines = summaryLines(kind, summary);
+  const lines = summaryLines(kind, summary, t);
   return (
     <div className="mq-card p-4 space-y-2 text-sm" aria-label={t("accountingExport.summary.title")}>
       <h3 className="font-semibold">{t("accountingExport.summary.title")}</h3>

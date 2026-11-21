@@ -215,7 +215,7 @@ export function resolveNotificationRoute(
     case "REFUND_CASE_DISPUTED": {
       if (!isRefundCaseStaff(ctx.roles)) return null;
       const caseId = metaStr(meta, "refundCaseId");
-      return caseId ? `/admin/refund-cases/${caseId}` : "/admin/refund-cases";
+      return caseId ? `/admin/refund-cases/${encodeURIComponent(caseId)}` : "/admin/refund-cases";
     }
 
     case "REVIEW_NEW":

@@ -38,3 +38,19 @@ export async function switchRegion(args: {
 export function checkoutRegionCode(region: GateRegionId | null): BusinessRegionCode | undefined {
   return region ? apiRegionCode(region) : undefined;
 }
+
+/**
+ * Runs region switches strictly one after the other, in the order they were requested. A slow switch A
+ * followed by a fast switch B therefore cannot commit B first and A last: the latest request always
+ * ends up as the final state (both for the account on the server and for the UI).
+ */
+export function createSerialQueue() {
+  let tail: Promise<unknown> = Promise.resolve();
+  return {
+    run<T>(task: () => Promise<T>): Promise<T> {
+      const result = tail.then(task, task);
+      tail = result.catch(() => undefined);
+      return result;
+    },
+  };
+}

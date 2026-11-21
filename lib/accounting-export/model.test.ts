@@ -3,7 +3,9 @@ import { ApiError } from "@/lib/api/client";
 import { EMPTY_ADMIN_FILTER } from "@/lib/refund-cases/model";
 import {
   EMPTY_EXPORT_FORM,
+  LEDGER_TYPES,
   TAIL_BYTES,
+  WALLET_REASONS,
   buildExportQuery,
   classifyExportTail,
   exportErrorKey,
@@ -76,6 +78,18 @@ describe("buildExportQuery", () => {
   });
 });
 
+describe("offered filters match the server enums", () => {
+  // copied from the API source (WalletTxReason in common/constants/wallet.constants.ts, branch feat/cr-c3-backend),
+  // without the discontinued reward type that is kept only for old rows
+  const SERVER_WALLET_REASONS = ["P2P", "WITHDRAW_FREEZE", "WITHDRAW_RELEASE", "WITHDRAW_COMPLETE", "REFERRAL", "TEAM", "GLOBAL", "ADJUST", "SELLER_PAYOUT"];
+  it("wallet reasons are exactly the server reasons that are still produced", () => {
+    expect([...WALLET_REASONS]).toEqual(SERVER_WALLET_REASONS);
+  });
+  it("commission types are the three live reward types", () => {
+    expect([...LEDGER_TYPES]).toEqual(["REFERRAL", "TEAM", "GLOBAL"]);
+  });
+});
+
 describe("exportFileName", () => {
   it("names the file from kind, dates and region (the server name is not readable cross-origin)", () => {
     expect(exportFileName("refund-cases", { from: "2026-11-01", to: "2026-11-30" })).toBe("refund-cases-2026-11-01_2026-11-30.csv");
@@ -95,14 +109,40 @@ describe("classifyExportTail: a final #ERROR line = failed download", () => {
   it("#ERROR as the last non-empty line fails, whatever the line ending", () => {
     for (const eol of ["\r\n", "\n", "\r"]) {
       const r = classifyExportTail(`a,b${eol}1,2${eol}#ERROR,export failed after 2 rows: this file is incomplete${eol}`);
-      expect(r).toEqual({ ok: false, message: "export failed after 2 rows: this file is incomplete" });
+      expect(r).toEqual({ ok: false, reason: "error", message: "export failed after 2 rows: this file is incomplete" });
     }
-    expect(classifyExportTail("#ERROR,x")).toEqual({ ok: false, message: "x" });
-    expect(classifyExportTail("﻿#ERROR,x")).toEqual({ ok: false, message: "x" });
-    expect(classifyExportTail("a\n#ERROR\n   \n")).toEqual({ ok: false, message: "" });
+    expect(classifyExportTail("#ERROR,x")).toEqual({ ok: false, reason: "error", message: "x" });
+    expect(classifyExportTail("﻿#ERROR,x")).toEqual({ ok: false, reason: "error", message: "x" });
+    expect(classifyExportTail("a\n#ERROR\n   \n")).toEqual({ ok: false, reason: "error", message: "" });
   });
   it("#ERROR earlier in the file (a data cell) does not fail a file that ends with TOTAL", () => {
     expect(classifyExportTail("a\n#ERROR,not at the end\nTOTAL,1\n")).toEqual({ ok: true });
+  });
+});
+
+describe("a complete export is one whose last non-empty line starts with TOTAL", () => {
+  it("a mid-line #ERROR is not an error marker: the file is refused only because it has no TOTAL line", () => {
+    for (const last of ["x #ERROR y", "note,#ERROR,more", "a#ERROR"]) {
+      expect(classifyExportTail(`a,b\r\n1,2\r\n${last}\r\n`)).toEqual({ ok: false, reason: "noTotal", message: "" });
+    }
+    // and a data line that merely contains #ERROR before the TOTAL lines does not fail the file
+    expect(classifyExportTail("a,b\nx #ERROR y\nTOTAL,1\n")).toEqual({ ok: true });
+  });
+  it("a JSON envelope, an HTML gateway page and a truncated CSV are refused", () => {
+    const bodies = [
+      '{"statusCode":502,"message":"Bad Gateway","data":null}',
+      '<html><body><h1>502 Bad Gateway</h1></body></html>',
+      "\uFEFFcase_id,order_code\r\n1,ORD-1\r\n2,ORD-",
+      '{"statusCode":200,"message":"OK","data":{"rows":[]}}\n',
+    ];
+    for (const b of bodies) expect(classifyExportTail(b), b).toEqual({ ok: false, reason: "noTotal", message: "" });
+  });
+  it("a header-only export of an empty window still ends with TOTAL and passes", () => {
+    expect(classifyExportTail("\uFEFFa,b\r\nTOTAL,0\r\n")).toEqual({ ok: true });
+  });
+  it("lower case 'total' or a TOTAL word in the middle does not count", () => {
+    expect(classifyExportTail("a\ntotal,1\n").ok).toBe(false);
+    expect(classifyExportTail("a\nsum,TOTAL\n").ok).toBe(false);
   });
 });
 
@@ -110,11 +150,11 @@ describe("inspectExportBlob reads only the end of a big file", () => {
   const big = (end: string) => new Blob(["﻿col\r\n", "row,1\r\n".repeat(50_000), end]);
   it("detects #ERROR at the end of a ~350 KB file", async () => {
     expect(big("row,1\r\n#ERROR,boom\r\n").size).toBeGreaterThan(TAIL_BYTES * 10);
-    expect(await inspectExportBlob(big("#ERROR,boom\r\n"))).toEqual({ ok: false, message: "boom" });
+    expect(await inspectExportBlob(big("#ERROR,boom\r\n"))).toEqual({ ok: false, reason: "error", message: "boom" });
   });
   it("passes a complete big file and refuses an empty one", async () => {
     expect(await inspectExportBlob(big("TOTAL,50000\r\n"))).toEqual({ ok: true });
-    expect(await inspectExportBlob(new Blob([]))).toEqual({ ok: false, message: "" });
+    expect(await inspectExportBlob(new Blob([]))).toEqual({ ok: false, reason: "noTotal", message: "" });
   });
   it("a multibyte tail is decoded (zh-TW names)", async () => {
     expect(await inspectExportBlob(new Blob(["a\n", "行,1\n".repeat(3000), "TOTAL,3000\n"]))).toEqual({ ok: true });
@@ -185,6 +225,24 @@ describe("runExportDownload", () => {
     expect(r).toEqual({ ok: false, error: { key: "accountingExport.errors.aborted" } });
     expect(save).not.toHaveBeenCalled();
   });
+  it("a JSON envelope body is refused with the 'not a CSV' text and nothing is saved", async () => {
+    const save = vi.fn();
+    const r = await runExportDownload({ download: async () => new Blob(['{"statusCode":502,"message":"Bad Gateway"}']), save }, "refund-cases", query);
+    expect(r).toEqual({ ok: false, error: { key: "accountingExport.errors.notCsv" } });
+    expect(save).not.toHaveBeenCalled();
+  });
+  it("an HTML 502 page and a truncated CSV are refused the same way", async () => {
+    for (const body of ["<html>502</html>", "\uFEFFh\r\n1,2\r\n3,"]) {
+      const save = vi.fn();
+      const r = await runExportDownload({ download: async () => new Blob([body]), save }, "wallet-transactions", query);
+      expect(r).toEqual({ ok: false, error: { key: "accountingExport.errors.notCsv" } });
+      expect(save).not.toHaveBeenCalled();
+    }
+  });
+  it("a last line with #ERROR in the middle is 'not a CSV', not the incomplete-with-reason message", async () => {
+    const r = await runExportDownload({ download: async () => new Blob(["h\r\nx #ERROR y\r\n"]), save: vi.fn() }, "refund-cases", query);
+    expect(r).toEqual({ ok: false, error: { key: "accountingExport.errors.notCsv" } });
+  });
   it("an empty body is refused", async () => {
     const save = vi.fn();
     const r = await runExportDownload({ download: async () => new Blob([]), save }, "refund-cases", query);
@@ -193,27 +251,56 @@ describe("runExportDownload", () => {
   });
 });
 
-describe("summaryLines", () => {
+describe("summaryLines (no hard-coded words: every label goes through t)", () => {
+  // echoes the key (and variables) so a hard-coded English word would show up as a failure
+  const t = (k: string, v?: Record<string, string>) => (v ? `${k}${JSON.stringify(v)}` : k);
   it("refund cases: amounts per currency exactly as sent", () => {
-    expect(summaryLines("refund-cases", { caseCount: 3, amounts: [{ currency: "TWD", cases: 3, total: "1500.50" }] })).toEqual({
+    expect(summaryLines("refund-cases", { caseCount: 3, amounts: [{ currency: "TWD", cases: 3, total: "1500.50" }] }, t)).toEqual({
       rowCount: 3,
       rows: [{ label: "TWD (3)", value: "1500.50" }],
     });
   });
-  it("commission: movements with wallet columns and the net", () => {
-    const r = summaryLines("commission-ledger", {
-      rowCount: 4,
-      byMovement: { CREDIT: { rows: 3, walletTwd: "10.00", walletPoints: "310" }, REVERSAL: { rows: 1, walletTwd: "-4.00", walletPoints: "-124" } },
-      walletNet: { twd: "6.00", points: "186" },
-    });
+  it("commission: translated movements, points unit and net labels", () => {
+    const r = summaryLines(
+      "commission-ledger",
+      {
+        rowCount: 4,
+        byMovement: { CREDIT: { rows: 3, walletTwd: "10.00", walletPoints: "310" }, REVERSAL: { rows: 1, walletTwd: "-4.00", walletPoints: "-124" } },
+        walletNet: { twd: "6.00", points: "186" },
+      },
+      t,
+    );
     expect(r.rowCount).toBe(4);
-    expect(r.rows).toContainEqual({ label: "CREDIT (3)", value: "10.00 TWD / 310 PTS" });
-    expect(r.rows).toContainEqual({ label: "REVERSAL (1)", value: "-4.00 TWD / -124 PTS" });
-    expect(r.rows).toContainEqual({ label: "net twd", value: "6.00" });
+    expect(r.rows).toContainEqual({ label: "accountingExport.summary.movement.CREDIT (3)", value: "10.00 TWD / 310 common.pointUnit" });
+    expect(r.rows).toContainEqual({ label: "accountingExport.summary.movement.REVERSAL (1)", value: "-4.00 TWD / -124 common.pointUnit" });
+    expect(r.rows).toContainEqual({ label: "accountingExport.summary.net.twd", value: "6.00" });
+    expect(r.rows).toContainEqual({ label: "accountingExport.summary.net.points", value: "186" });
+    for (const row of r.rows) expect(row.value).not.toMatch(/\bPTS\b/);
   });
-  it("wallet: groups, in, out, net with unit", () => {
-    const r = summaryLines("wallet-transactions", { rowCount: 2, groups: [{ direction: "IN", reason: "REFERRAL", rows: 2, amount: "5.00" }], in: "5.00", out: "0.00", net: "5.00", unit: "PTS" });
-    expect(r.rows).toContainEqual({ label: "IN REFERRAL (2)", value: "5.00" });
-    expect(r.rows).toContainEqual({ label: "net", value: "5.00 PTS" });
+  it("a PENDING row shows what is held, so it never reads as zero", () => {
+    const r = summaryLines(
+      "commission-ledger",
+      { rowCount: 8, byMovement: { PENDING: { rows: 8, grossTwd: "2830.00", walletTwd: "0.00", walletPoints: "0", heldTwd: "2830.00" }, CREDIT: { rows: 1, walletTwd: "5.00", walletPoints: "5", heldTwd: "0.00" } } },
+      t,
+    );
+    const pending = r.rows.find((x) => x.label.includes("PENDING"))!;
+    expect(pending.value).toContain('accountingExport.summary.held{"amount":"2830.00 TWD"}');
+    // nothing held -> no held text
+    expect(r.rows.find((x) => x.label.includes("CREDIT"))!.value).not.toContain("held");
+  });
+  it("wallet: translated direction, reason, in / out / net and the points unit", () => {
+    const r = summaryLines(
+      "wallet-transactions",
+      { rowCount: 2, groups: [{ direction: "IN", reason: "REFERRAL", rows: 2, amount: "5.00" }], in: "5.00", out: "0.00", net: "5.00", unit: "PTS" },
+      (k, v) => (k === "wallet.reasons.REFERRAL" ? "Referral" : t(k, v)),
+    );
+    expect(r.rows).toContainEqual({ label: "accountingExport.summary.direction.IN Referral (2)", value: "5.00" });
+    expect(r.rows).toContainEqual({ label: "accountingExport.summary.in", value: "5.00" });
+    expect(r.rows).toContainEqual({ label: "accountingExport.summary.out", value: "0.00" });
+    expect(r.rows).toContainEqual({ label: "accountingExport.summary.netLabel", value: "5.00 common.pointUnit" });
+  });
+  it("an unknown reason or movement is shown as sent instead of a raw key", () => {
+    const r = summaryLines("wallet-transactions", { groups: [{ direction: "IN", reason: "NEW_THING", rows: 1, amount: "1" }] }, t);
+    expect(r.rows[0]!.label).toContain("NEW_THING");
   });
 });

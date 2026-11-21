@@ -33,6 +33,20 @@ const KEYS: string[] = [
   ...["required", "invalidDate", "future", "beforeCreated", "unchanged", "invalid", "quarterLocked", "forbidden"].map((k) => `orders.paidAt.errors.${k}`),
   ...["notDecimal"].map((k) => `admin.settings.errors.${k}`),
   ...["taxEnabled", "taxRatePercent", "refundOverdueDays"].flatMap((k) => [`admin.settings.keys.${k}.label`, `admin.settings.keys.${k}.description`]),
+  ...["CREDIT", "REVERSAL", "PENDING", "VOID"].map((k) => `accountingExport.summary.movement.${k}`),
+  ...["IN", "OUT"].map((k) => `accountingExport.summary.direction.${k}`),
+  ...["twd", "points"].map((k) => `accountingExport.summary.net.${k}`),
+  "accountingExport.summary.held",
+  "accountingExport.summary.in",
+  "accountingExport.summary.out",
+  "accountingExport.summary.netLabel",
+  "accountingExport.errors.notCsv",
+  "refundCases.errors.rmaProofFirst",
+  "refundCases.errors.rmaEscalateFirst",
+  "refundCases.rma.hint",
+  "refundCases.rma.open",
+  "refundCases.modal.override.rmaNote",
+  "common.pointUnit",
   "refundCases.updatedBySupport",
   "refundCases.selfDealing.badge",
   "refundCases.selfDealing.note",
@@ -60,5 +74,14 @@ describe("CR phase C locale keys (en, vi, zh-TW)", () => {
   });
   it("business regions are labelled with their codes in the export (no US)", () => {
     expect(BUSINESS_REGION_CODES).not.toContain("US");
+  });
+});
+
+describe("translated, not copied from English", () => {
+  it("the admin actor names differ from English in vi and zh-TW (no half-translated list)", () => {
+    for (const loc of [vi, zh]) {
+      expect(lookup(loc, "refundCases.actor.ADMIN")).not.toBe(lookup(en, "refundCases.actor.ADMIN"));
+      expect(lookup(loc, "refundCases.actor.SUPER_ADMIN")).not.toBe(lookup(en, "refundCases.actor.SUPER_ADMIN"));
+    }
   });
 });

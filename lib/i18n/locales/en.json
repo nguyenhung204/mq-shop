@@ -3973,7 +3973,8 @@
         "confirm": "Apply override",
         "toStatus": "New status",
         "pick": "Choose a status",
-        "internalNote": "The reason is kept in the internal history and is not shown to the buyer or the seller."
+        "internalNote": "The reason is kept in the internal history and is not shown to the buyer or the seller.",
+        "rmaNote": "This case is linked to a return request: the change is carried out through the return request and may be refused if the request is not in the matching state."
       },
       "noteRequired": "Note (required, 3 to 1000 characters)",
       "noteOptional": "Note (optional)",
@@ -3999,13 +4000,19 @@
       "disputeLimit": "You have already reported this refund {max} times. Please contact support.",
       "invalidTransition": "This case has changed and the action is no longer possible. The list was refreshed.",
       "notFound": "This refund case was not found.",
-      "invalid": "The refund action is not valid."
+      "invalid": "The refund action is not valid.",
+      "rmaProofFirst": "This refund belongs to a return request. Upload the transfer proof on the return request first, then mark the refund as paid.",
+      "rmaEscalateFirst": "This case is linked to a return request that must be escalated first (or must be in the matching state) before support can change it."
     },
     "toast": {
       "markedPaid": "Refund marked as paid.",
       "confirmed": "Refund confirmed.",
       "disputed": "Report sent.",
       "overridden": "Case status updated."
+    },
+    "rma": {
+      "hint": "This refund comes from a return request: upload the transfer proof on the return request before marking it as paid.",
+      "open": "Open return requests"
     }
   },
   "accountingExport": {
@@ -4034,7 +4041,25 @@
     "summary": {
       "title": "Totals for these filters",
       "rows": "Rows",
-      "note": "The CSV ends with TOTAL lines that match these numbers."
+      "note": "The CSV ends with TOTAL lines that match these numbers.",
+      "held": "held {amount}",
+      "in": "In",
+      "out": "Out",
+      "netLabel": "Net",
+      "net": {
+        "twd": "Net TWD",
+        "points": "Net points"
+      },
+      "movement": {
+        "CREDIT": "Credits",
+        "REVERSAL": "Reversals",
+        "PENDING": "Pending (held)",
+        "VOID": "Voided"
+      },
+      "direction": {
+        "IN": "In",
+        "OUT": "Out"
+      }
     },
     "formErrors": {
       "badFrom": "Enter a real start date.",
@@ -4056,7 +4081,8 @@
       "badRequest": "The dates or filters are not valid. Check the range (at most 366 days) and try again.",
       "failed": "The export failed. Try again.",
       "aborted": "The download was interrupted and the file is incomplete, so it was not saved. Try again.",
-      "incomplete": "The file ended with an error ({reason}) and is incomplete, so it was not saved. Try again or use a shorter range."
+      "incomplete": "The file ended with an error ({reason}) and is incomplete, so it was not saved. Try again or use a shorter range.",
+      "notCsv": "The server did not return a complete CSV file (no TOTAL line at the end), so nothing was saved. Try again; if it keeps happening, tell an administrator."
     }
   }
 }

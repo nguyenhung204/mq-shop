@@ -25,6 +25,18 @@ export function canDo(c: Pick<RefundCaseView, "actions">, action: RefundCaseActi
   return Array.isArray(c.actions) && c.actions.includes(action);
 }
 
+/**
+ * The API lists OVERRIDE in `actions[]` for every staff reader, but the override route itself needs
+ * ADMIN or SUPER_ADMIN (CS and ACCOUNTANT would get 403). The button needs both.
+ */
+export function canOverrideCase(
+  user: { roles?: string[] } | null | undefined,
+  c: Pick<RefundCaseView, "actions">,
+): boolean {
+  const staff = Boolean(user?.roles?.some((r) => r === "ADMIN" || r === "SUPER_ADMIN"));
+  return staff && canDo(c, "OVERRIDE");
+}
+
 export type NoteError = "required" | "tooShort" | "tooLong" | "invalid";
 
 /**
@@ -154,6 +166,18 @@ export function refundCaseErrorKey(e: unknown): { key: string; params?: Record<s
   return null;
 }
 
+/**
+ * Refund-case routes that run through the RMA answer 409 RMA_NOT_PENDING when the RMA is not in the
+ * state the action needs: on mark-paid the refund proof is not uploaded yet; on override the RMA must
+ * be escalated first. Scoped to these routes (the RMA pages have their own texts).
+ */
+export function caseRouteErrorKey(e: unknown, route: "party" | "override"): { key: string; params?: Record<string, string> } | null {
+  if (e instanceof ApiError && e.status === 409 && e.code === "RMA_NOT_PENDING") {
+    return { key: route === "party" ? "refundCases.errors.rmaProofFirst" : "refundCases.errors.rmaEscalateFirst" };
+  }
+  return refundCaseErrorKey(e);
+}
+
 /** "partial" vs "full" label key. */
 export const caseKindKey = (c: Pick<RefundCaseView, "isPartial">) => (c.isPartial ? "refundCases.kind.partial" : "refundCases.kind.full");
 
@@ -164,7 +188,8 @@ export function amountCents(amount: string | null | undefined): number | null {
 
 export function formatCaseAmount(amount: string | null | undefined, currency: string): string {
   const c = amountCents(amount);
-  return c === null ? "—" : `${centsToDecimalString(c)} ${currency}`;
+  if (c === null) return "—";
+  return currency ? `${centsToDecimalString(c)} ${currency}` : centsToDecimalString(c);
 }
 
 // ---- admin filters ----------------------------------------------------------------------------

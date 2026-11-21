@@ -60,8 +60,10 @@ describe("C2 refund case pages", () => {
       expect(src(f), f).toContain('roles={["CS", "ACCOUNTANT", "ADMIN", "SUPER_ADMIN"]}');
       expect(src(f), f).toContain('permissions={["VIEW_REFUND_CASES"]}');
     }
+    // behaviour of the override button per role: lib/refund-cases/override-gate.test.ts (render per role)
     const d = src("app/admin/refund-cases/[id]/page.tsx");
-    expect(d).toContain('data && canDo(data, "OVERRIDE")');
+    expect(d).toContain("<CaseDetailActions c={data}");
+    expect(d).not.toContain('canDo(data, "OVERRIDE")');
     expect(d).toContain('kind="override"');
     // the list page never offers an action
     expect(src("app/admin/refund-cases/page.tsx")).not.toContain("useOverrideRefundCase");
@@ -74,8 +76,9 @@ describe("C2 refund case pages", () => {
   });
   it("every mutation sends an Idempotency-Key through the shared runner", () => {
     const q = src("lib/queries/refund-cases.ts");
-    expect(q.match(/createIdempotentRunner\(\)/g)?.length).toBe(2);
-    expect(q).toContain("idempotency.run(vars,");
+    expect(q.match(/createKeyedRunners\(\)/g)?.length).toBe(2);
+    expect(q).toContain("runners.forKey(`${vars.id}:${vars.action}`).run(vars,");
+    expect(q).toContain("runners.forKey(`${vars.id}:override`).run(vars,");
     const a = src("lib/api/refund-cases.ts");
     expect(a.match(/idem\(key\)/g)?.length).toBe(4);
   });
@@ -137,8 +140,9 @@ describe("C3a region wiring", () => {
   });
   it("the cross-border switch waits for the API before changing the form", () => {
     const c = src("components/cart/CheckoutContent.tsx");
-    expect(c).toContain("const switched = await setRegion(regionId)");
-    expect(c.indexOf("const switched = await setRegion(regionId)")).toBeLessThan(c.indexOf('setValue("shippingAddress.country", newCountry'));
+    expect(c).toContain("switched = await setRegion(regionId)");
+    expect(c).toContain("if (switchingRegion.current) return;");
+    expect(c.indexOf("switched = await setRegion(regionId)")).toBeLessThan(c.indexOf('setValue("shippingAddress.country", newCountry'));
   });
   it("the selection modal waits for setRegion and is busy meanwhile", () => {
     const m = src("components/i18n/RegionSelectionModal.tsx");

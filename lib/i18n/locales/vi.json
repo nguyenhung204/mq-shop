@@ -3876,8 +3876,8 @@
     "actor": {
       "BUYER": "Người mua",
       "SELLER": "Người bán",
-      "ADMIN": "Admin",
-      "SUPER_ADMIN": "Super Admin",
+      "ADMIN": "Quản trị viên",
+      "SUPER_ADMIN": "Quản trị viên cấp cao",
       "STAFF": "Nhân viên",
       "SYSTEM": "Hệ thống"
     },
@@ -3973,7 +3973,8 @@
         "confirm": "Áp dụng ghi đè",
         "toStatus": "Trạng thái mới",
         "pick": "Chọn trạng thái",
-        "internalNote": "Lý do được lưu trong lịch sử nội bộ và không hiển thị cho người mua hay người bán."
+        "internalNote": "Lý do được lưu trong lịch sử nội bộ và không hiển thị cho người mua hay người bán.",
+        "rmaNote": "Ca này gắn với một yêu cầu trả hàng: thay đổi được thực hiện qua yêu cầu trả hàng và có thể bị từ chối nếu yêu cầu chưa ở trạng thái phù hợp."
       },
       "noteRequired": "Ghi chú (bắt buộc, 3 đến 1000 ký tự)",
       "noteOptional": "Ghi chú (không bắt buộc)",
@@ -3999,13 +4000,19 @@
       "disputeLimit": "Bạn đã báo khoản hoàn này {max} lần. Vui lòng liên hệ bộ phận hỗ trợ.",
       "invalidTransition": "Ca này đã thay đổi nên không thể thực hiện thao tác. Danh sách đã được làm mới.",
       "notFound": "Không tìm thấy ca hoàn tiền này.",
-      "invalid": "Thao tác hoàn tiền không hợp lệ."
+      "invalid": "Thao tác hoàn tiền không hợp lệ.",
+      "rmaProofFirst": "Khoản hoàn này thuộc một yêu cầu trả hàng. Hãy tải chứng từ chuyển khoản lên yêu cầu trả hàng trước, rồi mới đánh dấu đã chuyển hoàn tiền.",
+      "rmaEscalateFirst": "Ca này gắn với một yêu cầu trả hàng cần được nâng cấp xử lý trước (hoặc phải ở trạng thái phù hợp) thì bộ phận hỗ trợ mới đổi được."
     },
     "toast": {
       "markedPaid": "Đã đánh dấu đã chuyển hoàn tiền.",
       "confirmed": "Đã xác nhận hoàn tiền.",
       "disputed": "Đã gửi báo cáo.",
       "overridden": "Đã cập nhật trạng thái ca."
+    },
+    "rma": {
+      "hint": "Khoản hoàn này đến từ một yêu cầu trả hàng: hãy tải chứng từ chuyển khoản lên yêu cầu trả hàng trước khi đánh dấu đã chuyển.",
+      "open": "Mở yêu cầu trả hàng"
     }
   },
   "accountingExport": {
@@ -4034,7 +4041,25 @@
     "summary": {
       "title": "Tổng theo bộ lọc này",
       "rows": "Số dòng",
-      "note": "Cuối tệp CSV có các dòng TOTAL khớp với những con số này."
+      "note": "Cuối tệp CSV có các dòng TOTAL khớp với những con số này.",
+      "held": "đang giữ {amount}",
+      "in": "Vào",
+      "out": "Ra",
+      "netLabel": "Ròng",
+      "net": {
+        "twd": "Ròng TWD",
+        "points": "Điểm ròng"
+      },
+      "movement": {
+        "CREDIT": "Ghi có",
+        "REVERSAL": "Thu hồi",
+        "PENDING": "Đang chờ (giữ)",
+        "VOID": "Đã hủy"
+      },
+      "direction": {
+        "IN": "Vào",
+        "OUT": "Ra"
+      }
     },
     "formErrors": {
       "badFrom": "Nhập ngày bắt đầu có thật.",
@@ -4056,7 +4081,8 @@
       "badRequest": "Ngày hoặc bộ lọc không hợp lệ. Kiểm tra khoảng ngày (tối đa 366 ngày) rồi thử lại.",
       "failed": "Xuất thất bại. Hãy thử lại.",
       "aborted": "Quá trình tải bị gián đoạn và tệp chưa đầy đủ nên không được lưu. Hãy thử lại.",
-      "incomplete": "Tệp kết thúc bằng một lỗi ({reason}) và chưa đầy đủ nên không được lưu. Hãy thử lại hoặc dùng khoảng ngày ngắn hơn."
+      "incomplete": "Tệp kết thúc bằng một lỗi ({reason}) và chưa đầy đủ nên không được lưu. Hãy thử lại hoặc dùng khoảng ngày ngắn hơn.",
+      "notCsv": "Máy chủ không trả về tệp CSV đầy đủ (không có dòng TOTAL ở cuối) nên chưa lưu gì. Hãy thử lại; nếu vẫn lặp lại, báo cho quản trị viên."
     }
   }
 }

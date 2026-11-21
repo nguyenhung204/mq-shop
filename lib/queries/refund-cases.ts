@@ -9,7 +9,8 @@ import {
   type AdminRefundCaseQuery,
   type RefundCaseStatus,
 } from "@/lib/api/refund-cases";
-import { createIdempotentRunner } from "@/lib/queries/idempotent-run";
+import { createKeyedRunners } from "@/lib/queries/idempotent-run";
+import { caseRouteErrorKey } from "@/lib/refund-cases/model";
 import { tt } from "@/lib/i18n/tt";
 import { getErrorMessage } from "@/lib/queries/utils";
 
@@ -24,6 +25,12 @@ export const refundCaseKeys = {
 };
 
 const PAGE_SIZE = 20;
+
+/** Translated text of a failed case action (RMA-linked refusals have their own text on these routes). */
+function caseErrorText(e: unknown, route: "party" | "override"): string {
+  const k = caseRouteErrorKey(e, route);
+  return k ? tt(k.key, k.params) : getErrorMessage(e, tt("admin.common.failed"));
+}
 
 export function useBuyerRefundCases(status: string, page: number) {
   return useQuery({
@@ -63,10 +70,10 @@ const SUCCESS_TOAST: Record<CaseActionVars["action"], string> = {
 /** Buyer confirm / dispute and seller mark-paid. A retry of the same request reuses the Idempotency-Key. */
 export function useRefundCaseAction() {
   const queryClient = useQueryClient();
-  const idempotency = useMemo(() => createIdempotentRunner(), []);
+  const runners = useMemo(() => createKeyedRunners(), []);
   return useMutation({
     mutationFn: (vars: CaseActionVars) =>
-      idempotency.run(vars, (v, key) => {
+      runners.forKey(`${vars.id}:${vars.action}`).run(vars, (v, key) => {
         switch (v.action) {
           case "markPaid":
             return refundCasesApi.markPaid(v.id, v.body, key);
@@ -77,14 +84,14 @@ export function useRefundCaseAction() {
         }
       }),
     onSuccess: (_d, vars) => {
-      idempotency.onSuccess();
+      runners.forKey(`${vars.id}:${vars.action}`).onSuccess();
       void queryClient.invalidateQueries({ queryKey: refundCaseKeys.all });
       toast.success(tt(SUCCESS_TOAST[vars.action]));
     },
-    onError: (e) => {
-      idempotency.onError(e);
+    onError: (e, vars) => {
+      runners.forKey(`${vars.id}:${vars.action}`).onError(e);
       void queryClient.invalidateQueries({ queryKey: refundCaseKeys.all });
-      toast.error(getErrorMessage(e, tt("admin.common.failed")));
+      toast.error(caseErrorText(e, "party"));
     },
   });
 }
@@ -116,21 +123,21 @@ export function useAdminRefundCaseDetail(id: string) {
 
 export function useOverrideRefundCase() {
   const queryClient = useQueryClient();
-  const idempotency = useMemo(() => createIdempotentRunner(), []);
+  const runners = useMemo(() => createKeyedRunners(), []);
   return useMutation({
     mutationFn: (vars: { id: string; toStatus: RefundCaseStatus; reason: string }) =>
-      idempotency.run(vars, (v, key) =>
+      runners.forKey(`${vars.id}:override`).run(vars, (v, key) =>
         adminRefundCasesApi.override(v.id, { toStatus: v.toStatus, reason: v.reason }, key),
       ),
-    onSuccess: () => {
-      idempotency.onSuccess();
+    onSuccess: (_d, vars) => {
+      runners.forKey(`${vars.id}:override`).onSuccess();
       void queryClient.invalidateQueries({ queryKey: refundCaseKeys.all });
       toast.success(tt("refundCases.toast.overridden"));
     },
-    onError: (e) => {
-      idempotency.onError(e);
+    onError: (e, vars) => {
+      runners.forKey(`${vars.id}:override`).onError(e);
       void queryClient.invalidateQueries({ queryKey: refundCaseKeys.all });
-      toast.error(getErrorMessage(e, tt("admin.common.failed")));
+      toast.error(caseErrorText(e, "override"));
     },
   });
 }

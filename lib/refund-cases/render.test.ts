@@ -185,3 +185,31 @@ describe("CaseActionModal", () => {
     expect(html).toContain("admin.common.working");
   });
 });
+
+describe("admin views: formatting details", () => {
+  const summary: RefundCaseSummary = {
+    asOf: "2026-11-21T00:00:00Z",
+    overdueDays: 7,
+    counts: { open: 1, awaitingBuyer: 0, disputed: 0, buyerConfirmed: 0, closed: 0, total: 1, overdue: 0 },
+    amounts: [{ currency: "TWD", total: "100.00", open: "100.00", awaitingBuyer: "0.00", disputed: "0.00", buyerConfirmed: "0.00", closed: "0.00", overdue: "0.00" }],
+  };
+  it("summary amounts carry no trailing space", () => {
+    const html = wrap(createElement(RefundSummaryView, { summary }));
+    expect(html).toContain(">100.00</td>");
+    expect(html).not.toMatch(/\d\.\d\d\s+<\/td>/);
+  });
+  it("the RMA status of a case goes through translateStatus and every RMA status has a label in all locales", async () => {
+    const { readFileSync } = await import("node:fs");
+    const view = readFileSync(`${__dirname}/../../components/refund-cases/AdminCaseViews.tsx`, "utf8");
+    expect(view).toContain('translateStatus(t, "rma", c.rma.status)');
+    expect(view).not.toContain("{c.rma.status}");
+    const { getTranslation } = await import("@/lib/i18n/get-translation");
+    for (const loc of ["en", "vi", "zh-TW"] as const) {
+      for (const st of ["REFUND_PENDING", "REFUND_SENT", "COMPLETED", "DISPUTED", "CLOSED"]) {
+        const label = getTranslation(loc, `status.rma.${st}`);
+        expect(label, `${loc} ${st}`).not.toBe(`status.rma.${st}`);
+        expect(label, `${loc} ${st}`).not.toBe(st);
+      }
+    }
+  });
+});

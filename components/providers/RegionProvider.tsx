@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -17,7 +18,7 @@ import {
   REGION_TO_COUNTRY,
 } from "@/lib/i18n/regions";
 import { toast } from "sonner";
-import { initialRegion, switchRegion } from "@/lib/i18n/region-sync";
+import { createSerialQueue, initialRegion, switchRegion } from "@/lib/i18n/region-sync";
 import { tt } from "@/lib/i18n/tt";
 import { getErrorMessage } from "@/lib/queries/utils";
 
@@ -91,21 +92,25 @@ export function RegionProvider({
     }
   }, [ready, isAuthenticated, region]);
 
+  const switchQueue = useRef(createSerialQueue());
+
   const setRegion = useCallback(
-    async (id: GateRegionId) => {
-      const res = await switchRegion({
-        id,
-        authenticated: isAuthenticated,
-        persist: persistRegion,
-        commit: (next) => {
-          localStorage.setItem(REGION_STORAGE_KEY, next);
-          setRegionState(next);
-          setRegionPickerOpen(false);
-        },
-      });
-      if (!res.ok) toast.error(getErrorMessage(res.error, tt("region.switchFailed")));
-      return res.ok;
-    },
+    (id: GateRegionId) =>
+      // one switch at a time, in request order: the latest request is always the final state
+      switchQueue.current.run(async () => {
+        const res = await switchRegion({
+          id,
+          authenticated: isAuthenticated,
+          persist: persistRegion,
+          commit: (next) => {
+            localStorage.setItem(REGION_STORAGE_KEY, next);
+            setRegionState(next);
+            setRegionPickerOpen(false);
+          },
+        });
+        if (!res.ok) toast.error(getErrorMessage(res.error, tt("region.switchFailed")));
+        return res.ok;
+      }),
     [isAuthenticated, persistRegion],
   );
 

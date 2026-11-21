@@ -115,3 +115,35 @@ describe("refundDisplayEquivalent (display only)", () => {
     expect(refundDisplayEquivalent(order, -5)).toBeNull();
   });
 });
+
+describe("refundDisplayEquivalent rounding follows the server (integer math, half up)", () => {
+  const o = (rate: number) => ({ total: "100000.00", payableAmount: 1, payableCurrency: "SGD", fxRateLocked: rate });
+  it("rounds half up on exact integer products (floating point would not)", () => {
+    // 100 cents x 1.005 = 100.5 -> 101; Math.round(100 * 1.005) is 100 because 100 * 1.005 = 100.49999999999999
+    expect(refundDisplayEquivalent(o(1.005), 100)).toBe("1.01 SGD");
+    // 1 cent x 0.5 = 0.5 -> 1
+    expect(refundDisplayEquivalent(o(0.5), 1)).toBe("0.01 SGD");
+    // 3 cents x 0.5 = 1.5 -> 2 (floor would give 1)
+    expect(refundDisplayEquivalent(o(0.5), 3)).toBe("0.02 SGD");
+  });
+  it("just below and at the half cent", () => {
+    // 16 x 0.031 = 0.496 -> 0 ; 17 x 0.031 = 0.527 -> 1
+    expect(refundDisplayEquivalent(o(0.031), 16)).toBe("0.00 SGD");
+    expect(refundDisplayEquivalent(o(0.031), 17)).toBe("0.01 SGD");
+    // 1 x 0.0049 -> 0 ; 1 x 0.005 -> 0.005 -> 0 (not a half cent); 100 x 0.00495 = 0.495 -> 0 ; 100 x 0.005 = 0.5 -> 1
+    expect(refundDisplayEquivalent(o(0.0049), 1)).toBe("0.00 SGD");
+    expect(refundDisplayEquivalent(o(0.005), 100)).toBe("0.01 SGD");
+    expect(refundDisplayEquivalent(o(0.00495), 100)).toBe("0.00 SGD");
+  });
+  it("large amounts stay exact", () => {
+    // 99999999 cents x 0.031 = 3099999.969 -> 3100000
+    expect(refundDisplayEquivalent(o(0.031), 99999999)).toBe("31000.00 SGD");
+    expect(refundDisplayEquivalent(o(25000), 12345)).toBe("3086250.00 SGD");
+  });
+  it("an exponent-form rate is expanded, an unusable rate gives nothing", () => {
+    expect(refundDisplayEquivalent(o(1e-7), 100_000_000_000)).toBe("100.00 SGD");
+    expect(refundDisplayEquivalent(o(0), 100)).toBeNull();
+    expect(refundDisplayEquivalent(o(Number.NaN), 100)).toBeNull();
+    expect(refundDisplayEquivalent(o(-1), 100)).toBeNull();
+  });
+});

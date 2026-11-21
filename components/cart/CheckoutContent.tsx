@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
@@ -92,6 +92,7 @@ export function CheckoutContent() {
   const [proofRetrying, setProofRetrying] = useState(false);
   const quote = useShippingQuote();
   const checkout = useCheckout();
+  const switchingRegion = useRef(false);
 
   const {
     register,
@@ -478,8 +479,16 @@ export function CheckoutContent() {
   };
 
   const handleCrossBorderSwitchRegion = async (regionId: GateRegionId) => {
-    // Signed in: the region is saved on the account first; when the API refuses nothing changes here.
-    const switched = await setRegion(regionId);
+    // Same busy guard as the region modal: one switch at a time from this dialog.
+    if (switchingRegion.current) return;
+    switchingRegion.current = true;
+    let switched = false;
+    try {
+      // Signed in: the region is saved on the account first; when the API refuses nothing changes here.
+      switched = await setRegion(regionId);
+    } finally {
+      switchingRegion.current = false;
+    }
     if (!switched) return;
     const newCountry = regionIdToCountryCode(regionId);
     setValue("shippingAddress.country", newCountry, { shouldValidate: true });

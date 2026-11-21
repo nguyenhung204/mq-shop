@@ -108,14 +108,17 @@ export function exportFileName(kind: ExportKind, q: { from?: string; to?: string
 /** How many bytes from the end of the file are enough to find the last line. */
 export const TAIL_BYTES = 4096;
 
-export type ExportCheck = { ok: true } | { ok: false; message: string };
+export type ExportCheck = { ok: true } | { ok: false; reason: "error" | "noTotal"; message: string };
 
 /**
- * A download that failed after it started ends with a `#ERROR,...` line (no TOTAL lines). The last
- * non-empty line decides: CRLF, LF, a trailing newline, a BOM and blank lines are tolerated.
+ * A complete export ends with its TOTAL lines (all three exports do, even for an empty window), so the
+ * LAST non-empty line must start with `TOTAL`. Anything else is a failed download: a stream that failed
+ * after it started ends with `#ERROR,...` (reason "error", the text is kept), and a JSON error body, an
+ * HTML gateway page or a truncated CSV has no TOTAL line (reason "noTotal"). CRLF / LF / CR, trailing
+ * blank lines and a BOM are tolerated; `#ERROR` inside a line is not a marker.
  */
 export function classifyExportTail(tail: string): ExportCheck {
-  const lines = tail.replace(/^﻿/, "").split(/\r\n|\n|\r/);
+  const lines = tail.replace(/^\uFEFF/, "").split(/\r\n|\n|\r/);
   let last = "";
   for (let i = lines.length - 1; i >= 0; i--) {
     if (lines[i]!.trim() !== "") {
@@ -123,13 +126,14 @@ export function classifyExportTail(tail: string): ExportCheck {
       break;
     }
   }
-  if (last.startsWith("#ERROR")) return { ok: false, message: last.replace(/^#ERROR,?\s*/, "") };
-  return { ok: true };
+  if (last.startsWith("#ERROR")) return { ok: false, reason: "error", message: last.replace(/^#ERROR,?\s*/, "") };
+  if (last.startsWith("TOTAL")) return { ok: true };
+  return { ok: false, reason: "noTotal", message: "" };
 }
 
-/** Reads the end of the blob and classifies it. An empty file is not a valid export (every export has a header). */
+/** Reads the end of the blob and classifies it. An empty file is not a valid export. */
 export async function inspectExportBlob(blob: Pick<Blob, "size" | "slice">): Promise<ExportCheck> {
-  if (blob.size === 0) return { ok: false, message: "" };
+  if (blob.size === 0) return { ok: false, reason: "noTotal", message: "" };
   const start = Math.max(0, blob.size - TAIL_BYTES);
   const tail = await new Response(blob.slice(start)).text();
   return classifyExportTail(tail);
@@ -184,7 +188,15 @@ export async function runExportDownload(
   } catch {
     return { ok: false, error: { key: "accountingExport.errors.aborted" } };
   }
-  if (!check.ok) return { ok: false, error: { key: "accountingExport.errors.incomplete", params: { reason: check.message || "-" } } };
+  if (!check.ok) {
+    return {
+      ok: false,
+      error:
+        check.reason === "error"
+          ? { key: "accountingExport.errors.incomplete", params: { reason: check.message || "-" } }
+          : { key: "accountingExport.errors.notCsv" },
+    };
+  }
   const fileName = exportFileName(kind, query);
   deps.save(blob, fileName);
   return { ok: true, fileName };

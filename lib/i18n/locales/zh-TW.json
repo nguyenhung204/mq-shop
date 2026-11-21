@@ -3973,7 +3973,8 @@
         "confirm": "套用覆寫",
         "toStatus": "新狀態",
         "pick": "選擇狀態",
-        "internalNote": "原因只存於內部紀錄，不會顯示給買家或賣家。"
+        "internalNote": "原因只存於內部紀錄，不會顯示給買家或賣家。",
+        "rmaNote": "此個案連結退貨申請：變更會透過退貨申請執行，若申請狀態不符可能被拒絕。"
       },
       "noteRequired": "備註（必填，3 到 1000 字）",
       "noteOptional": "備註（選填）",
@@ -3999,13 +4000,19 @@
       "disputeLimit": "你已對這筆退款回報 {max} 次，請聯絡客服。",
       "invalidTransition": "此個案已變更，無法執行該操作。列表已更新。",
       "notFound": "找不到此退款個案。",
-      "invalid": "退款操作無效。"
+      "invalid": "退款操作無效。",
+      "rmaProofFirst": "這筆退款屬於退貨申請。請先在退貨申請上傳轉帳憑證，再標記退款已付款。",
+      "rmaEscalateFirst": "此個案連結的退貨申請必須先升級處理（或處於相符狀態），客服才能變更。"
     },
     "toast": {
       "markedPaid": "已標記退款已付款。",
       "confirmed": "已確認退款。",
       "disputed": "已送出回報。",
       "overridden": "個案狀態已更新。"
+    },
+    "rma": {
+      "hint": "這筆退款來自退貨申請：標記已付款前，請先在退貨申請上傳轉帳憑證。",
+      "open": "開啟退貨申請"
     }
   },
   "accountingExport": {
@@ -4034,7 +4041,25 @@
     "summary": {
       "title": "此篩選條件的合計",
       "rows": "筆數",
-      "note": "CSV 檔結尾的 TOTAL 行會與這些數字一致。"
+      "note": "CSV 檔結尾的 TOTAL 行會與這些數字一致。",
+      "held": "保留 {amount}",
+      "in": "入帳",
+      "out": "出帳",
+      "netLabel": "淨額",
+      "net": {
+        "twd": "淨額 TWD",
+        "points": "淨點數"
+      },
+      "movement": {
+        "CREDIT": "入帳",
+        "REVERSAL": "追回",
+        "PENDING": "待處理（保留中）",
+        "VOID": "已作廢"
+      },
+      "direction": {
+        "IN": "入",
+        "OUT": "出"
+      }
     },
     "formErrors": {
       "badFrom": "請輸入真實存在的起始日期。",
@@ -4056,7 +4081,8 @@
       "badRequest": "日期或篩選條件無效。請檢查範圍（最多 366 天）後再試。",
       "failed": "匯出失敗，請再試一次。",
       "aborted": "下載中斷，檔案不完整，因此未儲存。請再試一次。",
-      "incomplete": "檔案以錯誤結尾（{reason}），內容不完整，因此未儲存。請再試一次或縮短範圍。"
+      "incomplete": "檔案以錯誤結尾（{reason}），內容不完整，因此未儲存。請再試一次或縮短範圍。",
+      "notCsv": "伺服器沒有回傳完整的 CSV 檔（結尾沒有 TOTAL 行），因此未儲存。請再試一次；若持續發生，請通知管理員。"
     }
   }
 }
