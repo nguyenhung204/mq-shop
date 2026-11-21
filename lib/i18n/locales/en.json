@@ -1693,7 +1693,8 @@
           "invalid": "Enter an amount like 250 or 250.50 (at most 2 decimals).",
           "zero": "The refund must be greater than 0.",
           "exceeds": "The refund is more than what is left to refund on this order."
-        }
+        },
+        "displayEquivalent": "About {amount} in the buyer's display currency (the refund itself is recorded in TWD)."
       }
     },
     "financePage": {

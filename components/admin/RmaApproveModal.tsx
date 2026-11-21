@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useId, useState } from "react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-import { centsToDecimalString } from "@/lib/money";
+import { centsToDecimalString, parseDecimalToCents } from "@/lib/money";
 import { submitApprove } from "@/lib/rma/approve-flow";
 import { validateRefundAmount } from "@/lib/rma/refund-amount";
 
@@ -17,6 +17,8 @@ type Props = {
   busy?: boolean;
   /** Pre-filled amount (tests / re-open after a rejection). */
   defaultAmount?: string;
+  /** Display-only text for what a typed partial amount is in the buyer's display currency (null = none). */
+  displayHint?: (cents: number) => string | null;
   onClose: () => void;
   onConfirm: (refundAmount: string | undefined) => void | Promise<void>;
 };
@@ -26,7 +28,7 @@ export function RmaApproveModal(props: Props) {
   return <RmaApproveForm {...props} />;
 }
 
-function RmaApproveForm({ canPartial, orderTotalCents, remainingCents = null, busy = false, defaultAmount = "", onClose, onConfirm }: Props) {
+function RmaApproveForm({ canPartial, orderTotalCents, remainingCents = null, busy = false, defaultAmount = "", displayHint, onClose, onConfirm }: Props) {
   const { t } = useLanguage();
   const [amount, setAmount] = useState(defaultAmount);
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +53,8 @@ function RmaApproveForm({ canPartial, orderTotalCents, remainingCents = null, bu
   };
 
   const isPartial = Boolean(live && live.ok && live.partial && live.refundAmount !== undefined);
+  const typedCents = live && live.ok && live.refundAmount !== undefined ? parseDecimalToCents(live.refundAmount) : null;
+  const hint = displayHint && typedCents !== null ? displayHint(typedCents) : null;
 
   return (
     <div className="mq-admin-modal-root" role="presentation">
@@ -92,6 +96,11 @@ function RmaApproveForm({ canPartial, orderTotalCents, remainingCents = null, bu
                   ? t("admin.rmaPage.approveModal.partialNote", { amount: live && live.ok ? (live.refundAmount ?? "") : "" })
                   : t("admin.rmaPage.approveModal.fullNote")}
               </p>
+              {hint ? (
+                <p className="text-[11px] text-mq-text-muted mt-1">
+                  {t("admin.rmaPage.approveModal.displayEquivalent", { amount: hint })}
+                </p>
+              ) : null}
             </>
           ) : (
             <p className="text-xs">{t("admin.rmaPage.approveModal.fullNote")}</p>

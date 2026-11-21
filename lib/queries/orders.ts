@@ -419,6 +419,8 @@ export function useShopRmaAction() {
         | "shipGoodsToBuyer"
         | "updateGoodsReturnTracking";
       note?: string;
+      /** approve only: partial refund (2 dp string); omitted = refund what is left. */
+      refundAmount?: string;
       orderId?: string;
       trackingCode?: string;
       carrier?: string;
@@ -426,7 +428,7 @@ export function useShopRmaAction() {
       const { id, action, note } = input;
       switch (action) {
         case "approve":
-          return orderApi.approveRma(id, note ? { note } : {});
+          return sendRmaDecision(orderApi, { id, decision: "APPROVED", note, refundAmount: input.refundAmount }) as Promise<RmaView>;
         case "reject":
           return orderApi.rejectRma(id, { note: note || "Rejected" });
         case "returnReceived":

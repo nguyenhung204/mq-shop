@@ -1693,7 +1693,8 @@
           "invalid": "請輸入如 250 或 250.50 的金額（最多兩位小數）。",
           "zero": "退款金額須大於 0。",
           "exceeds": "退款金額超過此訂單剩餘可退金額。"
-        }
+        },
+        "displayEquivalent": "約 {amount}（買家的顯示幣別；退款本身以 TWD 記錄）。"
       }
     },
     "financePage": {

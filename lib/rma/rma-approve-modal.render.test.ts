@@ -65,4 +65,12 @@ describe("RmaApproveModal (rendered)", () => {
     expect(html).not.toContain("amountLabel");
     expect(html).toContain("admin.rmaPage.approveModal.fullNote");
   });
+  it("shows the display-currency equivalent only for a typed amount, and only when a hint is given", () => {
+    const hint = (c: number) => `${c} SGD`;
+    const partial = render({ defaultAmount: "250", displayHint: hint });
+    expect(partial).toContain("admin.rmaPage.approveModal.displayEquivalent");
+    expect(render({ defaultAmount: "250" })).not.toContain("displayEquivalent");
+    expect(render({ displayHint: hint })).not.toContain("displayEquivalent");
+    expect(render({ canPartial: false, displayHint: hint })).not.toContain("displayEquivalent");
+  });
 });

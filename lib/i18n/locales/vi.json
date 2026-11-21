@@ -1693,7 +1693,8 @@
           "invalid": "Nhập số tiền như 250 hoặc 250.50 (tối đa 2 số thập phân).",
           "zero": "Số tiền hoàn phải lớn hơn 0.",
           "exceeds": "Số tiền hoàn lớn hơn số còn được hoàn của đơn này."
-        }
+        },
+        "displayEquivalent": "Khoảng {amount} theo tiền tệ hiển thị của người mua (khoản hoàn được ghi bằng TWD)."
       }
     },
     "financePage": {

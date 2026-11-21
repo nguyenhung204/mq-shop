@@ -28,3 +28,15 @@ export const canEditPaidAt = canWriteSettings;
 export function canReadPaidAtHistory(user: AuthUser | null | undefined): boolean {
   return Boolean(user?.roles?.some((r) => r === "ADMIN" || r === "SUPER_ADMIN"));
 }
+
+/**
+ * Who may type a refund amount on the SELLER approve route (POST /rma/:id/approve): a SELLER who holds
+ * no CS / WAREHOUSE / ACCOUNTANT role (the API answers 400 RMA_REFUND_AMOUNT_INVALID to those), and
+ * ADMIN / SUPER_ADMIN. Seller of another shop is refused by the API (403); the page only lists own shop RMAs.
+ */
+export function canSetSellerPartialRefund(user: AuthUser | null | undefined): boolean {
+  const roles = user?.roles ?? [];
+  if (roles.some((r) => r === "ADMIN" || r === "SUPER_ADMIN")) return true;
+  if (!roles.includes("SELLER")) return false;
+  return !roles.some((r) => r === "CS" || r === "WAREHOUSE" || r === "ACCOUNTANT");
+}

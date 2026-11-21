@@ -311,7 +311,8 @@ export const orderApi = {
   listMyRma: (query?: { status?: RmaStatus; page?: number; pageSize?: number }) =>
     api.get<PageEnvelope<RmaView>>("/rma/mine", { query, withMeta: true }),
 
-  approveRma: (rmaId: string, body?: { note?: string }) =>
+  /** Seller of the shop: `refundAmount` (2 dp string, > 0, <= remaining) is allowed for a seller without CS/WAREHOUSE/ACCOUNTANT roles. */
+  approveRma: (rmaId: string, body?: { note?: string; refundAmount?: string }) =>
     api.post<RmaView>(`/rma/${rmaId}/approve`, body ?? {}),
 
   rejectRma: (rmaId: string, body: { note: string }) =>
