@@ -8,6 +8,7 @@ vi.mock("@/lib/api/client", async (orig) => {
   return { ...real, api: { post: (...a: unknown[]) => post(...a), get: (...a: unknown[]) => get(...a), delete: (...a: unknown[]) => del(...a) } };
 });
 
+import { ApiError } from "@/lib/api/client";
 import { adminSubAccountsApi, declineSubAccountApi, subAccountsApi } from "@/lib/api/sub-accounts";
 import { createKeyedRunners } from "@/lib/queries/idempotent-run";
 import { validateCreate } from "./model";
@@ -90,5 +91,29 @@ describe("Idempotency-Key per (resource, action)", () => {
     const { readFileSync } = await import("node:fs");
     const q = readFileSync(`${__dirname}/../queries/sub-accounts.ts`, "utf8");
     for (const k of ['forKey("create")', "`${id}:withdraw`", 'forKey("invite:create")', "`${id}:revoke`", "`${accountId}:create`", "`${vars.id}:discard`"]) expect(q, k).toContain(k);
+  });
+});
+
+describe("subAccountErrorText", () => {
+  const err = (status: number, code: string) => new ApiError(status, code, { statusCode: status, message: code, data: { code } } as never);
+  it("a 429 on creation is the 'created too many recently' budget text; 404 is 'not found'; the invite 404 keeps its own text; others use the code map", async () => {
+    const { subAccountErrorText } = await import("@/lib/queries/sub-accounts");
+    const { getTranslation } = await import("@/lib/i18n/get-translation");
+    const en = (k: string) => getTranslation("en", k);
+    expect(subAccountErrorText(err(429, "TOO_MANY_REQUESTS"))).toBe(en("subAccounts.errors.budget"));
+    expect(subAccountErrorText(err(404, "USER_NOT_FOUND"))).toBe(en("subAccounts.errors.notFound"));
+    expect(subAccountErrorText(err(404, "SUB_ACCOUNT_INVITE_NOT_FOUND"))).toBe(en("subAccounts.errors.inviteNotFound"));
+    expect(subAccountErrorText(err(409, "SUB_ACCOUNT_LIMIT"))).toBe(en("subAccounts.errors.limit"));
+    expect(subAccountErrorText(err(409, "SUB_ACCOUNT_NOT_PENDING"))).toBe(en("subAccounts.errors.notPending"));
+    expect(subAccountErrorText(err(409, "SUB_ACCOUNT_DECLINED_RECENTLY"))).toBe(en("subAccounts.errors.declinedRecently"));
+    expect(subAccountErrorText(err(409, "EMAIL_ALREADY_IN_USE"))).not.toMatch(/EMAIL_ALREADY/);
+    expect(subAccountErrorText(err(409, "ACCOUNT_PENDING_ACTIVATION"))).toBe(en("subAccounts.errors.pendingActivation"));
+  });
+  it("the cooldown wording does not say that anybody declined", async () => {
+    const { getTranslation } = await import("@/lib/i18n/get-translation");
+    for (const loc of ["en", "vi", "zh-TW"] as const) {
+      const text = getTranslation(loc, "subAccounts.errors.declinedRecently").toLowerCase();
+      expect(text, loc).not.toMatch(/declin|từ chối|拒絕/);
+    }
   });
 });
