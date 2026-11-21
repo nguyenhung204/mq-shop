@@ -40,3 +40,11 @@ export function canSetSellerPartialRefund(user: AuthUser | null | undefined): bo
   if (!roles.includes("SELLER")) return false;
   return !roles.some((r) => r === "CS" || r === "WAREHOUSE" || r === "ACCOUNTANT");
 }
+
+/** Create a sub-account for any account and discard a pending one: ADMIN / SUPER_ADMIN (CREATE_SUB_ACCOUNT_FOR). Reads also allow ACCOUNTANT. */
+export function canCreateSubAccountFor(user: AuthUser | null | undefined): boolean {
+  return Boolean(user?.roles?.some((r) => r === "ADMIN" || r === "SUPER_ADMIN"));
+}
+
+/** Run the dividend settlement of a quarter: SUPER_ADMIN only (CONFIG_MLM without approval). ADMIN / ACCOUNTANT read. */
+export const canRunDividendSettlement = canWriteSettings;

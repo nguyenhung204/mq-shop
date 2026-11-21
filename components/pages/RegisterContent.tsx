@@ -9,6 +9,7 @@ import { authApi } from "@/lib/api/auth";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useRegion } from "@/components/providers/RegionProvider";
+import { inviteTokenFromQuery, registerReferral } from "@/lib/sub-accounts/model";
 import { checkoutRegionCode } from "@/lib/i18n/region-sync";
 
 export function RegisterContent() {
@@ -16,6 +17,7 @@ export function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const refCode = searchParams.get("ref") || "";
+  const inviteToken = inviteTokenFromQuery(searchParams.get("invite"));
   const { region } = useRegion();
 
   const [regEmail, setRegEmail] = useState("");
@@ -52,7 +54,7 @@ export function RegisterContent() {
         email: regEmail,
         password: regPw,
         fullName: regName || undefined,
-        referrerCode: refCode || undefined,
+        ...registerReferral(inviteToken, refCode || undefined),
         // the region chosen in the gate / switcher; omitted when none was chosen (the API default is TW)
         regionCode: checkoutRegionCode(region),
       });
@@ -77,6 +79,7 @@ export function RegisterContent() {
         </>
       }
     >
+      {inviteToken ? <div className="mq-alert mq-alert-success">{t("subAccounts.register.inviteBanner")}</div> : null}
       {error && <div className="mq-alert mq-alert-error">{error}</div>}
       <form className="mq-auth-actions flex w-full flex-col gap-2.5" onSubmit={onRegister}>
         <div className="mq-auth-field">
