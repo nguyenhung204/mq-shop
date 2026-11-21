@@ -8,12 +8,15 @@ import { AuthPanel } from "@/components/auth/AuthPanel";
 import { authApi } from "@/lib/api/auth";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useRegion } from "@/components/providers/RegionProvider";
+import { checkoutRegionCode } from "@/lib/i18n/region-sync";
 
 export function RegisterContent() {
   const { t, locale } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
   const refCode = searchParams.get("ref") || "";
+  const { region } = useRegion();
 
   const [regEmail, setRegEmail] = useState("");
   const [regPw, setRegPw] = useState("");
@@ -50,6 +53,8 @@ export function RegisterContent() {
         password: regPw,
         fullName: regName || undefined,
         referrerCode: refCode || undefined,
+        // the region chosen in the gate / switcher; omitted when none was chosen (the API default is TW)
+        regionCode: checkoutRegionCode(region),
       });
       router.push(`/my-account/verify-otp?email=${encodeURIComponent(regEmail)}`);
     } catch (err) {

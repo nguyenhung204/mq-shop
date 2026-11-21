@@ -936,7 +936,8 @@
         "required": "Enter a reason.",
         "tooShort": "The reason must be at least 3 characters.",
         "tooLong": "The reason must be at most 500 characters."
-      }
+      },
+      "region": "Region"
     },
     "overview": {
       "title": "Admin",
@@ -3812,7 +3813,8 @@
     "selectSubtitle": "Products shown will be based on your selected region.",
     "selectHint": "You can change your shopping region anytime from the header.",
     "confirm": "Confirm Region",
-    "switchRegion": "Switch Shopping Region"
+    "switchRegion": "Switch Shopping Region",
+    "switchFailed": "The region could not be changed. Your region stays as it was."
   },
   "crossBorder": {
     "title": "Cross-Border Items Detected",
@@ -4004,6 +4006,57 @@
       "confirmed": "Refund confirmed.",
       "disputed": "Report sent.",
       "overridden": "Case status updated."
+    }
+  },
+  "accountingExport": {
+    "title": "Accounting export",
+    "description": "Download CSV files for reconciliation: refund cases, commission ledger movements and wallet transactions.",
+    "kind": "Export",
+    "kinds": {
+      "refund-cases": "Refund cases (with history)",
+      "commission-ledger": "Commission ledger movements",
+      "wallet-transactions": "Wallet transactions"
+    },
+    "from": "From (GMT+8)",
+    "to": "To (GMT+8)",
+    "region": "Region (optional)",
+    "allRegions": "All regions",
+    "rangeHint": "Both dates are required and inclusive. The range can be at most 366 days; split a longer period into several files.",
+    "ledgerType": "Reward type",
+    "beneficiaryId": "Beneficiary ID (optional)",
+    "walletReason": "Reason",
+    "userId": "User ID (optional)",
+    "download": "Download CSV",
+    "downloading": "Preparing the file...",
+    "preview": "Preview totals",
+    "concurrencyHint": "You can run at most 2 exports at the same time. A large file can take a while; keep this page open.",
+    "downloaded": "Saved {file}.",
+    "summary": {
+      "title": "Totals for these filters",
+      "rows": "Rows",
+      "note": "The CSV ends with TOTAL lines that match these numbers."
+    },
+    "formErrors": {
+      "badFrom": "Enter a real start date.",
+      "badTo": "Enter a real end date.",
+      "rangeOrder": "The start date must not be after the end date.",
+      "rangeTooLong": "The range must not exceed 366 days.",
+      "badShop": "The shop ID must be a valid ID (UUID).",
+      "badRegion": "Choose one of the available regions.",
+      "badReason": "Choose a valid reason.",
+      "badBeneficiary": "The beneficiary ID must be a valid ID (UUID).",
+      "badUser": "The user ID must be a valid ID (UUID)."
+    },
+    "errors": {
+      "tooManyRows": "This export would have {rows} rows, above the limit of {max}. Narrow the date range or the filters, or split it into several files.",
+      "timeout": "The export took too long and was stopped. Try a shorter date range or try again.",
+      "tooMany": "Too many exports are running or were requested too quickly (at most 2 at the same time per person). Wait a moment and try again.",
+      "unavailable": "The export service is temporarily unavailable. Try again in a few minutes.",
+      "forbidden": "You are not allowed to export accounting data.",
+      "badRequest": "The dates or filters are not valid. Check the range (at most 366 days) and try again.",
+      "failed": "The export failed. Try again.",
+      "aborted": "The download was interrupted and the file is incomplete, so it was not saved. Try again.",
+      "incomplete": "The file ended with an error ({reason}) and is incomplete, so it was not saved. Try again or use a shorter range."
     }
   }
 }

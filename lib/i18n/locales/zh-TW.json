@@ -936,7 +936,8 @@
         "required": "請輸入原因。",
         "tooShort": "原因至少需 3 個字元。",
         "tooLong": "原因最多 500 個字元。"
-      }
+      },
+      "region": "地區"
     },
     "overview": {
       "title": "管理後台",
@@ -3812,7 +3813,8 @@
     "selectSubtitle": "商品將根據您選擇的地區顯示。",
     "selectHint": "您可以隨時從頂部選單更改購物地區。",
     "confirm": "確認地區",
-    "switchRegion": "切換購物地區"
+    "switchRegion": "切換購物地區",
+    "switchFailed": "無法變更地區，你的地區維持不變。"
   },
   "crossBorder": {
     "title": "偵測到跨境商品",
@@ -4004,6 +4006,57 @@
       "confirmed": "已確認退款。",
       "disputed": "已送出回報。",
       "overridden": "個案狀態已更新。"
+    }
+  },
+  "accountingExport": {
+    "title": "會計匯出",
+    "description": "下載對帳用的 CSV 檔：退款個案、佣金帳務異動與錢包交易。",
+    "kind": "匯出項目",
+    "kinds": {
+      "refund-cases": "退款個案（含紀錄）",
+      "commission-ledger": "佣金帳務異動",
+      "wallet-transactions": "錢包交易"
+    },
+    "from": "起（GMT+8）",
+    "to": "迄（GMT+8）",
+    "region": "地區（選填）",
+    "allRegions": "所有地區",
+    "rangeHint": "兩個日期都必填且含首尾。範圍最多 366 天；更長的期間請分成多個檔案。",
+    "ledgerType": "獎勵類型",
+    "beneficiaryId": "受益人 ID（選填）",
+    "walletReason": "原因",
+    "userId": "使用者 ID（選填）",
+    "download": "下載 CSV",
+    "downloading": "正在準備檔案...",
+    "preview": "預覽合計",
+    "concurrencyHint": "同時最多只能進行 2 個匯出。大型檔案可能需要一些時間，請保持此頁面開啟。",
+    "downloaded": "已儲存 {file}。",
+    "summary": {
+      "title": "此篩選條件的合計",
+      "rows": "筆數",
+      "note": "CSV 檔結尾的 TOTAL 行會與這些數字一致。"
+    },
+    "formErrors": {
+      "badFrom": "請輸入真實存在的起始日期。",
+      "badTo": "請輸入真實存在的結束日期。",
+      "rangeOrder": "起始日期不可晚於結束日期。",
+      "rangeTooLong": "範圍不可超過 366 天。",
+      "badShop": "商店 ID 必須是有效的 ID（UUID）。",
+      "badRegion": "請選擇可用的地區。",
+      "badReason": "請選擇有效的原因。",
+      "badBeneficiary": "受益人 ID 必須是有效的 ID（UUID）。",
+      "badUser": "使用者 ID 必須是有效的 ID（UUID）。"
+    },
+    "errors": {
+      "tooManyRows": "此匯出會有 {rows} 筆，超過上限 {max}。請縮小日期範圍或篩選條件，或分成多個檔案。",
+      "timeout": "匯出耗時過長而被中止。請縮短日期範圍或再試一次。",
+      "tooMany": "正在執行的匯出過多或要求太頻繁（每人同時最多 2 個）。請稍候再試。",
+      "unavailable": "匯出服務暫時無法使用，請幾分鐘後再試。",
+      "forbidden": "你沒有匯出會計資料的權限。",
+      "badRequest": "日期或篩選條件無效。請檢查範圍（最多 366 天）後再試。",
+      "failed": "匯出失敗，請再試一次。",
+      "aborted": "下載中斷，檔案不完整，因此未儲存。請再試一次。",
+      "incomplete": "檔案以錯誤結尾（{reason}），內容不完整，因此未儲存。請再試一次或縮短範圍。"
     }
   }
 }

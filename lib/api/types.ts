@@ -53,6 +53,8 @@ export type AuthUser = {
   referrerId?: string | null;
   /** Shareable referral code. */
   referralCode?: string | null;
+  /** Business region of the account (TW, VN, MY, SG). Absent on an older API / cached profile. */
+  regionCode?: string | null;
   /** MLM rank 1–10. */
   mlmRank?: number | null;
   /**

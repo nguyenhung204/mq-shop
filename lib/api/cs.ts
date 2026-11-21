@@ -34,6 +34,8 @@ export interface CsCustomerDetail {
   fullName: string | null;
   status: string;
   roles: string[];
+  /** Business region of the account (TW, VN, MY, SG); absent on an older API. */
+  regionCode?: string | null;
   createdAt: string;
   stats: CsCustomerStats;
   recentOrders: CsCustomerRecentOrder[];

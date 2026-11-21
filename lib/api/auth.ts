@@ -9,6 +9,8 @@ export const authApi = {
     phone?: string;
     /** Prefill from `/my-account/register?ref=` (alias `/register?ref=`) — BE field name. */
     referrerCode?: string;
+    /** Business region (TW, VN, MY, SG); the API default is TW. */
+    regionCode?: string;
   }) =>
     api.post<{ id?: string; email?: string; status?: string; message?: string }>(
       "/auth/register",
@@ -47,6 +49,10 @@ export const authApi = {
     ),
 
   me: () => api.get<AuthUser>("/users/me"),
+
+  /** Switch the account's region. Idempotency-Key is required; any signed-in role. 400 REGION_INVALID otherwise. */
+  updateRegion: (regionCode: string, idempotencyKey: string) =>
+    api.patch<AuthUser>("/users/me/region", { regionCode }, { headers: { "Idempotency-Key": idempotencyKey } }),
 
   updateProfile: (body: { fullName?: string }) =>
     api.patch<AuthUser>("/users/me", body),

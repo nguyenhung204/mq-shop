@@ -10,11 +10,16 @@ import {
   type ReactNode,
 } from "react";
 import {
+  type BusinessRegionCode,
   type GateRegionId,
   GATE_REGIONS,
   isValidRegion,
   REGION_TO_COUNTRY,
 } from "@/lib/i18n/regions";
+import { toast } from "sonner";
+import { initialRegion, switchRegion } from "@/lib/i18n/region-sync";
+import { tt } from "@/lib/i18n/tt";
+import { getErrorMessage } from "@/lib/queries/utils";
 
 const REGION_STORAGE_KEY = "mq-region";
 
@@ -25,7 +30,11 @@ export type RegionContextValue = {
   currency: string | null;
   needsRegionSelection: boolean;
   regionPickerOpen: boolean;
-  setRegion: (id: GateRegionId) => void;
+  /**
+   * Signed in: asks the API first (PATCH /users/me/region) and keeps the old region when it refuses.
+   * Resolves true when the region is now `id`.
+   */
+  setRegion: (id: GateRegionId) => Promise<boolean>;
   showRegionPicker: () => void;
   hideRegionPicker: () => void;
   currentRegion: (typeof GATE_REGIONS)[number] | null;
@@ -36,11 +45,17 @@ const RegionContext = createContext<RegionContextValue | null>(null);
 export function RegionProvider({
   children,
   isAuthenticated = false,
+  serverRegionCode = null,
+  persistRegion,
 }: {
   children: ReactNode;
   isAuthenticated?: boolean;
+  /** me.regionCode of the signed-in account: initialises (and overrides) the browser's choice. */
+  serverRegionCode?: string | null;
+  /** Saves a region switch on the account (PATCH /users/me/region); rejects when the API refuses. */
+  persistRegion?: (code: BusinessRegionCode) => Promise<unknown>;
 }) {
-  const [region, setRegionState] = useState<GateRegionId | null>(null);
+  const [localRegion, setRegionState] = useState<GateRegionId | null>(null);
   const [ready, setReady] = useState(false);
   const [regionPickerOpen, setRegionPickerOpen] = useState(false);
 
@@ -61,17 +76,38 @@ export function RegionProvider({
     return () => window.removeEventListener("mq:region-sync", onRegionSync);
   }, []);
 
+  // The account's region is the authority once the profile is known (login, reload, switch on another device).
+  const region = initialRegion(isAuthenticated ? serverRegionCode : null, localRegion);
+
+  useEffect(() => {
+    if (!ready || !isAuthenticated) return;
+    const fromServer = initialRegion(serverRegionCode, null);
+    if (fromServer) localStorage.setItem(REGION_STORAGE_KEY, fromServer);
+  }, [ready, isAuthenticated, serverRegionCode]);
+
   useEffect(() => {
     if (ready && isAuthenticated && region === null) {
       setRegionPickerOpen(true);
     }
   }, [ready, isAuthenticated, region]);
 
-  const setRegion = useCallback((id: GateRegionId) => {
-    localStorage.setItem(REGION_STORAGE_KEY, id);
-    setRegionState(id);
-    setRegionPickerOpen(false);
-  }, []);
+  const setRegion = useCallback(
+    async (id: GateRegionId) => {
+      const res = await switchRegion({
+        id,
+        authenticated: isAuthenticated,
+        persist: persistRegion,
+        commit: (next) => {
+          localStorage.setItem(REGION_STORAGE_KEY, next);
+          setRegionState(next);
+          setRegionPickerOpen(false);
+        },
+      });
+      if (!res.ok) toast.error(getErrorMessage(res.error, tt("region.switchFailed")));
+      return res.ok;
+    },
+    [isAuthenticated, persistRegion],
+  );
 
   const showRegionPicker = useCallback(() => setRegionPickerOpen(true), []);
   const hideRegionPicker = useCallback(() => setRegionPickerOpen(false), []);

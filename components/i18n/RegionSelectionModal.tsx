@@ -15,12 +15,18 @@ export function RegionSelectionModal() {
   const { regionPickerOpen, hideRegionPicker, setRegion, region } = useRegion();
   const { t } = useLanguage();
   const [picked, setPicked] = useState<GateRegionId | null>(region);
+  const [busy, setBusy] = useState(false);
 
   if (!regionPickerOpen) return null;
 
-  const handleConfirm = () => {
-    if (picked) {
-      setRegion(picked);
+  const handleConfirm = async () => {
+    if (!picked || busy) return;
+    setBusy(true);
+    try {
+      // Signed in: the API is asked first; on a refusal the old region stays and the modal stays open.
+      await setRegion(picked);
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -109,8 +115,8 @@ export function RegionSelectionModal() {
           )}
           <button
             type="button"
-            onClick={handleConfirm}
-            disabled={!picked}
+            onClick={() => void handleConfirm()}
+            disabled={!picked || busy}
             className="mq-btn mq-btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {t("region.confirm")}

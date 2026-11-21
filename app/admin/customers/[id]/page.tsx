@@ -86,6 +86,9 @@ function CustomerDetailInner() {
                 <span className="mq-badge mq-badge-muted">
                   {translateRoles(t, customer.roles)}
                 </span>
+                <span className="mq-badge mq-badge-muted">
+                  {t("admin.common.region")}: {customer.regionCode ?? "—"}
+                </span>
               </div>
               <p className="text-xs text-mq-text-muted">
                 {t("admin.customersPage.memberSince")}:{" "}

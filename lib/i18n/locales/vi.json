@@ -936,7 +936,8 @@
         "required": "Hãy nhập lý do.",
         "tooShort": "Lý do phải có ít nhất 3 ký tự.",
         "tooLong": "Lý do tối đa 500 ký tự."
-      }
+      },
+      "region": "Khu vực"
     },
     "overview": {
       "title": "Quản trị",
@@ -3812,7 +3813,8 @@
     "selectSubtitle": "Sản phẩm hiển thị sẽ dựa trên vùng bạn chọn.",
     "selectHint": "Bạn có thể thay đổi vùng mua hàng bất kỳ lúc nào từ thanh menu.",
     "confirm": "Xác nhận",
-    "switchRegion": "Đổi vùng mua hàng"
+    "switchRegion": "Đổi vùng mua hàng",
+    "switchFailed": "Không thể đổi khu vực. Khu vực của bạn giữ nguyên."
   },
   "crossBorder": {
     "title": "Phát hiện sản phẩm xuyên biên giới",
@@ -4004,6 +4006,57 @@
       "confirmed": "Đã xác nhận hoàn tiền.",
       "disputed": "Đã gửi báo cáo.",
       "overridden": "Đã cập nhật trạng thái ca."
+    }
+  },
+  "accountingExport": {
+    "title": "Xuất dữ liệu kế toán",
+    "description": "Tải tệp CSV để đối soát: ca hoàn tiền, biến động sổ hoa hồng và giao dịch ví.",
+    "kind": "Loại xuất",
+    "kinds": {
+      "refund-cases": "Ca hoàn tiền (kèm lịch sử)",
+      "commission-ledger": "Biến động sổ hoa hồng",
+      "wallet-transactions": "Giao dịch ví"
+    },
+    "from": "Từ ngày (GMT+8)",
+    "to": "Đến ngày (GMT+8)",
+    "region": "Khu vực (không bắt buộc)",
+    "allRegions": "Mọi khu vực",
+    "rangeHint": "Bắt buộc nhập cả hai ngày và tính cả hai đầu. Khoảng ngày tối đa 366 ngày; kỳ dài hơn hãy chia thành nhiều tệp.",
+    "ledgerType": "Loại thưởng",
+    "beneficiaryId": "Mã người nhận (không bắt buộc)",
+    "walletReason": "Lý do",
+    "userId": "Mã người dùng (không bắt buộc)",
+    "download": "Tải CSV",
+    "downloading": "Đang chuẩn bị tệp...",
+    "preview": "Xem trước tổng",
+    "concurrencyHint": "Bạn chỉ chạy được tối đa 2 lần xuất cùng lúc. Tệp lớn có thể mất thời gian; hãy giữ trang này mở.",
+    "downloaded": "Đã lưu {file}.",
+    "summary": {
+      "title": "Tổng theo bộ lọc này",
+      "rows": "Số dòng",
+      "note": "Cuối tệp CSV có các dòng TOTAL khớp với những con số này."
+    },
+    "formErrors": {
+      "badFrom": "Nhập ngày bắt đầu có thật.",
+      "badTo": "Nhập ngày kết thúc có thật.",
+      "rangeOrder": "Ngày bắt đầu không được sau ngày kết thúc.",
+      "rangeTooLong": "Khoảng ngày không được vượt quá 366 ngày.",
+      "badShop": "Mã cửa hàng phải là mã hợp lệ (UUID).",
+      "badRegion": "Chọn một trong các khu vực có sẵn.",
+      "badReason": "Chọn lý do hợp lệ.",
+      "badBeneficiary": "Mã người nhận phải là mã hợp lệ (UUID).",
+      "badUser": "Mã người dùng phải là mã hợp lệ (UUID)."
+    },
+    "errors": {
+      "tooManyRows": "Bản xuất này có {rows} dòng, vượt giới hạn {max}. Hãy thu hẹp khoảng ngày hoặc bộ lọc, hoặc chia thành nhiều tệp.",
+      "timeout": "Việc xuất quá lâu nên đã bị dừng. Hãy thử khoảng ngày ngắn hơn hoặc thử lại.",
+      "tooMany": "Có quá nhiều lần xuất đang chạy hoặc yêu cầu quá nhanh (tối đa 2 lần cùng lúc mỗi người). Hãy chờ một lát rồi thử lại.",
+      "unavailable": "Dịch vụ xuất tạm thời không khả dụng. Hãy thử lại sau vài phút.",
+      "forbidden": "Bạn không có quyền xuất dữ liệu kế toán.",
+      "badRequest": "Ngày hoặc bộ lọc không hợp lệ. Kiểm tra khoảng ngày (tối đa 366 ngày) rồi thử lại.",
+      "failed": "Xuất thất bại. Hãy thử lại.",
+      "aborted": "Quá trình tải bị gián đoạn và tệp chưa đầy đủ nên không được lưu. Hãy thử lại.",
+      "incomplete": "Tệp kết thúc bằng một lỗi ({reason}) và chưa đầy đủ nên không được lưu. Hãy thử lại hoặc dùng khoảng ngày ngắn hơn."
     }
   }
 }

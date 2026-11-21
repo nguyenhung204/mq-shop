@@ -143,6 +143,7 @@ function UsersInner() {
                   <th className="py-2.5 px-3">{t("admin.common.name")}</th>
                   <th className="py-2.5 px-3">{t("admin.common.status")}</th>
                   <th className="py-2.5 px-3">{t("admin.common.roles")}</th>
+                  <th className="py-2.5 px-3">{t("admin.common.region")}</th>
                   <th className="py-2.5 px-3" />
                 </tr>
               </thead>
@@ -155,6 +156,7 @@ function UsersInner() {
                     <td className="py-2.5 px-3">{u.fullName || "—"}</td>
                     <td className="py-2.5 px-3">{u.status ? translateStatus(t, "user", u.status) : "—"}</td>
                     <td className="py-2.5 px-3">{translateRoles(t, u.roles)}</td>
+                    <td className="py-2.5 px-3">{u.regionCode ?? "—"}</td>
                     <td className="py-2.5 px-3 whitespace-nowrap text-right">
                       <AdminActions>
                         <AdminIconButton
