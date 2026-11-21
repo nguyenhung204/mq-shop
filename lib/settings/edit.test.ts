@@ -106,6 +106,11 @@ describe("validateSettingEdit: bool and decimal kinds (C1-8)", () => {
   it("decimal bounds are compared exactly (no float drift)", () => {
     const r = validateSettingEdit(dec({ min: 0.1, max: 0.3 }), { raw: "0.30", clear: false, reason: "abc" });
     expect(r).toMatchObject({ ok: true, body: { value: 0.3 } });
+    // 0.07 * 100 is 7.000000000000001 and 0.29 * 100 is 28.999999999999996 in floating point:
+    // both bounds themselves must still be accepted
+    const edge = dec({ min: 0.07, max: 0.29 });
+    expect(validateSettingEdit(edge, { raw: "0.07", clear: false, reason: "abc" })).toMatchObject({ ok: true, body: { value: 0.07 } });
+    expect(validateSettingEdit(edge, { raw: "0.29", clear: false, reason: "abc" })).toMatchObject({ ok: true, body: { value: 0.29 } });
     expect(validateSettingEdit(dec({ min: 0.1, max: 0.3 }), { raw: "0.31", clear: false, reason: "abc" }).ok).toBe(false);
     expect(validateSettingEdit(dec({ min: 0.1, max: 0.3 }), { raw: "0.09", clear: false, reason: "abc" }).ok).toBe(false);
   });
