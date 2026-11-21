@@ -14,7 +14,7 @@ const src = (f: string) => {
 describe("C4 pages", () => {
   it("owner page: BUYER and SELLER, counters from meta, cap blocks creation, withdraw only on pending rows", () => {
     const p = src("app/sub-accounts/page.tsx");
-    expect(p).toContain('roles={["BUYER", "SELLER"]}');
+    // role gates: lib/page-guards.test.ts renders the real page per role
     expect(p).toContain("counters(list.data?.meta)");
     expect(p).toContain("atCap={atCap(c)}");
     expect(p).toContain('actionLabelKey="subAccounts.withdraw"');
@@ -29,7 +29,6 @@ describe("C4 pages", () => {
   });
   it("admin tree page: read ACCOUNTANT / ADMIN / SUPER_ADMIN, write only through canCreateSubAccountFor", () => {
     const p = src("app/admin/accounts/[id]/sub-accounts/page.tsx");
-    expect(p).toContain('roles={["ACCOUNTANT", "ADMIN", "SUPER_ADMIN"]}');
     expect(p).toContain("const canWrite = canCreateSubAccountFor(user)");
     expect(p).toContain("{canWrite ? (");
     expect(p).toContain("<AdminReasonModal");
@@ -71,16 +70,7 @@ describe("C5 pages", () => {
     expect(i?.roles).toEqual(["SUPER_ADMIN", "ADMIN", "ACCOUNTANT"]);
     expect(i?.permissions).toEqual(["VIEW_MLM_COMSN"]);
   });
-  it("owner credit pages sit behind a bare AuthGuard (any signed-in account)", () => {
-    for (const f of ["app/dividend-credits/page.tsx", "app/dividend-credits/[id]/page.tsx"]) {
-      const p = src(f);
-      expect(p, f).toContain("<AuthGuard>");
-      expect(p, f).not.toContain("roles=");
-    }
-  });
-  it("the run mutation is keyed per quarter and sent with an Idempotency-Key", () => {
-    const q = src("lib/queries/dividend-settlements.ts");
-    expect(q).toContain("runners.forKey(`${quarter}:run`).run(quarter,");
+  it("the run request carries an Idempotency-Key header (behaviour: lib/dividend/api-render.test.ts); per-quarter key lifecycle", () => {
     expect(src("lib/api/dividend-settlements.ts")).toContain('headers: { "Idempotency-Key": key }');
   });
   it("getErrorMessage reads the dividend codes before the generic map", () => {

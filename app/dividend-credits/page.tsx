@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AuthGuard } from "@/components/guards/AuthGuard";
+import { DIVIDEND_CREDIT_ROLES } from "@/lib/dividend/access";
 import { ItemsTable } from "@/components/dividend/SettlementViews";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Container, PageHero } from "@/components/ui/shared";
@@ -32,7 +33,7 @@ function Inner() {
 
 export default function DividendCreditsPage() {
   return (
-    <AuthGuard>
+    <AuthGuard roles={DIVIDEND_CREDIT_ROLES}>
       <Inner />
     </AuthGuard>
   );

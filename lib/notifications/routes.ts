@@ -1,3 +1,4 @@
+import { DIVIDEND_CREDIT_ROLES } from "@/lib/dividend/access";
 import type { ApiNotification, NotificationType, Role } from "@/lib/api/types";
 
 export type NotificationRouteContext = {
@@ -220,6 +221,8 @@ export function resolveNotificationRoute(
 
     // C5: automatic dividend credit. Owner: the credited line; finance staff: the failed settlement.
     case "DIVIDEND_CREDITED": {
+      // CS / WAREHOUSE cannot read the credit pages (403)
+      if (!ctx.roles.some((r) => DIVIDEND_CREDIT_ROLES.includes(r))) return null;
       const itemId = metaStr(meta, "itemId");
       return itemId ? `/dividend-credits/${encodeURIComponent(itemId)}` : "/dividend-credits";
     }

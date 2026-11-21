@@ -23,6 +23,7 @@ import type { AuthUser } from "@/lib/api/types";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { canViewDividendCredits } from "@/lib/dividend/access";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
 import { useSellerShop } from "@/lib/queries/seller";
@@ -622,13 +623,15 @@ function AccountInner() {
                     <small>{t("account.links.rmaDesc")}</small>
                   </span>
                 </Link>
-                <Link href="/dividend-credits" className="mq-account-link-card">
-                  <Wallet size={20} strokeWidth={1.75} />
-                  <span>
-                    <strong>{t("account.links.dividendCredits")}</strong>
-                    <small>{t("account.links.dividendCreditsDesc")}</small>
-                  </span>
-                </Link>
+                {canViewDividendCredits(user) ? (
+                  <Link href="/dividend-credits" className="mq-account-link-card">
+                    <Wallet size={20} strokeWidth={1.75} />
+                    <span>
+                      <strong>{t("account.links.dividendCredits")}</strong>
+                      <small>{t("account.links.dividendCreditsDesc")}</small>
+                    </span>
+                  </Link>
+                ) : null}
                 <Link href="/sub-accounts" className="mq-account-link-card">
                   <Users size={20} strokeWidth={1.75} />
                   <span>

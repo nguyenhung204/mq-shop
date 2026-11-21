@@ -60,6 +60,15 @@ export function inviteTokenFromQuery(raw: string | null | undefined): string | u
   return v !== "" && v.length <= 64 ? v : undefined;
 }
 
+/**
+ * The invite token kept in memory across renders: the token read from the URL replaces what was kept, and a
+ * render where the URL no longer has it (it was removed from the address bar) keeps the earlier one.
+ */
+export function keepInviteToken(kept: string | undefined, inUrl: string | undefined): { kept: string | undefined; token: string | undefined } {
+  const next = inUrl ?? kept;
+  return { kept: next, token: next };
+}
+
 /** An invite and a referral code cannot be combined (400 REFERRER_INVALID): the invite wins. */
 export function registerReferral(invite: string | undefined, referrerCode: string | undefined): { inviteToken?: string; referrerCode?: string } {
   if (invite) return { inviteToken: invite };

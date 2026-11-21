@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { use } from "react";
 import { AuthGuard } from "@/components/guards/AuthGuard";
+import { DIVIDEND_CREDIT_ROLES } from "@/lib/dividend/access";
 import { CreditDetailView } from "@/components/dividend/CreditDetailView";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Container, PageHero } from "@/components/ui/shared";
@@ -30,7 +31,7 @@ function Inner({ id }: { id: string }) {
 export default function DividendCreditDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   return (
-    <AuthGuard>
+    <AuthGuard roles={DIVIDEND_CREDIT_ROLES}>
       <Inner id={id} />
     </AuthGuard>
   );

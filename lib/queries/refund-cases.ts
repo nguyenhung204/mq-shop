@@ -24,11 +24,15 @@ export const refundCaseKeys = {
   adminDetail: (id: string) => [...refundCaseKeys.all, "admin-detail", id] as const,
 };
 
+/** One Idempotency-Key lifecycle per (case, action): a retry reuses it, a different action on the case does not share it. */
+export const caseOpKey = (id: string, action: string) => `${id}:${action}`;
+export const caseOverrideOpKey = (id: string) => `${id}:override`;
+
 const PAGE_SIZE = 20;
 
 /** Translated text of a failed case action (RMA-linked refusals have their own text on these routes). */
-function caseErrorText(e: unknown, route: "party" | "override"): string {
-  const k = caseRouteErrorKey(e, route);
+function caseErrorText(e: unknown): string {
+  const k = caseRouteErrorKey(e);
   return k ? tt(k.key, k.params) : getErrorMessage(e, tt("admin.common.failed"));
 }
 
@@ -73,7 +77,7 @@ export function useRefundCaseAction() {
   const runners = useMemo(() => createKeyedRunners(), []);
   return useMutation({
     mutationFn: (vars: CaseActionVars) =>
-      runners.forKey(`${vars.id}:${vars.action}`).run(vars, (v, key) => {
+      runners.forKey(caseOpKey(vars.id, vars.action)).run(vars, (v, key) => {
         switch (v.action) {
           case "markPaid":
             return refundCasesApi.markPaid(v.id, v.body, key);
@@ -84,14 +88,14 @@ export function useRefundCaseAction() {
         }
       }),
     onSuccess: (_d, vars) => {
-      runners.forKey(`${vars.id}:${vars.action}`).onSuccess();
+      runners.forKey(caseOpKey(vars.id, vars.action)).onSuccess();
       void queryClient.invalidateQueries({ queryKey: refundCaseKeys.all });
       toast.success(tt(SUCCESS_TOAST[vars.action]));
     },
     onError: (e, vars) => {
-      runners.forKey(`${vars.id}:${vars.action}`).onError(e);
+      runners.forKey(caseOpKey(vars.id, vars.action)).onError(e);
       void queryClient.invalidateQueries({ queryKey: refundCaseKeys.all });
-      toast.error(caseErrorText(e, "party"));
+      toast.error(caseErrorText(e));
     },
   });
 }
@@ -126,18 +130,18 @@ export function useOverrideRefundCase() {
   const runners = useMemo(() => createKeyedRunners(), []);
   return useMutation({
     mutationFn: (vars: { id: string; toStatus: RefundCaseStatus; reason: string }) =>
-      runners.forKey(`${vars.id}:override`).run(vars, (v, key) =>
+      runners.forKey(caseOverrideOpKey(vars.id)).run(vars, (v, key) =>
         adminRefundCasesApi.override(v.id, { toStatus: v.toStatus, reason: v.reason }, key),
       ),
     onSuccess: (_d, vars) => {
-      runners.forKey(`${vars.id}:override`).onSuccess();
+      runners.forKey(caseOverrideOpKey(vars.id)).onSuccess();
       void queryClient.invalidateQueries({ queryKey: refundCaseKeys.all });
       toast.success(tt("refundCases.toast.overridden"));
     },
     onError: (e, vars) => {
-      runners.forKey(`${vars.id}:override`).onError(e);
+      runners.forKey(caseOverrideOpKey(vars.id)).onError(e);
       void queryClient.invalidateQueries({ queryKey: refundCaseKeys.all });
-      toast.error(caseErrorText(e, "override"));
+      toast.error(caseErrorText(e));
     },
   });
 }

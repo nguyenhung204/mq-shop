@@ -4211,7 +4211,8 @@
       "declinedRecently": "This address cannot be added right now. Try again later or use a different address.",
       "pendingActivation": "This account is waiting for its owner of the e-mail to confirm it, so this action is not available.",
       "budget": "Too many sub-accounts were created recently. Try again later.",
-      "notFound": "Not found. It may already have been removed."
+      "notFound": "Not found. It may already have been removed.",
+      "tooMany": "Too many requests. Please wait a moment and try again."
     },
     "register": {
       "inviteBanner": "You are registering with a sub-account invite. The new account will belong to the person who invited you."
@@ -4335,6 +4336,13 @@
       "failed": "The {quarter} settlement failed its reconciliation check and needs a manual review; it cannot be run again.",
       "notFound": "This quarter has no settlement.",
       "creditNotFound": "This dividend line was not found."
+    },
+    "enableConfirm": {
+      "title": "Turn on the automatic dividend credit?",
+      "fromSet": "First quarter is set: {quarter}. Locked quarters from then on will be settled into real wallets.",
+      "fromNotSet": "First quarter is NOT set: nothing will be settled until you set it. Set it first.",
+      "check": "I understand: the client has answered Q1 and C3b, this is not a real environment before that, and the first quarter is set.",
+      "confirm": "Turn it on"
     }
   },
   "dividendCredits": {

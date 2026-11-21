@@ -10,8 +10,9 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 import type { SystemSetting } from "@/lib/api/settings";
-import { AutoCreditStateCard, AutoCreditWarning } from "@/components/dividend/SettlementViews";
-import { SETTING_AUTO_ENABLED, SETTING_FROM_QUARTER } from "@/lib/dividend/settlement";
+import { AutoCreditStateCard, AutoCreditWarning, EnableAutoCreditConfirm } from "@/components/dividend/SettlementViews";
+import { needsEnableConfirm } from "@/lib/dividend/access";
+import { SETTING_AUTO_ENABLED, SETTING_FROM_QUARTER, quarterCodeLabel } from "@/lib/dividend/settlement";
 import { useDividendSettlements } from "@/lib/queries/dividend-settlements";
 import { settingTexts } from "@/lib/settings/labels";
 import { formatSettingValue, settingKind } from "@/lib/settings/edit";
@@ -71,9 +72,12 @@ function SettingsInner() {
   const { data, isLoading, isError, error } = useAdminSettings();
   const update = useUpdateSetting();
   const [editing, setEditing] = useState<SystemSetting | null>(null);
+  const [pendingEnable, setPendingEnable] = useState<{ key: string; body: { value: SettingValue; reason: string } } | null>(null);
   const [openHistory, setOpenHistory] = useState<string | null>(null);
   const intl = toIntlLocale(locale);
   const items = data ?? [];
+  const fromSetting = items.find((s) => s.key === SETTING_FROM_QUARTER);
+  const fromQuarterLabel = typeof fromSetting?.value === "number" ? quarterCodeLabel(fromSetting.value) : null;
   const hasAutoCredit = items.some((s) => s.key === SETTING_AUTO_ENABLED || s.key === SETTING_FROM_QUARTER);
   const settlements = useDividendSettlements(1, hasAutoCredit);
 
@@ -182,11 +186,33 @@ function SettingsInner() {
         onClose={() => setEditing(null)}
         onConfirm={async (body) => {
           if (!editing) return;
+          // turning the automatic dividend credit ON goes through an explicit confirmation first
+          if (needsEnableConfirm(editing.key, body.value, editing.value)) {
+            setPendingEnable({ key: editing.key, body });
+            return;
+          }
           try {
             await update.mutateAsync({ key: editing.key, body });
             setEditing(null);
           } catch {
             /* toast shown by the hook; keep the modal open for a retry */
+          }
+        }}
+      />
+      <EnableAutoCreditConfirm
+        open={pendingEnable !== null}
+        fromQuarterLabel={fromQuarterLabel}
+        busy={update.isPending}
+        onClose={() => setPendingEnable(null)}
+        onConfirm={async () => {
+          if (!pendingEnable) return;
+          try {
+            await update.mutateAsync(pendingEnable);
+            setEditing(null);
+          } catch {
+            /* toast shown by the hook */
+          } finally {
+            setPendingEnable(null);
           }
         }}
       />

@@ -29,14 +29,22 @@ describe("Idempotency-Key per (case, action)", () => {
     const e = await run(r, "c1:dispute", { n: 2 });
     expect(await run(r, "c1:dispute", { n: 3 })).not.toBe(e);
   });
-  it("the hooks use one runner per case:action", () => {
-    const q = readFileSync(path.join(__dirname, "..", "queries", "refund-cases.ts"), "utf8");
-    expect(q).toContain("runners.forKey(`${vars.id}:${vars.action}`)");
-    expect(q).toContain("runners.forKey(`${vars.id}:override`)");
-    // failures are shown through the case error mapper (RMA_NOT_PENDING has its own translated text)
-    expect(q).toContain('toast.error(caseErrorText(e, "party"))');
-    expect(q).toContain('toast.error(caseErrorText(e, "override"))');
-    expect(q).toContain("caseRouteErrorKey(e, route)");
+  it("the keys the hooks use: one per case and action, override separate, never colliding", async () => {
+    const { caseOpKey, caseOverrideOpKey } = await import("@/lib/queries/refund-cases");
+    const keys = [caseOpKey("c1", "dispute"), caseOpKey("c1", "confirm"), caseOpKey("c1", "markPaid"), caseOpKey("c2", "dispute"), caseOverrideOpKey("c1"), caseOverrideOpKey("c2")];
+    expect(new Set(keys).size).toBe(keys.length);
+    expect(caseOpKey("c1", "dispute")).toBe(caseOpKey("c1", "dispute"));
+    // the full lifecycle with those keys: dispute -> confirm -> dispute retry keeps the dispute key
+    const r = createKeyedRunners();
+    const run = (k: string) => r.forKey(k).run({}, async (_v, key) => key);
+    const d1 = await run(caseOpKey("c1", "dispute"));
+    await run(caseOpKey("c1", "confirm"));
+    expect(await run(caseOpKey("c1", "dispute"))).toBe(d1);
+  });
+  it("failures are shown through the case error mapper (RMA_NOT_PENDING / RMA_ESCALATION_REQUIRED have their own text)", async () => {
+    const { ApiError } = await import("@/lib/api/client");
+    const { caseRouteErrorKey } = await import("@/lib/refund-cases/model");
+    expect(caseRouteErrorKey(new ApiError(409, "RMA_NOT_PENDING", { data: { code: "RMA_NOT_PENDING" } } as never))?.key).toBe("refundCases.errors.rmaProofFirst");
   });
 });
 

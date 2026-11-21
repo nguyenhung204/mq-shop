@@ -12,9 +12,30 @@ import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import type { ItemStatus } from "@/lib/api/dividend-settlements";
 import { canRunDividendSettlement } from "@/lib/auth/admin-write";
+import { quarterFromSegment } from "@/lib/dividend/access";
 import { ITEM_STATUSES, periodKeyLabel } from "@/lib/dividend/settlement";
 import { useRunSettlement, useSettlementDetail } from "@/lib/queries/dividend-settlements";
 import { getErrorMessage } from "@/lib/queries/utils";
+
+function NotFound() {
+  const { t } = useLanguage();
+  return (
+    <>
+      <AdminPageHeader
+        title={t("dividendSettlements.detailTitle")}
+        actions={
+          <Link href="/admin/dividend/settlements" className="mq-admin-btn mq-admin-btn-secondary">
+            <ArrowLeft size={16} aria-hidden />
+            {t("dividendSettlements.back")}
+          </Link>
+        }
+      />
+      <div className="mq-alert mq-alert-error" role="alert">
+        {t("dividendSettlements.errors.notFound")}
+      </div>
+    </>
+  );
+}
 
 function Inner({ quarter }: { quarter: string }) {
   const { t } = useLanguage();
@@ -70,9 +91,11 @@ function Inner({ quarter }: { quarter: string }) {
 
 export default function AdminDividendSettlementDetailPage({ params }: { params: Promise<{ quarter: string }> }) {
   const { quarter } = use(params);
+  // a malformed segment (/settlements/%25) must not throw: it is simply a quarter that does not exist
+  const valid = quarterFromSegment(quarter);
   return (
     <AuthGuard roles={["ACCOUNTANT", "ADMIN", "SUPER_ADMIN"]} permissions={["VIEW_MLM_COMSN"]}>
-      <Inner quarter={decodeURIComponent(quarter)} />
+      {valid ? <Inner quarter={valid} /> : <NotFound />}
     </AuthGuard>
   );
 }

@@ -1,9 +1,13 @@
 import type { NextConfig } from "next";
+import { SECURITY_HEADERS } from "./lib/security-headers";
 
 const nextConfig: NextConfig = {
   // Produces a minimal .next/standalone output with only the files needed
   // to run `node server.js`, making the Docker runtime image much smaller.
   output: "standalone",
+  async headers() {
+    return [{ source: "/:path*", headers: SECURITY_HEADERS }];
+  },
   async redirects() {
     return [
       {

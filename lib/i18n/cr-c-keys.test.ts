@@ -65,6 +65,8 @@ const KEYS: string[] = [
   ...["title", "explain", "create", "newTitle", "onceWarning", "link", "expires", "copy", "copied", "copyFailed", "dismiss", "replayed", "empty", "expiresCol", "revoke"].map((k) => `subAccounts.invites.${k}`),
   ...["title", "description", "code", "submit", "done", "failed", "acceptHint", "acceptLink", "errors.email", "errors.code"].map((k) => `subAccounts.decline.${k}`),
   ...["title", "back", "root", "isSub", "isRoot", "readOnly", "empty", "discard", "discardTitle", "discardDesc", "truncated", "open"].map((k) => `subAccounts.admin.${k}`),
+  ...["title", "fromSet", "fromNotSet", "check", "confirm"].map((k) => `dividendSettlements.enableConfirm.${k}`),
+  "subAccounts.errors.tooMany",
   "subAccounts.register.inviteBanner",
   "subAccounts.pendingHint",
   "subAccounts.withdraw",

@@ -258,3 +258,60 @@ export function RunPanel({
     </form>
   );
 }
+
+/**
+ * Deliberate confirmation before the automatic dividend credit is turned ON: repeats the warning, says whether the
+ * first quarter is set, and only enables the confirm button once the checkbox is ticked.
+ */
+export function EnableAutoCreditConfirm({
+  open,
+  fromQuarterLabel,
+  busy = false,
+  onClose,
+  onConfirm,
+}: {
+  open: boolean;
+  /** "2026 Q4", or null when the first quarter is not set. */
+  fromQuarterLabel: string | null;
+  busy?: boolean;
+  onClose: () => void;
+  onConfirm: () => void | Promise<void>;
+}) {
+  if (!open) return null;
+  return <EnableForm fromQuarterLabel={fromQuarterLabel} busy={busy} onClose={onClose} onConfirm={onConfirm} />;
+}
+
+function EnableForm({ fromQuarterLabel, busy, onClose, onConfirm }: { fromQuarterLabel: string | null; busy: boolean; onClose: () => void; onConfirm: () => void | Promise<void> }) {
+  const { t } = useLanguage();
+  const [understood, setUnderstood] = useState(false);
+  return (
+    <div className="mq-admin-modal-root" role="presentation" style={{ zIndex: 120 }}>
+      <button type="button" className="mq-admin-modal-backdrop" aria-label={t("admin.common.close")} disabled={busy} onClick={onClose} />
+      <div className="mq-admin-modal" role="alertdialog" aria-modal="true" aria-label={t("dividendSettlements.enableConfirm.title")}>
+        <header className="mq-admin-modal-head" style={{ flexDirection: "column", alignItems: "flex-start" }}>
+          <h2 className="mq-admin-modal-title">{t("dividendSettlements.enableConfirm.title")}</h2>
+        </header>
+        <div className="mq-admin-modal-body space-y-3">
+          <AutoCreditWarning />
+          <p className="text-sm" data-testid="from-quarter-state">
+            {fromQuarterLabel
+              ? t("dividendSettlements.enableConfirm.fromSet", { quarter: fromQuarterLabel })
+              : t("dividendSettlements.enableConfirm.fromNotSet")}
+          </p>
+          <label className="flex items-start gap-2 text-sm">
+            <input type="checkbox" checked={understood} disabled={busy} onChange={(e) => setUnderstood(e.target.checked)} />
+            <span>{t("dividendSettlements.enableConfirm.check")}</span>
+          </label>
+          <div className="mq-admin-modal-actions">
+            <button type="button" className="mq-btn mq-btn-outline" disabled={busy} onClick={onClose}>
+              {t("admin.common.cancel")}
+            </button>
+            <button type="button" className="mq-btn mq-btn-primary" disabled={busy || !understood} onClick={() => void onConfirm()}>
+              {busy ? t("admin.common.working") : t("dividendSettlements.enableConfirm.confirm")}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

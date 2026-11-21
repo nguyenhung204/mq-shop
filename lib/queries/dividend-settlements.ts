@@ -8,6 +8,9 @@ import { createKeyedRunners } from "@/lib/queries/idempotent-run";
 import { tt } from "@/lib/i18n/tt";
 import { getErrorMessage } from "@/lib/queries/utils";
 
+/** One Idempotency-Key lifecycle per quarter run. */
+export const settlementRunOpKey = (quarter: string) => `${quarter}:run`;
+
 export const settlementKeys = {
   all: ["dividend-settlements"] as const,
   list: (page: number) => [...settlementKeys.all, "list", page] as const,
@@ -41,13 +44,13 @@ export function useRunSettlement() {
   const queryClient = useQueryClient();
   const runners = useMemo(() => createKeyedRunners(), []);
   return useMutation({
-    mutationFn: (quarter: string) => runners.forKey(`${quarter}:run`).run(quarter, (q, key) => dividendSettlementsApi.run(q, key)),
+    mutationFn: (quarter: string) => runners.forKey(settlementRunOpKey(quarter)).run(quarter, (q, key) => dividendSettlementsApi.run(q, key)),
     onSuccess: (_d, quarter) => {
-      runners.forKey(`${quarter}:run`).onSuccess();
+      runners.forKey(settlementRunOpKey(quarter)).onSuccess();
       void queryClient.invalidateQueries({ queryKey: settlementKeys.all });
     },
     onError: (e, quarter) => {
-      runners.forKey(`${quarter}:run`).onError(e);
+      runners.forKey(settlementRunOpKey(quarter)).onError(e);
       void queryClient.invalidateQueries({ queryKey: settlementKeys.all });
       toast.error(getErrorMessage(e, tt("admin.common.failed")));
     },

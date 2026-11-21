@@ -45,19 +45,19 @@ const apiErr = (status: number, code: string) => new ApiError(status, code, { st
 
 describe("RMA refusals on the refund case routes are translated", () => {
   it("RMA_NOT_PENDING (missing refund proof) maps to the proof text on both routes", () => {
-    expect(caseRouteErrorKey(apiErr(409, "RMA_NOT_PENDING"), "party")).toEqual({ key: "refundCases.errors.rmaProofFirst" });
-    expect(caseRouteErrorKey(apiErr(409, "RMA_NOT_PENDING"), "override")).toEqual({ key: "refundCases.errors.rmaProofFirst" });
+    expect(caseRouteErrorKey(apiErr(409, "RMA_NOT_PENDING"))).toEqual({ key: "refundCases.errors.rmaProofFirst" });
+    expect(caseRouteErrorKey(apiErr(409, "RMA_NOT_PENDING"))).toEqual({ key: "refundCases.errors.rmaProofFirst" });
   });
   it("RMA_ESCALATION_REQUIRED (requires prior SLA escalation) maps to the escalation text", () => {
-    expect(caseRouteErrorKey(apiErr(409, "RMA_ESCALATION_REQUIRED"), "override")).toEqual({ key: "refundCases.errors.rmaEscalateFirst" });
-    expect(caseRouteErrorKey(apiErr(409, "RMA_ESCALATION_REQUIRED"), "party")).toEqual({ key: "refundCases.errors.rmaEscalateFirst" });
+    expect(caseRouteErrorKey(apiErr(409, "RMA_ESCALATION_REQUIRED"))).toEqual({ key: "refundCases.errors.rmaEscalateFirst" });
+    expect(caseRouteErrorKey(apiErr(409, "RMA_ESCALATION_REQUIRED"))).toEqual({ key: "refundCases.errors.rmaEscalateFirst" });
   });
   it("other errors keep their normal mapping; the same codes with another status are not claimed", () => {
     const self = new ApiError(409, "REFUND_CASE_INVALID_TRANSITION", { data: { code: "REFUND_CASE_INVALID_TRANSITION", details: { reason: "SELF_DEALING" } } } as never);
-    expect(caseRouteErrorKey(self, "party")).toEqual({ key: "refundCases.errors.selfDealing" });
-    expect(caseRouteErrorKey(apiErr(400, "RMA_NOT_PENDING"), "party")).toBeNull();
-    expect(caseRouteErrorKey(apiErr(400, "RMA_ESCALATION_REQUIRED"), "override")).toBeNull();
-    expect(caseRouteErrorKey(new Error("x"), "override")).toBeNull();
+    expect(caseRouteErrorKey(self)).toEqual({ key: "refundCases.errors.selfDealing" });
+    expect(caseRouteErrorKey(apiErr(400, "RMA_NOT_PENDING"))).toBeNull();
+    expect(caseRouteErrorKey(apiErr(400, "RMA_ESCALATION_REQUIRED"))).toBeNull();
+    expect(caseRouteErrorKey(new Error("x"))).toBeNull();
   });
   it("getErrorMessage shows a translated text for the escalation code in all three locales", async () => {
     const { getErrorMessage } = await import("@/lib/queries/utils");

@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { AuthPanel } from "@/components/auth/AuthPanel";
 import { authApi } from "@/lib/api/auth";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useRegion } from "@/components/providers/RegionProvider";
-import { inviteTokenFromQuery, registerReferral } from "@/lib/sub-accounts/model";
+import { withoutQueryParam } from "@/lib/url-params";
+import { inviteTokenFromQuery, keepInviteToken, registerReferral } from "@/lib/sub-accounts/model";
 import { checkoutRegionCode } from "@/lib/i18n/region-sync";
 
 export function RegisterContent() {
@@ -17,7 +18,17 @@ export function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const refCode = searchParams.get("ref") || "";
-  const inviteToken = inviteTokenFromQuery(searchParams.get("invite"));
+  // The invite token is read from the URL once, kept in memory for the submit, and removed from the address bar
+  // (history, screenshots, a copied URL) right away. A re-render without it must not lose it.
+  const tokenInUrl = inviteTokenFromQuery(searchParams.get("invite"));
+  const [keptInvite, setKeptInvite] = useState<string | undefined>(tokenInUrl);
+  const { kept, token: inviteToken } = keepInviteToken(keptInvite, tokenInUrl);
+  if (kept !== keptInvite) setKeptInvite(kept);
+  useEffect(() => {
+    if (!inviteToken || typeof window === "undefined") return;
+    const clean = withoutQueryParam(window.location.href, "invite");
+    if (clean !== window.location.href) window.history.replaceState(window.history.state, "", clean);
+  }, [inviteToken]);
   const { region } = useRegion();
 
   const [regEmail, setRegEmail] = useState("");

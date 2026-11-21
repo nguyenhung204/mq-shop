@@ -87,10 +87,11 @@ describe("Idempotency-Key per (resource, action)", () => {
     r.forKey("u1:withdraw").onSuccess();
     expect(await run(r, "u1:withdraw", "u1")).not.toBe(w);
   });
-  it("the hooks use one runner key per resource and action", async () => {
-    const { readFileSync } = await import("node:fs");
-    const q = readFileSync(`${__dirname}/../queries/sub-accounts.ts`, "utf8");
-    for (const k of ['forKey("create")', "`${id}:withdraw`", 'forKey("invite:create")', "`${id}:revoke`", "`${accountId}:create`", "`${vars.id}:discard`"]) expect(q, k).toContain(k);
+  it("the keys the hooks use are distinct per resource and action", async () => {
+    const { subAccountOpKey: k } = await import("@/lib/queries/sub-accounts");
+    const keys = [k.create, k.withdraw("u1"), k.withdraw("u2"), k.inviteCreate, k.revoke("i1"), k.adminCreate("a1"), k.discard("u1")];
+    expect(new Set(keys).size).toBe(keys.length);
+    expect(k.withdraw("u1")).toBe(k.withdraw("u1"));
   });
 });
 
@@ -100,7 +101,10 @@ describe("subAccountErrorText", () => {
     const { subAccountErrorText } = await import("@/lib/queries/sub-accounts");
     const { getTranslation } = await import("@/lib/i18n/get-translation");
     const en = (k: string) => getTranslation("en", k);
-    expect(subAccountErrorText(err(429, "TOO_MANY_REQUESTS"))).toBe(en("subAccounts.errors.budget"));
+    // creation: the hourly budget text; every other operation: the ordinary rate limit text
+    expect(subAccountErrorText(err(429, "TOO_MANY_REQUESTS"), "create")).toBe(en("subAccounts.errors.budget"));
+    for (const op of [undefined, "other"] as const) expect(subAccountErrorText(err(429, "TOO_MANY_REQUESTS"), op)).toBe(en("subAccounts.errors.tooMany"));
+    expect(en("subAccounts.errors.tooMany")).not.toBe(en("subAccounts.errors.budget"));
     expect(subAccountErrorText(err(404, "USER_NOT_FOUND"))).toBe(en("subAccounts.errors.notFound"));
     expect(subAccountErrorText(err(404, "SUB_ACCOUNT_INVITE_NOT_FOUND"))).toBe(en("subAccounts.errors.inviteNotFound"));
     expect(subAccountErrorText(err(409, "SUB_ACCOUNT_LIMIT"))).toBe(en("subAccounts.errors.limit"));

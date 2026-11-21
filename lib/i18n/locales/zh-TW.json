@@ -4211,7 +4211,8 @@
       "declinedRecently": "目前無法新增此地址。請稍後再試或使用其他地址。",
       "pendingActivation": "此帳號正等待 e-mail 持有人確認，因此無法執行此操作。",
       "budget": "近期建立的子帳號過多，請稍後再試。",
-      "notFound": "找不到，可能已被移除。"
+      "notFound": "找不到，可能已被移除。",
+      "tooMany": "要求過多，請稍候再試。"
     },
     "register": {
       "inviteBanner": "你正使用子帳號邀請註冊。新帳號將隸屬於邀請你的人。"
@@ -4335,6 +4336,13 @@
       "failed": "{quarter} 結算未通過對帳檢查，需要人工檢視；無法再次執行。",
       "notFound": "此季度沒有結算。",
       "creditNotFound": "找不到這筆股利明細。"
+    },
+    "enableConfirm": {
+      "title": "開啟股利自動入帳？",
+      "fromSet": "已設定起始季度：{quarter}。自此之後已鎖定的季度會結算到真實錢包。",
+      "fromNotSet": "尚未設定起始季度：設定之前不會結算任何季度。請先設定。",
+      "check": "我了解：客戶已回覆 Q1 與 C3b，在此之前這不是正式環境，且已設定起始季度。",
+      "confirm": "開啟"
     }
   },
   "dividendCredits": {

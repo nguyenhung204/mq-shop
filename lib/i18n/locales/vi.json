@@ -4211,7 +4211,8 @@
       "declinedRecently": "Hiện chưa thể thêm địa chỉ này. Hãy thử lại sau hoặc dùng địa chỉ khác.",
       "pendingActivation": "Tài khoản này đang chờ người dùng e-mail xác nhận nên không thực hiện được thao tác này.",
       "budget": "Gần đây đã tạo quá nhiều tài khoản phụ. Hãy thử lại sau.",
-      "notFound": "Không tìm thấy. Có thể nó đã bị gỡ."
+      "notFound": "Không tìm thấy. Có thể nó đã bị gỡ.",
+      "tooMany": "Quá nhiều yêu cầu. Vui lòng chờ một lát rồi thử lại."
     },
     "register": {
       "inviteBanner": "Bạn đang đăng ký bằng lời mời tài khoản phụ. Tài khoản mới sẽ thuộc về người đã mời bạn."
@@ -4335,6 +4336,13 @@
       "failed": "Quyết toán {quarter} không qua được bước đối soát và cần xem xét thủ công; không thể chạy lại.",
       "notFound": "Quý này chưa có quyết toán.",
       "creditNotFound": "Không tìm thấy dòng cổ tức này."
+    },
+    "enableConfirm": {
+      "title": "Bật tự động ghi có cổ tức?",
+      "fromSet": "Đã đặt quý đầu tiên: {quarter}. Các quý đã khóa từ đó trở đi sẽ được quyết toán vào ví thật.",
+      "fromNotSet": "CHƯA đặt quý đầu tiên: sẽ không quyết toán gì cho đến khi bạn đặt. Hãy đặt trước.",
+      "check": "Tôi hiểu: khách đã trả lời Q1 và C3b, trước đó đây không phải môi trường thật, và quý đầu tiên đã được đặt.",
+      "confirm": "Bật"
     }
   },
   "dividendCredits": {
