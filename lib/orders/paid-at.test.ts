@@ -47,6 +47,16 @@ describe("validatePaidAtEdit", () => {
   it("refuses the date the order already has", () => {
     expect(codes(run("2026-11-10T10:00"))).toEqual(["paidAt:unchanged"]);
   });
+  it("an untouched picker is 'unchanged' even when the stored date has seconds and milliseconds", () => {
+    // stored 10:00:37.123 GMT+8 is shown as 10:00; saving it as 10:00:00 would move paid_at back by 37 s
+    const c = { ...ctx, currentPaidAt: "2026-11-10T02:00:37.123Z" };
+    expect(codes(run("2026-11-10T10:00", "Proof shows 10 Nov", c))).toEqual(["paidAt:unchanged"]);
+    expect(codes(run("2026-11-10T10:00", "Proof shows 10 Nov", { ...ctx, currentPaidAt: "2026-11-10T02:00:59.999Z" }))).toEqual(["paidAt:unchanged"]);
+    // the neighbouring minutes are real changes
+    expect(run("2026-11-10T10:01", "Proof shows 10 Nov", c).ok).toBe(true);
+    expect(run("2026-11-10T09:59", "Proof shows 10 Nov", c).ok).toBe(true);
+    expect(run("2026-11-10T09:59", "Proof shows 10 Nov", { ...ctx, currentPaidAt: "2026-11-10T02:00:00.000Z" }).ok).toBe(true);
+  });
   it("needs a reason of 3..500 characters and trims it", () => {
     expect(codes(run("2026-11-12T10:00", ""))).toEqual(["reason:required"]);
     expect(codes(run("2026-11-12T10:00", "ab"))).toEqual(["reason:tooShort"]);

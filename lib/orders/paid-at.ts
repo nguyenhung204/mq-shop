@@ -10,6 +10,17 @@ export type PaidAtEditResult =
   | { ok: true; body: { paidAt: string; reason: string } }
   | { ok: false; errors: PaidAtError[] };
 
+const MINUTE_MS = 60_000;
+
+/**
+ * The picker has minute precision but a stored paid date carries seconds and milliseconds. A picked
+ * minute equal to the stored minute means "not changed": sending it would silently move the audited
+ * date back by up to 59 seconds.
+ */
+function sameMinute(a: number, b: number): boolean {
+  return Math.floor(a / MINUTE_MS) === Math.floor(b / MINUTE_MS);
+}
+
 /**
  * Client mirror of PATCH /admin/orders/:id/paid-at. The picker value is a GMT+8 wall clock; the body
  * carries an absolute instant with an explicit offset (the API refuses a date-only or offset-less
@@ -30,7 +41,7 @@ export function validatePaidAtEdit(
     if (!paidAt || Number.isNaN(ms)) errors.push({ field: "paidAt", code: "invalidDate" });
     else if (ms > ctx.nowMs) errors.push({ field: "paidAt", code: "future" });
     else if (ctx.createdAt && ms < Date.parse(ctx.createdAt)) errors.push({ field: "paidAt", code: "beforeCreated" });
-    else if (ctx.currentPaidAt && ms === Date.parse(ctx.currentPaidAt)) errors.push({ field: "paidAt", code: "unchanged" });
+    else if (ctx.currentPaidAt && sameMinute(ms, Date.parse(ctx.currentPaidAt))) errors.push({ field: "paidAt", code: "unchanged" });
   }
   const reason = validateReason(input.reason);
   if (!reason.ok) errors.push({ field: "reason", code: reason.error });

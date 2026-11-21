@@ -74,15 +74,33 @@ describe("typed text reaches the request body", () => {
 });
 
 describe("read routes", () => {
-  it("buyer, seller and admin lists, detail and summary", async () => {
+  it("lists are read with withMeta (the interceptor flattens the page to data=items + meta)", async () => {
     await refundCasesApi.asBuyer({ status: "OPEN", page: 2, pageSize: 20 });
-    expect(get).toHaveBeenLastCalledWith("/refund-cases/as-buyer", { query: { status: "OPEN", page: 2, pageSize: 20 } });
+    expect(get).toHaveBeenLastCalledWith("/refund-cases/as-buyer", { query: { status: "OPEN", page: 2, pageSize: 20 }, withMeta: true });
     await refundCasesApi.asSeller();
-    expect(get).toHaveBeenLastCalledWith("/refund-cases/as-seller", { query: undefined });
+    expect(get).toHaveBeenLastCalledWith("/refund-cases/as-seller", { query: undefined, withMeta: true });
+    await adminRefundCasesApi.list({ status: "OPEN,CLOSED", overdue: "true", page: 1, pageSize: 20 });
+    expect(get).toHaveBeenLastCalledWith("/admin/refund-cases", { query: { status: "OPEN,CLOSED", overdue: "true", page: 1, pageSize: 20 }, withMeta: true });
+  });
+  it("the real wire shape { data: items[], meta } becomes { items, meta }", async () => {
+    const meta = { page: 1, pageSize: 20, total: 2, totalPages: 1 };
+    get.mockResolvedValue({ data: [{ id: "a" }, { id: "b" }], meta, message: "ok" });
+    for (const call of [() => refundCasesApi.asBuyer(), () => refundCasesApi.asSeller(), () => adminRefundCasesApi.list()]) {
+      const page = await call();
+      expect(page.items.map((i) => i.id)).toEqual(["a", "b"]);
+      expect(page.meta).toEqual(meta);
+    }
+  });
+  it("an empty page and the nested { items, meta } shape both work", async () => {
+    get.mockResolvedValue({ data: [], meta: { page: 1, pageSize: 20, total: 0, totalPages: 0 } });
+    expect((await refundCasesApi.asBuyer()).items).toEqual([]);
+    get.mockResolvedValue({ data: { items: [{ id: "z" }], meta: { page: 1, pageSize: 20, total: 1, totalPages: 1 } } });
+    expect((await refundCasesApi.asBuyer()).items.map((i) => i.id)).toEqual(["z"]);
+  });
+  it("detail and summary are not paged", async () => {
+    get.mockResolvedValue({});
     await refundCasesApi.get("a b");
     expect(get).toHaveBeenLastCalledWith("/refund-cases/a%20b");
-    await adminRefundCasesApi.list({ status: "OPEN,CLOSED", overdue: "true", page: 1, pageSize: 20 });
-    expect(get).toHaveBeenLastCalledWith("/admin/refund-cases", { query: { status: "OPEN,CLOSED", overdue: "true", page: 1, pageSize: 20 } });
     await adminRefundCasesApi.summary({ from: "2026-11-01" });
     expect(get).toHaveBeenLastCalledWith("/admin/refund-cases/summary", { query: { from: "2026-11-01" } });
     await adminRefundCasesApi.get("c9");
