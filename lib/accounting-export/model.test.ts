@@ -58,7 +58,7 @@ describe("buildExportQuery", () => {
       ok: true,
       query: { from: "2026-11-01", to: "2026-11-30", reason: "P2P", userId: id },
     });
-    expect(errs(form({ kind: "wallet-transactions", walletReason: "LOYALTY_X" }))).toEqual(["badReason"]);
+    expect(errs(form({ kind: "wallet-transactions", walletReason: "NOT_A_REASON" }))).toEqual(["badReason"]);
     expect(errs(form({ kind: "wallet-transactions", userId: "7" }))).toEqual(["badUser"]);
     // a ledger type typed earlier does not leak into a wallet export
     const q = buildExportQuery(form({ kind: "wallet-transactions", ledgerType: "TEAM", beneficiaryId: id }));

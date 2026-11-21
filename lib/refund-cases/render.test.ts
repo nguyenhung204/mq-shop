@@ -6,7 +6,7 @@ import { CaseActionModal } from "@/components/refund-cases/CaseActionModal";
 import { CaseCard } from "@/components/refund-cases/CaseCard";
 import { CaseEventsTimeline } from "@/components/refund-cases/CaseEventsTimeline";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
-import type { RefundCaseDetail, RefundCaseEvent, RefundCaseSummary, RefundCaseView } from "@/lib/api/refund-cases";
+import type { RefundCaseEvent, RefundCaseSummary, RefundCaseView } from "@/lib/api/refund-cases";
 
 const wrap = (node: React.ReactElement) => renderToStaticMarkup(createElement(LanguageProvider, null, node));
 
