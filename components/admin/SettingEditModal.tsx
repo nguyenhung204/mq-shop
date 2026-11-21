@@ -2,17 +2,23 @@
 
 import { FormEvent, useEffect, useId, useState } from "react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-import type { SystemSetting } from "@/lib/api/settings";
+import type { SettingValue, SystemSetting } from "@/lib/api/settings";
 import { REASON_MAX } from "@/lib/admin/reason";
 import { settingTexts } from "@/lib/settings/labels";
-import { validateSettingEdit, type SettingEditError } from "@/lib/settings/edit";
+import {
+  initialSettingFlag,
+  initialSettingText,
+  settingKind,
+  validateSettingEdit,
+  type SettingEditError,
+} from "@/lib/settings/edit";
 
 type Props = {
   open: boolean;
   setting: SystemSetting | null;
   busy?: boolean;
   onClose: () => void;
-  onConfirm: (body: { value: number | null; reason: string }) => void | Promise<void>;
+  onConfirm: (body: { value: SettingValue; reason: string }) => void | Promise<void>;
 };
 
 function errorKey(e: SettingEditError): string {
@@ -39,7 +45,9 @@ function SettingEditForm({
   onConfirm: Props["onConfirm"];
 }) {
   const { t } = useLanguage();
-  const [raw, setRaw] = useState(setting.value == null ? "" : String(setting.value));
+  const kind = settingKind(setting);
+  const [raw, setRaw] = useState(initialSettingText(setting));
+  const [flag, setFlag] = useState(initialSettingFlag(setting));
   const [clear, setClear] = useState(false);
   const [reason, setReason] = useState("");
   const [errors, setErrors] = useState<SettingEditError[]>([]);
@@ -62,7 +70,7 @@ function SettingEditForm({
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    const res = validateSettingEdit(setting, { raw, clear, reason });
+    const res = validateSettingEdit(setting, { raw, clear, reason, flag });
     if (!res.ok) {
       setErrors(res.errors);
       return;
@@ -87,25 +95,47 @@ function SettingEditForm({
           <h2 id={titleId} className="mq-admin-modal-title">
             {t("admin.settings.editTitle", { name: texts.label })}
           </h2>
-          <p className="mq-admin-modal-desc">
-            {t("admin.settings.range", { min: String(setting.min), max: String(setting.max) })}
-          </p>
+          {kind === "bool" ? null : (
+            <p className="mq-admin-modal-desc">
+              {t(kind === "decimal" ? "admin.settings.rangeDecimal" : "admin.settings.range", {
+                min: String(setting.min),
+                max: String(setting.max),
+              })}
+            </p>
+          )}
         </header>
         <form className="mq-admin-modal-body" onSubmit={(e) => void submit(e)} noValidate>
-          <label htmlFor={valueId} className="mq-admin-modal-label">
-            {t("admin.settings.value")}
-          </label>
-          <input
-            id={valueId}
-            className="mq-input"
-            inputMode="numeric"
-            autoComplete="off"
-            value={raw}
-            disabled={clear || busy}
-            {...a11y("value")}
-            onChange={(e) => setRaw(e.target.value)}
-          />
-          {setting.nullable ? (
+          {kind === "bool" ? (
+            <label htmlFor={valueId} className="flex items-center gap-2 text-sm">
+              <input
+                id={valueId}
+                type="checkbox"
+                role="switch"
+                checked={flag}
+                disabled={busy}
+                {...a11y("value")}
+                onChange={(e) => setFlag(e.target.checked)}
+              />
+              <span>{flag ? t("admin.settings.on") : t("admin.settings.off")}</span>
+            </label>
+          ) : (
+            <>
+              <label htmlFor={valueId} className="mq-admin-modal-label">
+                {t("admin.settings.value")}
+              </label>
+              <input
+                id={valueId}
+                className="mq-input"
+                inputMode={kind === "decimal" ? "decimal" : "numeric"}
+                autoComplete="off"
+                value={raw}
+                disabled={clear || busy}
+                {...a11y("value")}
+                onChange={(e) => setRaw(e.target.value)}
+              />
+            </>
+          )}
+          {setting.nullable && kind !== "bool" ? (
             <label className="flex items-start gap-2 text-sm mt-2">
               <input
                 type="checkbox"

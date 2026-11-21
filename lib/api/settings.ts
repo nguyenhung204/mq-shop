@@ -2,14 +2,21 @@ import { api } from "./client";
 
 export type SettingKey = string;
 
+/** Registry value kind (C1-8). An older API omits it: treat as "int". */
+export type SettingKind = "int" | "bool" | "decimal";
+
+/** int and decimal settings are numbers, bool settings are booleans, null = unset (see `nullMeaning`). */
+export type SettingValue = number | boolean | null;
+
 export type SystemSetting = {
   key: SettingKey;
-  /** null = unset (see `nullMeaning`). */
-  value: number | null;
-  default: number | null;
+  kind?: SettingKind;
+  value: SettingValue;
+  default: SettingValue;
   isDefault: boolean;
-  min: number;
-  max: number;
+  /** null for a bool setting. */
+  min: number | null;
+  max: number | null;
   nullable: boolean;
   description: string;
   nullMeaning: string | null;
@@ -20,14 +27,14 @@ export type SystemSetting = {
 export type SystemSettingHistoryRow = {
   id: string;
   key: SettingKey;
-  oldValue: number | null;
-  newValue: number | null;
+  oldValue: SettingValue;
+  newValue: SettingValue;
   changedBy: string | null;
   reason: string;
   at: string;
 };
 
-export type UpdateSettingBody = { value: number | null; reason: string };
+export type UpdateSettingBody = { value: SettingValue; reason: string };
 
 export type UpdateSettingResult = SystemSetting & { changed: boolean };
 

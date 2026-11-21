@@ -2125,7 +2125,8 @@
         "notInteger": "The value must be a whole number.",
         "belowMin": "The value must be at least {min}.",
         "aboveMax": "The value must not exceed {max}.",
-        "notNullable": "This setting cannot be cleared."
+        "notNullable": "This setting cannot be cleared.",
+        "notDecimal": "Enter a number with at most 2 decimals (for example 5 or 5.25)."
       },
       "keys": {
         "dividendEditWindowDays": {
@@ -2147,8 +2148,24 @@
           "label": "Maximum total slots",
           "description": "Maximum dividend slots across all accounts.",
           "nullMeaning": "No cap."
+        },
+        "refundOverdueDays": {
+          "label": "Refund overdue after (days)",
+          "description": "A refund case that is not closed after this many days is flagged overdue in the refund tracking screen.",
+          "nullMeaning": "No case is flagged overdue (the age in days is still shown)."
+        },
+        "taxEnabled": {
+          "label": "Remove tax from the dividend base",
+          "description": "When on, the dividend sales base excludes tax (order prices are treated as tax-inclusive). When off, nothing is removed. Only the dividend report uses this."
+        },
+        "taxRatePercent": {
+          "label": "Tax rate (%)",
+          "description": "Tax rate in percent (0 to 100, at most 2 decimals) used while the tax switch is on, for example 5 or 5.25."
         }
-      }
+      },
+      "on": "On",
+      "off": "Off",
+      "rangeDecimal": "Number from {min} to {max} with at most 2 decimals."
     },
     "dividend": {
       "readOnlyNote": "You can view this page. Only a Super Admin can make changes.",

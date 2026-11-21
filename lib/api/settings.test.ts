@@ -26,4 +26,11 @@ describe("adminSettingsApi", () => {
     await adminSettingsApi.history("maxTotalSlots", 20);
     expect(get).toHaveBeenCalledWith("/admin/settings/maxTotalSlots/history", { query: { limit: 20 } });
   });
+  it("bool and decimal values reach the wire as JSON true/false and a number", async () => {
+    put.mockResolvedValue({});
+    await adminSettingsApi.update("taxEnabled", { value: true, reason: "go" }, "k2");
+    await adminSettingsApi.update("taxRatePercent", { value: 5.25, reason: "go" }, "k3");
+    expect(put.mock.calls[0]![1]).toEqual({ value: true, reason: "go" });
+    expect(JSON.stringify(put.mock.calls[1]![1])).toBe('{"value":5.25,"reason":"go"}');
+  });
 });

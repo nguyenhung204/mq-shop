@@ -2125,7 +2125,8 @@
         "notInteger": "Giá trị phải là số nguyên.",
         "belowMin": "Giá trị phải từ {min} trở lên.",
         "aboveMax": "Giá trị không được vượt quá {max}.",
-        "notNullable": "Cài đặt này không thể để trống."
+        "notNullable": "Cài đặt này không thể để trống.",
+        "notDecimal": "Nhập số có tối đa 2 chữ số thập phân (ví dụ 5 hoặc 5.25)."
       },
       "keys": {
         "dividendEditWindowDays": {
@@ -2147,8 +2148,24 @@
           "label": "Tổng số suất tối đa",
           "description": "Số suất cổ tức tối đa trên toàn bộ tài khoản.",
           "nullMeaning": "Không giới hạn."
+        },
+        "refundOverdueDays": {
+          "label": "Hoàn tiền quá hạn sau (ngày)",
+          "description": "Ca hoàn tiền chưa đóng sau số ngày này sẽ bị đánh dấu quá hạn trong màn hình theo dõi hoàn tiền.",
+          "nullMeaning": "Không ca nào bị đánh dấu quá hạn (vẫn hiển thị số ngày tuổi)."
+        },
+        "taxEnabled": {
+          "label": "Loại thuế khỏi cơ sở cổ tức",
+          "description": "Khi bật, cơ sở doanh số tính cổ tức đã loại thuế (giá đơn hàng được coi là đã gồm thuế). Khi tắt, không loại gì. Chỉ báo cáo cổ tức dùng thiết lập này."
+        },
+        "taxRatePercent": {
+          "label": "Thuế suất (%)",
+          "description": "Thuế suất theo phần trăm (0 đến 100, tối đa 2 chữ số thập phân) dùng khi công tắc thuế đang bật, ví dụ 5 hoặc 5.25."
         }
-      }
+      },
+      "on": "Bật",
+      "off": "Tắt",
+      "rangeDecimal": "Số từ {min} đến {max}, tối đa 2 chữ số thập phân."
     },
     "dividend": {
       "readOnlyNote": "Bạn chỉ có thể xem trang này. Chỉ Super Admin mới được thay đổi.",

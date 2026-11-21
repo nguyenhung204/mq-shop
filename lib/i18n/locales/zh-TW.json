@@ -2125,7 +2125,8 @@
         "notInteger": "數值必須為整數。",
         "belowMin": "數值不得小於 {min}。",
         "aboveMax": "數值不得大於 {max}。",
-        "notNullable": "此設定不可清除。"
+        "notNullable": "此設定不可清除。",
+        "notDecimal": "請輸入最多 2 位小數的數字（例如 5 或 5.25）。"
       },
       "keys": {
         "dividendEditWindowDays": {
@@ -2147,8 +2148,24 @@
           "label": "名額總上限",
           "description": "所有帳戶合計的股利名額上限。",
           "nullMeaning": "無上限。"
+        },
+        "refundOverdueDays": {
+          "label": "退款逾期天數",
+          "description": "退款個案超過此天數仍未結案，會在退款追蹤畫面標示為逾期。",
+          "nullMeaning": "不標示任何逾期個案（仍會顯示天數）。"
+        },
+        "taxEnabled": {
+          "label": "股利基數扣除稅額",
+          "description": "開啟時，股利銷售基數會扣除稅額（訂單價格視為含稅）。關閉時不扣除。只有股利報表使用此設定。"
+        },
+        "taxRatePercent": {
+          "label": "稅率（%）",
+          "description": "稅率百分比（0 到 100，最多 2 位小數），稅額開關開啟時使用，例如 5 或 5.25。"
         }
-      }
+      },
+      "on": "開啟",
+      "off": "關閉",
+      "rangeDecimal": "介於 {min} 與 {max} 的數字，最多 2 位小數。"
     },
     "dividend": {
       "readOnlyNote": "您只能檢視此頁面，僅超級管理員可進行變更。",
