@@ -9,6 +9,7 @@ import { formatMoney } from "@/lib/api/utils";
 import { formatOrderLineMoney, formatOrderMoney } from "@/lib/fx/formatOrderMoney";
 import { PayableLine } from "@/components/orders/PayableLine";
 import { NeedsHandlingBadge } from "@/components/orders/NeedsHandlingBadge";
+import { PaidAtPanel } from "@/components/orders/PaidAtPanel";
 import {
   canCancelOrder,
   canRequestRma,
@@ -930,6 +931,12 @@ function OrderDetailInner() {
                 })}
               </p>
             ) : null}
+            {order.regionCode ? (
+              <p className="text-xs text-mq-text-muted">
+                {t("orders.detail.region", { region: order.regionCode })}
+              </p>
+            ) : null}
+            <PaidAtPanel order={order} />
             <ul className="divide-y divide-mq-border">
               {(order.items || []).map((item) => (
                 <li key={item.id} className="py-3 flex items-start gap-3 text-sm">

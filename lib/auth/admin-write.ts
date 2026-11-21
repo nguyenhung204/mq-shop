@@ -20,3 +20,11 @@ export function canSearchUsers(user: AuthUser | null | undefined): boolean {
 export function canSetPartialRefund(user: AuthUser | null | undefined): boolean {
   return Boolean(user?.roles?.some((r) => r === "ADMIN" || r === "SUPER_ADMIN"));
 }
+
+/** Edit of an order's payment date: SUPER_ADMIN only (CONFIG_SYS without an approval scope). */
+export const canEditPaidAt = canWriteSettings;
+
+/** Read of the paid-at history: CONFIG_SYS, so ADMIN and SUPER_ADMIN. */
+export function canReadPaidAtHistory(user: AuthUser | null | undefined): boolean {
+  return Boolean(user?.roles?.some((r) => r === "ADMIN" || r === "SUPER_ADMIN"));
+}

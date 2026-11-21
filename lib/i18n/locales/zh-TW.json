@@ -481,7 +481,8 @@
       "loading": "訂單載入中…",
       "fulfillmentComplaintBtn": "申訴未出貨",
       "fulfillmentComplaintTitle": "未出貨申訴",
-      "fulfillmentComplaintDesc": "請描述已付款但尚未出貨的情況。"
+      "fulfillmentComplaintDesc": "請描述已付款但尚未出貨的情況。",
+      "region": "地區：{region}"
     },
     "payment": {
       "title": "付款憑證",
@@ -590,6 +591,28 @@
       "amountDue": "應付金額",
       "rateLocked": "下單時鎖定的匯率：{rate}",
       "ledgerNote": "訂單於商店帳本的總額：{twd}"
+    },
+    "paidAt": {
+      "title": "付款日期",
+      "current": "目前付款日期（GMT+8）：{date}",
+      "help": "僅限超級管理員。只會修改記錄的付款日期，不會重新計算佣金、錢包或銷售資格。若會使訂單跨入已鎖定的股利季度則會被拒絕。",
+      "newDate": "新的付款日期與時間（GMT+8）",
+      "save": "儲存付款日期",
+      "saved": "付款日期已更新。",
+      "unchanged": "付款日期未變更。",
+      "historyTitle": "修改紀錄",
+      "historyEmpty": "尚無修改。",
+      "by": "修改者 {user}",
+      "errors": {
+        "required": "請選擇日期與時間。",
+        "invalidDate": "日曆上沒有這個日期。",
+        "future": "付款日期不能在未來。",
+        "beforeCreated": "付款日期不能早於訂單建立時間。",
+        "unchanged": "這已經是目前的付款日期。",
+        "invalid": "付款日期無效：必須是真實存在的日期時間，不可在未來，也不可早於訂單建立時間。",
+        "quarterLocked": "此變更會使訂單跨入已鎖定的股利季度，因此被拒絕。",
+        "forbidden": "只有超級管理員可以修改付款日期。"
+      }
     }
   },
   "wishlist": {

@@ -481,7 +481,8 @@
       "loading": "Đang tải đơn hàng…",
       "fulfillmentComplaintBtn": "Khiếu nại chưa giao",
       "fulfillmentComplaintTitle": "Khiếu nại đơn chưa giao",
-      "fulfillmentComplaintDesc": "Mô tả vấn đề (đã thanh toán nhưng shop chưa giao)."
+      "fulfillmentComplaintDesc": "Mô tả vấn đề (đã thanh toán nhưng shop chưa giao).",
+      "region": "Khu vực: {region}"
     },
     "payment": {
       "title": "Chứng từ thanh toán",
@@ -590,6 +591,28 @@
       "amountDue": "Số tiền cần thanh toán",
       "rateLocked": "Tỷ giá đã chốt khi bạn đặt hàng: {rate}",
       "ledgerNote": "Tổng đơn trong sổ cái của shop: {twd}"
+    },
+    "paidAt": {
+      "title": "Ngày thanh toán",
+      "current": "Ngày thanh toán hiện tại (GMT+8): {date}",
+      "help": "Chỉ Super Admin. Chỉ đổi ngày thanh toán được ghi nhận, không tính lại hoa hồng, ví hay điều kiện doanh số. Bị từ chối nếu làm đơn chuyển sang quý cổ tức đã khóa.",
+      "newDate": "Ngày giờ thanh toán mới (GMT+8)",
+      "save": "Lưu ngày thanh toán",
+      "saved": "Đã cập nhật ngày thanh toán.",
+      "unchanged": "Ngày thanh toán không đổi.",
+      "historyTitle": "Lịch sử chỉnh sửa",
+      "historyEmpty": "Chưa có chỉnh sửa nào.",
+      "by": "Bởi {user}",
+      "errors": {
+        "required": "Chọn ngày và giờ.",
+        "invalidDate": "Ngày này không có trong lịch.",
+        "future": "Ngày thanh toán không được ở tương lai.",
+        "beforeCreated": "Ngày thanh toán không được trước ngày tạo đơn.",
+        "unchanged": "Đây đã là ngày thanh toán.",
+        "invalid": "Ngày thanh toán không hợp lệ: phải là ngày giờ có thật, không ở tương lai và không trước ngày tạo đơn.",
+        "quarterLocked": "Thay đổi này sẽ chuyển đơn sang quý cổ tức đã khóa nên bị từ chối.",
+        "forbidden": "Chỉ Super Admin mới được đổi ngày thanh toán."
+      }
     }
   },
   "wishlist": {

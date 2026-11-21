@@ -481,7 +481,8 @@
       "loading": "Loading order…",
       "fulfillmentComplaintBtn": "Report no shipping",
       "fulfillmentComplaintTitle": "Report unpaid shipping progress",
-      "fulfillmentComplaintDesc": "Describe the issue (paid but shop has not shipped)."
+      "fulfillmentComplaintDesc": "Describe the issue (paid but shop has not shipped).",
+      "region": "Region: {region}"
     },
     "payment": {
       "title": "Payment proof",
@@ -590,6 +591,28 @@
       "amountDue": "Amount to pay",
       "rateLocked": "Exchange rate locked when you ordered: {rate}",
       "ledgerNote": "Order total in the shop ledger: {twd}"
+    },
+    "paidAt": {
+      "title": "Payment date",
+      "current": "Current payment date (GMT+8): {date}",
+      "help": "Super Admin only. Changes the recorded payment date and nothing else: commissions, wallets and sales eligibility are not recalculated. Refused when it would move the order across a locked dividend quarter.",
+      "newDate": "New payment date and time (GMT+8)",
+      "save": "Save payment date",
+      "saved": "Payment date updated.",
+      "unchanged": "Payment date unchanged.",
+      "historyTitle": "Edit history",
+      "historyEmpty": "No edits yet.",
+      "by": "By {user}",
+      "errors": {
+        "required": "Pick a date and time.",
+        "invalidDate": "That date does not exist in the calendar.",
+        "future": "The payment date cannot be in the future.",
+        "beforeCreated": "The payment date cannot be before the order was created.",
+        "unchanged": "This is already the payment date.",
+        "invalid": "The payment date is not valid: it must be a real date and time, not in the future and not before the order was created.",
+        "quarterLocked": "This change would move the order across a locked dividend quarter, so it is refused.",
+        "forbidden": "Only a Super Admin can change the payment date."
+      }
     }
   },
   "wishlist": {
