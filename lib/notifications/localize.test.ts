@@ -79,3 +79,20 @@ describe("ORDER_STALE_BILL_REMINDER copy (R5)", () => {
     }
   });
 });
+
+describe("refund case notification copy (C2)", () => {
+  for (const type of ["REFUND_CASE_OPENED", "REFUND_CASE_MARKED_PAID", "REFUND_CASE_DISPUTED"]) {
+    it(`${type} is rendered from the app copy in every language, with no raw placeholder`, () => {
+      const n = { type, title: "Server title", body: "Server body", meta: { refundCaseId: "c1", orderId: "o1", shopId: "s1" } };
+      const titles = new Set<string>();
+      for (const loc of ["en", "vi", "zh-TW"] as const) {
+        const out = localizeNotification(n, loc);
+        expect(out.title, loc).not.toBe("Server title");
+        expect(out.body, loc).not.toBe("Server body");
+        expect(out.body, loc).not.toMatch(/[{}]/);
+        titles.add(out.title);
+      }
+      expect(titles.size).toBe(3);
+    });
+  }
+});

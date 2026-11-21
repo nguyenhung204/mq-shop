@@ -180,6 +180,18 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "Refund sent",
       body: "Seller marked refund sent for {rmaId}. Confirm when received.",
     },
+    REFUND_CASE_OPENED: {
+      title: "Refund to transfer",
+      body: "A refund is owed to a buyer. Transfer it outside the app, then mark it paid.",
+    },
+    REFUND_CASE_MARKED_PAID: {
+      title: "Refund transferred",
+      body: "The seller marked your refund as transferred. Please confirm when you receive it.",
+    },
+    REFUND_CASE_DISPUTED: {
+      title: "Refund not received",
+      body: "A buyer reports that a refund marked as transferred did not arrive.",
+    },
     RMA_GOODS_RETURN_PENDING: {
       title: "Goods will be returned",
       body: "No refund for {rmaId}. Seller must ship your items back.",
@@ -526,6 +538,18 @@ export const NOTIFICATION_TYPE_COPY: Record<
       title: "Đã chuyển hoàn",
       body: "Người bán đánh dấu đã chuyển hoàn {rmaId}. Xác nhận khi nhận tiền.",
     },
+    REFUND_CASE_OPENED: {
+      title: "Cần chuyển hoàn tiền",
+      body: "Có một khoản hoàn tiền cho người mua. Hãy chuyển ngoài ứng dụng rồi đánh dấu đã chuyển.",
+    },
+    REFUND_CASE_MARKED_PAID: {
+      title: "Đã chuyển hoàn tiền",
+      body: "Người bán đã đánh dấu đã chuyển khoản hoàn tiền của bạn. Vui lòng xác nhận khi bạn nhận được.",
+    },
+    REFUND_CASE_DISPUTED: {
+      title: "Chưa nhận được hoàn tiền",
+      body: "Một người mua báo rằng khoản hoàn tiền đã đánh dấu chuyển nhưng chưa đến.",
+    },
     RMA_GOODS_RETURN_PENDING: {
       title: "Hàng sẽ được trả lại",
       body: "Không hoàn tiền cho {rmaId}. Người bán phải gửi lại hàng.",
@@ -871,6 +895,18 @@ export const NOTIFICATION_TYPE_COPY: Record<
     RMA_REFUND_SENT: {
       title: "已匯退款",
       body: "賣家已標記退貨 {rmaId} 已匯款，收到後請確認。",
+    },
+    REFUND_CASE_OPENED: {
+      title: "待轉出退款",
+      body: "有一筆退款需支付給買家。請在 App 外轉帳後標記為已付款。",
+    },
+    REFUND_CASE_MARKED_PAID: {
+      title: "退款已轉出",
+      body: "賣家已將你的退款標記為已轉出。收到後請確認。",
+    },
+    REFUND_CASE_DISPUTED: {
+      title: "買家未收到退款",
+      body: "有買家回報，已標記轉出的退款尚未到帳。",
     },
     RMA_GOODS_RETURN_PENDING: {
       title: "商品將寄回",

@@ -147,6 +147,14 @@ export const adminNavItems: AdminNavItem[] = [
     group: "sales_crm",
   },
   {
+    href: "/admin/refund-cases",
+    labelKey: "admin.nav.refundCases",
+    icon: Undo2,
+    permissions: ["VIEW_REFUND_CASES"],
+    roles: ["CS", "ACCOUNTANT", "ADMIN", "SUPER_ADMIN"],
+    group: "sales_crm",
+  },
+  {
     href: "/admin/rma",
     labelKey: "admin.nav.rma",
     icon: RotateCcw,
@@ -221,6 +229,14 @@ export const adminNavItems: AdminNavItem[] = [
     icon: GitBranchPlus,
     permissions: ["CONFIG_MLM", "VIEW_MLM_TREE"],
     roles: ["SUPER_ADMIN", "ACCOUNTANT", "ADMIN"],
+    group: "finance_mlm",
+  },
+  {
+    href: "/admin/accounting-export",
+    labelKey: "admin.nav.accountingExport",
+    icon: FileBarChart2,
+    permissions: ["EXPORT_ACCOUNTING"],
+    roles: ["ACCOUNTANT", "ADMIN", "SUPER_ADMIN"],
     group: "finance_mlm",
   },
   {

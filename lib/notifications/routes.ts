@@ -43,6 +43,15 @@ function isRmaStaff(roles: Role[]): boolean {
   );
 }
 
+function isRefundCaseStaff(roles: Role[]): boolean {
+  return (
+    roles.includes("ADMIN") ||
+    roles.includes("SUPER_ADMIN") ||
+    roles.includes("CS") ||
+    roles.includes("ACCOUNTANT")
+  );
+}
+
 function isSeller(roles: Role[]): boolean {
   return roles.includes("SELLER");
 }
@@ -194,6 +203,19 @@ export function resolveNotificationRoute(
       }
       if (orderId) return `/orders/${orderId}`;
       return "/rma";
+    }
+
+    // C2: refund case notices. Owner: transfer the refund; buyer: confirm receipt; platform ops: a dispute.
+    case "REFUND_CASE_OPENED":
+      return seller ? "/seller/refunds" : null;
+
+    case "REFUND_CASE_MARKED_PAID":
+      return "/refunds";
+
+    case "REFUND_CASE_DISPUTED": {
+      if (!isRefundCaseStaff(ctx.roles)) return null;
+      const caseId = metaStr(meta, "refundCaseId");
+      return caseId ? `/admin/refund-cases/${caseId}` : "/admin/refund-cases";
     }
 
     case "REVIEW_NEW":

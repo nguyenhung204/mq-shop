@@ -19,6 +19,7 @@ import {
   Package,
   Receipt,
   RotateCcw,
+  Undo2,
   ShoppingBag,
   Store,
   Wallet,
@@ -121,6 +122,7 @@ const links: NavEntry[] = [
     sellerOnly: true,
   },
   { href: "/seller/rma", labelKey: "seller.nav.rma", icon: RotateCcw, sellerOnly: true },
+  { href: "/seller/refunds", labelKey: "seller.nav.refunds", icon: Undo2, sellerOnly: true },
   {
     href: "/seller/materials",
     labelKey: "seller.nav.materials",
@@ -195,6 +197,9 @@ function titleKeysFromPath(pathname: string): { titleKey: string; descKey?: stri
   }
   if (pathname.startsWith("/seller/promotions")) {
     return { titleKey: "seller.titles.promotions", descKey: "seller.titles.promotionsDesc" };
+  }
+  if (pathname.startsWith("/seller/refunds")) {
+    return { titleKey: "seller.titles.refunds", descKey: "seller.titles.refundsDesc" };
   }
   if (pathname.startsWith("/seller/rma")) {
     return { titleKey: "seller.titles.rma", descKey: "seller.titles.rmaDesc" };

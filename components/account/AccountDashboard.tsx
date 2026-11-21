@@ -621,6 +621,13 @@ function AccountInner() {
                     <small>{t("account.links.rmaDesc")}</small>
                   </span>
                 </Link>
+                <Link href="/refunds" className="mq-account-link-card">
+                  <RefreshCw size={20} strokeWidth={1.75} />
+                  <span>
+                    <strong>{t("account.links.refunds")}</strong>
+                    <small>{t("account.links.refundsDesc")}</small>
+                  </span>
+                </Link>
                 <Link href="/seller/shop" className="mq-account-link-card">
                   <Store size={20} strokeWidth={1.75} />
                   <span>

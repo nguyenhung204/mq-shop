@@ -71,3 +71,23 @@ describe("resolveNotificationRoute stale bill reminder (R5)", () => {
     expect(resolveNotificationRoute({ type: "ORDER_STALE_BILL_REMINDER", meta: {} }, { roles: ["BUYER"] })).toBeNull();
   });
 });
+
+describe("resolveNotificationRoute refund case notices (C2)", () => {
+  const route = (type: string, roles: string[], meta: Record<string, string> = {}) =>
+    resolveNotificationRoute({ type, meta } as never, { roles } as never);
+  it("the shop owner is sent to the seller refund list", () => {
+    expect(route("REFUND_CASE_OPENED", ["SELLER"], { refundCaseId: "c1", shopId: "s1" })).toBe("/seller/refunds");
+    expect(route("REFUND_CASE_OPENED", ["BUYER"], { refundCaseId: "c1" })).toBeNull();
+  });
+  it("the buyer is sent to the buyer refund list", () => {
+    expect(route("REFUND_CASE_MARKED_PAID", ["BUYER"], { refundCaseId: "c1" })).toBe("/refunds");
+  });
+  it("platform ops open the case of a dispute, or the list without meta; others get nothing", () => {
+    for (const r of ["ADMIN", "SUPER_ADMIN", "CS", "ACCOUNTANT"]) {
+      expect(route("REFUND_CASE_DISPUTED", [r], { refundCaseId: "c-9" }), r).toBe("/admin/refund-cases/c-9");
+      expect(route("REFUND_CASE_DISPUTED", [r]), r).toBe("/admin/refund-cases");
+    }
+    expect(route("REFUND_CASE_DISPUTED", ["BUYER"], { refundCaseId: "c-9" })).toBeNull();
+    expect(route("REFUND_CASE_DISPUTED", ["SELLER"], { refundCaseId: "c-9" })).toBeNull();
+  });
+});

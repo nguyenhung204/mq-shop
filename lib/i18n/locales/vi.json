@@ -773,7 +773,9 @@
       "myShop": "Gian hàng của tôi",
       "myShopDesc": "Quản lý gian hàng trên MQ",
       "network": "Mạng lưới",
-      "networkDesc": "Cây downline MLM của bạn"
+      "networkDesc": "Cây downline MLM của bạn",
+      "refunds": "Hoàn tiền của tôi",
+      "refundsDesc": "Các khoản hoàn tiền dành cho bạn: xác nhận đã nhận hoặc báo vấn đề"
     },
     "otp": {
       "timeRemaining": "Thời gian còn lại",
@@ -862,7 +864,9 @@
       "settings": "Cài đặt hệ thống",
       "dividendRates": "Tỷ lệ cổ tức",
       "dividendSlots": "Suất cổ tức",
-      "dividendReport": "Báo cáo cổ tức"
+      "dividendReport": "Báo cáo cổ tức",
+      "refundCases": "Theo dõi hoàn tiền",
+      "accountingExport": "Xuất dữ liệu kế toán"
     },
     "common": {
       "create": "Tạo mới",
@@ -2373,7 +2377,8 @@
       "promotions": "Khuyến mãi",
       "rma": "RMA",
       "materials": "Tài liệu",
-      "reviews": "Đánh giá"
+      "reviews": "Đánh giá",
+      "refunds": "Hoàn tiền phải trả"
     },
     "titles": {
       "overview": "Kênh Seller",
@@ -2411,7 +2416,9 @@
       "materials": "Tài liệu marketing",
       "materialsDesc": "Tải bộ tài liệu seller.",
       "reviews": "Đánh giá",
-      "reviewsDesc": "Trả lời đánh giá của người mua trên sản phẩm của bạn."
+      "reviewsDesc": "Trả lời đánh giá của người mua trên sản phẩm của bạn.",
+      "refunds": "Hoàn tiền phải trả",
+      "refundsDesc": "Các ca hoàn tiền của cửa hàng: chuyển tiền rồi đánh dấu ca là đã chuyển."
     },
     "promotions": {
       "newBtn": "Tạo khuyến mãi",
@@ -3367,7 +3374,9 @@
     "dividendQuarterLocked": "Quý này đã khóa và không thể chỉnh sửa nữa.",
     "dividendSlotCapExceeded": "Vượt quá giới hạn số suất.",
     "dividendSlotInsufficient": "Tài khoản nguồn không đủ số suất.",
-    "rmaRefundAmountInvalid": "Số tiền hoàn không hợp lệ (phải lớn hơn 0 và không vượt quá số còn được hoàn)."
+    "rmaRefundAmountInvalid": "Số tiền hoàn không hợp lệ (phải lớn hơn 0 và không vượt quá số còn được hoàn).",
+    "orderPaidAtInvalid": "Ngày thanh toán không hợp lệ.",
+    "regionInvalid": "Khu vực này hiện không khả dụng."
   },
   "superAdmin": {
     "title": "Quản trị hệ thống",
@@ -3815,5 +3824,186 @@
     "continueAnyway": "Tiếp tục với vận chuyển quốc tế",
     "regionSwitched": "Đã cập nhật vùng mua hàng! Danh sách sản phẩm sẽ được làm mới.",
     "badge": "QT"
+  },
+  "refundCases": {
+    "status": {
+      "OPEN": "Đang mở (chờ người bán)",
+      "SELLER_MARKED_PAID": "Đã đánh dấu chuyển (chờ người mua)",
+      "BUYER_DISPUTED": "Người mua khiếu nại",
+      "BUYER_CONFIRMED": "Người mua đã xác nhận",
+      "CLOSED": "Đã đóng"
+    },
+    "kind": {
+      "partial": "Hoàn một phần",
+      "full": "Hoàn toàn bộ"
+    },
+    "source": {
+      "CANCEL": "Đơn bị hủy",
+      "RMA": "Yêu cầu trả hàng"
+    },
+    "overdue": "Quá hạn",
+    "shopLabel": "Cửa hàng",
+    "buyerLabel": "Người mua",
+    "opened": "Mở lúc {date}",
+    "age": "{days} ngày tuổi",
+    "reference": "Mã tham chiếu",
+    "selfDealing": {
+      "badge": "Cùng một tài khoản hai bên",
+      "note": "Người mua cũng là chủ cửa hàng nên không thể xác nhận khoản hoàn này tại đây. Chỉ bộ phận hỗ trợ mới hoàn tất được.",
+      "staffNote": "Người mua và chủ cửa hàng là cùng một tài khoản. Chỉ admin ghi đè mới hoàn tất được ca này."
+    },
+    "action": {
+      "MARK_PAID": "Đánh dấu đã chuyển",
+      "CONFIRM": "Xác nhận đã nhận",
+      "DISPUTE": "Chưa nhận được",
+      "OVERRIDE": "Ghi đè trạng thái"
+    },
+    "showHistory": "Xem lịch sử",
+    "hideHistory": "Ẩn lịch sử",
+    "updatedBySupport": "Đã được bộ phận hỗ trợ cập nhật",
+    "open": "Mở",
+    "event": {
+      "CREATED": "Mở ca hoàn tiền",
+      "SELLER_MARK_PAID": "Người bán đánh dấu đã chuyển hoàn tiền",
+      "BUYER_CONFIRM": "Người mua xác nhận đã nhận",
+      "BUYER_DISPUTE": "Người mua báo chưa nhận được hoàn tiền",
+      "AUTO_CLOSE": "Ca đã đóng",
+      "ADMIN_OVERRIDE": "Bộ phận hỗ trợ đổi trạng thái",
+      "RMA_SYNC": "Cập nhật từ yêu cầu trả hàng"
+    },
+    "actor": {
+      "BUYER": "Người mua",
+      "SELLER": "Người bán",
+      "ADMIN": "Admin",
+      "SUPER_ADMIN": "Super Admin",
+      "STAFF": "Nhân viên",
+      "SYSTEM": "Hệ thống"
+    },
+    "events": {
+      "title": "Lịch sử",
+      "empty": "Chưa có sự kiện nào.",
+      "onBehalf": "thay mặt {who}"
+    },
+    "buyerPage": {
+      "title": "Hoàn tiền của tôi",
+      "intro": "Các khoản hoàn tiền dành cho bạn. Khi người bán đánh dấu đã chuyển, hãy xác nhận khi tiền về, hoặc báo nếu chưa nhận được.",
+      "empty": "Bạn chưa có ca hoàn tiền nào."
+    },
+    "sellerPage": {
+      "intro": "Các khoản hoàn tiền bạn nợ người mua. Chuyển tiền ngoài ứng dụng rồi đánh dấu ca là đã chuyển.",
+      "empty": "Cửa hàng chưa có ca hoàn tiền nào."
+    },
+    "admin": {
+      "title": "Theo dõi hoàn tiền",
+      "description": "Mọi khoản hoàn tiền cho người mua, từ đơn đã thanh toán bị hủy và yêu cầu trả hàng, kèm lịch sử đầy đủ.",
+      "empty": "Không có ca hoàn tiền nào khớp bộ lọc.",
+      "detailTitle": "Ca hoàn tiền",
+      "back": "Quay lại danh sách"
+    },
+    "filter": {
+      "status": "Trạng thái",
+      "source": "Nguồn",
+      "kind": "Loại",
+      "shopId": "Mã cửa hàng",
+      "orderCode": "Mã đơn (chính xác)",
+      "from": "Mở từ ngày (GMT+8)",
+      "to": "Mở đến ngày (GMT+8)",
+      "overdueOnly": "Chỉ quá hạn",
+      "apply": "Áp dụng bộ lọc",
+      "reset": "Đặt lại",
+      "errors": {
+        "badFrom": "Ngày bắt đầu bị thiếu hoặc không phải ngày có thật.",
+        "badTo": "Ngày kết thúc bị thiếu hoặc không phải ngày có thật.",
+        "rangeOrder": "Ngày bắt đầu không được sau ngày kết thúc.",
+        "rangeTooLong": "Khoảng ngày không được vượt quá 366 ngày.",
+        "badShop": "Mã cửa hàng phải là mã hợp lệ (UUID)."
+      }
+    },
+    "summary": {
+      "open": "Đang mở",
+      "awaitingBuyer": "Chờ người mua",
+      "disputed": "Khiếu nại",
+      "buyerConfirmed": "Đã xác nhận",
+      "closed": "Đã đóng",
+      "overdue": "Quá hạn",
+      "total": "Tổng",
+      "currency": "Tiền tệ",
+      "overdueOff": "Chưa bật đánh dấu quá hạn (thiết lập refundOverdueDays chưa đặt).",
+      "overdueRule": "Ca bị coi là quá hạn khi chưa đóng sau {days} ngày."
+    },
+    "col": {
+      "order": "Đơn hàng",
+      "shop": "Cửa hàng",
+      "buyer": "Người mua",
+      "status": "Trạng thái",
+      "amount": "Số tiền",
+      "opened": "Ngày mở"
+    },
+    "detail": {
+      "sellerMarked": "Người bán đánh dấu đã chuyển",
+      "buyerConfirmed": "Người mua xác nhận",
+      "disputed": "Khiếu nại",
+      "closed": "Đã đóng",
+      "rma": "Yêu cầu trả hàng",
+      "proofYes": "đã có chứng từ hoàn tiền",
+      "proofNo": "chưa có chứng từ hoàn tiền"
+    },
+    "modal": {
+      "markPaid": {
+        "title": "Đánh dấu đã chuyển hoàn tiền",
+        "desc": "Xác nhận bạn đã chuyển khoản hoàn tiền cho người mua ngoài ứng dụng. Người mua sẽ được yêu cầu xác nhận đã nhận.",
+        "confirm": "Đánh dấu đã chuyển",
+        "reference": "Mã giao dịch chuyển khoản (không bắt buộc)"
+      },
+      "confirm": {
+        "title": "Xác nhận đã nhận",
+        "desc": "Xác nhận khoản hoàn tiền đã đến tay bạn. Ca sẽ được đóng.",
+        "confirm": "Xác nhận đã nhận"
+      },
+      "dispute": {
+        "title": "Báo: chưa nhận được hoàn tiền",
+        "desc": "Cho chúng tôi biết vấn đề. Cửa hàng và bộ phận hỗ trợ sẽ được thông báo. Bạn chỉ báo được tối đa 3 lần.",
+        "confirm": "Gửi báo cáo"
+      },
+      "override": {
+        "title": "Ghi đè trạng thái ca",
+        "desc": "Quyết định của bộ phận hỗ trợ. Người mua và cửa hàng chỉ thấy \"Đã được bộ phận hỗ trợ cập nhật\", không bao giờ thấy lý do của bạn.",
+        "confirm": "Áp dụng ghi đè",
+        "toStatus": "Trạng thái mới",
+        "pick": "Chọn trạng thái",
+        "internalNote": "Lý do được lưu trong lịch sử nội bộ và không hiển thị cho người mua hay người bán."
+      },
+      "noteRequired": "Ghi chú (bắt buộc, 3 đến 1000 ký tự)",
+      "noteOptional": "Ghi chú (không bắt buộc)",
+      "errors": {
+        "note": {
+          "required": "Nhập nội dung.",
+          "tooShort": "Nhập ít nhất 3 ký tự.",
+          "tooLong": "Tối đa 1000 ký tự.",
+          "invalid": "Nội dung chứa ký tự không được phép."
+        },
+        "reference": {
+          "tooLong": "Mã tham chiếu tối đa 120 ký tự.",
+          "invalid": "Mã tham chiếu chứa ký tự không được phép."
+        },
+        "toStatus": {
+          "required": "Chọn trạng thái mới.",
+          "same": "Ca đã ở trạng thái này."
+        }
+      }
+    },
+    "errors": {
+      "selfDealing": "Bạn vừa là người mua vừa là chủ cửa hàng này nên không thể xác nhận khoản hoàn này. Hãy liên hệ bộ phận hỗ trợ để hoàn tất.",
+      "disputeLimit": "Bạn đã báo khoản hoàn này {max} lần. Vui lòng liên hệ bộ phận hỗ trợ.",
+      "invalidTransition": "Ca này đã thay đổi nên không thể thực hiện thao tác. Danh sách đã được làm mới.",
+      "notFound": "Không tìm thấy ca hoàn tiền này.",
+      "invalid": "Thao tác hoàn tiền không hợp lệ."
+    },
+    "toast": {
+      "markedPaid": "Đã đánh dấu đã chuyển hoàn tiền.",
+      "confirmed": "Đã xác nhận hoàn tiền.",
+      "disputed": "Đã gửi báo cáo.",
+      "overridden": "Đã cập nhật trạng thái ca."
+    }
   }
 }

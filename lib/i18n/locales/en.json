@@ -773,7 +773,9 @@
       "myShop": "My shop",
       "myShopDesc": "Manage your shop on MQ",
       "network": "Network",
-      "networkDesc": "Your MLM downline tree"
+      "networkDesc": "Your MLM downline tree",
+      "refunds": "My refunds",
+      "refundsDesc": "Refunds owed to you: confirm receipt or report a problem"
     },
     "otp": {
       "timeRemaining": "Time remaining",
@@ -862,7 +864,9 @@
       "settings": "System settings",
       "dividendRates": "Dividend rates",
       "dividendSlots": "Dividend slots",
-      "dividendReport": "Dividend report"
+      "dividendReport": "Dividend report",
+      "refundCases": "Refund tracking",
+      "accountingExport": "Accounting export"
     },
     "common": {
       "create": "Create",
@@ -2373,7 +2377,8 @@
       "promotions": "Promotions",
       "rma": "RMA",
       "materials": "Materials",
-      "reviews": "Reviews"
+      "reviews": "Reviews",
+      "refunds": "Refunds owed"
     },
     "titles": {
       "overview": "Seller Center",
@@ -2411,7 +2416,9 @@
       "materials": "Marketing materials",
       "materialsDesc": "Download seller assets.",
       "reviews": "Reviews",
-      "reviewsDesc": "Reply to buyer reviews on your products."
+      "reviewsDesc": "Reply to buyer reviews on your products.",
+      "refunds": "Refunds owed",
+      "refundsDesc": "Refund cases of your shop: transfer the money, then mark the case as paid."
     },
     "promotions": {
       "newBtn": "New promotion",
@@ -3367,7 +3374,9 @@
     "dividendQuarterLocked": "This quarter is locked and can no longer be edited.",
     "dividendSlotCapExceeded": "The slot cap would be exceeded.",
     "dividendSlotInsufficient": "The source account does not hold enough slots.",
-    "rmaRefundAmountInvalid": "The refund amount is not valid (it must be greater than 0 and not exceed the remaining refundable amount)."
+    "rmaRefundAmountInvalid": "The refund amount is not valid (it must be greater than 0 and not exceed the remaining refundable amount).",
+    "orderPaidAtInvalid": "The payment date is not valid.",
+    "regionInvalid": "This region is not available."
   },
   "superAdmin": {
     "title": "System administration",
@@ -3815,5 +3824,186 @@
     "continueAnyway": "Continue with International Shipping",
     "regionSwitched": "Shopping region updated! Product listings will refresh.",
     "badge": "Intl"
+  },
+  "refundCases": {
+    "status": {
+      "OPEN": "Open (waiting for the seller)",
+      "SELLER_MARKED_PAID": "Marked as paid (waiting for the buyer)",
+      "BUYER_DISPUTED": "Disputed by the buyer",
+      "BUYER_CONFIRMED": "Confirmed by the buyer",
+      "CLOSED": "Closed"
+    },
+    "kind": {
+      "partial": "Partial refund",
+      "full": "Full refund"
+    },
+    "source": {
+      "CANCEL": "Cancelled order",
+      "RMA": "Return request"
+    },
+    "overdue": "Overdue",
+    "shopLabel": "Shop",
+    "buyerLabel": "Buyer",
+    "opened": "Opened {date}",
+    "age": "{days} days old",
+    "reference": "Reference",
+    "selfDealing": {
+      "badge": "Same account on both sides",
+      "note": "The buyer is also the owner of the shop, so this refund cannot be confirmed here. Only support can complete it.",
+      "staffNote": "Buyer and shop owner are the same account. Only an admin override can complete this case."
+    },
+    "action": {
+      "MARK_PAID": "Mark as paid",
+      "CONFIRM": "Confirm received",
+      "DISPUTE": "Not received",
+      "OVERRIDE": "Override status"
+    },
+    "showHistory": "Show history",
+    "hideHistory": "Hide history",
+    "updatedBySupport": "Updated by support",
+    "open": "Open",
+    "event": {
+      "CREATED": "Case opened",
+      "SELLER_MARK_PAID": "Seller marked the refund as paid",
+      "BUYER_CONFIRM": "Buyer confirmed receipt",
+      "BUYER_DISPUTE": "Buyer reported the refund as not received",
+      "AUTO_CLOSE": "Case closed",
+      "ADMIN_OVERRIDE": "Status changed by support",
+      "RMA_SYNC": "Updated from the return request"
+    },
+    "actor": {
+      "BUYER": "Buyer",
+      "SELLER": "Seller",
+      "ADMIN": "Admin",
+      "SUPER_ADMIN": "Super Admin",
+      "STAFF": "Staff",
+      "SYSTEM": "System"
+    },
+    "events": {
+      "title": "History",
+      "empty": "No events yet.",
+      "onBehalf": "on behalf of {who}"
+    },
+    "buyerPage": {
+      "title": "My refunds",
+      "intro": "Refunds owed to you. When the seller marks a refund as paid, confirm it once the money arrives, or report that it did not.",
+      "empty": "You have no refund cases."
+    },
+    "sellerPage": {
+      "intro": "Refunds you owe to buyers. Transfer the money outside the app, then mark the case as paid.",
+      "empty": "No refund cases for your shop."
+    },
+    "admin": {
+      "title": "Refund tracking",
+      "description": "Every refund owed to a buyer, from cancelled paid orders and return requests, with its full history.",
+      "empty": "No refund cases match these filters.",
+      "detailTitle": "Refund case",
+      "back": "Back to the list"
+    },
+    "filter": {
+      "status": "Status",
+      "source": "Source",
+      "kind": "Type",
+      "shopId": "Shop ID",
+      "orderCode": "Order code (exact)",
+      "from": "Opened from (GMT+8)",
+      "to": "Opened to (GMT+8)",
+      "overdueOnly": "Overdue only",
+      "apply": "Apply filters",
+      "reset": "Reset",
+      "errors": {
+        "badFrom": "The start date is missing or not a real date.",
+        "badTo": "The end date is missing or not a real date.",
+        "rangeOrder": "The start date must not be after the end date.",
+        "rangeTooLong": "The date range must not exceed 366 days.",
+        "badShop": "The shop ID must be a valid ID (UUID)."
+      }
+    },
+    "summary": {
+      "open": "Open",
+      "awaitingBuyer": "Waiting for buyer",
+      "disputed": "Disputed",
+      "buyerConfirmed": "Confirmed",
+      "closed": "Closed",
+      "overdue": "Overdue",
+      "total": "Total",
+      "currency": "Currency",
+      "overdueOff": "Overdue flagging is off (setting refundOverdueDays is not set).",
+      "overdueRule": "A case is overdue when it is not closed after {days} days."
+    },
+    "col": {
+      "order": "Order",
+      "shop": "Shop",
+      "buyer": "Buyer",
+      "status": "Status",
+      "amount": "Amount",
+      "opened": "Opened"
+    },
+    "detail": {
+      "sellerMarked": "Seller marked paid",
+      "buyerConfirmed": "Buyer confirmed",
+      "disputed": "Disputed",
+      "closed": "Closed",
+      "rma": "Return request",
+      "proofYes": "refund proof uploaded",
+      "proofNo": "no refund proof yet"
+    },
+    "modal": {
+      "markPaid": {
+        "title": "Mark refund as paid",
+        "desc": "Confirm that you transferred the refund to the buyer outside the app. The buyer is asked to confirm receipt.",
+        "confirm": "Mark as paid",
+        "reference": "Transfer reference (optional)"
+      },
+      "confirm": {
+        "title": "Confirm receipt",
+        "desc": "Confirm that the refund reached you. This closes the case.",
+        "confirm": "Confirm received"
+      },
+      "dispute": {
+        "title": "Report: refund not received",
+        "desc": "Tell us what is wrong. The shop and the platform support team are notified. You can report at most 3 times.",
+        "confirm": "Send report"
+      },
+      "override": {
+        "title": "Override case status",
+        "desc": "Support decision. Buyer and shop only see \"Updated by support\", never your reason.",
+        "confirm": "Apply override",
+        "toStatus": "New status",
+        "pick": "Choose a status",
+        "internalNote": "The reason is kept in the internal history and is not shown to the buyer or the seller."
+      },
+      "noteRequired": "Note (required, 3 to 1000 characters)",
+      "noteOptional": "Note (optional)",
+      "errors": {
+        "note": {
+          "required": "Enter a text.",
+          "tooShort": "Enter at least 3 characters.",
+          "tooLong": "Use at most 1000 characters.",
+          "invalid": "The text contains a character that is not allowed."
+        },
+        "reference": {
+          "tooLong": "The reference must have at most 120 characters.",
+          "invalid": "The reference contains a character that is not allowed."
+        },
+        "toStatus": {
+          "required": "Choose the new status.",
+          "same": "The case already has this status."
+        }
+      }
+    },
+    "errors": {
+      "selfDealing": "You are both the buyer and the owner of this shop, so you cannot confirm this refund. Contact support to complete it.",
+      "disputeLimit": "You have already reported this refund {max} times. Please contact support.",
+      "invalidTransition": "This case has changed and the action is no longer possible. The list was refreshed.",
+      "notFound": "This refund case was not found.",
+      "invalid": "The refund action is not valid."
+    },
+    "toast": {
+      "markedPaid": "Refund marked as paid.",
+      "confirmed": "Refund confirmed.",
+      "disputed": "Report sent.",
+      "overridden": "Case status updated."
+    }
   }
 }
