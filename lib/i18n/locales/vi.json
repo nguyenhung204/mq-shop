@@ -1696,7 +1696,7 @@
         "remainingHint": "Để trống để hoàn toàn bộ số còn lại. Đơn này còn tối đa {amount} có thể hoàn.",
         "loadingTotal": "Đang tải tổng tiền đơn…",
         "fullNote": "Hoàn toàn bộ: hoàn toàn bộ số còn lại và đơn được đánh dấu đã hoàn tiền.",
-        "partialNote": "Hoàn một phần {amount}: đơn vẫn ở trạng thái đã giao và hoa hồng không bị thu hồi.",
+        "partialNote": "Hoàn một phần {amount}: đơn vẫn ở trạng thái đã giao, và hoa hồng đã trả cho đơn này bị thu hồi theo tỷ lệ số tiền hoàn.",
         "confirmFull": "Duyệt hoàn toàn bộ",
         "confirmPartial": "Duyệt hoàn một phần",
         "errors": {

@@ -1696,7 +1696,7 @@
         "remainingHint": "留空代表退還剩餘全額。此訂單最多還可退 {amount}。",
         "loadingTotal": "正在載入訂單總額…",
         "fullNote": "全額退款：退還剩餘全額，訂單將標記為已退款。",
-        "partialNote": "部分退款 {amount}：訂單維持已送達，佣金不會被沖銷。",
+        "partialNote": "部分退款 {amount}：訂單維持已送達，該訂單已發放的佣金將依退款金額比例沖銷。",
         "confirmFull": "核准全額退款",
         "confirmPartial": "核准部分退款",
         "errors": {

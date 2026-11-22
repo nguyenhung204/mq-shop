@@ -1696,7 +1696,7 @@
         "remainingHint": "Leave empty to refund everything that is left. At most {amount} is still refundable on this order.",
         "loadingTotal": "Loading the order total…",
         "fullNote": "Full refund: the whole remaining amount is refunded and the order is marked refunded.",
-        "partialNote": "Partial refund of {amount}: the order stays delivered and commissions are not reversed.",
+        "partialNote": "Partial refund of {amount}: the order stays delivered, and the commission paid on it is reduced in proportion to the refunded amount.",
         "confirmFull": "Approve full refund",
         "confirmPartial": "Approve partial refund",
         "errors": {
