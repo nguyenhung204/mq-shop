@@ -220,6 +220,15 @@ test("promotion PERCENT 100 is the top of the range, 100.01 is refused (stored e
 //  KNOWN DEVIATION (BUG-2, see report): the field is a live MASK (lib/ui/currency.ts formatLiveCurrency strips every non-digit while typing), so these
 //  values are silently rewritten instead of rejected (100.5 -> 1,005; 1e3 -> 13; NT$100 -> 100). Tests stay red on purpose.
 // ---------------------------------------------------------------------------------------------------------------------
+/**
+ * A text of only spaces is treated as an EMPTY field by CurrencyInput (onChange(null), text kept, no request, no filter): safe and consistent with the
+ * empty field, so no inline message is required; if one is shown it must be the exact moneyInput.empty string. Everything else keeps the strict message.
+ */
+function blankMsg(locale: Locale, id: string, actualMsg: string, strict: string): string {
+  if (id !== "blank spaces only") return strict;
+  return actualMsg === "(no message)" || actualMsg === tr(locale, "moneyInput.empty") ? actualMsg : tr(locale, "moneyInput.empty");
+}
+
 const CURRENCY0: MoneyProfile = { maxDec: 0, allowZero: true, allowNeg: false, max: 9999999999.99 };
 const FILTER0: MoneyProfile = { maxDec: 0, allowZero: true, allowNeg: false };
 
@@ -252,7 +261,7 @@ for (const locale of LOCALES) {
       try { await form.locator("p[role=alert]").first().waitFor({ state: "visible", timeout: 1000 }); msg = (await form.locator("p[role=alert]").first().innerText()).trim(); } catch { /* none */ }
       await form.getByRole("button", { name: tr(locale, "seller.inventoryPage.createSku") }).click();
       await form.waitFor({ state: "hidden", timeout: 1500 }).catch(() => undefined); // an accepted submit closes the form; bounded wait before counting requests
-      row(rows, v.id, raw, `${moneyMsg(locale, exp.code, { maxDecimals: 0, min: 0, max: 9999999999.99 })} | kept=true | req=0`, `${msg} | kept=${shown === raw}${shown === raw ? "" : ` (field became ${JSON.stringify(shown)})`} | req=${reqs.count() - n0}`, exp.code);
+      row(rows, v.id, raw, `${blankMsg(locale, v.id, msg, moneyMsg(locale, exp.code, { maxDecimals: 0, min: 0, max: 9999999999.99 }))} | kept=true | req=0`, `${msg} | kept=${shown === raw}${shown === raw ? "" : ` (field became ${JSON.stringify(shown)})`} | req=${reqs.count() - n0}`, exp.code);
     }
     saveResults("sku-price/invalid", locale, rows);
     await context.close();
@@ -311,7 +320,7 @@ for (const locale of LOCALES) {
       try { await form.locator("p[role=alert]").first().waitFor({ state: "visible", timeout: 1500 }); msg = (await form.locator("p[role=alert]").first().innerText()).trim(); } catch { /* none */ }
       const shown = await input.inputValue();
       const urlFiltered = /minPrice=/.test(page.url());
-      row(rows, v.id, raw, `${moneyMsg(locale, exp.code, { maxDecimals: 0, min: 0 })} | kept=true | filtered=false`, `${msg} | kept=${shown === raw}${shown === raw ? "" : ` (field became ${JSON.stringify(shown)})`} | filtered=${urlFiltered || listing.count() > n0}`, exp.code);
+      row(rows, v.id, raw, `${blankMsg(locale, v.id, msg, moneyMsg(locale, exp.code, { maxDecimals: 0, min: 0 }))} | kept=true | filtered=false`, `${msg} | kept=${shown === raw}${shown === raw ? "" : ` (field became ${JSON.stringify(shown)})`} | filtered=${urlFiltered || listing.count() > n0}`, exp.code);
       if (urlFiltered) await page.goto("/shop");
     }
     saveResults("price-filter/invalid", locale, rows);
@@ -422,35 +431,47 @@ for (const locale of LOCALES) {
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-// ORDER QUANTITY (product page QuantityStepper, stock 50). There is NO error UI: the field strips every non-digit and clamps to 1..stock
-// (components/ui/QuantityStepper.tsx). Classification (against TEST-GUIDE 8.2 "every value is rejected with a message"): different from the document
-// and NOT safe: the same non-digit stripping as BUG-2 turns 1.5 into 15 and 1e3 into 13 (a silent 10x quantity before checkout) => BUG-3, kept red
-// (soft assertions: one red test per language, every deviating value listed). Invariant (integer in 1..stock) is asserted separately and passes.
+// ORDER QUANTITY (product page QuantityStepper, stock 50). BUG-3 fixed; this is its regression test.
+//  New behaviour (components/ui/QuantityStepper.tsx + resolveQuantityCommit): while typing, a wrong text stays visible with its error; on blur a
+//  REJECTED text is reset to the real current quantity, an ACCEPTED one (parseLocaleIntInput 1..stock) is committed. The box never shows a number
+//  other than what was typed (1.5 must not become 15, 1e3 must not become 13). Rejected = everything expectMoney refuses for 0 decimals, min 1, max 50
+//  (so also 0, negatives, decimals, 1.234 en = ambiguous, and anything above the stock). The page is opened ONCE and `current` is tracked.
 // ---------------------------------------------------------------------------------------------------------------------
 for (const locale of LOCALES) {
-  test(`order quantity stepper [${locale}]: always an integer in 1..stock; clean integers kept; deviations recorded`, async ({ browser }) => {
+  test(`order quantity stepper [${locale}]: rejected text resets to the real quantity on blur, accepted text is committed, never a different number`, async ({ browser }) => {
+    test.setTimeout(120_000);
     const seller = await createSellerWithSku({ prefix: "qty-step", stock: 50 });
     const buyer = await createUser({ prefix: "qty-buyer" });
     const { page, context } = await pageIn(browser, buyer, locale);
     const rows: ResultRow[] = [];
+    await page.goto(`/product/${seller.productId}`);
+    const input = page.getByRole("group", { name: "Quantity" }).getByRole("textbox");
+    await expect(input).toHaveValue("1");
+    let current = 1;
     for (const v of VALUES) {
       const raw = rawFor(v, locale);
-      await page.goto(`/product/${seller.productId}`);
-      const input = page.getByRole("group", { name: "Quantity" }).getByRole("textbox");
+      const exp = expectMoney(v, locale, { maxDec: 0, allowZero: false, allowNeg: false, min: 1, max: 50 });
       await input.fill(raw);
       await input.blur();
+      const expected = exp.ok ? String(exp.value) : String(current);
+      if (exp.ok) current = exp.value;
+      await expect.soft(input, `${v.id} typed ${JSON.stringify(raw)}: ${exp.ok ? "commit " + exp.value : "reset to " + expected}`).toHaveValue(expected);
       const shown = await input.inputValue();
-      const n = Number(shown);
-      expect.soft(Number.isInteger(n) && n >= 1 && n <= 50, `${v.id} typed ${JSON.stringify(raw)} -> ${shown}`).toBe(true);
-      const exp = expectMoney(v, locale, { maxDec: 0, allowZero: false, allowNeg: false, min: 1, max: 50 });
-      // documented verdict: rejected values leave the field untouched ("1"); accepted ones are kept
-      const documented = exp.ok ? String(exp.value) : "1";
-      const pass = shown === documented;
-      // BUG-3: same mechanism as BUG-2 (non-digits stripped) => 1.5 becomes 15, 1e3 becomes 13: a silent 10x quantity. Red on purpose.
-      expect.soft(shown, `${v.id} typed ${JSON.stringify(raw)}: documented verdict ${exp.ok ? "keep " + exp.value : "reject (field unchanged)"}`).toBe(documented);
-      rows.push({ value: v.id, typed: raw, expected: documented, actual: shown, pass, note: pass ? undefined : "khac tai lieu, an toan (no error UI; coerced to digits and clamped to stock)" });
+      rows.push({ value: v.id, typed: raw, expected, actual: shown, pass: shown === expected, note: exp.ok ? "accepted" : `rejected (${exp.code})` });
     }
     saveResults("order-qty-stepper", locale, rows);
+    // a wrong text followed by "Add to cart": the quantity added equals the number the box shows after blur
+    await input.fill(locale === "vi" ? "1,5" : "1.5");
+    await input.blur();
+    const shownAfter = await input.inputValue();
+    await page.getByRole("button", { name: tr(locale, "common.addToCart") }).first().click();
+    await expect.poll(async () => page.evaluate(() => {
+      try {
+        const st = JSON.parse(localStorage.getItem("mq-cart-v2") ?? "{}").state ?? {};
+        const lines: any[] = st.items ?? st.lines ?? [];
+        return lines.reduce((n, l) => n + Number(l.quantity ?? 0), 0);
+      } catch { return -1; }
+    })).toBe(Number(shownAfter));
     await context.close();
   });
 }
