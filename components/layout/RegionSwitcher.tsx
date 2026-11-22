@@ -19,7 +19,7 @@ export function RegionSwitcher({ className = "" }: { className?: string }) {
     <button
       type="button"
       onClick={showRegionPicker}
-      className={`mq-icon-btn inline-flex items-center gap-1.5 text-mq-text hover:text-mq-gold transition-colors ${className}`}
+      className={`mq-icon-btn items-center gap-1.5 text-mq-text hover:text-mq-gold transition-colors ${className}`}
       aria-label={t("region.switchRegion")}
       title={t("region.switchRegion")}
     >
