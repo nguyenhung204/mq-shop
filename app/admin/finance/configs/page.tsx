@@ -24,7 +24,7 @@ import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { useAdminShops } from "@/lib/queries/admin";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { POINT_USD_VALUE, formatPointUsdValue } from "@/lib/points";
-import { getMoneyInputErrorMessage, parseLocaleMoneyInput } from "@/lib/money";
+import { localizeDecimalString, getMoneyInputErrorMessage, parseLocaleMoneyInput } from "@/lib/money";
 
 const STATUSES: Array<FinanceConfigStatus | ""> = [
   "",
@@ -42,10 +42,11 @@ type FormState = {
   secretKey: string;
 };
 
-const emptyForm = (): FormState => ({
-  platformFeePercent: "5.00",
-  commissionPercent: "2.00",
-  pointUsdValue: String(POINT_USD_VALUE),
+// Prefilled text must be parseable in the active locale (vi: "," decimal), so never use raw ASCII decimals.
+const emptyForm = (locale: string | null): FormState => ({
+  platformFeePercent: localizeDecimalString("5.00", locale ?? "en"),
+  commissionPercent: localizeDecimalString("2.00", locale ?? "en"),
+  pointUsdValue: localizeDecimalString(POINT_USD_VALUE, locale ?? "en"),
   gatewayName: "",
   apiKey: "",
   secretKey: "",
@@ -164,7 +165,7 @@ function FinanceConfigsInner() {
   const [status, setStatus] = useState<FinanceConfigStatus | "">("PENDING_APPROVAL");
   const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(true);
-  const [form, setForm] = useState<FormState>(emptyForm);
+  const [form, setForm] = useState<FormState>(() => emptyForm(locale));
   const [formError, setFormError] = useState("");
   const [rejectTarget, setRejectTarget] = useState<FinanceConfig | null>(null);
   const [feeShopId, setFeeShopId] = useState("");
@@ -200,7 +201,7 @@ function FinanceConfigsInner() {
     }
     try {
       await createConfig.mutateAsync(res.body);
-      setForm(emptyForm());
+      setForm(emptyForm(locale));
       setStatus("PENDING_APPROVAL");
       setPage(1);
     } catch (err) {
@@ -235,17 +236,18 @@ function FinanceConfigsInner() {
                 setShowForm((v) => {
                   const next = !v;
                   if (next) {
-                    const defaults = emptyForm();
+                    const defaults = emptyForm(locale);
                     setForm({
                       ...defaults,
                       platformFeePercent:
-                        active?.platformFeePercent?.trim() ||
+                        localizeDecimalString(active?.platformFeePercent?.trim(), locale ?? "en") ||
                         defaults.platformFeePercent,
                       commissionPercent:
-                        active?.commissionPercent?.trim() ||
+                        localizeDecimalString(active?.commissionPercent?.trim(), locale ?? "en") ||
                         defaults.commissionPercent,
                       pointUsdValue:
-                        active?.pointUsdValue?.trim() || defaults.pointUsdValue,
+                        localizeDecimalString(active?.pointUsdValue?.trim(), locale ?? "en") ||
+                        defaults.pointUsdValue,
                     });
                   }
                   return next;

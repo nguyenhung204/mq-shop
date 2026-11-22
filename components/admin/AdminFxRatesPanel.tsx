@@ -1,13 +1,17 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { fxApi, type FxRatesResponse } from "@/lib/api/fx";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useActiveFinanceConfig } from "@/lib/queries/finance";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { formatPointUsdValue } from "@/lib/points";
-import { getMoneyInputErrorMessage, parseLocaleMoneyInput } from "@/lib/money";
+import {
+  formatPrefillDecimal,
+  getMoneyInputErrorMessage,
+  parseLocaleMoneyInput,
+} from "@/lib/money";
 
 const QUOTES = ["MYR", "VND", "SGD", "USD"] as const;
 
@@ -44,16 +48,25 @@ export function AdminFxRatesPanel() {
   const [rateErrors, setRateErrors] = useState<Record<string, string>>({});
   const [note, setNote] = useState("");
 
+  const editedRef = useRef(false);
+
+  // Prefill from the latest rates in the active language (locale may resolve after the first
+  // render); stop re-prefilling once the admin has typed.
+  useEffect(() => {
+    if (!latest || editedRef.current) return;
+    setRates(
+      Object.fromEntries(
+        QUOTES.map((q) => [q, formatPrefillDecimal(latest.rates[q], locale ?? "en")]),
+      ),
+    );
+  }, [latest, locale]);
+
   const load = async () => {
     setLoading(true);
     try {
       const res = await fxApi.adminGetRates();
       setLatest(res.latest);
-      setRates(
-        Object.fromEntries(
-          QUOTES.map((q) => [q, String(res.latest.rates[q] ?? "")]),
-        ),
-      );
+      editedRef.current = false;
     } catch (err) {
       toast.error(getErrorMessage(err, t("admin.fx.loadFailed"), locale));
     } finally {
@@ -158,6 +171,7 @@ export function AdminFxRatesPanel() {
                     value={rates[q] ?? ""}
                     aria-invalid={Boolean(rateErrors[q])}
                     onChange={(e) => {
+                      editedRef.current = true;
                       setRates({ ...rates, [q]: e.target.value });
                       if (rateErrors[q]) {
                         setRateErrors((prev) => ({ ...prev, [q]: "" }));

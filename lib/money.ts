@@ -402,3 +402,28 @@ export function formatWholeDisplay(whole: number, locale = "en-US", currency?: s
   const body = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(Number.isSafeInteger(whole) ? whole : 0);
   return currency ? `${body} ${currency}` : body;
 }
+
+/**
+ * Text to prefill into a locale-parsed input from an API decimal (string or number):
+ * no grouping, locale decimal separator, up to `maxDecimals` digits with trailing zeros
+ * trimmed, so parseLocaleMoneyInput accepts it in every locale and returns the same value.
+ */
+export function formatPrefillDecimal(
+  value: string | number | null | undefined,
+  locale = "en-US",
+  maxDecimals = 8,
+): string {
+  if (value == null || value === "") return "";
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "";
+  const fixed = n.toFixed(maxDecimals);
+  const trimmed = fixed.includes(".") ? fixed.replace(/\.?0+$/, "") : fixed;
+  return isViLocale(locale) ? trimmed.replace(".", ",") : trimmed;
+}
+
+/** Swap the ASCII decimal point of an API decimal string for the locale separator; digits untouched. */
+export function localizeDecimalString(value: string | number | null | undefined, locale = "en-US"): string {
+  if (value == null) return "";
+  const s = String(value).trim();
+  return isViLocale(locale) ? s.replace(".", ",") : s;
+}

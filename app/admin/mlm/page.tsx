@@ -49,6 +49,7 @@ import {
   validateRankConfigInput,
 } from "@/lib/mlm/rank-bounds";
 import {
+  localizeDecimalString,
   getMoneyInputErrorMessage,
   parseLocaleIntInput,
   parseLocaleMoneyInput,
@@ -893,8 +894,8 @@ function MlmAdminInner() {
                                 nameVi: r.nameI18n?.vi ?? "",
                                 nameEn: r.nameI18n?.en ?? "",
                                 nameZhTw: r.nameI18n?.["zh-TW"] ?? "",
-                                teamPercent: String(r.teamPercent),
-                                referralPercent: String(r.referralPercent),
+                                teamPercent: localizeDecimalString(r.teamPercent, locale ?? "en"),
+                                referralPercent: localizeDecimalString(r.referralPercent, locale ?? "en"),
                                 globalFundTier: r.globalFundTier != null ? String(r.globalFundTier) : "",
                                 isActive: r.isActive,
                               });
