@@ -22,7 +22,7 @@ describe("region API contract", () => {
   });
   it("register forwards regionCode", async () => {
     post.mockResolvedValue({});
-    await authApi.register({ email: "a@b.c", password: "12345678", regionCode: "SG" });
+    await authApi.register({ email: "a@b.c", regionCode: "SG" });
     expect(post.mock.calls[0]![0]).toBe("/auth/register");
     expect(post.mock.calls[0]![1]).toMatchObject({ regionCode: "SG" });
   });

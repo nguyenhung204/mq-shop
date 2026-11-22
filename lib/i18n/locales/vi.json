@@ -671,7 +671,7 @@
     },
     "verifyOtp": {
       "title": "Xác minh email",
-      "description": "Nhập mã 6 số đã gửi tới email của bạn.",
+      "description": "Nhập mã 6 số đã gửi tới email và đặt mật khẩu của bạn.",
       "asideTitle": "Sắp xong rồi",
       "asideText": "Xác nhận email để kích hoạt tài khoản MQ.",
       "signingIn": "Đang đăng nhập…",

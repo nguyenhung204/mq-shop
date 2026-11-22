@@ -671,7 +671,7 @@
     },
     "verifyOtp": {
       "title": "Verify email",
-      "description": "Enter the 6-digit code we sent to your email.",
+      "description": "Enter the 6-digit code we sent to your email and set your password.",
       "asideTitle": "Almost there",
       "asideText": "One quick code to confirm your email and activate your MQ account.",
       "signingIn": "Signing in…",

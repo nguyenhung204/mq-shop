@@ -671,7 +671,7 @@
     },
     "verifyOtp": {
       "title": "驗證電子郵件",
-      "description": "輸入我們寄到您信箱的 6 位數驗證碼。",
+      "description": "輸入我們寄到您信箱的 6 位數驗證碼並設定密碼。",
       "asideTitle": "快完成了",
       "asideText": "確認電子郵件以啟用 MQ 帳號。",
       "signingIn": "登入中…",

@@ -4,20 +4,21 @@ import type { AuthUser, LoginResponse } from "./types";
 export const authApi = {
   register: (body: {
     email: string;
-    password: string;
     fullName?: string;
     phone?: string;
     /** Prefill from `/my-account/register?ref=` (alias `/register?ref=`) — BE field name. */
     referrerCode?: string;
     /** Business region (TW, VN, MY, SG); the API default is TW. */
     regionCode?: string;
+    /** One-time sub-account invite token. */
+    inviteToken?: string;
   }) =>
     api.post<{ id?: string; email?: string; status?: string; message?: string }>(
       "/auth/register",
       body,
     ),
 
-  verifyOtp: (body: { email: string; otp: string }) =>
+  verifyOtp: (body: { email: string; otp: string; password: string }) =>
     api.post<LoginResponse>("/auth/register/verify-otp", body),
 
   /** Legacy path fallback */
