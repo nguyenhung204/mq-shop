@@ -445,7 +445,7 @@ for (const locale of LOCALES) {
     const { page, context } = await pageIn(browser, buyer, locale);
     const rows: ResultRow[] = [];
     await page.goto(`/product/${seller.productId}`);
-    const input = page.getByRole("group", { name: "Quantity" }).getByRole("textbox");
+    const input = page.getByRole("group", { name: tr(locale, "cart.quantity") }).getByRole("textbox");
     await expect(input).toHaveValue("1");
     let current = 1;
     for (const v of VALUES) {
