@@ -58,6 +58,17 @@ type RequestOptions = {
   withMeta?: boolean;
 };
 
+/**
+ * Public (pre-session) auth routes: a 401 there is an answer to the submitted credentials
+ * (e.g. INVALID_CREDENTIALS), not an expired session, so it must not trigger refresh/logout.
+ */
+const PUBLIC_AUTH_PATH_RE = /^\/auth\/(?:login|register|forgot-password|sub-account\/decline)(?:[/?]|$)/;
+
+function isPublicAuthPath(path: string): boolean {
+  const p = path.startsWith("http") ? new URL(path).pathname.replace(/^\/api\/v1/, "") : path;
+  return PUBLIC_AUTH_PATH_RE.test(p.startsWith("/") ? p : `/${p}`);
+}
+
 let refreshPromise: Promise<boolean> | null = null;
 
 /**
@@ -142,7 +153,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
         : undefined,
   });
 
-  if (res.status === 401 && !_retried) {
+  if (res.status === 401 && !_retried && !isPublicAuthPath(path)) {
     if (!refreshPromise) {
       refreshPromise = refreshSession().finally(() => {
         refreshPromise = null;
@@ -202,7 +213,7 @@ export async function apiGetBlob(
     credentials: "include",
   });
 
-  if (res.status === 401 && !_retried) {
+  if (res.status === 401 && !_retried && !isPublicAuthPath(path)) {
     if (!refreshPromise) {
       refreshPromise = refreshSession().finally(() => {
         refreshPromise = null;
