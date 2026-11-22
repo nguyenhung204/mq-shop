@@ -20,6 +20,7 @@ export function ProductActions({ product }: { product: Product }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [qty, setQty] = useState(1);
+  const [qtyInvalid, setQtyInvalid] = useState(false);
   const stock = product.inStock ?? 0;
   const maxStock = Math.max(1, stock);
   const outOfStock = stock <= 0;
@@ -62,6 +63,7 @@ export function ProductActions({ product }: { product: Product }) {
           min={1}
           max={outOfStock ? 1 : maxStock}
           onChange={setQty}
+          onInvalidChange={setQtyInvalid}
         />
         {stock > 0 && (
           <span className={`text-xs ${stock <= 5 ? "text-orange-500 font-medium" : "text-mq-text-muted"}`}>
@@ -73,7 +75,7 @@ export function ProductActions({ product }: { product: Product }) {
         <button
           type="button"
           className="mq-btn mq-btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={busy || outOfStock}
+          disabled={busy || outOfStock || qtyInvalid}
           onClick={(e) => void addResolved(e, false)}
         >
           {outOfStock
@@ -85,7 +87,7 @@ export function ProductActions({ product }: { product: Product }) {
         <button
           type="button"
           className="mq-btn mq-btn-outline flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={busy || outOfStock}
+          disabled={busy || outOfStock || qtyInvalid}
           onClick={(e) => void addResolved(e, true)}
         >
           {t("product.buyNow")}

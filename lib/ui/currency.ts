@@ -1,5 +1,9 @@
 import { getFxDecimals } from "@/lib/fx/convert";
-import { parseLocaleMoneyInput } from "@/lib/money";
+import {
+  parseLocaleIntInput,
+  parseLocaleMoneyInput,
+  type MoneyInputErrorCode,
+} from "@/lib/money";
 
 export interface LocaleSeparators {
   group: string;
@@ -232,3 +236,38 @@ export function findCursorPosition(
   return formatted.length;
 }
 
+
+export interface InputEvaluation {
+  value: number | null;
+  error: MoneyInputErrorCode | null;
+}
+
+/**
+ * Judge the raw text of a money input without ever altering it.
+ * Empty -> no value, no error. Invalid -> no value plus the error code.
+ * min/max are reported as errors, never clamped.
+ */
+export function evaluateCurrencyInput(
+  raw: string,
+  opts: { locale: string; decimals: number; min?: number; max?: number },
+): InputEvaluation {
+  if (!raw.trim()) return { value: null, error: null };
+  const res = parseLocaleMoneyInput(raw, {
+    locale: opts.locale,
+    maxDecimals: opts.decimals,
+    allowZero: true,
+    allowNegative: opts.min == null || opts.min < 0,
+    min: opts.min,
+    max: opts.max,
+  });
+  return res.ok ? { value: res.value, error: null } : { value: null, error: res.error };
+}
+
+/** Same as evaluateCurrencyInput for whole-number quantities; empty is an error. */
+export function evaluateQuantityInput(
+  raw: string,
+  opts: { locale: string; min?: number; max?: number },
+): InputEvaluation {
+  const res = parseLocaleIntInput(raw, opts);
+  return res.ok ? { value: res.value, error: null } : { value: null, error: res.error };
+}

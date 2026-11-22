@@ -9,16 +9,13 @@ import React, {
   type ChangeEvent,
   type FocusEvent,
   type InputHTMLAttributes,
-  type KeyboardEvent,
 } from "react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import {
-  findCursorPosition,
-  formatLiveCurrency,
+  evaluateCurrencyInput,
   formatLocaleNumber,
   getCurrencyAffix,
   getCurrencyDecimals,
-  getLocaleSeparators,
 } from "@/lib/ui/currency";
 import {
   formatBlurMoneyInput,
@@ -60,9 +57,6 @@ export function CurrencyInput({
 }: CurrencyInputProps) {
   const { t, locale: langLocale } = useLanguage();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [blurError, setBlurError] = useState("");
-  const activeError = error || blurError;
-
   const activeLocale = useMemo(() => {
     if (propLocale) return propLocale;
     if (langLocale === "zh-TW") return "zh-TW";
@@ -71,16 +65,11 @@ export function CurrencyInput({
   }, [propLocale, langLocale]);
 
   const decimals = useMemo(() => getCurrencyDecimals(currency), [currency]);
-  const separators = useMemo(
-    () => getLocaleSeparators(activeLocale),
-    [activeLocale],
-  );
   const affix = useMemo(
     () => getCurrencyAffix(currency, activeLocale),
     [currency, activeLocale],
   );
 
-  const [isFocused, setIsFocused] = useState(false);
   const [displayString, setDisplayString] = useState<string>(() => {
     if (value == null || !Number.isFinite(value)) return "";
     return formatLocaleNumber(value, activeLocale, {
@@ -89,164 +78,72 @@ export function CurrencyInput({
     });
   });
 
-  // Track latest numeric value emitted to prevent re-formatting while typing
-  const lastEmittedValueRef = useRef<number | null | undefined>(value);
+  // The text is never rewritten while typing: the typed text is judged as-is
+  // and an invalid text emits null plus an inline error (no mask, no clamping).
+  const evaluation = useMemo(
+    () => evaluateCurrencyInput(displayString, { locale: activeLocale, decimals, min, max }),
+    [displayString, activeLocale, decimals, min, max],
+  );
+  const activeError =
+    error ||
+    (evaluation.error
+      ? getMoneyInputErrorMessage(evaluation.error, t, {
+          locale: activeLocale,
+          maxDecimals: decimals,
+          min,
+          max,
+        })
+      : "");
 
-  // Sync external value changes (e.g. form reset, loaded from API, locale change)
+  // Block native form submission while the text is invalid so no wrong value is submitted.
   useEffect(() => {
-    if (isFocused && lastEmittedValueRef.current === value) return;
+    inputRef.current?.setCustomValidity(evaluation.error ? activeError : "");
+  }, [evaluation.error, activeError]);
+
+  // Last value this component emitted (or synced from props). A parent value that differs
+  // is an external change (reset, API load) and replaces the text; the same value keeps it.
+  const lastEmittedValueRef = useRef<number | null | undefined>(value);
+  const lastLocaleKeyRef = useRef(`${activeLocale}|${decimals}`);
+
+  useEffect(() => {
+    const localeKey = `${activeLocale}|${decimals}`;
+    const localeChanged = lastLocaleKeyRef.current !== localeKey;
+    lastLocaleKeyRef.current = localeKey;
+    if (!localeChanged && lastEmittedValueRef.current === value) return;
     lastEmittedValueRef.current = value;
 
     if (value == null || !Number.isFinite(value)) {
-      setDisplayString("");
+      // A locale switch alone must not wipe text the user typed (it may just be invalid).
+      if (!localeChanged) setDisplayString("");
       return;
     }
-
-    const formatted = formatLocaleNumber(value, activeLocale, {
-      minDecimals: decimals > 0 && !isFocused ? decimals : 0,
-      maxDecimals: decimals,
-    });
-    setDisplayString(formatted);
-  }, [value, isFocused, activeLocale, decimals]);
-
-  const applyFormattedValue = useCallback(
-    (
-      rawInput: string,
-      cursorBefore: number,
-      hadDecBefore: boolean,
-    ) => {
-      const { group, decimal } = separators;
-      const { display, value: parsedVal } = formatLiveCurrency(
-        rawInput,
-        group,
-        decimal,
-        decimals,
-      );
-
-      // Clamp to min/max if provided
-      let finalVal = parsedVal;
-      if (finalVal != null) {
-        if (min != null && finalVal < min) finalVal = min;
-        if (max != null && finalVal > max) finalVal = max;
-      }
-
-      setDisplayString(display);
-      lastEmittedValueRef.current = finalVal;
-      onChange(finalVal);
-
-      // Calculate new cursor position in the formatted string
-      const rawDigitsBefore = (
-        rawInput.slice(0, cursorBefore).match(/\d/g) || []
-      ).length;
-      const nextCursor = findCursorPosition(
-        display,
-        rawDigitsBefore,
-        decimal,
-        hadDecBefore,
-      );
-
-      // Re-position cursor on next animation frame
-      requestAnimationFrame(() => {
-        if (inputRef.current) {
-          inputRef.current.setSelectionRange(nextCursor, nextCursor);
-        }
-      });
-    },
-    [separators, decimals, min, max, onChange],
-  );
+    setDisplayString(
+      formatLocaleNumber(value, activeLocale, {
+        minDecimals: decimals > 0 ? decimals : 0,
+        maxDecimals: decimals,
+      }),
+    );
+  }, [value, activeLocale, decimals]);
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      if (blurError) setBlurError("");
       const raw = e.target.value;
-      const cursor = e.target.selectionStart ?? raw.length;
-      const { decimal } = separators;
-      const sliceBefore = raw.slice(0, cursor);
-      const hadDecBefore =
-        sliceBefore.includes(decimal) ||
-        (decimal === ","
-          ? sliceBefore.includes(".")
-          : sliceBefore.includes(","));
-
-      applyFormattedValue(raw, cursor, hadDecBefore);
+      const { value: next } = evaluateCurrencyInput(raw, {
+        locale: activeLocale,
+        decimals,
+        min,
+        max,
+      });
+      setDisplayString(raw);
+      lastEmittedValueRef.current = next;
+      onChange(next);
     },
-    [separators, applyFormattedValue],
-  );
-
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent<HTMLInputElement>) => {
-      // Smart Backspace: when cursor is directly after a thousand separator, delete the digit before it
-      if (e.key === "Backspace") {
-        const input = inputRef.current;
-        if (
-          input &&
-          input.selectionStart === input.selectionEnd &&
-          input.selectionStart != null &&
-          input.selectionStart > 1
-        ) {
-          const pos = input.selectionStart;
-          const charBefore = displayString[pos - 1];
-          if (charBefore === separators.group) {
-            e.preventDefault();
-            // Delete both the separator and the digit preceding it
-            const newRaw =
-              displayString.slice(0, pos - 2) + displayString.slice(pos);
-            const digitsBefore = (
-              displayString.slice(0, pos - 2).match(/\d/g) || []
-            ).length;
-            const hadDec =
-              displayString.slice(0, pos - 2).includes(separators.decimal);
-
-            const { group, decimal } = separators;
-            const { display, value: parsedVal } = formatLiveCurrency(
-              newRaw,
-              group,
-              decimal,
-              decimals,
-            );
-
-            setDisplayString(display);
-            lastEmittedValueRef.current = parsedVal;
-            onChange(parsedVal);
-
-            const nextCursor = findCursorPosition(
-              display,
-              digitsBefore,
-              decimal,
-              hadDec,
-            );
-            requestAnimationFrame(() => {
-              input.setSelectionRange(nextCursor, nextCursor);
-            });
-            return;
-          }
-        }
-      }
-
-      onKeyDown?.(e);
-    },
-    [displayString, separators, decimals, onChange, onKeyDown],
-  );
-
-  const handleFocus = useCallback(
-    (e: FocusEvent<HTMLInputElement>) => {
-      setIsFocused(true);
-      onFocus?.(e);
-    },
-    [onFocus],
+    [activeLocale, decimals, min, max, onChange],
   );
 
   const handleBlur = useCallback(
     (e: FocusEvent<HTMLInputElement>) => {
-      setIsFocused(false);
-      if (!displayString.trim()) {
-        setBlurError("");
-        setDisplayString("");
-        lastEmittedValueRef.current = null;
-        onChange(null);
-        onBlur?.(e);
-        return;
-      }
+      // Valid text is tidied (grouping); invalid text is left exactly as typed.
       const res = parseLocaleMoneyInput(displayString, {
         locale: activeLocale,
         maxDecimals: decimals,
@@ -255,28 +152,12 @@ export function CurrencyInput({
         min,
         max,
       });
-      if (!res.ok) {
-        // Keep the user's typed displayString intact so they can see and fix it.
-        setBlurError(
-          getMoneyInputErrorMessage(res.error, t, {
-            locale: activeLocale,
-            maxDecimals: decimals,
-            min,
-            max,
-          }),
-        );
-        lastEmittedValueRef.current = null;
-        onChange(null);
-      } else {
-        setBlurError("");
-        const formatted = formatBlurMoneyInput(res.canonical, activeLocale, decimals);
-        setDisplayString(formatted);
-        lastEmittedValueRef.current = res.value;
-        onChange(res.value);
+      if (res.ok) {
+        setDisplayString(formatBlurMoneyInput(res.canonical, activeLocale, decimals));
       }
       onBlur?.(e);
     },
-    [displayString, activeLocale, decimals, min, max, onChange, onBlur, t],
+    [displayString, activeLocale, decimals, min, max, onBlur],
   );
 
   const inputElement = (
@@ -287,8 +168,8 @@ export function CurrencyInput({
       value={displayString}
       placeholder={placeholder}
       onChange={handleChange}
-      onKeyDown={handleKeyDown}
-      onFocus={handleFocus}
+      onFocus={onFocus}
+      onKeyDown={onKeyDown}
       onBlur={handleBlur}
       disabled={disabled}
       aria-invalid={Boolean(activeError)}
