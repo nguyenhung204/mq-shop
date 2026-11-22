@@ -318,14 +318,22 @@ export const transferApi = {
   get: (id: string) =>
     api.get<InventoryTransfer>(`/inventory/transfers/${id}`),
 
-  create: (body: CreateTransferRequest) =>
-    api.post<InventoryTransfer>("/inventory/transfers", body),
+  create: (body: CreateTransferRequest, idempotencyKey: string) =>
+    api.post<InventoryTransfer>("/inventory/transfers", body, {
+      headers: { "Idempotency-Key": idempotencyKey },
+    }),
 
-  approve: (id: string) =>
-    api.post<InventoryTransfer>(`/inventory/transfers/${id}/approve`, {}),
+  approve: (id: string, idempotencyKey: string) =>
+    api.post<InventoryTransfer>(
+      `/inventory/transfers/${id}/approve`,
+      {},
+      { headers: { "Idempotency-Key": idempotencyKey } },
+    ),
 
-  receive: (id: string, body: ReceiveTransferRequest) =>
-    api.post<InventoryTransfer>(`/inventory/transfers/${id}/receive`, body),
+  receive: (id: string, body: ReceiveTransferRequest, idempotencyKey: string) =>
+    api.post<InventoryTransfer>(`/inventory/transfers/${id}/receive`, body, {
+      headers: { "Idempotency-Key": idempotencyKey },
+    }),
 
   cancel: (id: string) =>
     api.post<InventoryTransfer>(`/inventory/transfers/${id}/cancel`, {}),

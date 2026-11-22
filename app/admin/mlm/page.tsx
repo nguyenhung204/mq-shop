@@ -48,6 +48,11 @@ import {
   MLM_TEAM_PERCENT_MIN,
   validateRankConfigInput,
 } from "@/lib/mlm/rank-bounds";
+import {
+  getMoneyInputErrorMessage,
+  parseLocaleIntInput,
+  parseLocaleMoneyInput,
+} from "@/lib/money";
 import { toast } from "sonner";
 
 function userLabel(u: AuthUser): string {
@@ -914,20 +919,68 @@ function MlmAdminInner() {
                   className="grid sm:grid-cols-2 gap-3"
                   onSubmit={async (e) => {
                     e.preventDefault();
+                    const tpRes = parseLocaleMoneyInput(editForm.teamPercent, {
+                      locale,
+                      maxDecimals: 4,
+                      allowZero: true,
+                      allowNegative: false,
+                      min: MLM_TEAM_PERCENT_MIN,
+                      max: MLM_TEAM_PERCENT_MAX,
+                    });
+                    if (!tpRes.ok) {
+                      toast.error(
+                        getMoneyInputErrorMessage(tpRes.error, t, {
+                          locale,
+                          maxDecimals: 4,
+                          min: MLM_TEAM_PERCENT_MIN,
+                          max: MLM_TEAM_PERCENT_MAX,
+                        }),
+                      );
+                      return;
+                    }
+                    const rpRes = parseLocaleMoneyInput(editForm.referralPercent, {
+                      locale,
+                      maxDecimals: 4,
+                      allowZero: true,
+                      allowNegative: false,
+                      min: MLM_REFERRAL_PERCENT_MIN,
+                      max: MLM_REFERRAL_PERCENT_MAX,
+                    });
+                    if (!rpRes.ok) {
+                      toast.error(
+                        getMoneyInputErrorMessage(rpRes.error, t, {
+                          locale,
+                          maxDecimals: 4,
+                          min: MLM_REFERRAL_PERCENT_MIN,
+                          max: MLM_REFERRAL_PERCENT_MAX,
+                        }),
+                      );
+                      return;
+                    }
+                    let gf: number | null = null;
+                    if (editForm.globalFundTier.trim() !== "") {
+                      const gfRes = parseLocaleIntInput(editForm.globalFundTier, {
+                        locale,
+                        min: MLM_GLOBAL_TIER_MIN,
+                        max: MLM_GLOBAL_TIER_MAX,
+                      });
+                      if (!gfRes.ok) {
+                        toast.error(t("admin.mlm.globalTierInvalid"));
+                        return;
+                      }
+                      gf = gfRes.value;
+                    }
+
                     const body: Record<string, unknown> = {};
                     if (editForm.name !== editingRank.name) body.name = editForm.name;
-                    // Build nameI18n from individual locale fields
                     const newI18n: Record<string, string> = {};
                     if (editForm.nameVi.trim()) newI18n.vi = editForm.nameVi.trim();
                     if (editForm.nameEn.trim()) newI18n.en = editForm.nameEn.trim();
                     if (editForm.nameZhTw.trim()) newI18n["zh-TW"] = editForm.nameZhTw.trim();
                     const oldI18n = editingRank.nameI18n ?? {};
                     if (JSON.stringify(newI18n) !== JSON.stringify(oldI18n)) body.nameI18n = newI18n;
-                    const tp = Number(editForm.teamPercent);
-                    if (Number.isFinite(tp) && String(tp) !== String(editingRank.teamPercent)) body.teamPercent = tp;
-                    const rp = Number(editForm.referralPercent);
-                    if (Number.isFinite(rp) && String(rp) !== String(editingRank.referralPercent)) body.referralPercent = rp;
-                    const gf = editForm.globalFundTier.trim() === "" ? null : Number(editForm.globalFundTier);
+                    if (String(tpRes.value) !== String(editingRank.teamPercent)) body.teamPercent = tpRes.value;
+                    if (String(rpRes.value) !== String(editingRank.referralPercent)) body.referralPercent = rpRes.value;
                     if (gf !== editingRank.globalFundTier) body.globalFundTier = gf;
                     if (editForm.isActive !== editingRank.isActive) body.isActive = editForm.isActive;
                     if (Object.keys(body).length === 0) { setEditingRank(null); return; }
@@ -987,10 +1040,8 @@ function MlmAdminInner() {
                     <span className="text-mq-text-muted">{t("admin.mlm.team")} %</span>
                     <input
                       className="mq-input"
-                      type="number"
-                      step="0.01"
-                      min={MLM_TEAM_PERCENT_MIN}
-                      max={MLM_TEAM_PERCENT_MAX}
+                      type="text"
+                      inputMode="decimal"
                       value={editForm.teamPercent}
                       onChange={(e) => setEditForm({ ...editForm, teamPercent: e.target.value })}
                     />
@@ -999,10 +1050,8 @@ function MlmAdminInner() {
                     <span className="text-mq-text-muted">{t("admin.mlm.referral")} %</span>
                     <input
                       className="mq-input"
-                      type="number"
-                      step="0.01"
-                      min={MLM_REFERRAL_PERCENT_MIN}
-                      max={MLM_REFERRAL_PERCENT_MAX}
+                      type="text"
+                      inputMode="decimal"
                       value={editForm.referralPercent}
                       onChange={(e) => setEditForm({ ...editForm, referralPercent: e.target.value })}
                     />
@@ -1011,10 +1060,8 @@ function MlmAdminInner() {
                     <span className="text-mq-text-muted">{t("admin.mlm.globalTier")}</span>
                     <input
                       className="mq-input"
-                      type="number"
-                      step="1"
-                      min={MLM_GLOBAL_TIER_MIN}
-                      max={MLM_GLOBAL_TIER_MAX}
+                      type="text"
+                      inputMode="numeric"
                       value={editForm.globalFundTier}
                       onChange={(e) => setEditForm({ ...editForm, globalFundTier: e.target.value })}
                       placeholder="—"

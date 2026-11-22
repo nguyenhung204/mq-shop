@@ -19,8 +19,12 @@ import {
   getCurrencyAffix,
   getCurrencyDecimals,
   getLocaleSeparators,
-  parseLocaleNumber,
 } from "@/lib/ui/currency";
+import {
+  formatBlurMoneyInput,
+  getMoneyInputErrorMessage,
+  parseLocaleMoneyInput,
+} from "@/lib/money";
 
 export interface CurrencyInputProps
   extends Omit<
@@ -34,6 +38,7 @@ export interface CurrencyInputProps
   showAffix?: boolean;
   min?: number;
   max?: number;
+  error?: string;
 }
 
 export function CurrencyInput({
@@ -47,13 +52,16 @@ export function CurrencyInput({
   disabled,
   min,
   max,
+  error,
   onFocus,
   onBlur,
   onKeyDown,
   ...rest
 }: CurrencyInputProps) {
-  const { locale: langLocale } = useLanguage();
+  const { t, locale: langLocale } = useLanguage();
   const inputRef = useRef<HTMLInputElement>(null);
+  const [blurError, setBlurError] = useState("");
+  const activeError = error || blurError;
 
   const activeLocale = useMemo(() => {
     if (propLocale) return propLocale;
@@ -149,6 +157,7 @@ export function CurrencyInput({
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
+      if (blurError) setBlurError("");
       const raw = e.target.value;
       const cursor = e.target.selectionStart ?? raw.length;
       const { decimal } = separators;
@@ -230,23 +239,44 @@ export function CurrencyInput({
   const handleBlur = useCallback(
     (e: FocusEvent<HTMLInputElement>) => {
       setIsFocused(false);
-      const parsed = parseLocaleNumber(displayString, activeLocale, decimals);
-      if (parsed == null) {
+      if (!displayString.trim()) {
+        setBlurError("");
         setDisplayString("");
         lastEmittedValueRef.current = null;
         onChange(null);
+        onBlur?.(e);
+        return;
+      }
+      const res = parseLocaleMoneyInput(displayString, {
+        locale: activeLocale,
+        maxDecimals: decimals,
+        allowZero: true,
+        allowNegative: min == null || min < 0,
+        min,
+        max,
+      });
+      if (!res.ok) {
+        // Keep the user's typed displayString intact so they can see and fix it.
+        setBlurError(
+          getMoneyInputErrorMessage(res.error, t, {
+            locale: activeLocale,
+            maxDecimals: decimals,
+            min,
+            max,
+          }),
+        );
+        lastEmittedValueRef.current = null;
+        onChange(null);
       } else {
-        const formatted = formatLocaleNumber(parsed, activeLocale, {
-          minDecimals: decimals > 0 ? decimals : 0,
-          maxDecimals: decimals,
-        });
+        setBlurError("");
+        const formatted = formatBlurMoneyInput(res.canonical, activeLocale, decimals);
         setDisplayString(formatted);
-        lastEmittedValueRef.current = parsed;
-        onChange(parsed);
+        lastEmittedValueRef.current = res.value;
+        onChange(res.value);
       }
       onBlur?.(e);
     },
-    [displayString, activeLocale, decimals, onChange, onBlur],
+    [displayString, activeLocale, decimals, min, max, onChange, onBlur, t],
   );
 
   const inputElement = (
@@ -261,32 +291,51 @@ export function CurrencyInput({
       onFocus={handleFocus}
       onBlur={handleBlur}
       disabled={disabled}
+      aria-invalid={Boolean(activeError)}
       className={`w-full outline-none bg-transparent ${className}`}
       {...rest}
     />
   );
 
   if (!showAffix) {
-    return inputElement;
+    return (
+      <div className="w-full">
+        {inputElement}
+        {activeError ? (
+          <p className="mt-1 text-xs text-red-600 dark:text-red-400" role="alert">
+            {activeError}
+          </p>
+        ) : null}
+      </div>
+    );
   }
 
   return (
-    <div
-      className={`relative inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-mq-border bg-mq-card text-mq-text focus-within:ring-2 focus-within:ring-mq-primary/40 focus-within:border-mq-primary transition-colors ${
-        disabled ? "opacity-60 cursor-not-allowed" : ""
-      }`}
-    >
-      {affix.position === "prefix" && (
-        <span className="text-xs font-semibold text-mq-text-muted select-none">
-          {affix.symbol}
-        </span>
-      )}
-      {inputElement}
-      {affix.position === "suffix" && (
-        <span className="text-xs font-semibold text-mq-text-muted select-none">
-          {affix.symbol}
-        </span>
-      )}
+    <div className="w-full">
+      <div
+        className={`relative inline-flex w-full items-center gap-1.5 px-3 py-2 rounded-lg border ${
+          activeError ? "border-red-500" : "border-mq-border"
+        } bg-mq-card text-mq-text focus-within:ring-2 focus-within:ring-mq-primary/40 focus-within:border-mq-primary transition-colors ${
+          disabled ? "opacity-60 cursor-not-allowed" : ""
+        }`}
+      >
+        {affix.position === "prefix" && (
+          <span className="text-xs font-semibold text-mq-text-muted select-none">
+            {affix.symbol}
+          </span>
+        )}
+        {inputElement}
+        {affix.position === "suffix" && (
+          <span className="text-xs font-semibold text-mq-text-muted select-none">
+            {affix.symbol}
+          </span>
+        )}
+      </div>
+      {activeError ? (
+        <p className="mt-1 text-xs text-red-600 dark:text-red-400" role="alert">
+          {activeError}
+        </p>
+      ) : null}
     </div>
   );
 }

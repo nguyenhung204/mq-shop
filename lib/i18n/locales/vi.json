@@ -3075,6 +3075,10 @@
     "productNotActive": "Sản phẩm này chưa hoạt động nên không thể dùng ở đây.",
     "inventoryTransferReceiveMismatch": "Số lượng nhận không khớp với phiếu chuyển kho.",
     "walletAmountInvalid": "Nhập số tiền hợp lệ lớn hơn 0.",
+    "amountInvalid": "Số tiền không hợp lệ. Vui lòng kiểm tra lại định dạng số.",
+    "amountNotPositive": "Số tiền phải lớn hơn 0.",
+    "amountTooLarge": "Số tiền vượt quá giới hạn tối đa cho phép.",
+    "amountTooManyDecimals": "Quá nhiều chữ số thập phân.",
     "csrfOriginRejected": "Yêu cầu bị chặn: không đến từ trang được phép. Hãy tải lại trang và thử lại.",
     "categoryParentCycle": "Không thể chuyển danh mục vào chính nó hoặc danh mục con của nó.",
     "reviewNotAllowed": "Không thể thực hiện thao tác này với đánh giá (chỉ được đánh giá đơn đã giao, và đánh giá bị kiểm duyệt ẩn thì không xoá được).",
@@ -4353,5 +4357,19 @@
     "back": "Quay lại cổ tức đã nhận",
     "creditedAt": "Ghi có lúc",
     "settlement": "Quyết toán"
+  },
+  "moneyInput": {
+    "empty": "Vui lòng nhập giá trị.",
+    "invalidChars": "Chỉ cho phép chữ số và dấu phân cách hợp lệ (vd: {example}).",
+    "ambiguousFormat": "Định dạng số không rõ ràng theo ngôn ngữ hiện tại. Vui lòng nhập theo dạng {example}.",
+    "tooManyDecimals": "Tối đa {maxDecimals} chữ số thập phân (vd: {example}).",
+    "negativeNotAllowed": "Không được nhập số âm.",
+    "zeroNotAllowed": "Giá trị phải lớn hơn 0.",
+    "tooLarge": "Giá trị quá lớn.",
+    "belowMin": "Giá trị tối thiểu là {min}.",
+    "aboveMax": "Giá trị tối đa là {max}.",
+    "invalidRange": "Giá tối thiểu không được lớn hơn giá tối đa.",
+    "invalidPercent": "Nhập phần trăm hợp lệ từ 0 đến 100 (tối đa {maxDecimals} chữ số thập phân, vd: {example}).",
+    "invalidInteger": "Nhập số nguyên từ {min} đến {max}."
   }
 }

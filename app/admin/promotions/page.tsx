@@ -28,6 +28,7 @@ import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { formatDateTimeGmt8, gmt8DateTimeLocalToIso } from "@/lib/i18n/gmt8-calendar";
 import { toIntlLocale } from "@/lib/i18n/locale-format";
+import { getMoneyInputErrorMessage, parseLocaleMoneyInput } from "@/lib/money";
 
 const TYPES: PromotionType[] = ["PERCENT", "FIXED", "FREE_SHIP", "VOUCHER"];
 const STATUSES: Array<PromotionStatus | ""> = [
@@ -90,8 +91,14 @@ function parseSkus(text: string): string[] {
     .filter(Boolean);
 }
 
-function buildBody(form: FormState): CreatePromotionBody | null {
-  if (!form.name.trim() || !form.startAt || !form.endAt) return null;
+function buildBody(
+  form: FormState,
+  locale: string | null,
+  t: (key: string, vars?: Record<string, string>) => string,
+): { body: CreatePromotionBody } | { error: string } {
+  if (!form.name.trim() || !form.startAt || !form.endAt) {
+    return { error: t("admin.promotions.formError") };
+  }
 
   const skus = parseSkus(form.skusText);
   const body: CreatePromotionBody = {
@@ -102,28 +109,62 @@ function buildBody(form: FormState): CreatePromotionBody | null {
     endAt: fromLocalInput(form.endAt),
   };
 
-  if (form.budget.trim()) body.budget = form.budget.trim();
+  if (form.budget.trim()) {
+    const budgetParsed = parseLocaleMoneyInput(form.budget, {
+      locale,
+      maxDecimals: 2,
+      allowZero: false,
+      allowNegative: false,
+      max: 999999999999.99,
+    });
+    if (!budgetParsed.ok) {
+      return {
+        error: getMoneyInputErrorMessage(budgetParsed.error, t, {
+          locale,
+          maxDecimals: 2,
+          max: 999999999999.99,
+        }),
+      };
+    }
+    body.budget = budgetParsed.canonical;
+  }
 
   if (form.type !== "FREE_SHIP") {
-    if (!form.discountValue.trim()) return null;
-    body.discountValue = form.discountValue.trim();
+    const maxDiscount = form.type === "PERCENT" ? 100 : 9999999999.99;
+    const discParsed = parseLocaleMoneyInput(form.discountValue, {
+      locale,
+      maxDecimals: 2,
+      allowZero: false,
+      allowNegative: false,
+      max: maxDiscount,
+    });
+    if (!discParsed.ok) {
+      return {
+        error: getMoneyInputErrorMessage(discParsed.error, t, {
+          locale,
+          maxDecimals: 2,
+          max: maxDiscount,
+        }),
+      };
+    }
+    body.discountValue = discParsed.canonical;
   }
 
   if (form.type === "VOUCHER") {
     const code = form.code.trim().toUpperCase();
-    if (code.length < 3) return null;
+    if (code.length < 3) return { error: t("admin.promotions.formError") };
     body.code = code;
   }
 
-  if (form.scopeType === "PLATFORM") {
-    // no skus/categories
-  } else {
-    if (skus.length === 0 && form.categoryIds.length === 0) return null;
+  if (form.scopeType !== "PLATFORM") {
+    if (skus.length === 0 && form.categoryIds.length === 0) {
+      return { error: t("admin.promotions.formError") };
+    }
     body.skus = skus;
     body.categoryIds = form.categoryIds;
   }
 
-  return body;
+  return { body };
 }
 
 function PromotionsInner() {
@@ -172,13 +213,13 @@ function PromotionsInner() {
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setFormError("");
-    const body = buildBody(form);
-    if (!body) {
-      setFormError(t("admin.promotions.formError"));
+    const res = buildBody(form, locale, t);
+    if ("error" in res) {
+      setFormError(res.error);
       return;
     }
     try {
-      await createPromo.mutateAsync(body);
+      await createPromo.mutateAsync(res.body);
       setForm(emptyForm());
       setShowForm(false);
       setStatus("ACTIVE");
@@ -288,6 +329,8 @@ function PromotionsInner() {
                   </span>
                   <input
                     className="mq-input"
+                    type="text"
+                    inputMode="decimal"
                     value={form.discountValue}
                     onChange={(e) => setForm({ ...form, discountValue: e.target.value })}
                     required
@@ -313,6 +356,8 @@ function PromotionsInner() {
                 <span className="text-mq-text-muted">{t("admin.promotions.budget")}</span>
                 <input
                   className="mq-input"
+                  type="text"
+                  inputMode="decimal"
                   value={form.budget}
                   onChange={(e) => setForm({ ...form, budget: e.target.value })}
                 />

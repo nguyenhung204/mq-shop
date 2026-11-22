@@ -1,4 +1,5 @@
 import { getFxDecimals } from "@/lib/fx/convert";
+import { parseLocaleMoneyInput } from "@/lib/money";
 
 export interface LocaleSeparators {
   group: string;
@@ -69,8 +70,9 @@ export function getCurrencyAffix(
 }
 
 /**
- * Parse a locale-formatted string (or raw number) into a clean JavaScript number.
- * Returns null if input is empty or invalid.
+ * Parse a locale-formatted string (or raw number) into a clean JavaScript number
+ * using the strict locale money parser. Returns null if input is empty, invalid,
+ * or ambiguous.
  */
 export function parseLocaleNumber(
   input: string | number | null | undefined,
@@ -81,51 +83,13 @@ export function parseLocaleNumber(
   if (typeof input === "number") {
     return Number.isFinite(input) ? input : null;
   }
-
-  const raw = input.trim();
-  if (!raw) return null;
-
-  // Zero-decimal currencies (e.g. VND, TWD, JPY):
-  // Any punctuation (, or .) entered by the user is a thousand grouping or accidental typing.
-  if (maxDecimals === 0) {
-    const cleaned = raw.replace(/[^\d-]/g, "");
-    if (!cleaned || cleaned === "-") return null;
-    const n = parseInt(cleaned, 10);
-    return Number.isFinite(n) ? n : null;
-  }
-
-  const { group, decimal } = getLocaleSeparators(locale);
-
-  let normalized = raw;
-
-  // Handle keypad dot when locale uses comma as decimal (e.g. vi-VN with USD/EUR):
-  // If user typed dot and no comma, check if it was intended as a decimal point
-  if (decimal === "," && !normalized.includes(",") && normalized.includes(".")) {
-    const parts = normalized.split(".");
-    if (parts.length === 2 && parts[1].length <= maxDecimals) {
-      normalized = parts[0] + "." + parts[1];
-    } else {
-      normalized = normalized.split(group).join("");
-    }
-  } else {
-    // Strip thousands group separator
-    normalized = normalized.split(group).join("");
-    // Replace decimal separator with "."
-    if (decimal !== ".") {
-      normalized = normalized.split(decimal).join(".");
-    }
-  }
-
-  // Strip remaining non-numeric characters (keep minus and dot)
-  normalized = normalized.replace(/[^\d.-]/g, "");
-  if (!normalized || normalized === "-" || normalized === ".") return null;
-
-  const n = parseFloat(normalized);
-  if (!Number.isFinite(n)) return null;
-
-  // Round to maxDecimals to avoid floating point artifacts
-  const factor = Math.pow(10, maxDecimals);
-  return Math.round(n * factor) / factor;
+  const res = parseLocaleMoneyInput(input, {
+    locale,
+    maxDecimals,
+    allowZero: true,
+    allowNegative: true,
+  });
+  return res.ok ? res.value : null;
 }
 
 /**
@@ -231,7 +195,7 @@ export function formatLiveCurrency(
   if (decStr) {
     numStr += "." + decStr;
   }
-  const parsed = parseFloat(numStr);
+  const parsed = Number(numStr);
   const value = Number.isFinite(parsed) ? parsed : null;
 
   return { display, value };

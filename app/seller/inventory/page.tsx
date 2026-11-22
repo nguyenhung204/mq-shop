@@ -32,6 +32,7 @@ import {
 import { useSellerProducts } from "@/lib/queries/seller";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { parseLocaleIntInput } from "@/lib/money";
 import { translateStatus } from "@/lib/i18n/status";
 import { formatWarehouseLabel } from "@/lib/inventory/warehouse-label";
 import { CountrySelect } from "@/components/ui/CountrySelect";
@@ -407,7 +408,7 @@ function VariantsTab() {
     e.preventDefault();
     const trimmedSku = sku.trim();
     const sell = Number(sellingPrice);
-    if (!productId || !trimmedSku || !Number.isFinite(sell) || sell < 0) return;
+    if (!productId || !trimmedSku || !Number.isFinite(sell) || sell < 0 || sell > 9999999999.99) return;
     let options: Record<string, string> | undefined;
     const trimmedOpts = optionsText.trim();
     if (trimmedOpts) {
@@ -516,6 +517,7 @@ function VariantsTab() {
             value={sellingPrice ? Number(sellingPrice) : null}
             onChange={(num) => setSellingPrice(num != null ? String(num) : "")}
             min={0}
+            max={9999999999.99}
             required
           />
           <input
@@ -605,7 +607,7 @@ function SlipsTab({
   /** From `?slipId=` — inventory slip notifications deep-link here. */
   initialSlipId?: string | null;
 }) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [status, setStatus] = useState<InventorySlipStatus | "">("");
   const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
@@ -666,14 +668,19 @@ function SlipsTab({
     for (const line of lines) {
       const sku = line.sku.trim();
       if (!sku) continue;
-      const quantity = Number(line.quantity);
-      if (!Number.isInteger(quantity) || quantity < 1) {
+      const qtyRes = parseLocaleIntInput(line.quantity, {
+        locale,
+        min: 1,
+        max: 1000000,
+        allowZero: false,
+      });
+      if (!qtyRes.ok) {
         setFormError(t("seller.inventoryPage.invalidQuantityError", { sku }));
         return;
       }
       payloadItems.push({
         sku,
-        quantity,
+        quantity: qtyRes.value,
       });
     }
     try {
@@ -834,9 +841,8 @@ function SlipsTab({
                 </select>
                 <input
                   className="mq-input"
-                  type="number"
-                  min={1}
-                  step={1}
+                  type="text"
+                  inputMode="numeric"
                   aria-label={t("seller.inventoryPage.quantity")}
                   value={line.quantity}
                   onChange={(e) => updateLine(line.key, { quantity: e.target.value })}

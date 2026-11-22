@@ -76,8 +76,8 @@ describe("currency utilities", () => {
       expect(parseLocaleNumber("250", "vi-VN", 0)).toBe(250);
     });
 
-    it("parses zero-decimal currency VND even if user pasted comma separators", () => {
-      expect(parseLocaleNumber("1,000,000", "vi-VN", 0)).toBe(1000000);
+    it("rejects ambiguous comma separators in vi-VN 0dp", () => {
+      expect(parseLocaleNumber("1,000,000", "vi-VN", 0)).toBeNull();
     });
 
     it("parses TWD in zh-TW", () => {
@@ -96,9 +96,9 @@ describe("currency utilities", () => {
       expect(parseLocaleNumber("1.234,56", "vi-VN", 2)).toBe(1234.56);
     });
 
-    it("handles keypad dot fallback in vi-VN when comma decimal is expected", () => {
-      expect(parseLocaleNumber("12.50", "vi-VN", 2)).toBe(12.5);
-      expect(parseLocaleNumber("100.5", "vi-VN", 2)).toBe(100.5);
+    it("rejects ambiguous dot decimal in vi-VN when comma decimal is expected", () => {
+      expect(parseLocaleNumber("12.50", "vi-VN", 2)).toBeNull();
+      expect(parseLocaleNumber("100.5", "vi-VN", 2)).toBeNull();
     });
 
     it("handles negative numbers if present", () => {
