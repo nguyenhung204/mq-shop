@@ -71,3 +71,44 @@ describe("resolveNotificationRoute stale bill reminder (R5)", () => {
     expect(resolveNotificationRoute({ type: "ORDER_STALE_BILL_REMINDER", meta: {} }, { roles: ["BUYER"] })).toBeNull();
   });
 });
+
+describe("resolveNotificationRoute refund case notices (C2)", () => {
+  const route = (type: string, roles: string[], meta: Record<string, string> = {}) =>
+    resolveNotificationRoute({ type, meta } as never, { roles } as never);
+  it("the shop owner is sent to the seller refund list", () => {
+    expect(route("REFUND_CASE_OPENED", ["SELLER"], { refundCaseId: "c1", shopId: "s1" })).toBe("/seller/refunds");
+    expect(route("REFUND_CASE_OPENED", ["BUYER"], { refundCaseId: "c1" })).toBeNull();
+  });
+  it("the buyer is sent to the buyer refund list", () => {
+    expect(route("REFUND_CASE_MARKED_PAID", ["BUYER"], { refundCaseId: "c1" })).toBe("/refunds");
+  });
+  it("platform ops open the case of a dispute, or the list without meta; others get nothing", () => {
+    for (const r of ["ADMIN", "SUPER_ADMIN", "CS", "ACCOUNTANT"]) {
+      expect(route("REFUND_CASE_DISPUTED", [r], { refundCaseId: "c-9" }), r).toBe("/admin/refund-cases/c-9");
+      expect(route("REFUND_CASE_DISPUTED", [r]), r).toBe("/admin/refund-cases");
+    }
+    expect(route("REFUND_CASE_DISPUTED", ["BUYER"], { refundCaseId: "c-9" })).toBeNull();
+    expect(route("REFUND_CASE_DISPUTED", ["SELLER"], { refundCaseId: "c-9" })).toBeNull();
+  });
+});
+
+describe("resolveNotificationRoute dividend notices (C5)", () => {
+  const route = (type: string, roles: string[], meta: Record<string, string> = {}) =>
+    resolveNotificationRoute({ type, meta } as never, { roles } as never);
+  it("a credited dividend opens the line, or the list without meta; any signed-in role", () => {
+    for (const r of [["BUYER"], ["SELLER"], ["ADMIN"]]) {
+      expect(route("DIVIDEND_CREDITED", r, { itemId: "it-1", quarter: "2026Q4" })).toBe("/dividend-credits/it-1");
+      expect(route("DIVIDEND_CREDITED", r)).toBe("/dividend-credits");
+    }
+  });
+  it("a hostile item id is encoded", () => {
+    expect(route("DIVIDEND_CREDITED", ["BUYER"], { itemId: "a/../b?x" })).toBe("/dividend-credits/a%2F..%2Fb%3Fx");
+  });
+  it("a failed settlement goes to finance staff only, to the quarter when known", () => {
+    for (const r of ["ACCOUNTANT", "ADMIN", "SUPER_ADMIN"]) {
+      expect(route("DIVIDEND_SETTLEMENT_FAILED", [r], { quarter: "2026Q4" }), r).toBe("/admin/dividend/settlements/2026Q4");
+      expect(route("DIVIDEND_SETTLEMENT_FAILED", [r]), r).toBe("/admin/dividend/settlements");
+    }
+    for (const r of ["BUYER", "SELLER", "CS", "WAREHOUSE"]) expect(route("DIVIDEND_SETTLEMENT_FAILED", [r], { quarter: "2026Q4" }), r).toBeNull();
+  });
+});

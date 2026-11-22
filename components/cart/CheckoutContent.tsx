@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
@@ -39,6 +39,7 @@ import {
 } from "@/components/cart/CrossBorderWarningModal";
 import type { GateRegionId } from "@/lib/i18n/regions";
 import { regionIdToCountryCode } from "@/lib/i18n/regions";
+import { checkoutRegionCode } from "@/lib/i18n/region-sync";
 
 const PROOF_ACCEPT = "image/jpeg,image/png,image/webp,image/gif";
 const PROOF_MAX_BYTES = 5 * 1024 * 1024;
@@ -57,7 +58,7 @@ type PlacedOrder = {
 export function CheckoutContent() {
   const { t, locale } = useLanguage();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
-  const { regionCode, setRegion, currency: regionCurrency } = useRegion();
+  const { region, regionCode, setRegion, currency: regionCurrency } = useRegion();
   const shipCountryDefault = regionCode ?? "VN";
   const { formatDisplay, currency: displayCurrency, refetchRates, asOf: fxAsOf, isFallback, isRatesReady } =
     useDisplayMoney();
@@ -91,6 +92,7 @@ export function CheckoutContent() {
   const [proofRetrying, setProofRetrying] = useState(false);
   const quote = useShippingQuote();
   const checkout = useCheckout();
+  const switchingRegion = useRef(false);
 
   const {
     register,
@@ -404,6 +406,8 @@ export function CheckoutContent() {
       const currency = displayCurrency || regionCurrency || "TWD";
       const freshFx = await refetchRates();
       const order = await checkout.mutateAsync({
+        // the region currently selected (upper case); the order keeps it for good
+        regionCode: checkoutRegionCode(region),
         items: checkoutSelectedItems(),
         shippingAddress: {
           ...values.shippingAddress,
@@ -474,10 +478,20 @@ export function CheckoutContent() {
     handleSubmit(onSubmit)();
   };
 
-  const handleCrossBorderSwitchRegion = (regionId: GateRegionId) => {
+  const handleCrossBorderSwitchRegion = async (regionId: GateRegionId) => {
+    // Same busy guard as the region modal: one switch at a time from this dialog.
+    if (switchingRegion.current) return;
+    switchingRegion.current = true;
+    let switched = false;
+    try {
+      // Signed in: the region is saved on the account first; when the API refuses nothing changes here.
+      switched = await setRegion(regionId);
+    } finally {
+      switchingRegion.current = false;
+    }
+    if (!switched) return;
     const newCountry = regionIdToCountryCode(regionId);
     setValue("shippingAddress.country", newCountry, { shouldValidate: true });
-    setRegion(regionId);
     setCrossBorderOpen(false);
     setCrossBorderBypassed(false);
     toast.info(t("crossBorder.regionSwitched"));

@@ -481,7 +481,8 @@
       "loading": "Đang tải đơn hàng…",
       "fulfillmentComplaintBtn": "Khiếu nại chưa giao",
       "fulfillmentComplaintTitle": "Khiếu nại đơn chưa giao",
-      "fulfillmentComplaintDesc": "Mô tả vấn đề (đã thanh toán nhưng shop chưa giao)."
+      "fulfillmentComplaintDesc": "Mô tả vấn đề (đã thanh toán nhưng shop chưa giao).",
+      "region": "Khu vực: {region}"
     },
     "payment": {
       "title": "Chứng từ thanh toán",
@@ -590,6 +591,28 @@
       "amountDue": "Số tiền cần thanh toán",
       "rateLocked": "Tỷ giá đã chốt khi bạn đặt hàng: {rate}",
       "ledgerNote": "Tổng đơn trong sổ cái của shop: {twd}"
+    },
+    "paidAt": {
+      "title": "Ngày thanh toán",
+      "current": "Ngày thanh toán hiện tại (GMT+8): {date}",
+      "help": "Chỉ Super Admin. Chỉ đổi ngày thanh toán được ghi nhận, không tính lại hoa hồng, ví hay điều kiện doanh số. Bị từ chối nếu làm đơn chuyển sang quý cổ tức đã khóa.",
+      "newDate": "Ngày giờ thanh toán mới (GMT+8)",
+      "save": "Lưu ngày thanh toán",
+      "saved": "Đã cập nhật ngày thanh toán.",
+      "unchanged": "Ngày thanh toán không đổi.",
+      "historyTitle": "Lịch sử chỉnh sửa",
+      "historyEmpty": "Chưa có chỉnh sửa nào.",
+      "by": "Bởi {user}",
+      "errors": {
+        "required": "Chọn ngày và giờ.",
+        "invalidDate": "Ngày này không có trong lịch.",
+        "future": "Ngày thanh toán không được ở tương lai.",
+        "beforeCreated": "Ngày thanh toán không được trước ngày tạo đơn.",
+        "unchanged": "Đây đã là ngày thanh toán.",
+        "invalid": "Ngày thanh toán không hợp lệ: phải là ngày giờ có thật, không ở tương lai và không trước ngày tạo đơn.",
+        "quarterLocked": "Thay đổi này sẽ chuyển đơn sang quý cổ tức đã khóa nên bị từ chối.",
+        "forbidden": "Chỉ Super Admin mới được đổi ngày thanh toán."
+      }
     }
   },
   "wishlist": {
@@ -648,7 +671,7 @@
     },
     "verifyOtp": {
       "title": "Xác minh email",
-      "description": "Nhập mã 6 số đã gửi tới email của bạn.",
+      "description": "Nhập mã 6 số đã gửi tới email và đặt mật khẩu của bạn.",
       "asideTitle": "Sắp xong rồi",
       "asideText": "Xác nhận email để kích hoạt tài khoản MQ.",
       "signingIn": "Đang đăng nhập…",
@@ -750,7 +773,13 @@
       "myShop": "Gian hàng của tôi",
       "myShopDesc": "Quản lý gian hàng trên MQ",
       "network": "Mạng lưới",
-      "networkDesc": "Cây downline MLM của bạn"
+      "networkDesc": "Cây downline MLM của bạn",
+      "refunds": "Hoàn tiền của tôi",
+      "refundsDesc": "Các khoản hoàn tiền dành cho bạn: xác nhận đã nhận hoặc báo vấn đề",
+      "subAccounts": "Tài khoản phụ",
+      "subAccountsDesc": "Các tài khoản bạn quản lý dưới tài khoản của mình: tạo, mời, rút lại",
+      "dividendCredits": "Cổ tức đã nhận",
+      "dividendCreditsDesc": "Cổ tức theo quý đã ghi vào ví của bạn"
     },
     "otp": {
       "timeRemaining": "Thời gian còn lại",
@@ -839,7 +868,10 @@
       "settings": "Cài đặt hệ thống",
       "dividendRates": "Tỷ lệ cổ tức",
       "dividendSlots": "Suất cổ tức",
-      "dividendReport": "Báo cáo cổ tức"
+      "dividendReport": "Báo cáo cổ tức",
+      "refundCases": "Theo dõi hoàn tiền",
+      "accountingExport": "Xuất dữ liệu kế toán",
+      "dividendSettlements": "Quyết toán cổ tức"
     },
     "common": {
       "create": "Tạo mới",
@@ -909,7 +941,8 @@
         "required": "Hãy nhập lý do.",
         "tooShort": "Lý do phải có ít nhất 3 ký tự.",
         "tooLong": "Lý do tối đa 500 ký tự."
-      }
+      },
+      "region": "Khu vực"
     },
     "overview": {
       "title": "Quản trị",
@@ -1670,7 +1703,8 @@
           "invalid": "Nhập số tiền như 250 hoặc 250.50 (tối đa 2 số thập phân).",
           "zero": "Số tiền hoàn phải lớn hơn 0.",
           "exceeds": "Số tiền hoàn lớn hơn số còn được hoàn của đơn này."
-        }
+        },
+        "displayEquivalent": "Khoảng {amount} theo tiền tệ hiển thị của người mua (khoản hoàn được ghi bằng TWD)."
       }
     },
     "financePage": {
@@ -2125,7 +2159,9 @@
         "notInteger": "Giá trị phải là số nguyên.",
         "belowMin": "Giá trị phải từ {min} trở lên.",
         "aboveMax": "Giá trị không được vượt quá {max}.",
-        "notNullable": "Cài đặt này không thể để trống."
+        "notNullable": "Cài đặt này không thể để trống.",
+        "notDecimal": "Nhập số có tối đa 2 chữ số thập phân (ví dụ 5 hoặc 5.25).",
+        "notQuarter": "Nhập quý dạng 2026Q4 (hoặc 20264): năm 2000 đến 2100 và quý 1 đến 4."
       },
       "keys": {
         "dividendEditWindowDays": {
@@ -2147,8 +2183,46 @@
           "label": "Tổng số suất tối đa",
           "description": "Số suất cổ tức tối đa trên toàn bộ tài khoản.",
           "nullMeaning": "Không giới hạn."
+        },
+        "refundOverdueDays": {
+          "label": "Hoàn tiền quá hạn sau (ngày)",
+          "description": "Ca hoàn tiền chưa đóng sau số ngày này sẽ bị đánh dấu quá hạn trong màn hình theo dõi hoàn tiền.",
+          "nullMeaning": "Không ca nào bị đánh dấu quá hạn (vẫn hiển thị số ngày tuổi)."
+        },
+        "taxEnabled": {
+          "label": "Loại thuế khỏi cơ sở cổ tức",
+          "description": "Khi bật, cơ sở doanh số tính cổ tức đã loại thuế (giá đơn hàng được coi là đã gồm thuế). Khi tắt, không loại gì. Chỉ báo cáo cổ tức dùng thiết lập này."
+        },
+        "taxRatePercent": {
+          "label": "Thuế suất (%)",
+          "description": "Thuế suất theo phần trăm (0 đến 100, tối đa 2 chữ số thập phân) dùng khi công tắc thuế đang bật, ví dụ 5 hoặc 5.25."
+        },
+        "dividendAutoCreditEnabled": {
+          "label": "Tự động ghi có cổ tức",
+          "description": "Khi bật, quý cổ tức đã khóa được quyết toán tự động: quỹ được chốt một lần và mọi tài khoản được ghi có vào ví. Tắt (mặc định) = không ghi gì và không ghi có. KHÔNG bật trên môi trường thật trước khi khách trả lời Q1 và C3b, và hãy đặt quý đầu tiên trước."
+        },
+        "dividendAutoCreditFromQuarter": {
+          "label": "Quý đầu tiên của việc tự động ghi có",
+          "description": "Quý cổ tức đầu tiên được phép quyết toán tự động (2026Q4 hoặc 20264). Khi để trống thì không quyết toán gì dù công tắc đang bật; các quý trước đó không bao giờ được quyết toán. Hãy đặt nó TRƯỚC khi bật công tắc.",
+          "nullMeaning": "Chưa đặt: không quyết toán tự động quý nào."
+        },
+        "maxSubAccountsPerAccount": {
+          "label": "Số tài khoản phụ tối đa mỗi tài khoản",
+          "description": "Một tài khoản được có bao nhiêu tài khoản phụ đang hoạt động (mặc định 100). Tài khoản chờ xác nhận cũng được tính."
+        },
+        "maxSubAccountDepth": {
+          "label": "Độ sâu tối đa của tài khoản phụ",
+          "description": "Cho phép bao nhiêu tầng tài khoản phụ nằm dưới tài khoản phụ."
+        },
+        "subAccountCreationsPerHour": {
+          "label": "Số tài khoản phụ được tạo mỗi giờ",
+          "description": "Một người được tạo tối đa bao nhiêu tài khoản phụ mỗi giờ (cả chủ tài khoản và admin)."
         }
-      }
+      },
+      "on": "Bật",
+      "off": "Tắt",
+      "rangeDecimal": "Số từ {min} đến {max}, tối đa 2 chữ số thập phân.",
+      "rangeQuarter": "Quý dạng 2026Q4 (hoặc 20264), từ 2000 Q1 đến 2100 Q4."
     },
     "dividend": {
       "readOnlyNote": "Bạn chỉ có thể xem trang này. Chỉ Super Admin mới được thay đổi.",
@@ -2332,7 +2406,8 @@
       "promotions": "Khuyến mãi",
       "rma": "RMA",
       "materials": "Tài liệu",
-      "reviews": "Đánh giá"
+      "reviews": "Đánh giá",
+      "refunds": "Hoàn tiền phải trả"
     },
     "titles": {
       "overview": "Kênh Seller",
@@ -2370,7 +2445,9 @@
       "materials": "Tài liệu marketing",
       "materialsDesc": "Tải bộ tài liệu seller.",
       "reviews": "Đánh giá",
-      "reviewsDesc": "Trả lời đánh giá của người mua trên sản phẩm của bạn."
+      "reviewsDesc": "Trả lời đánh giá của người mua trên sản phẩm của bạn.",
+      "refunds": "Hoàn tiền phải trả",
+      "refundsDesc": "Các ca hoàn tiền của cửa hàng: chuyển tiền rồi đánh dấu ca là đã chuyển."
     },
     "promotions": {
       "newBtn": "Tạo khuyến mãi",
@@ -3326,7 +3403,9 @@
     "dividendQuarterLocked": "Quý này đã khóa và không thể chỉnh sửa nữa.",
     "dividendSlotCapExceeded": "Vượt quá giới hạn số suất.",
     "dividendSlotInsufficient": "Tài khoản nguồn không đủ số suất.",
-    "rmaRefundAmountInvalid": "Số tiền hoàn không hợp lệ (phải lớn hơn 0 và không vượt quá số còn được hoàn)."
+    "rmaRefundAmountInvalid": "Số tiền hoàn không hợp lệ (phải lớn hơn 0 và không vượt quá số còn được hoàn).",
+    "orderPaidAtInvalid": "Ngày thanh toán không hợp lệ.",
+    "regionInvalid": "Khu vực này hiện không khả dụng."
   },
   "superAdmin": {
     "title": "Quản trị hệ thống",
@@ -3455,7 +3534,8 @@
       "ACTIVE": "Đang hoạt động",
       "PENDING": "Chờ xử lý",
       "LOCKED": "Đã khóa",
-      "DELETED": "Đã xóa"
+      "DELETED": "Đã xóa",
+      "PENDING_ACTIVATION": "Chờ xác nhận"
     },
     "financeItem": {
       "PENDING": "Chờ xử lý",
@@ -3762,7 +3842,8 @@
     "selectSubtitle": "Sản phẩm hiển thị sẽ dựa trên vùng bạn chọn.",
     "selectHint": "Bạn có thể thay đổi vùng mua hàng bất kỳ lúc nào từ thanh menu.",
     "confirm": "Xác nhận",
-    "switchRegion": "Đổi vùng mua hàng"
+    "switchRegion": "Đổi vùng mua hàng",
+    "switchFailed": "Không thể đổi khu vực. Khu vực của bạn giữ nguyên."
   },
   "crossBorder": {
     "title": "Phát hiện sản phẩm xuyên biên giới",
@@ -3774,5 +3855,503 @@
     "continueAnyway": "Tiếp tục với vận chuyển quốc tế",
     "regionSwitched": "Đã cập nhật vùng mua hàng! Danh sách sản phẩm sẽ được làm mới.",
     "badge": "QT"
+  },
+  "refundCases": {
+    "status": {
+      "OPEN": "Đang mở (chờ người bán)",
+      "SELLER_MARKED_PAID": "Đã đánh dấu chuyển (chờ người mua)",
+      "BUYER_DISPUTED": "Người mua khiếu nại",
+      "BUYER_CONFIRMED": "Người mua đã xác nhận",
+      "CLOSED": "Đã đóng"
+    },
+    "kind": {
+      "partial": "Hoàn một phần",
+      "full": "Hoàn toàn bộ"
+    },
+    "source": {
+      "CANCEL": "Đơn bị hủy",
+      "RMA": "Yêu cầu trả hàng"
+    },
+    "overdue": "Quá hạn",
+    "shopLabel": "Cửa hàng",
+    "buyerLabel": "Người mua",
+    "opened": "Mở lúc {date}",
+    "age": "{days} ngày tuổi",
+    "reference": "Mã tham chiếu",
+    "selfDealing": {
+      "badge": "Cùng một tài khoản hai bên",
+      "note": "Người mua cũng là chủ cửa hàng nên không thể xác nhận khoản hoàn này tại đây. Chỉ bộ phận hỗ trợ mới hoàn tất được.",
+      "staffNote": "Người mua và chủ cửa hàng là cùng một tài khoản. Chỉ admin ghi đè mới hoàn tất được ca này."
+    },
+    "action": {
+      "MARK_PAID": "Đánh dấu đã chuyển",
+      "CONFIRM": "Xác nhận đã nhận",
+      "DISPUTE": "Chưa nhận được",
+      "OVERRIDE": "Ghi đè trạng thái"
+    },
+    "showHistory": "Xem lịch sử",
+    "hideHistory": "Ẩn lịch sử",
+    "updatedBySupport": "Đã được bộ phận hỗ trợ cập nhật",
+    "open": "Mở",
+    "event": {
+      "CREATED": "Mở ca hoàn tiền",
+      "SELLER_MARK_PAID": "Người bán đánh dấu đã chuyển hoàn tiền",
+      "BUYER_CONFIRM": "Người mua xác nhận đã nhận",
+      "BUYER_DISPUTE": "Người mua báo chưa nhận được hoàn tiền",
+      "AUTO_CLOSE": "Ca đã đóng",
+      "ADMIN_OVERRIDE": "Bộ phận hỗ trợ đổi trạng thái",
+      "RMA_SYNC": "Cập nhật từ yêu cầu trả hàng"
+    },
+    "actor": {
+      "BUYER": "Người mua",
+      "SELLER": "Người bán",
+      "ADMIN": "Quản trị viên",
+      "SUPER_ADMIN": "Quản trị viên cấp cao",
+      "STAFF": "Nhân viên",
+      "SYSTEM": "Hệ thống"
+    },
+    "events": {
+      "title": "Lịch sử",
+      "empty": "Chưa có sự kiện nào.",
+      "onBehalf": "thay mặt {who}"
+    },
+    "buyerPage": {
+      "title": "Hoàn tiền của tôi",
+      "intro": "Các khoản hoàn tiền dành cho bạn. Khi người bán đánh dấu đã chuyển, hãy xác nhận khi tiền về, hoặc báo nếu chưa nhận được.",
+      "empty": "Bạn chưa có ca hoàn tiền nào."
+    },
+    "sellerPage": {
+      "intro": "Các khoản hoàn tiền bạn nợ người mua. Chuyển tiền ngoài ứng dụng rồi đánh dấu ca là đã chuyển.",
+      "empty": "Cửa hàng chưa có ca hoàn tiền nào."
+    },
+    "admin": {
+      "title": "Theo dõi hoàn tiền",
+      "description": "Mọi khoản hoàn tiền cho người mua, từ đơn đã thanh toán bị hủy và yêu cầu trả hàng, kèm lịch sử đầy đủ.",
+      "empty": "Không có ca hoàn tiền nào khớp bộ lọc.",
+      "detailTitle": "Ca hoàn tiền",
+      "back": "Quay lại danh sách"
+    },
+    "filter": {
+      "status": "Trạng thái",
+      "source": "Nguồn",
+      "kind": "Loại",
+      "shopId": "Mã cửa hàng",
+      "orderCode": "Mã đơn (chính xác)",
+      "from": "Mở từ ngày (GMT+8)",
+      "to": "Mở đến ngày (GMT+8)",
+      "overdueOnly": "Chỉ quá hạn",
+      "apply": "Áp dụng bộ lọc",
+      "reset": "Đặt lại",
+      "errors": {
+        "badFrom": "Ngày bắt đầu bị thiếu hoặc không phải ngày có thật.",
+        "badTo": "Ngày kết thúc bị thiếu hoặc không phải ngày có thật.",
+        "rangeOrder": "Ngày bắt đầu không được sau ngày kết thúc.",
+        "rangeTooLong": "Khoảng ngày không được vượt quá 366 ngày.",
+        "badShop": "Mã cửa hàng phải là mã hợp lệ (UUID)."
+      }
+    },
+    "summary": {
+      "open": "Đang mở",
+      "awaitingBuyer": "Chờ người mua",
+      "disputed": "Khiếu nại",
+      "buyerConfirmed": "Đã xác nhận",
+      "closed": "Đã đóng",
+      "overdue": "Quá hạn",
+      "total": "Tổng",
+      "currency": "Tiền tệ",
+      "overdueOff": "Chưa bật đánh dấu quá hạn (thiết lập refundOverdueDays chưa đặt).",
+      "overdueRule": "Ca bị coi là quá hạn khi chưa đóng sau {days} ngày."
+    },
+    "col": {
+      "order": "Đơn hàng",
+      "shop": "Cửa hàng",
+      "buyer": "Người mua",
+      "status": "Trạng thái",
+      "amount": "Số tiền",
+      "opened": "Ngày mở"
+    },
+    "detail": {
+      "sellerMarked": "Người bán đánh dấu đã chuyển",
+      "buyerConfirmed": "Người mua xác nhận",
+      "disputed": "Khiếu nại",
+      "closed": "Đã đóng",
+      "rma": "Yêu cầu trả hàng",
+      "proofYes": "đã có chứng từ hoàn tiền",
+      "proofNo": "chưa có chứng từ hoàn tiền"
+    },
+    "modal": {
+      "markPaid": {
+        "title": "Đánh dấu đã chuyển hoàn tiền",
+        "desc": "Xác nhận bạn đã chuyển khoản hoàn tiền cho người mua ngoài ứng dụng. Người mua sẽ được yêu cầu xác nhận đã nhận.",
+        "confirm": "Đánh dấu đã chuyển",
+        "reference": "Mã giao dịch chuyển khoản (không bắt buộc)"
+      },
+      "confirm": {
+        "title": "Xác nhận đã nhận",
+        "desc": "Xác nhận khoản hoàn tiền đã đến tay bạn. Ca sẽ được đóng.",
+        "confirm": "Xác nhận đã nhận"
+      },
+      "dispute": {
+        "title": "Báo: chưa nhận được hoàn tiền",
+        "desc": "Cho chúng tôi biết vấn đề. Cửa hàng và bộ phận hỗ trợ sẽ được thông báo. Bạn chỉ báo được tối đa 3 lần.",
+        "confirm": "Gửi báo cáo"
+      },
+      "override": {
+        "title": "Ghi đè trạng thái ca",
+        "desc": "Quyết định của bộ phận hỗ trợ. Người mua và cửa hàng chỉ thấy \"Đã được bộ phận hỗ trợ cập nhật\", không bao giờ thấy lý do của bạn.",
+        "confirm": "Áp dụng ghi đè",
+        "toStatus": "Trạng thái mới",
+        "pick": "Chọn trạng thái",
+        "internalNote": "Lý do được lưu trong lịch sử nội bộ và không hiển thị cho người mua hay người bán.",
+        "rmaNote": "Ca này gắn với một yêu cầu trả hàng: thay đổi được thực hiện qua yêu cầu trả hàng và có thể bị từ chối nếu yêu cầu chưa ở trạng thái phù hợp."
+      },
+      "noteRequired": "Ghi chú (bắt buộc, 3 đến 1000 ký tự)",
+      "noteOptional": "Ghi chú (không bắt buộc)",
+      "errors": {
+        "note": {
+          "required": "Nhập nội dung.",
+          "tooShort": "Nhập ít nhất 3 ký tự.",
+          "tooLong": "Tối đa 1000 ký tự.",
+          "invalid": "Nội dung chứa ký tự không được phép."
+        },
+        "reference": {
+          "tooLong": "Mã tham chiếu tối đa 120 ký tự.",
+          "invalid": "Mã tham chiếu chứa ký tự không được phép."
+        },
+        "toStatus": {
+          "required": "Chọn trạng thái mới.",
+          "same": "Ca đã ở trạng thái này."
+        }
+      }
+    },
+    "errors": {
+      "selfDealing": "Bạn vừa là người mua vừa là chủ cửa hàng này nên không thể xác nhận khoản hoàn này. Hãy liên hệ bộ phận hỗ trợ để hoàn tất.",
+      "disputeLimit": "Bạn đã báo khoản hoàn này {max} lần. Vui lòng liên hệ bộ phận hỗ trợ.",
+      "invalidTransition": "Ca này đã thay đổi nên không thể thực hiện thao tác. Danh sách đã được làm mới.",
+      "notFound": "Không tìm thấy ca hoàn tiền này.",
+      "invalid": "Thao tác hoàn tiền không hợp lệ.",
+      "rmaProofFirst": "Khoản hoàn này thuộc một yêu cầu trả hàng. Hãy tải chứng từ chuyển khoản lên yêu cầu trả hàng trước, rồi mới đánh dấu đã chuyển hoàn tiền.",
+      "rmaEscalateFirst": "Ca này gắn với một yêu cầu trả hàng cần được nâng cấp xử lý trước (hoặc phải ở trạng thái phù hợp) thì bộ phận hỗ trợ mới đổi được."
+    },
+    "toast": {
+      "markedPaid": "Đã đánh dấu đã chuyển hoàn tiền.",
+      "confirmed": "Đã xác nhận hoàn tiền.",
+      "disputed": "Đã gửi báo cáo.",
+      "overridden": "Đã cập nhật trạng thái ca."
+    },
+    "rma": {
+      "hint": "Khoản hoàn này đến từ một yêu cầu trả hàng: hãy tải chứng từ chuyển khoản lên yêu cầu trả hàng trước khi đánh dấu đã chuyển.",
+      "open": "Mở yêu cầu trả hàng"
+    }
+  },
+  "accountingExport": {
+    "title": "Xuất dữ liệu kế toán",
+    "description": "Tải tệp CSV để đối soát: ca hoàn tiền, biến động sổ hoa hồng và giao dịch ví.",
+    "kind": "Loại xuất",
+    "kinds": {
+      "refund-cases": "Ca hoàn tiền (kèm lịch sử)",
+      "commission-ledger": "Biến động sổ hoa hồng",
+      "wallet-transactions": "Giao dịch ví",
+      "dividend-settlements": "Quyết toán cổ tức (ghi có tự động)"
+    },
+    "from": "Từ ngày (GMT+8)",
+    "to": "Đến ngày (GMT+8)",
+    "region": "Khu vực (không bắt buộc)",
+    "allRegions": "Mọi khu vực",
+    "rangeHint": "Bắt buộc nhập cả hai ngày và tính cả hai đầu. Khoảng ngày tối đa 366 ngày; kỳ dài hơn hãy chia thành nhiều tệp.",
+    "ledgerType": "Loại thưởng",
+    "beneficiaryId": "Mã người nhận (không bắt buộc)",
+    "walletReason": "Lý do",
+    "userId": "Mã người dùng (không bắt buộc)",
+    "download": "Tải CSV",
+    "downloading": "Đang chuẩn bị tệp...",
+    "preview": "Xem trước tổng",
+    "concurrencyHint": "Bạn chỉ chạy được tối đa 2 lần xuất cùng lúc. Tệp lớn có thể mất thời gian; hãy giữ trang này mở.",
+    "downloaded": "Đã lưu {file}.",
+    "summary": {
+      "title": "Tổng theo bộ lọc này",
+      "rows": "Số dòng",
+      "note": "Cuối tệp CSV có các dòng TOTAL khớp với những con số này.",
+      "held": "đang giữ {amount}",
+      "in": "Vào",
+      "out": "Ra",
+      "netLabel": "Ròng",
+      "net": {
+        "twd": "Ròng TWD",
+        "points": "Điểm ròng"
+      },
+      "movement": {
+        "CREDIT": "Ghi có",
+        "REVERSAL": "Thu hồi",
+        "PENDING": "Đang chờ (giữ)",
+        "VOID": "Đã hủy"
+      },
+      "direction": {
+        "IN": "Vào",
+        "OUT": "Ra"
+      },
+      "pool": "Quỹ",
+      "remainder": "Phần dư (thu nhập chênh lệch)",
+      "itemsTotal": "Tổng các dòng",
+      "settlements": "Số lần quyết toán"
+    },
+    "formErrors": {
+      "badFrom": "Nhập ngày bắt đầu có thật.",
+      "badTo": "Nhập ngày kết thúc có thật.",
+      "rangeOrder": "Ngày bắt đầu không được sau ngày kết thúc.",
+      "rangeTooLong": "Khoảng ngày không được vượt quá 366 ngày.",
+      "badShop": "Mã cửa hàng phải là mã hợp lệ (UUID).",
+      "badRegion": "Chọn một trong các khu vực có sẵn.",
+      "badReason": "Chọn lý do hợp lệ.",
+      "badBeneficiary": "Mã người nhận phải là mã hợp lệ (UUID).",
+      "badUser": "Mã người dùng phải là mã hợp lệ (UUID).",
+      "badQuarter": "Dùng quý dạng 2026Q3."
+    },
+    "errors": {
+      "tooManyRows": "Bản xuất này có {rows} dòng, vượt giới hạn {max}. Hãy thu hẹp khoảng ngày hoặc bộ lọc, hoặc chia thành nhiều tệp.",
+      "timeout": "Việc xuất quá lâu nên đã bị dừng. Hãy thử khoảng ngày ngắn hơn hoặc thử lại.",
+      "tooMany": "Có quá nhiều lần xuất đang chạy hoặc yêu cầu quá nhanh (tối đa 2 lần cùng lúc mỗi người). Hãy chờ một lát rồi thử lại.",
+      "unavailable": "Dịch vụ xuất tạm thời không khả dụng. Hãy thử lại sau vài phút.",
+      "forbidden": "Bạn không có quyền xuất dữ liệu kế toán.",
+      "badRequest": "Ngày hoặc bộ lọc không hợp lệ. Kiểm tra khoảng ngày (tối đa 366 ngày) rồi thử lại.",
+      "failed": "Xuất thất bại. Hãy thử lại.",
+      "aborted": "Quá trình tải bị gián đoạn và tệp chưa đầy đủ nên không được lưu. Hãy thử lại.",
+      "incomplete": "Tệp kết thúc bằng một lỗi ({reason}) và chưa đầy đủ nên không được lưu. Hãy thử lại hoặc dùng khoảng ngày ngắn hơn.",
+      "notCsv": "Máy chủ không trả về tệp CSV đầy đủ (không có dòng TOTAL ở cuối) nên chưa lưu gì. Hãy thử lại; nếu vẫn lặp lại, báo cho quản trị viên."
+    },
+    "quarter": "Quý (không bắt buộc)",
+    "quarterHint": "Dạng 2026Q3. Để trống = mọi quý đã quyết toán. Bản xuất này không có khoảng ngày và không lọc khu vực."
+  },
+  "subAccounts": {
+    "title": "Tài khoản phụ",
+    "intro": "Tài khoản phụ là tài khoản riêng, có e-mail và mật khẩu riêng, thuộc về tài khoản của bạn. Đơn mua của chúng theo cùng quy tắc giới thiệu và nhóm như trước. Mỗi tài khoản chỉ có số lượng giới hạn.",
+    "counter": "Tài khoản phụ",
+    "nOfCap": "{n} trên {cap}",
+    "pending": "Chờ xác nhận",
+    "pendingHint": "Đang chờ người dùng e-mail này xác nhận. Sẽ tự giải phóng sau {days} ngày.",
+    "empty": "Bạn chưa có tài khoản phụ nào.",
+    "withdraw": "Rút lại",
+    "withdrawConfirm": {
+      "title": "Rút lại tài khoản phụ này?",
+      "desc": "Việc giữ chỗ cho {email} bị hủy và chỗ được trả lại. Người đó không thể xác nhận nữa."
+    },
+    "create": {
+      "title": "Tạo tài khoản phụ",
+      "ownerExplain": "Tài khoản phụ ở trạng thái chờ cho đến khi người dùng e-mail đó xác nhận bằng mã chúng tôi gửi cho họ. Bạn không bao giờ thấy mã hay mật khẩu. Chỉ dùng địa chỉ mà người đó kiểm soát.",
+      "adminExplain": "Tạo thay mặt tài khoản này. Có hiệu lực ngay. Bắt buộc có lý do và sẽ được ghi lại.",
+      "email": "E-mail",
+      "fullName": "Tên (không bắt buộc)",
+      "region": "Khu vực",
+      "regionDefault": "Mặc định (TW)",
+      "submit": "Tạo tài khoản phụ",
+      "atCap": "Bạn đã đạt số tài khoản phụ tối đa.",
+      "mailSent": "Đã tạo. Mã đã được gửi tới địa chỉ đó; tài khoản phụ hoạt động khi người đó xác nhận.",
+      "mailNotSent": "Đã tạo, nhưng lúc này chưa gửi được e-mail mã. Người đó có thể yêu cầu mã ở trang quên mật khẩu bằng e-mail đó.",
+      "errors": {
+        "email": {
+          "required": "Nhập địa chỉ e-mail.",
+          "invalid": "Nhập địa chỉ e-mail hợp lệ.",
+          "tooLong": "Địa chỉ e-mail quá dài."
+        },
+        "fullName": {
+          "tooLong": "Tên tối đa 200 ký tự.",
+          "invalid": "Tên chứa ký tự không được phép."
+        },
+        "regionCode": {
+          "invalid": "Chọn một trong các khu vực có sẵn."
+        }
+      }
+    },
+    "col": {
+      "email": "E-mail",
+      "name": "Tên",
+      "status": "Trạng thái",
+      "region": "Khu vực",
+      "created": "Ngày tạo"
+    },
+    "invites": {
+      "title": "Liên kết mời",
+      "explain": "Liên kết mời cho phép một người tự đăng ký tài khoản của họ làm tài khoản phụ của bạn. Mỗi liên kết dùng được một lần và hết hạn sau 7 ngày.",
+      "create": "Tạo liên kết mời",
+      "newTitle": "Liên kết mời mới của bạn",
+      "onceWarning": "Hãy sao chép ngay: vì bảo mật, liên kết chỉ hiện một lần và không thể xem lại.",
+      "link": "Liên kết mời",
+      "expires": "Hết hạn {date}",
+      "copy": "Sao chép liên kết",
+      "copied": "Đã sao chép liên kết.",
+      "copyFailed": "Sao chép thất bại. Hãy chọn liên kết ở trên và sao chép thủ công.",
+      "dismiss": "Ẩn",
+      "replayed": "Lời mời này đã được tạo, nhưng không thể hiện lại liên kết. Hãy thu hồi nó bên dưới và tạo lời mời mới.",
+      "empty": "Chưa có liên kết mời nào.",
+      "expiresCol": "Hết hạn",
+      "revoke": "Thu hồi",
+      "status": {
+        "PENDING": "Đang mở",
+        "USED": "Đã dùng",
+        "REVOKED": "Đã thu hồi",
+        "EXPIRED": "Hết hạn"
+      }
+    },
+    "toast": {
+      "created": "Đã tạo tài khoản phụ.",
+      "withdrawn": "Đã rút lại tài khoản phụ.",
+      "revoked": "Đã thu hồi lời mời.",
+      "discarded": "Đã hủy tài khoản phụ đang chờ."
+    },
+    "errors": {
+      "limit": "Đã đạt số tài khoản phụ tối đa của tài khoản này.",
+      "depthLimit": "Đã đạt độ sâu tối đa của tài khoản phụ.",
+      "parentInvalid": "Tài khoản này không thể có tài khoản phụ.",
+      "hasChildren": "Tài khoản này vẫn còn tài khoản phụ nên không thể xóa.",
+      "reparentForbidden": "Không thể chuyển tài khoản phụ sang người giới thiệu khác.",
+      "inviteInvalid": "Liên kết mời không hợp lệ: có thể sai, đã dùng, đã thu hồi hoặc hết hạn. Hãy xin chủ tài khoản liên kết mới.",
+      "inviteNotFound": "Không tìm thấy lời mời này.",
+      "inviteLimit": "Có quá nhiều liên kết mời đang mở. Hãy thu hồi bớt một liên kết.",
+      "notPending": "Tài khoản phụ này không còn chờ xác nhận.",
+      "declinedRecently": "Hiện chưa thể thêm địa chỉ này. Hãy thử lại sau hoặc dùng địa chỉ khác.",
+      "pendingActivation": "Tài khoản này đang chờ người dùng e-mail xác nhận nên không thực hiện được thao tác này.",
+      "budget": "Gần đây đã tạo quá nhiều tài khoản phụ. Hãy thử lại sau.",
+      "notFound": "Không tìm thấy. Có thể nó đã bị gỡ.",
+      "tooMany": "Quá nhiều yêu cầu. Vui lòng chờ một lát rồi thử lại."
+    },
+    "register": {
+      "inviteBanner": "Bạn đang đăng ký bằng lời mời tài khoản phụ. Tài khoản mới sẽ thuộc về người đã mời bạn."
+    },
+    "decline": {
+      "title": "Từ chối tài khoản",
+      "description": "Có người đã giữ chỗ một tài khoản cho địa chỉ e-mail này. Nhập mã 6 số trong tin nhắn để từ chối.",
+      "code": "Mã trong tin nhắn",
+      "submit": "Từ chối tài khoản",
+      "done": "Xong. Tài khoản được giữ chỗ đã bị từ chối.",
+      "failed": "Không thể từ chối tài khoản.",
+      "acceptHint": "Muốn chấp nhận thay vào đó?",
+      "acceptLink": "Đặt mật khẩu tại đây",
+      "errors": {
+        "email": "Nhập địa chỉ e-mail hợp lệ.",
+        "code": "Nhập mã 6 số."
+      }
+    },
+    "admin": {
+      "title": "Tài khoản phụ của một tài khoản",
+      "back": "Quay lại người dùng",
+      "root": "Tài khoản gốc",
+      "isSub": "Tài khoản này là tài khoản phụ (cấp {depth}).",
+      "isRoot": "Tài khoản này là tài khoản gốc.",
+      "readOnly": "Chỉ xem: chỉ Admin hoặc Super Admin mới tạo hoặc hủy được tài khoản phụ.",
+      "empty": "Tài khoản này chưa có tài khoản phụ.",
+      "discard": "Hủy tài khoản chờ",
+      "discardTitle": "Hủy tài khoản phụ đang chờ",
+      "discardDesc": "Hủy việc giữ chỗ cho {email}. Bắt buộc có lý do và sẽ được ghi lại.",
+      "truncated": "Danh sách bị cắt ở {limit} dòng; hãy thu hẹp bằng cách mở một tài khoản phụ.",
+      "open": "Tài khoản phụ"
+    }
+  },
+  "dividendSettlements": {
+    "title": "Quyết toán cổ tức",
+    "description": "Cổ tức theo quý được ghi tự động vào ví: quỹ, phần dư, từng dòng tài khoản và giao dịch ví của nó.",
+    "empty": "Chưa có quý nào được quyết toán.",
+    "open": "Mở",
+    "back": "Quay lại danh sách quyết toán",
+    "detailTitle": "Quyết toán",
+    "noItems": "Không có dòng nào khớp bộ lọc.",
+    "counts": "{credited} đã ghi có, {pending} đang chờ, {skipped} bỏ qua trên {total}",
+    "armed": {
+      "label": "Ghi có tự động",
+      "armed": "Đã sẵn sàng: sẽ quyết toán các quý đã khóa từ quý đầu tiên trở đi",
+      "enabledNoQuarter": "Công tắc bật nhưng chưa có quý đầu tiên: không quyết toán gì",
+      "off": "Tắt: không quyết toán gì",
+      "unknown": "Chưa rõ trạng thái",
+      "switch": "Công tắc",
+      "fromQuarter": "Quý đầu tiên"
+    },
+    "warning": {
+      "title": "Chưa được bật tự động ghi có cổ tức trên môi trường thật",
+      "body": "Công tắc phải để TẮT cho đến khi khách trả lời Q1 (song song hay thay thế quỹ toàn cầu) và C3b (cổ tức theo khu vực). Bật lên sẽ ghi có vào ví thật và không thể hoàn tác.",
+      "order": "Hãy đặt quý đầu tiên TRƯỚC khi bật công tắc: bật công tắc mà chưa có quý đầu tiên thì không quyết toán gì; các quý trước đó không bao giờ được quyết toán."
+    },
+    "col": {
+      "quarter": "Quý",
+      "status": "Trạng thái",
+      "pool": "Quỹ",
+      "remainder": "Phần dư",
+      "paid": "Đã trả",
+      "items": "Dòng",
+      "account": "Tài khoản",
+      "slots": "Suất",
+      "amount": "Số tiền",
+      "points": "Điểm",
+      "walletTx": "Giao dịch ví"
+    },
+    "facts": {
+      "retained": "Công ty giữ lại",
+      "slots": "Tổng số suất",
+      "fx": "Tỷ giá (TWD sang USD)",
+      "peg": "Giá trị điểm (USD)",
+      "tax": "Thuế đã loại",
+      "lockAt": "Quý bị khóa lúc",
+      "snapshotAt": "Chốt lúc",
+      "finishedAt": "Hoàn tất lúc",
+      "failedReason": "Lý do"
+    },
+    "settlementStatus": {
+      "RUNNING": "Đang chạy",
+      "COMPLETED": "Hoàn tất",
+      "FAILED": "Thất bại"
+    },
+    "itemStatus": {
+      "PENDING": "Đang chờ",
+      "CREDITED": "Đã ghi có",
+      "SKIPPED_ZERO": "Bỏ qua (bằng 0)",
+      "SKIPPED_NO_WALLET": "Bỏ qua (không thể trả)"
+    },
+    "skipReason": {
+      "NO_WALLET": "Không có ví",
+      "DELETED": "Tài khoản đã xóa",
+      "PENDING_ACTIVATION": "Tài khoản chưa được xác nhận",
+      "NO_USER": "Không tìm thấy tài khoản"
+    },
+    "run": {
+      "title": "Chạy quyết toán ngay",
+      "explain": "Chỉ Super Admin. Lệnh chạy đồng bộ: chốt quý nếu cần và ghi có cho mọi tài khoản trước khi trả lời, nên quý lớn có thể mất thời gian. Hãy giữ trang này mở. Chạy lại là an toàn: tài khoản đã trả sẽ không bị trả hai lần.",
+      "quarter": "Quý",
+      "badQuarter": "Nhập quý dạng 2026Q4.",
+      "button": "Chạy ngay",
+      "running": "Đang chạy...",
+      "confirmTitle": "Chạy quyết toán {quarter} ngay?",
+      "confirmDesc": "Việc này ghi có vào ví thật. Nó chạy đến khi xong; đừng đóng trang.",
+      "readOnly": "Chỉ xem: chỉ Super Admin mới chạy được quyết toán.",
+      "result": "Đã ghi có {credited}, bỏ qua {skipped}, đang chờ {pending}, lỗi {errors}.",
+      "partialHint": "Chưa trả hết. Hãy chạy lại để tiếp tục.",
+      "outcome": {
+        "COMPLETED": "Hoàn tất",
+        "ALREADY_COMPLETED": "Đã hoàn tất trước đó",
+        "PARTIAL": "Làm được một phần"
+      }
+    },
+    "errors": {
+      "disabled": "Tự động ghi có cổ tức đang tắt.",
+      "fromRequired": "Hãy đặt quý đầu tiên của việc tự động ghi có trước (trong phần thiết lập).",
+      "notLocked": "Quý {quarter} chưa bị khóa nên chưa thể quyết toán.",
+      "beforeStart": "Quý {quarter} nằm trước quý đầu tiên của việc tự động ghi có ({fromQuarter}) nên không bao giờ được quyết toán.",
+      "failed": "Quyết toán {quarter} không qua được bước đối soát và cần xem xét thủ công; không thể chạy lại.",
+      "notFound": "Quý này chưa có quyết toán.",
+      "creditNotFound": "Không tìm thấy dòng cổ tức này."
+    },
+    "enableConfirm": {
+      "title": "Bật tự động ghi có cổ tức?",
+      "fromSet": "Đã đặt quý đầu tiên: {quarter}. Các quý đã khóa từ đó trở đi sẽ được quyết toán vào ví thật.",
+      "fromNotSet": "CHƯA đặt quý đầu tiên: sẽ không quyết toán gì cho đến khi bạn đặt. Hãy đặt trước.",
+      "check": "Tôi hiểu: khách đã trả lời Q1 và C3b, trước đó đây không phải môi trường thật, và quý đầu tiên đã được đặt.",
+      "confirm": "Bật"
+    }
+  },
+  "dividendCredits": {
+    "title": "Cổ tức đã nhận",
+    "intro": "Cổ tức theo quý đã ghi vào ví của bạn. Số tiền tính bằng TWD và điểm ví.",
+    "empty": "Bạn chưa được ghi có cổ tức nào.",
+    "detailTitle": "Khoản cổ tức",
+    "back": "Quay lại cổ tức đã nhận",
+    "creditedAt": "Ghi có lúc",
+    "settlement": "Quyết toán"
   }
 }

@@ -3,6 +3,8 @@ import { getTranslation } from "@/lib/i18n/get-translation";
 import type { Locale } from "@/lib/i18n/types";
 import { statusLabel } from "@/lib/i18n/status";
 import { tt, currentLocale } from "@/lib/i18n/tt";
+import { refundCaseErrorKey } from "@/lib/refund-cases/model";
+import { dividendErrorKey } from "@/lib/dividend/settlement";
 
 /** Machine error codes from BE — never show these verbatim in UI. */
 export const API_ERROR_I18N: Record<string, string> = {
@@ -81,6 +83,29 @@ export const API_ERROR_I18N: Record<string, string> = {
   DIVIDEND_SLOT_CAP_EXCEEDED: "toast.dividendSlotCapExceeded",
   DIVIDEND_SLOT_INSUFFICIENT: "toast.dividendSlotInsufficient",
   RMA_REFUND_AMOUNT_INVALID: "toast.rmaRefundAmountInvalid",
+  ORDER_PAID_AT_INVALID: "toast.orderPaidAtInvalid",
+  REGION_INVALID: "toast.regionInvalid",
+  REFUND_CASE_NOT_FOUND: "refundCases.errors.notFound",
+  REFUND_CASE_INVALID: "refundCases.errors.invalid",
+  REFUND_CASE_INVALID_TRANSITION: "refundCases.errors.invalidTransition",
+  RMA_ESCALATION_REQUIRED: "refundCases.errors.rmaEscalateFirst",
+  ACCOUNT_PENDING_ACTIVATION: "subAccounts.errors.pendingActivation",
+  SUB_ACCOUNT_LIMIT: "subAccounts.errors.limit",
+  SUB_ACCOUNT_DEPTH_LIMIT: "subAccounts.errors.depthLimit",
+  SUB_ACCOUNT_PARENT_INVALID: "subAccounts.errors.parentInvalid",
+  SUB_ACCOUNT_HAS_CHILDREN: "subAccounts.errors.hasChildren",
+  SUB_ACCOUNT_REPARENT_FORBIDDEN: "subAccounts.errors.reparentForbidden",
+  SUB_ACCOUNT_INVITE_INVALID: "subAccounts.errors.inviteInvalid",
+  SUB_ACCOUNT_INVITE_NOT_FOUND: "subAccounts.errors.inviteNotFound",
+  SUB_ACCOUNT_INVITE_LIMIT: "subAccounts.errors.inviteLimit",
+  SUB_ACCOUNT_NOT_PENDING: "subAccounts.errors.notPending",
+  SUB_ACCOUNT_DECLINED_RECENTLY: "subAccounts.errors.declinedRecently",
+  DIVIDEND_AUTO_CREDIT_DISABLED: "dividendSettlements.errors.disabled",
+  DIVIDEND_AUTO_CREDIT_FROM_REQUIRED: "dividendSettlements.errors.fromRequired",
+  DIVIDEND_SETTLEMENT_NOT_FOUND: "dividendSettlements.errors.notFound",
+  DIVIDEND_CREDIT_NOT_FOUND: "dividendSettlements.errors.creditNotFound",
+  EXPORT_TOO_MANY_ROWS: "accountingExport.errors.tooManyRows",
+  EXPORT_TIMEOUT: "accountingExport.errors.timeout",
 };
 
 const STATUS_TOKENS_BY_DOMAIN: Record<string, string[]> = {
@@ -164,6 +189,13 @@ export function getErrorMessage(
   locale?: Locale | null,
 ): string {
   const lang = resolveLocale(locale);
+  const refundCase = refundCaseErrorKey(e);
+  const special = refundCase ?? dividendErrorKey(e);
+  if (special) {
+    let text = translateKey(special.key, lang);
+    for (const [k, v] of Object.entries(special.params ?? {})) text = text.replace(`{${k}}`, v);
+    return text;
+  }
   if (e instanceof ApiError) {
     // Some backends (or a reverse proxy in front of them) return a generic
     // 413 "Payload Too Large" with no machine-readable code — map it to the

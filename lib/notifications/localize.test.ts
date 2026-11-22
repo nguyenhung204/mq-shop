@@ -79,3 +79,48 @@ describe("ORDER_STALE_BILL_REMINDER copy (R5)", () => {
     }
   });
 });
+
+describe("refund case notification copy (C2)", () => {
+  for (const type of ["REFUND_CASE_OPENED", "REFUND_CASE_MARKED_PAID", "REFUND_CASE_DISPUTED"]) {
+    it(`${type} is rendered from the app copy in every language, with no raw placeholder`, () => {
+      const n = { type, title: "Server title", body: "Server body", meta: { refundCaseId: "c1", orderId: "o1", shopId: "s1" } };
+      const titles = new Set<string>();
+      for (const loc of ["en", "vi", "zh-TW"] as const) {
+        const out = localizeNotification(n, loc);
+        expect(out.title, loc).not.toBe("Server title");
+        expect(out.body, loc).not.toBe("Server body");
+        expect(out.body, loc).not.toMatch(/[{}]/);
+        titles.add(out.title);
+      }
+      expect(titles.size).toBe(3);
+    });
+  }
+});
+
+describe("dividend notification copy (C5)", () => {
+  it("DIVIDEND_CREDITED shows the quarter, the TWD amount and the points in every language", () => {
+    const n = { type: "DIVIDEND_CREDITED", title: "Server title", body: "Server body", meta: { quarter: "2026Q4", amountTwd: "1234.50", points: "39.19", itemId: "11111111-1111-1111-1111-111111111111" } };
+    const titles = new Set<string>();
+    for (const loc of ["en", "vi", "zh-TW"] as const) {
+      const out = localizeNotification(n, loc);
+      expect(out.body, loc).toContain("2026Q4");
+      expect(out.body, loc).toContain("1234.50");
+      expect(out.body, loc).toContain("39.19");
+      expect(out.body, loc).not.toMatch(/[{}]/);
+      expect(out.title, loc).not.toBe("Server title");
+      titles.add(out.title);
+    }
+    expect(titles.size).toBe(3);
+  });
+  it("DIVIDEND_SETTLEMENT_FAILED shows the quarter in every language", () => {
+    const n = { type: "DIVIDEND_SETTLEMENT_FAILED", title: "Server title", body: "Server body", meta: { quarter: "2026Q3" } };
+    const bodies = new Set<string>();
+    for (const loc of ["en", "vi", "zh-TW"] as const) {
+      const out = localizeNotification(n, loc);
+      expect(out.body, loc).toContain("2026Q3");
+      expect(out.body, loc).not.toMatch(/[{}]/);
+      bodies.add(out.body);
+    }
+    expect(bodies.size).toBe(3);
+  });
+});

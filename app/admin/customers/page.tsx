@@ -57,6 +57,7 @@ function CustomersInner() {
             <option value="">{t("admin.common.allStatuses")}</option>
             <option value="ACTIVE">{translateStatus(t, "user", "ACTIVE")}</option>
             <option value="LOCKED">{translateStatus(t, "user", "LOCKED")}</option>
+            <option value="PENDING_ACTIVATION">{translateStatus(t, "user", "PENDING_ACTIVATION")}</option>
           </select>
         </div>
 

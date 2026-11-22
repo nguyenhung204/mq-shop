@@ -1,3 +1,4 @@
+import { DIVIDEND_CREDIT_ROLES } from "@/lib/dividend/access";
 import type { ApiNotification, NotificationType, Role } from "@/lib/api/types";
 
 export type NotificationRouteContext = {
@@ -40,6 +41,15 @@ function isRmaStaff(roles: Role[]): boolean {
     roles.includes("SUPER_ADMIN") ||
     roles.includes("CS") ||
     roles.includes("WAREHOUSE")
+  );
+}
+
+function isRefundCaseStaff(roles: Role[]): boolean {
+  return (
+    roles.includes("ADMIN") ||
+    roles.includes("SUPER_ADMIN") ||
+    roles.includes("CS") ||
+    roles.includes("ACCOUNTANT")
   );
 }
 
@@ -194,6 +204,33 @@ export function resolveNotificationRoute(
       }
       if (orderId) return `/orders/${orderId}`;
       return "/rma";
+    }
+
+    // C2: refund case notices. Owner: transfer the refund; buyer: confirm receipt; platform ops: a dispute.
+    case "REFUND_CASE_OPENED":
+      return seller ? "/seller/refunds" : null;
+
+    case "REFUND_CASE_MARKED_PAID":
+      return "/refunds";
+
+    case "REFUND_CASE_DISPUTED": {
+      if (!isRefundCaseStaff(ctx.roles)) return null;
+      const caseId = metaStr(meta, "refundCaseId");
+      return caseId ? `/admin/refund-cases/${encodeURIComponent(caseId)}` : "/admin/refund-cases";
+    }
+
+    // C5: automatic dividend credit. Owner: the credited line; finance staff: the failed settlement.
+    case "DIVIDEND_CREDITED": {
+      // CS / WAREHOUSE cannot read the credit pages (403)
+      if (!ctx.roles.some((r) => DIVIDEND_CREDIT_ROLES.includes(r))) return null;
+      const itemId = metaStr(meta, "itemId");
+      return itemId ? `/dividend-credits/${encodeURIComponent(itemId)}` : "/dividend-credits";
+    }
+
+    case "DIVIDEND_SETTLEMENT_FAILED": {
+      if (!admin) return null;
+      const quarter = metaStr(meta, "quarter");
+      return quarter ? `/admin/dividend/settlements/${encodeURIComponent(quarter)}` : "/admin/dividend/settlements";
     }
 
     case "REVIEW_NEW":

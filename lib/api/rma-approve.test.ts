@@ -15,10 +15,14 @@ describe("RMA approve clients (UI1)", () => {
     await adminOrdersApi.approveRma("r1", { note: "ok", refundAmount: "250.00" });
     expect(post).toHaveBeenCalledWith("/admin/rma/r1/approve", { note: "ok", refundAmount: "250.00" });
   });
-  it("seller client sends only the note: it has no refundAmount at all", async () => {
+  it("seller client sends only the note when no amount was typed", async () => {
     post.mockResolvedValue({});
     await orderApi.approveRma("r1", { note: "ok" });
     expect(post).toHaveBeenCalledWith("/rma/r1/approve", { note: "ok" });
-    expect(orderApi.approveRma.length).toBeLessThanOrEqual(2);
+  });
+  it("seller client forwards a typed refundAmount to the seller route (C1-3)", async () => {
+    post.mockResolvedValue({});
+    await orderApi.approveRma("r1", { refundAmount: "250.00" });
+    expect(post).toHaveBeenCalledWith("/rma/r1/approve", { refundAmount: "250.00" });
   });
 });

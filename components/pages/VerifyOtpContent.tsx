@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useMemo, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { AuthPanel } from "@/components/auth/AuthPanel";
 import { OtpCountdown } from "@/components/auth/OtpCountdown";
 import { authApi } from "@/lib/api/auth";
@@ -18,6 +19,10 @@ export function VerifyOtpContent() {
   const { setUser } = useAuth();
   const [email, setEmail] = useState(searchParams.get("email") || "");
   const [code, setCode] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [showPwConfirm, setShowPwConfirm] = useState(false);
   const [apiError, setApiError] = useState<{ err: unknown; fallbackKey: string } | null>(null);
   const [localErrorKey, setLocalErrorKey] = useState<string | null>(null);
   const [okKey, setOkKey] = useState<string | null>(null);
@@ -42,9 +47,17 @@ export function VerifyOtpContent() {
       setLocalErrorKey("account.forgot.otpExpired");
       return;
     }
+    if (password.length < 8) {
+      setLocalErrorKey("account.messages.passwordTooShort");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setLocalErrorKey("account.messages.passwordMismatch");
+      return;
+    }
     setBusy(true);
     try {
-      const data = await authApi.verifyOtp({ email, otp: code });
+      const data = await authApi.verifyOtp({ email, otp: code, password });
       setRedirecting(true);
       if (data?.user) setUser(data.user);
       router.replace(postAuthPath(data?.user));
@@ -116,6 +129,54 @@ export function VerifyOtpContent() {
                 autoComplete="one-time-code"
                 disabled={expired}
               />
+            </div>
+            <div className="mq-auth-field">
+              <label htmlFor="otp-password">{t("account.password")}</label>
+              <div className="relative">
+                <input
+                  id="otp-password"
+                  type={showPw ? "text" : "password"}
+                  className="mq-input pr-10"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  autoComplete="new-password"
+                  disabled={expired}
+                />
+                <button
+                  type="button"
+                  aria-label={showPw ? t("account.hidePassword") : t("account.showPassword")}
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-mq-text-muted hover:text-mq-text"
+                  onClick={() => setShowPw((v) => !v)}
+                  tabIndex={-1}
+                >
+                  {showPw ? <EyeOff size={16} strokeWidth={1.75} /> : <Eye size={16} strokeWidth={1.75} />}
+                </button>
+              </div>
+            </div>
+            <div className="mq-auth-field">
+              <label htmlFor="otp-password-confirm">{t("account.confirmPassword")}</label>
+              <div className="relative">
+                <input
+                  id="otp-password-confirm"
+                  type={showPwConfirm ? "text" : "password"}
+                  className="mq-input pr-10"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  autoComplete="new-password"
+                  disabled={expired}
+                />
+                <button
+                  type="button"
+                  aria-label={showPwConfirm ? t("account.hidePassword") : t("account.showPassword")}
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-mq-text-muted hover:text-mq-text"
+                  onClick={() => setShowPwConfirm((v) => !v)}
+                  tabIndex={-1}
+                >
+                  {showPwConfirm ? <EyeOff size={16} strokeWidth={1.75} /> : <Eye size={16} strokeWidth={1.75} />}
+                </button>
+              </div>
             </div>
             <button
               type="submit"

@@ -24,6 +24,8 @@ import { currentLocale, tt } from "@/lib/i18n/tt";
 import { statusLabel } from "@/lib/i18n/status";
 import { suppressNotificationToasts } from "@/lib/notifications/suppress-toast";
 import { getErrorMessage } from "@/lib/queries/utils";
+import { createIdempotentRunner } from "@/lib/queries/idempotent-run";
+import { paidAtErrorKey } from "@/lib/orders/paid-at";
 import { sendRmaDecision, type RmaDecisionVars } from "@/lib/rma/approve-flow";
 
 export const orderKeys = {
@@ -123,6 +125,36 @@ export function useOrder(id: string) {
     queryKey: orderKeys.detail(id),
     queryFn: () => orderApi.get(id),
     enabled: Boolean(id),
+  });
+}
+
+export const paidAtHistoryKey = (orderId: string) => [...orderKeys.all, "paid-at-history", orderId] as const;
+
+export function usePaidAtHistory(orderId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: paidAtHistoryKey(orderId),
+    queryFn: async () => (await adminOrdersApi.paidAtHistory(orderId)).items ?? [],
+    enabled: enabled && Boolean(orderId),
+  });
+}
+
+/** SUPER_ADMIN paid-at edit; a retry of the same body reuses the Idempotency-Key. */
+export function useEditPaidAt(orderId: string) {
+  const queryClient = useQueryClient();
+  const idempotency = useMemo(() => createIdempotentRunner(), []);
+  return useMutation({
+    mutationFn: (body: { paidAt: string; reason: string }) =>
+      idempotency.run(body, (b, key) => adminOrdersApi.editPaidAt(orderId, b, key)),
+    onSuccess: (res) => {
+      idempotency.onSuccess();
+      void queryClient.invalidateQueries({ queryKey: orderKeys.all });
+      toast.success(tt(res.changed ? "orders.paidAt.saved" : "orders.paidAt.unchanged"));
+    },
+    onError: (e) => {
+      idempotency.onError(e);
+      const key = paidAtErrorKey(e);
+      toast.error(key ? tt(key) : getErrorMessage(e, tt("admin.common.failed")));
+    },
   });
 }
 
@@ -387,6 +419,8 @@ export function useShopRmaAction() {
         | "shipGoodsToBuyer"
         | "updateGoodsReturnTracking";
       note?: string;
+      /** approve only: partial refund (2 dp string); omitted = refund what is left. */
+      refundAmount?: string;
       orderId?: string;
       trackingCode?: string;
       carrier?: string;
@@ -394,7 +428,7 @@ export function useShopRmaAction() {
       const { id, action, note } = input;
       switch (action) {
         case "approve":
-          return orderApi.approveRma(id, note ? { note } : {});
+          return sendRmaDecision(orderApi, { id, decision: "APPROVED", note, refundAmount: input.refundAmount }) as Promise<RmaView>;
         case "reject":
           return orderApi.rejectRma(id, { note: note || "Rejected" });
         case "returnReceived":

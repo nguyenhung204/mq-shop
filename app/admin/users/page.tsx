@@ -15,6 +15,7 @@ import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateRoles, translateStatus } from "@/lib/i18n/status";
+import { canLockUnlock, userStatusParam } from "@/lib/admin/user-status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 
@@ -39,7 +40,7 @@ function UsersInner() {
         await adminApi.users({
           page,
           pageSize: 10,
-          status: status || undefined,
+          status: userStatusParam(status),
           q: search.trim() || undefined,
         }),
       ),
@@ -127,6 +128,7 @@ function UsersInner() {
             <option value="">{t("admin.common.allStatuses")}</option>
             <option value="ACTIVE">{translateStatus(t, "user", "ACTIVE")}</option>
             <option value="LOCKED">{translateStatus(t, "user", "LOCKED")}</option>
+            <option value="PENDING_ACTIVATION">{translateStatus(t, "user", "PENDING_ACTIVATION")}</option>
           </select>
         </div>
 
@@ -143,6 +145,7 @@ function UsersInner() {
                   <th className="py-2.5 px-3">{t("admin.common.name")}</th>
                   <th className="py-2.5 px-3">{t("admin.common.status")}</th>
                   <th className="py-2.5 px-3">{t("admin.common.roles")}</th>
+                  <th className="py-2.5 px-3">{t("admin.common.region")}</th>
                   <th className="py-2.5 px-3" />
                 </tr>
               </thead>
@@ -155,13 +158,17 @@ function UsersInner() {
                     <td className="py-2.5 px-3">{u.fullName || "—"}</td>
                     <td className="py-2.5 px-3">{u.status ? translateStatus(t, "user", u.status) : "—"}</td>
                     <td className="py-2.5 px-3">{translateRoles(t, u.roles)}</td>
+                    <td className="py-2.5 px-3">{u.regionCode ?? "—"}</td>
                     <td className="py-2.5 px-3 whitespace-nowrap text-right">
                       <AdminActions>
+                        <Link href={`/admin/accounts/${u.id}/sub-accounts`} className="mq-admin-btn mq-admin-btn-secondary text-xs">
+                          {t("subAccounts.admin.open")}
+                        </Link>
                         <AdminIconButton
                           label={t("admin.common.lock")}
                           icon={Lock}
                           tone="warn"
-                          disabled={action.isPending || isLocked}
+                          disabled={action.isPending || isLocked || !canLockUnlock(u.status)}
                           onClick={() =>
                             setPending({ userId: u.id, email: u.email, kind: "lock" })
                           }
@@ -170,7 +177,7 @@ function UsersInner() {
                           label={t("admin.common.unlock")}
                           icon={Unlock}
                           tone="approve"
-                          disabled={action.isPending || !isLocked}
+                          disabled={action.isPending || !isLocked || !canLockUnlock(u.status)}
                           onClick={() => void action.mutateAsync({ userId: u.id, kind: "unlock" })}
                         />
                         <AdminIconButton

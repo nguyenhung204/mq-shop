@@ -481,7 +481,8 @@
       "loading": "訂單載入中…",
       "fulfillmentComplaintBtn": "申訴未出貨",
       "fulfillmentComplaintTitle": "未出貨申訴",
-      "fulfillmentComplaintDesc": "請描述已付款但尚未出貨的情況。"
+      "fulfillmentComplaintDesc": "請描述已付款但尚未出貨的情況。",
+      "region": "地區：{region}"
     },
     "payment": {
       "title": "付款憑證",
@@ -590,6 +591,28 @@
       "amountDue": "應付金額",
       "rateLocked": "下單時鎖定的匯率：{rate}",
       "ledgerNote": "訂單於商店帳本的總額：{twd}"
+    },
+    "paidAt": {
+      "title": "付款日期",
+      "current": "目前付款日期（GMT+8）：{date}",
+      "help": "僅限超級管理員。只會修改記錄的付款日期，不會重新計算佣金、錢包或銷售資格。若會使訂單跨入已鎖定的股利季度則會被拒絕。",
+      "newDate": "新的付款日期與時間（GMT+8）",
+      "save": "儲存付款日期",
+      "saved": "付款日期已更新。",
+      "unchanged": "付款日期未變更。",
+      "historyTitle": "修改紀錄",
+      "historyEmpty": "尚無修改。",
+      "by": "修改者 {user}",
+      "errors": {
+        "required": "請選擇日期與時間。",
+        "invalidDate": "日曆上沒有這個日期。",
+        "future": "付款日期不能在未來。",
+        "beforeCreated": "付款日期不能早於訂單建立時間。",
+        "unchanged": "這已經是目前的付款日期。",
+        "invalid": "付款日期無效：必須是真實存在的日期時間，不可在未來，也不可早於訂單建立時間。",
+        "quarterLocked": "此變更會使訂單跨入已鎖定的股利季度，因此被拒絕。",
+        "forbidden": "只有超級管理員可以修改付款日期。"
+      }
     }
   },
   "wishlist": {
@@ -648,7 +671,7 @@
     },
     "verifyOtp": {
       "title": "驗證電子郵件",
-      "description": "輸入我們寄到您信箱的 6 位數驗證碼。",
+      "description": "輸入我們寄到您信箱的 6 位數驗證碼並設定密碼。",
       "asideTitle": "快完成了",
       "asideText": "確認電子郵件以啟用 MQ 帳號。",
       "signingIn": "登入中…",
@@ -750,7 +773,13 @@
       "myShop": "我的商店",
       "myShopDesc": "管理您的 MQ 商店",
       "network": "網絡",
-      "networkDesc": "您的 MLM 下線樹"
+      "networkDesc": "您的 MLM 下線樹",
+      "refunds": "我的退款",
+      "refundsDesc": "應退給你的款項：確認收款或回報問題",
+      "subAccounts": "子帳號",
+      "subAccountsDesc": "你名下管理的帳號：建立、邀請、撤回",
+      "dividendCredits": "我的股利入帳",
+      "dividendCreditsDesc": "已入帳至你錢包的季度股利"
     },
     "otp": {
       "timeRemaining": "剩餘時間",
@@ -839,7 +868,10 @@
       "settings": "系統設定",
       "dividendRates": "股利比率",
       "dividendSlots": "股利名額",
-      "dividendReport": "股利報表"
+      "dividendReport": "股利報表",
+      "refundCases": "退款追蹤",
+      "accountingExport": "會計匯出",
+      "dividendSettlements": "股利結算"
     },
     "common": {
       "create": "建立",
@@ -909,7 +941,8 @@
         "required": "請輸入原因。",
         "tooShort": "原因至少需 3 個字元。",
         "tooLong": "原因最多 500 個字元。"
-      }
+      },
+      "region": "地區"
     },
     "overview": {
       "title": "管理後台",
@@ -1670,7 +1703,8 @@
           "invalid": "請輸入如 250 或 250.50 的金額（最多兩位小數）。",
           "zero": "退款金額須大於 0。",
           "exceeds": "退款金額超過此訂單剩餘可退金額。"
-        }
+        },
+        "displayEquivalent": "約 {amount}（買家的顯示幣別；退款本身以 TWD 記錄）。"
       }
     },
     "financePage": {
@@ -2125,7 +2159,9 @@
         "notInteger": "數值必須為整數。",
         "belowMin": "數值不得小於 {min}。",
         "aboveMax": "數值不得大於 {max}。",
-        "notNullable": "此設定不可清除。"
+        "notNullable": "此設定不可清除。",
+        "notDecimal": "請輸入最多 2 位小數的數字（例如 5 或 5.25）。",
+        "notQuarter": "請輸入如 2026Q4（或 20264）的季度：年份 2000 至 2100，季 1 至 4。"
       },
       "keys": {
         "dividendEditWindowDays": {
@@ -2147,8 +2183,46 @@
           "label": "名額總上限",
           "description": "所有帳戶合計的股利名額上限。",
           "nullMeaning": "無上限。"
+        },
+        "refundOverdueDays": {
+          "label": "退款逾期天數",
+          "description": "退款個案超過此天數仍未結案，會在退款追蹤畫面標示為逾期。",
+          "nullMeaning": "不標示任何逾期個案（仍會顯示天數）。"
+        },
+        "taxEnabled": {
+          "label": "股利基數扣除稅額",
+          "description": "開啟時，股利銷售基數會扣除稅額（訂單價格視為含稅）。關閉時不扣除。只有股利報表使用此設定。"
+        },
+        "taxRatePercent": {
+          "label": "稅率（%）",
+          "description": "稅率百分比（0 到 100，最多 2 位小數），稅額開關開啟時使用，例如 5 或 5.25。"
+        },
+        "dividendAutoCreditEnabled": {
+          "label": "股利自動入帳",
+          "description": "開啟時，已鎖定的股利季度會自動結算：資金池只凍結一次，並將款項入帳至每個帳號的錢包。關閉（預設）= 不寫入任何資料、不入帳。在客戶回覆 Q1 與 C3b 之前，請勿在正式環境開啟，並請先設定起始季度。"
+        },
+        "dividendAutoCreditFromQuarter": {
+          "label": "自動入帳的起始季度",
+          "description": "可自動結算的第一個股利季度（2026Q4 或 20264）。未設定時，即使開關已開啟也不會結算任何季度；更早的季度永不結算。請在開啟開關之前先設定。",
+          "nullMeaning": "未設定：不會自動結算任何季度。"
+        },
+        "maxSubAccountsPerAccount": {
+          "label": "每個帳號的子帳號上限",
+          "description": "一個帳號可擁有多少個有效子帳號（預設 100）。待確認的也計入。"
+        },
+        "maxSubAccountDepth": {
+          "label": "子帳號最大層數",
+          "description": "允許子帳號之下再有多少層子帳號。"
+        },
+        "subAccountCreationsPerHour": {
+          "label": "每小時可建立的子帳號數",
+          "description": "每人每小時最多可建立多少子帳號（帳號擁有者與管理員皆適用）。"
         }
-      }
+      },
+      "on": "開啟",
+      "off": "關閉",
+      "rangeDecimal": "介於 {min} 與 {max} 的數字，最多 2 位小數。",
+      "rangeQuarter": "季度格式如 2026Q4（或 20264），範圍 2000 Q1 至 2100 Q4。"
     },
     "dividend": {
       "readOnlyNote": "您只能檢視此頁面，僅超級管理員可進行變更。",
@@ -2332,7 +2406,8 @@
       "promotions": "促銷",
       "rma": "RMA",
       "materials": "素材",
-      "reviews": "評價"
+      "reviews": "評價",
+      "refunds": "應退款項"
     },
     "titles": {
       "overview": "賣家中心",
@@ -2370,7 +2445,9 @@
       "materials": "行銷素材",
       "materialsDesc": "下載賣家素材包。",
       "reviews": "評價",
-      "reviewsDesc": "回覆買家對您商品的評價。"
+      "reviewsDesc": "回覆買家對您商品的評價。",
+      "refunds": "應退款項",
+      "refundsDesc": "你商店的退款個案：轉帳後將個案標記為已付款。"
     },
     "promotions": {
       "newBtn": "新增促銷",
@@ -3326,7 +3403,9 @@
     "dividendQuarterLocked": "此季度已鎖定，無法再編輯。",
     "dividendSlotCapExceeded": "將超過名額上限。",
     "dividendSlotInsufficient": "來源帳戶的名額不足。",
-    "rmaRefundAmountInvalid": "退款金額無效（須大於 0 且不得超過剩餘可退金額）。"
+    "rmaRefundAmountInvalid": "退款金額無效（須大於 0 且不得超過剩餘可退金額）。",
+    "orderPaidAtInvalid": "付款日期無效。",
+    "regionInvalid": "此地區目前無法使用。"
   },
   "superAdmin": {
     "title": "系統管理",
@@ -3455,7 +3534,8 @@
       "ACTIVE": "啟用中",
       "PENDING": "待處理",
       "LOCKED": "已鎖定",
-      "DELETED": "已刪除"
+      "DELETED": "已刪除",
+      "PENDING_ACTIVATION": "等待確認"
     },
     "financeItem": {
       "PENDING": "待處理",
@@ -3762,7 +3842,8 @@
     "selectSubtitle": "商品將根據您選擇的地區顯示。",
     "selectHint": "您可以隨時從頂部選單更改購物地區。",
     "confirm": "確認地區",
-    "switchRegion": "切換購物地區"
+    "switchRegion": "切換購物地區",
+    "switchFailed": "無法變更地區，你的地區維持不變。"
   },
   "crossBorder": {
     "title": "偵測到跨境商品",
@@ -3774,5 +3855,503 @@
     "continueAnyway": "繼續國際配送",
     "regionSwitched": "購物地區已更新！商品列表將重新整理。",
     "badge": "國際"
+  },
+  "refundCases": {
+    "status": {
+      "OPEN": "待處理（等待賣家）",
+      "SELLER_MARKED_PAID": "已標記付款（等待買家）",
+      "BUYER_DISPUTED": "買家提出爭議",
+      "BUYER_CONFIRMED": "買家已確認",
+      "CLOSED": "已結案"
+    },
+    "kind": {
+      "partial": "部分退款",
+      "full": "全額退款"
+    },
+    "source": {
+      "CANCEL": "已取消訂單",
+      "RMA": "退貨申請"
+    },
+    "overdue": "逾期",
+    "shopLabel": "商店",
+    "buyerLabel": "買家",
+    "opened": "建立於 {date}",
+    "age": "已 {days} 天",
+    "reference": "參考編號",
+    "selfDealing": {
+      "badge": "買賣雙方為同一帳號",
+      "note": "買家同時是商店擁有者，因此無法在此確認這筆退款，只有客服可以完成。",
+      "staffNote": "買家與商店擁有者為同一帳號，只有管理員覆寫才能完成此個案。"
+    },
+    "action": {
+      "MARK_PAID": "標記已付款",
+      "CONFIRM": "確認已收到",
+      "DISPUTE": "未收到",
+      "OVERRIDE": "覆寫狀態"
+    },
+    "showHistory": "顯示紀錄",
+    "hideHistory": "隱藏紀錄",
+    "updatedBySupport": "由客服更新",
+    "open": "開啟",
+    "event": {
+      "CREATED": "個案建立",
+      "SELLER_MARK_PAID": "賣家標記退款已付款",
+      "BUYER_CONFIRM": "買家確認已收款",
+      "BUYER_DISPUTE": "買家回報未收到退款",
+      "AUTO_CLOSE": "個案結案",
+      "ADMIN_OVERRIDE": "客服變更狀態",
+      "RMA_SYNC": "依退貨申請更新"
+    },
+    "actor": {
+      "BUYER": "買家",
+      "SELLER": "賣家",
+      "ADMIN": "管理員",
+      "SUPER_ADMIN": "超級管理員",
+      "STAFF": "員工",
+      "SYSTEM": "系統"
+    },
+    "events": {
+      "title": "紀錄",
+      "empty": "尚無事件。",
+      "onBehalf": "代表{who}"
+    },
+    "buyerPage": {
+      "title": "我的退款",
+      "intro": "應退給你的款項。賣家標記已付款後，收到款項請確認，若未收到請回報。",
+      "empty": "你沒有退款個案。"
+    },
+    "sellerPage": {
+      "intro": "你應退給買家的款項。請在 App 外轉帳，再將個案標記為已付款。",
+      "empty": "你的商店沒有退款個案。"
+    },
+    "admin": {
+      "title": "退款追蹤",
+      "description": "所有應退給買家的款項（來自已付款的取消訂單與退貨申請）及完整紀錄。",
+      "empty": "沒有符合篩選條件的退款個案。",
+      "detailTitle": "退款個案",
+      "back": "返回列表"
+    },
+    "filter": {
+      "status": "狀態",
+      "source": "來源",
+      "kind": "類型",
+      "shopId": "商店 ID",
+      "orderCode": "訂單編號（完全相符）",
+      "from": "建立日期起（GMT+8）",
+      "to": "建立日期迄（GMT+8）",
+      "overdueOnly": "僅顯示逾期",
+      "apply": "套用篩選",
+      "reset": "重設",
+      "errors": {
+        "badFrom": "起始日期缺少或不是真實日期。",
+        "badTo": "結束日期缺少或不是真實日期。",
+        "rangeOrder": "起始日期不可晚於結束日期。",
+        "rangeTooLong": "日期範圍不可超過 366 天。",
+        "badShop": "商店 ID 必須是有效的 ID（UUID）。"
+      }
+    },
+    "summary": {
+      "open": "待處理",
+      "awaitingBuyer": "等待買家",
+      "disputed": "爭議中",
+      "buyerConfirmed": "已確認",
+      "closed": "已結案",
+      "overdue": "逾期",
+      "total": "總計",
+      "currency": "幣別",
+      "overdueOff": "未啟用逾期標示（尚未設定 refundOverdueDays）。",
+      "overdueRule": "個案超過 {days} 天仍未結案即視為逾期。"
+    },
+    "col": {
+      "order": "訂單",
+      "shop": "商店",
+      "buyer": "買家",
+      "status": "狀態",
+      "amount": "金額",
+      "opened": "建立時間"
+    },
+    "detail": {
+      "sellerMarked": "賣家標記已付款",
+      "buyerConfirmed": "買家確認",
+      "disputed": "爭議",
+      "closed": "結案",
+      "rma": "退貨申請",
+      "proofYes": "已上傳退款憑證",
+      "proofNo": "尚無退款憑證"
+    },
+    "modal": {
+      "markPaid": {
+        "title": "標記退款已付款",
+        "desc": "確認你已在 App 外把退款轉給買家。系統會請買家確認是否收到。",
+        "confirm": "標記已付款",
+        "reference": "轉帳參考編號（選填）"
+      },
+      "confirm": {
+        "title": "確認已收到",
+        "desc": "確認退款已到你手上，個案將結案。",
+        "confirm": "確認已收到"
+      },
+      "dispute": {
+        "title": "回報：未收到退款",
+        "desc": "請說明問題。商店與平台客服會收到通知。最多可回報 3 次。",
+        "confirm": "送出回報"
+      },
+      "override": {
+        "title": "覆寫個案狀態",
+        "desc": "客服決定。買家與商店只會看到「由客服更新」，看不到你的原因。",
+        "confirm": "套用覆寫",
+        "toStatus": "新狀態",
+        "pick": "選擇狀態",
+        "internalNote": "原因只存於內部紀錄，不會顯示給買家或賣家。",
+        "rmaNote": "此個案連結退貨申請：變更會透過退貨申請執行，若申請狀態不符可能被拒絕。"
+      },
+      "noteRequired": "備註（必填，3 到 1000 字）",
+      "noteOptional": "備註（選填）",
+      "errors": {
+        "note": {
+          "required": "請輸入內容。",
+          "tooShort": "請至少輸入 3 個字元。",
+          "tooLong": "最多 1000 個字元。",
+          "invalid": "內容包含不允許的字元。"
+        },
+        "reference": {
+          "tooLong": "參考編號最多 120 個字元。",
+          "invalid": "參考編號包含不允許的字元。"
+        },
+        "toStatus": {
+          "required": "請選擇新狀態。",
+          "same": "個案已是此狀態。"
+        }
+      }
+    },
+    "errors": {
+      "selfDealing": "你同時是買家與此商店的擁有者，因此無法確認這筆退款。請聯絡客服完成。",
+      "disputeLimit": "你已對這筆退款回報 {max} 次，請聯絡客服。",
+      "invalidTransition": "此個案已變更，無法執行該操作。列表已更新。",
+      "notFound": "找不到此退款個案。",
+      "invalid": "退款操作無效。",
+      "rmaProofFirst": "這筆退款屬於退貨申請。請先在退貨申請上傳轉帳憑證，再標記退款已付款。",
+      "rmaEscalateFirst": "此個案連結的退貨申請必須先升級處理（或處於相符狀態），客服才能變更。"
+    },
+    "toast": {
+      "markedPaid": "已標記退款已付款。",
+      "confirmed": "已確認退款。",
+      "disputed": "已送出回報。",
+      "overridden": "個案狀態已更新。"
+    },
+    "rma": {
+      "hint": "這筆退款來自退貨申請：標記已付款前，請先在退貨申請上傳轉帳憑證。",
+      "open": "開啟退貨申請"
+    }
+  },
+  "accountingExport": {
+    "title": "會計匯出",
+    "description": "下載對帳用的 CSV 檔：退款個案、佣金帳務異動與錢包交易。",
+    "kind": "匯出項目",
+    "kinds": {
+      "refund-cases": "退款個案（含紀錄）",
+      "commission-ledger": "佣金帳務異動",
+      "wallet-transactions": "錢包交易",
+      "dividend-settlements": "股利結算（自動入帳）"
+    },
+    "from": "起（GMT+8）",
+    "to": "迄（GMT+8）",
+    "region": "地區（選填）",
+    "allRegions": "所有地區",
+    "rangeHint": "兩個日期都必填且含首尾。範圍最多 366 天；更長的期間請分成多個檔案。",
+    "ledgerType": "獎勵類型",
+    "beneficiaryId": "受益人 ID（選填）",
+    "walletReason": "原因",
+    "userId": "使用者 ID（選填）",
+    "download": "下載 CSV",
+    "downloading": "正在準備檔案...",
+    "preview": "預覽合計",
+    "concurrencyHint": "同時最多只能進行 2 個匯出。大型檔案可能需要一些時間，請保持此頁面開啟。",
+    "downloaded": "已儲存 {file}。",
+    "summary": {
+      "title": "此篩選條件的合計",
+      "rows": "筆數",
+      "note": "CSV 檔結尾的 TOTAL 行會與這些數字一致。",
+      "held": "保留 {amount}",
+      "in": "入帳",
+      "out": "出帳",
+      "netLabel": "淨額",
+      "net": {
+        "twd": "淨額 TWD",
+        "points": "淨點數"
+      },
+      "movement": {
+        "CREDIT": "入帳",
+        "REVERSAL": "追回",
+        "PENDING": "待處理（保留中）",
+        "VOID": "已作廢"
+      },
+      "direction": {
+        "IN": "入",
+        "OUT": "出"
+      },
+      "pool": "資金池",
+      "remainder": "餘數（差額收入）",
+      "itemsTotal": "各行合計",
+      "settlements": "結算次數"
+    },
+    "formErrors": {
+      "badFrom": "請輸入真實存在的起始日期。",
+      "badTo": "請輸入真實存在的結束日期。",
+      "rangeOrder": "起始日期不可晚於結束日期。",
+      "rangeTooLong": "範圍不可超過 366 天。",
+      "badShop": "商店 ID 必須是有效的 ID（UUID）。",
+      "badRegion": "請選擇可用的地區。",
+      "badReason": "請選擇有效的原因。",
+      "badBeneficiary": "受益人 ID 必須是有效的 ID（UUID）。",
+      "badUser": "使用者 ID 必須是有效的 ID（UUID）。",
+      "badQuarter": "請使用如 2026Q3 的季度。"
+    },
+    "errors": {
+      "tooManyRows": "此匯出會有 {rows} 筆，超過上限 {max}。請縮小日期範圍或篩選條件，或分成多個檔案。",
+      "timeout": "匯出耗時過長而被中止。請縮短日期範圍或再試一次。",
+      "tooMany": "正在執行的匯出過多或要求太頻繁（每人同時最多 2 個）。請稍候再試。",
+      "unavailable": "匯出服務暫時無法使用，請幾分鐘後再試。",
+      "forbidden": "你沒有匯出會計資料的權限。",
+      "badRequest": "日期或篩選條件無效。請檢查範圍（最多 366 天）後再試。",
+      "failed": "匯出失敗，請再試一次。",
+      "aborted": "下載中斷，檔案不完整，因此未儲存。請再試一次。",
+      "incomplete": "檔案以錯誤結尾（{reason}），內容不完整，因此未儲存。請再試一次或縮短範圍。",
+      "notCsv": "伺服器沒有回傳完整的 CSV 檔（結尾沒有 TOTAL 行），因此未儲存。請再試一次；若持續發生，請通知管理員。"
+    },
+    "quarter": "季度（選填）",
+    "quarterHint": "格式如 2026Q3。留空 = 所有已結算季度。此匯出沒有日期範圍，也沒有地區篩選。"
+  },
+  "subAccounts": {
+    "title": "子帳號",
+    "intro": "子帳號是有自己 e-mail 與密碼的獨立帳號，隸屬於你的帳號。它們的消費沿用相同的推薦與團隊規則。每個帳號可擁有的數量有限。",
+    "counter": "子帳號",
+    "nOfCap": "{n} / {cap}",
+    "pending": "等待確認",
+    "pendingHint": "等待該 e-mail 的持有人確認。{days} 天後會自動釋出。",
+    "empty": "你還沒有子帳號。",
+    "withdraw": "撤回",
+    "withdrawConfirm": {
+      "title": "撤回這個子帳號？",
+      "desc": "為 {email} 保留的名額將取消並歸還，對方無法再確認。"
+    },
+    "create": {
+      "title": "建立子帳號",
+      "ownerExplain": "子帳號會維持等待狀態，直到該 e-mail 的持有人用我們寄給他的驗證碼確認。你不會看到驗證碼或密碼。請只使用對方本人控制的地址。",
+      "adminExplain": "代表此帳號建立，立即生效。必須填寫原因並會被記錄。",
+      "email": "E-mail",
+      "fullName": "姓名（選填）",
+      "region": "地區",
+      "regionDefault": "預設（TW）",
+      "submit": "建立子帳號",
+      "atCap": "你已達子帳號數量上限。",
+      "mailSent": "已建立。驗證碼已寄到該地址；對方確認後子帳號才會生效。",
+      "mailNotSent": "已建立，但目前無法寄出驗證碼郵件。對方可在忘記密碼頁面以該 e-mail 申請驗證碼。",
+      "errors": {
+        "email": {
+          "required": "請輸入 e-mail。",
+          "invalid": "請輸入有效的 e-mail。",
+          "tooLong": "e-mail 太長。"
+        },
+        "fullName": {
+          "tooLong": "姓名最多 200 個字元。",
+          "invalid": "姓名包含不允許的字元。"
+        },
+        "regionCode": {
+          "invalid": "請選擇可用的地區。"
+        }
+      }
+    },
+    "col": {
+      "email": "E-mail",
+      "name": "姓名",
+      "status": "狀態",
+      "region": "地區",
+      "created": "建立時間"
+    },
+    "invites": {
+      "title": "邀請連結",
+      "explain": "邀請連結可讓一個人自行註冊帳號並成為你的子帳號。每個連結只能使用一次，7 天後失效。",
+      "create": "建立邀請連結",
+      "newTitle": "你的新邀請連結",
+      "onceWarning": "請現在複製：基於安全，連結只會顯示一次，之後無法再顯示。",
+      "link": "邀請連結",
+      "expires": "到期 {date}",
+      "copy": "複製連結",
+      "copied": "已複製連結。",
+      "copyFailed": "複製失敗。請選取上方連結並手動複製。",
+      "dismiss": "隱藏",
+      "replayed": "此邀請先前已建立，但連結無法再顯示。請在下方撤銷後重新建立。",
+      "empty": "還沒有邀請連結。",
+      "expiresCol": "到期",
+      "revoke": "撤銷",
+      "status": {
+        "PENDING": "有效",
+        "USED": "已使用",
+        "REVOKED": "已撤銷",
+        "EXPIRED": "已過期"
+      }
+    },
+    "toast": {
+      "created": "已建立子帳號。",
+      "withdrawn": "已撤回子帳號。",
+      "revoked": "已撤銷邀請。",
+      "discarded": "已捨棄待確認的子帳號。"
+    },
+    "errors": {
+      "limit": "此帳號的子帳號數量已達上限。",
+      "depthLimit": "子帳號層數已達上限。",
+      "parentInvalid": "此帳號不能有子帳號。",
+      "hasChildren": "此帳號仍有子帳號，無法移除。",
+      "reparentForbidden": "子帳號不能改掛到其他推薦人。",
+      "inviteInvalid": "此邀請連結無效：可能有誤、已使用、已撤銷或已過期。請向帳號擁有者索取新連結。",
+      "inviteNotFound": "找不到此邀請。",
+      "inviteLimit": "有效邀請連結過多，請先撤銷一個。",
+      "notPending": "此子帳號已不在等待確認狀態。",
+      "declinedRecently": "目前無法新增此地址。請稍後再試或使用其他地址。",
+      "pendingActivation": "此帳號正等待 e-mail 持有人確認，因此無法執行此操作。",
+      "budget": "近期建立的子帳號過多，請稍後再試。",
+      "notFound": "找不到，可能已被移除。",
+      "tooMany": "要求過多，請稍候再試。"
+    },
+    "register": {
+      "inviteBanner": "你正使用子帳號邀請註冊。新帳號將隸屬於邀請你的人。"
+    },
+    "decline": {
+      "title": "拒絕帳號",
+      "description": "有人為這個 e-mail 地址保留了一個帳號。輸入訊息中的 6 位數驗證碼即可拒絕。",
+      "code": "訊息中的驗證碼",
+      "submit": "拒絕此帳號",
+      "done": "完成。已拒絕保留的帳號。",
+      "failed": "無法拒絕此帳號。",
+      "acceptHint": "想改為接受？",
+      "acceptLink": "在此設定密碼",
+      "errors": {
+        "email": "請輸入有效的 e-mail。",
+        "code": "請輸入 6 位數驗證碼。"
+      }
+    },
+    "admin": {
+      "title": "帳號的子帳號",
+      "back": "返回使用者",
+      "root": "根帳號",
+      "isSub": "此帳號是子帳號（第 {depth} 層）。",
+      "isRoot": "此帳號是根帳號。",
+      "readOnly": "唯讀：只有管理員或超級管理員可以建立或捨棄子帳號。",
+      "empty": "此帳號沒有子帳號。",
+      "discard": "捨棄待確認",
+      "discardTitle": "捨棄待確認的子帳號",
+      "discardDesc": "取消為 {email} 保留的名額。必須填寫原因並會被記錄。",
+      "truncated": "列表最多顯示 {limit} 筆；請開啟某個子帳號以縮小範圍。",
+      "open": "子帳號"
+    }
+  },
+  "dividendSettlements": {
+    "title": "股利結算",
+    "description": "自動入帳至錢包的季度股利：資金池、餘數、每個帳號的明細與其錢包交易。",
+    "empty": "尚無已結算的季度。",
+    "open": "開啟",
+    "back": "返回結算列表",
+    "detailTitle": "結算",
+    "noItems": "沒有符合篩選條件的明細。",
+    "counts": "{total} 筆中已入帳 {credited}、待處理 {pending}、略過 {skipped}",
+    "armed": {
+      "label": "自動入帳",
+      "armed": "已就緒：會從起始季度起結算已鎖定的季度",
+      "enabledNoQuarter": "開關已開啟但未設定起始季度：不會結算任何季度",
+      "off": "關閉：不會結算任何季度",
+      "unknown": "狀態未知",
+      "switch": "開關",
+      "fromQuarter": "起始季度"
+    },
+    "warning": {
+      "title": "請勿在正式環境開啟股利自動入帳",
+      "body": "在客戶回覆 Q1（與全球基金並行或取代）與 C3b（各地區股利）之前，開關必須保持關閉。開啟會對真實錢包入帳，且無法復原。",
+      "order": "開啟開關之前請先設定起始季度：開關已開而未設定起始季度時不會結算任何季度；更早的季度永不結算。"
+    },
+    "col": {
+      "quarter": "季度",
+      "status": "狀態",
+      "pool": "資金池",
+      "remainder": "餘數",
+      "paid": "已支付",
+      "items": "明細",
+      "account": "帳號",
+      "slots": "名額",
+      "amount": "金額",
+      "points": "點數",
+      "walletTx": "錢包交易"
+    },
+    "facts": {
+      "retained": "公司保留",
+      "slots": "名額總數",
+      "fx": "匯率（TWD 對 USD）",
+      "peg": "點數價值（USD）",
+      "tax": "已扣稅率",
+      "lockAt": "季度鎖定時間",
+      "snapshotAt": "凍結時間",
+      "finishedAt": "完成時間",
+      "failedReason": "原因"
+    },
+    "settlementStatus": {
+      "RUNNING": "執行中",
+      "COMPLETED": "已完成",
+      "FAILED": "失敗"
+    },
+    "itemStatus": {
+      "PENDING": "待處理",
+      "CREDITED": "已入帳",
+      "SKIPPED_ZERO": "略過（為零）",
+      "SKIPPED_NO_WALLET": "略過（無法支付）"
+    },
+    "skipReason": {
+      "NO_WALLET": "沒有錢包",
+      "DELETED": "帳號已刪除",
+      "PENDING_ACTIVATION": "帳號尚未確認",
+      "NO_USER": "找不到帳號"
+    },
+    "run": {
+      "title": "立即執行結算",
+      "explain": "僅限超級管理員。執行為同步：必要時先凍結季度，並在回應前為每個帳號入帳，因此大型季度可能需要一些時間，請保持此頁面開啟。重複執行是安全的：已完成的帳號不會重複支付。",
+      "quarter": "季度",
+      "badQuarter": "請輸入如 2026Q4 的季度。",
+      "button": "立即執行",
+      "running": "執行中...",
+      "confirmTitle": "立即執行 {quarter} 結算？",
+      "confirmDesc": "這會對真實錢包入帳，會執行到完成為止，請勿關閉頁面。",
+      "readOnly": "唯讀：只有超級管理員可以執行結算。",
+      "result": "已入帳 {credited}、略過 {skipped}、待處理 {pending}、錯誤 {errors}。",
+      "partialHint": "尚未全部支付，請再執行一次以繼續。",
+      "outcome": {
+        "COMPLETED": "已完成",
+        "ALREADY_COMPLETED": "先前已完成",
+        "PARTIAL": "部分完成"
+      }
+    },
+    "errors": {
+      "disabled": "股利自動入帳已關閉。",
+      "fromRequired": "請先在設定中指定自動入帳的起始季度。",
+      "notLocked": "{quarter} 季度尚未鎖定，無法結算。",
+      "beforeStart": "{quarter} 季度早於自動入帳的起始季度（{fromQuarter}），因此永不結算。",
+      "failed": "{quarter} 結算未通過對帳檢查，需要人工檢視；無法再次執行。",
+      "notFound": "此季度沒有結算。",
+      "creditNotFound": "找不到這筆股利明細。"
+    },
+    "enableConfirm": {
+      "title": "開啟股利自動入帳？",
+      "fromSet": "已設定起始季度：{quarter}。自此之後已鎖定的季度會結算到真實錢包。",
+      "fromNotSet": "尚未設定起始季度：設定之前不會結算任何季度。請先設定。",
+      "check": "我了解：客戶已回覆 Q1 與 C3b，在此之前這不是正式環境，且已設定起始季度。",
+      "confirm": "開啟"
+    }
+  },
+  "dividendCredits": {
+    "title": "我的股利入帳",
+    "intro": "已入帳至你錢包的季度股利。金額以 TWD 與錢包點數顯示。",
+    "empty": "目前沒有入帳給你的股利。",
+    "detailTitle": "股利入帳",
+    "back": "返回我的股利入帳",
+    "creditedAt": "入帳時間",
+    "settlement": "結算"
   }
 }

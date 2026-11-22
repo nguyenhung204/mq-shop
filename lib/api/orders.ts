@@ -73,6 +73,8 @@ export type ShippingQuoteView = {
 };
 
 export type CheckoutRequest = {
+  /** Business region of the order (TW, VN, MY, SG). Buyer checkout only: the admin on-behalf order omits it. */
+  regionCode?: string;
   items: OrderLineItem[];
   shippingAddress: ShippingAddress;
   paymentMethod: PaymentMethod;
@@ -82,7 +84,7 @@ export type CheckoutRequest = {
   fxAsOf?: string;
 };
 
-export type AdminCheckoutRequest = CheckoutRequest & {
+export type AdminCheckoutRequest = Omit<CheckoutRequest, "regionCode"> & {
   buyerId: string;
 };
 
@@ -239,6 +241,8 @@ export type OrderView = {
   rma?: RmaView | null;
   /** ISO while PENDING with no bill — createdAt + 72 elapsed hours. */
   unpaidProofDueAt?: string | null;
+  /** Business region the order was placed in (TW, VN, MY, SG); immutable. Absent on an older API. */
+  regionCode?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -307,7 +311,8 @@ export const orderApi = {
   listMyRma: (query?: { status?: RmaStatus; page?: number; pageSize?: number }) =>
     api.get<PageEnvelope<RmaView>>("/rma/mine", { query, withMeta: true }),
 
-  approveRma: (rmaId: string, body?: { note?: string }) =>
+  /** Seller of the shop: `refundAmount` (2 dp string, > 0, <= remaining) is allowed for a seller without CS/WAREHOUSE/ACCOUNTANT roles. */
+  approveRma: (rmaId: string, body?: { note?: string; refundAmount?: string }) =>
     api.post<RmaView>(`/rma/${rmaId}/approve`, body ?? {}),
 
   rejectRma: (rmaId: string, body: { note: string }) =>
@@ -395,7 +400,37 @@ export type RefundObligationView = {
   createdAt: string;
 };
 
+export type PaidAtEditBody = { paidAt: string; reason: string };
+
+export type PaidAtEditResult = {
+  orderId: string;
+  oldPaidAt: string;
+  newPaidAt: string;
+  changed: boolean;
+  touchesSalesEligibility: false;
+};
+
+export type PaidAtHistoryRow = {
+  id: string;
+  orderId: string;
+  changedBy: string;
+  changedAt: string;
+  oldPaidAt: string;
+  newPaidAt: string;
+  reason: string;
+};
+
 export const adminOrdersApi = {
+  /** SUPER_ADMIN only. Idempotency-Key is required by the API. */
+  editPaidAt: (orderId: string, body: PaidAtEditBody, idempotencyKey: string) =>
+    api.patch<PaidAtEditResult>(`/admin/orders/${encodeURIComponent(orderId)}/paid-at`, body, {
+      headers: { "Idempotency-Key": idempotencyKey },
+    }),
+
+  /** CONFIG_SYS: SUPER_ADMIN and ADMIN (read). Newest first. */
+  paidAtHistory: (orderId: string) =>
+    api.get<{ items: PaidAtHistoryRow[] }>(`/admin/orders/${encodeURIComponent(orderId)}/paid-at-history`),
+
   refundObligations: (query?: { status?: string; page?: number; pageSize?: number }) =>
     api.get<PageEnvelope<RefundObligationView>>("/admin/orders/refund-obligations", {
       query,

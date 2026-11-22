@@ -53,6 +53,8 @@ export type AuthUser = {
   referrerId?: string | null;
   /** Shareable referral code. */
   referralCode?: string | null;
+  /** Business region of the account (TW, VN, MY, SG). Absent on an older API / cached profile. */
+  regionCode?: string | null;
   /** MLM rank 1–10. */
   mlmRank?: number | null;
   /**
@@ -353,6 +355,11 @@ export type NotificationType =
   | "RMA_DISPUTED"
   | "RMA_REFUND_PENDING"
   | "RMA_REFUND_SENT"
+  | "REFUND_CASE_OPENED"
+  | "REFUND_CASE_MARKED_PAID"
+  | "REFUND_CASE_DISPUTED"
+  | "DIVIDEND_CREDITED"
+  | "DIVIDEND_SETTLEMENT_FAILED"
   | "RMA_GOODS_RETURN_PENDING"
   | "RMA_GOODS_RETURN_SHIPPED"
   | "RMA_GOODS_RETURN_ISSUE"

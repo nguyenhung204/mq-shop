@@ -20,7 +20,7 @@ describe("settings page wiring (U1)", () => {
     expect(p).toContain("<SettingEditModal");
   });
   it("modal validates before submit and the hook sends the idempotency key", () => {
-    expect(src("components/admin/SettingEditModal.tsx")).toContain("validateSettingEdit(setting, { raw, clear, reason })");
+    expect(src("components/admin/SettingEditModal.tsx")).toContain("validateSettingEdit(setting, { raw, clear, reason, flag })");
     const q = src("lib/queries/settings.ts");
     expect(q).toContain("idempotency.run(vars,");
     expect(q).toContain("adminSettingsApi.update(v.key, v.body, key)");
@@ -79,18 +79,30 @@ describe("dividend slots page wiring (U3)", () => {
 });
 
 describe("RMA partial refund wiring (U5, UI1)", () => {
-  it("only the admin client knows refundAmount; the seller client, hook and page never do", () => {
+  // CR C1-3 (deliberate inversion of the Phase B rule "the seller never sends refundAmount"): the backend now lets a
+  // SELLER of the shop choose the amount, so the seller client, hook and page carry it, behind canSetSellerPartialRefund.
+  it("the seller client, hook and page carry refundAmount and open the amount dialog", () => {
     const api = src("lib/api/orders.ts");
     const sellerBlock = api.slice(api.indexOf("export const orderApi"), api.indexOf("export const adminOrdersApi"));
-    expect(sellerBlock).not.toContain("refundAmount");
+    expect(sellerBlock).toContain("refundAmount?: string");
     expect(api.slice(api.indexOf("export const adminOrdersApi"))).toContain("refundAmount?: string");
     const q = src("lib/queries/orders.ts");
     const sellerHook = q.slice(q.indexOf("export function useShopRmaAction"), q.indexOf("export function useBuyerRmaAction"));
-    expect(sellerHook).not.toContain("refundAmount");
-    for (const f of ["app/seller/rma/page.tsx"]) {
-      expect(src(f), f).not.toContain("refundAmount");
-      expect(src(f), f).not.toContain("RmaApproveModal");
-    }
+    expect(sellerHook).toContain("refundAmount: input.refundAmount");
+    expect(sellerHook).toContain("sendRmaDecision(orderApi");
+    const page = src("app/seller/rma/page.tsx");
+    expect(page).toContain("<SellerRmaApproveFlow");
+    expect(page).toContain("setApproveTarget({ rmaId: r.id, orderId: r.orderId })");
+    // the approve button no longer fires the mutation directly
+    expect(page).not.toContain('action: "approve"');
+  });
+  it("the seller dialog is gated by canSetSellerPartialRefund and validates through the shared modal", () => {
+    const f = src("components/seller/SellerRmaApproveFlow.tsx");
+    expect(f).toContain("const canPartial = canSetSellerPartialRefund(user)");
+    expect(f).toContain("<RmaApproveModal");
+    expect(f).toContain('action: "approve"');
+    expect(f).toContain("refundAmount");
+    expect(f).toContain("remainingFromError(e)");
   });
   it("admin pages open the amount dialog only for ADMIN / SUPER_ADMIN (canSetPartialRefund)", () => {
     for (const f of ["app/admin/rma/page.tsx", "app/admin/rma/[id]/page.tsx"]) {

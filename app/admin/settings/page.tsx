@@ -10,18 +10,24 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 import type { SystemSetting } from "@/lib/api/settings";
+import { AutoCreditStateCard, AutoCreditWarning, EnableAutoCreditConfirm } from "@/components/dividend/SettlementViews";
+import { needsEnableConfirm } from "@/lib/dividend/access";
+import { SETTING_AUTO_ENABLED, SETTING_FROM_QUARTER, quarterCodeLabel } from "@/lib/dividend/settlement";
+import { useDividendSettlements } from "@/lib/queries/dividend-settlements";
 import { settingTexts } from "@/lib/settings/labels";
+import { formatSettingValue, settingKind } from "@/lib/settings/edit";
+import type { SettingValue } from "@/lib/api/settings";
 import { canWriteSettings } from "@/lib/auth/admin-write";
 import { formatDateTimeGmt8 } from "@/lib/i18n/gmt8-calendar";
 import { toIntlLocale } from "@/lib/i18n/locale-format";
 import { useAdminSettings, useSettingHistory, useUpdateSetting } from "@/lib/queries/settings";
 import { getErrorMessage } from "@/lib/queries/utils";
 
-function HistoryPanel({ settingKey }: { settingKey: string }) {
+function HistoryPanel({ settingKey, kind }: { settingKey: string; kind: "int" | "bool" | "decimal" }) {
   const { t, locale } = useLanguage();
   const { data, isLoading, isError } = useSettingHistory(settingKey);
   const intl = toIntlLocale(locale);
-  const show = (v: number | null) => (v == null ? t("admin.settings.unset") : String(v));
+  const show = (v: SettingValue) => settingValueText(t, kind, v, settingKey);
 
   if (isLoading) return <p className="text-xs text-mq-text-muted">{t("admin.common.loading")}</p>;
   if (isError) return <p className="text-xs text-mq-text-muted">{t("admin.common.failed")}</p>;
@@ -52,6 +58,13 @@ function HistoryPanel({ settingKey }: { settingKey: string }) {
   );
 }
 
+function settingValueText(t: (k: string) => string, kind: "int" | "bool" | "decimal", v: SettingValue, key?: string): string {
+  const f = formatSettingValue(kind, v, key);
+  if (f.type === "unset") return t("admin.settings.unset");
+  if (f.type === "bool") return f.on ? t("admin.settings.on") : t("admin.settings.off");
+  return f.text;
+}
+
 function SettingsInner() {
   const { t, locale } = useLanguage();
   const { user } = useAuth();
@@ -59,9 +72,14 @@ function SettingsInner() {
   const { data, isLoading, isError, error } = useAdminSettings();
   const update = useUpdateSetting();
   const [editing, setEditing] = useState<SystemSetting | null>(null);
+  const [pendingEnable, setPendingEnable] = useState<{ key: string; body: { value: SettingValue; reason: string } } | null>(null);
   const [openHistory, setOpenHistory] = useState<string | null>(null);
   const intl = toIntlLocale(locale);
   const items = data ?? [];
+  const fromSetting = items.find((s) => s.key === SETTING_FROM_QUARTER);
+  const fromQuarterLabel = typeof fromSetting?.value === "number" ? quarterCodeLabel(fromSetting.value) : null;
+  const hasAutoCredit = items.some((s) => s.key === SETTING_AUTO_ENABLED || s.key === SETTING_FROM_QUARTER);
+  const settlements = useDividendSettlements(1, hasAutoCredit);
 
   const texts = (s: SystemSetting) => settingTexts(t, s);
 
@@ -72,6 +90,12 @@ function SettingsInner() {
         description={canWrite ? t("admin.settings.description") : t("admin.settings.descriptionReadOnly")}
       />
       <div className="space-y-6">
+        {hasAutoCredit ? (
+          <>
+            <AutoCreditWarning />
+            <AutoCreditStateCard state={settlements.data?.autoCredit ?? null} />
+          </>
+        ) : null}
         {isError && (
           <div className="mq-alert mq-alert-error">{getErrorMessage(error, t("admin.common.failed"))}</div>
         )}
@@ -107,17 +131,17 @@ function SettingsInner() {
                             <p className="text-xs text-mq-text-muted mt-1 max-w-xs">{texts(s).nullMeaning}</p>
                           </>
                         ) : (
-                          <span className="font-semibold tabular-nums">{s.value}</span>
+                          <span className="font-semibold tabular-nums">{settingValueText(t, settingKind(s), s.value, s.key)}</span>
                         )}
                         {s.isDefault ? (
                           <p className="text-[11px] text-mq-text-muted mt-1">{t("admin.settings.isDefault")}</p>
                         ) : null}
                       </td>
                       <td className="p-3 tabular-nums">
-                        {s.default == null ? t("admin.settings.unset") : s.default}
+                        {settingValueText(t, settingKind(s), s.default, s.key)}
                       </td>
                       <td className="p-3 text-xs whitespace-nowrap">
-                        {s.min}–{s.max}
+                        {s.min == null || s.max == null ? "—" : `${s.min}–${s.max}`}
                       </td>
                       <td className="p-3 text-xs text-mq-text-muted whitespace-nowrap">
                         {s.updatedAt ? formatDateTimeGmt8(s.updatedAt, intl) : "—"}
@@ -144,7 +168,7 @@ function SettingsInner() {
                     {openHistory === s.key ? (
                       <tr className="border-t border-mq-border bg-mq-surface-subtle">
                         <td colSpan={6} className="p-3">
-                          <HistoryPanel settingKey={s.key} />
+                          <HistoryPanel settingKey={s.key} kind={settingKind(s)} />
                         </td>
                       </tr>
                     ) : null}
@@ -162,11 +186,33 @@ function SettingsInner() {
         onClose={() => setEditing(null)}
         onConfirm={async (body) => {
           if (!editing) return;
+          // turning the automatic dividend credit ON goes through an explicit confirmation first
+          if (needsEnableConfirm(editing.key, body.value, editing.value)) {
+            setPendingEnable({ key: editing.key, body });
+            return;
+          }
           try {
             await update.mutateAsync({ key: editing.key, body });
             setEditing(null);
           } catch {
             /* toast shown by the hook; keep the modal open for a retry */
+          }
+        }}
+      />
+      <EnableAutoCreditConfirm
+        open={pendingEnable !== null}
+        fromQuarterLabel={fromQuarterLabel}
+        busy={update.isPending}
+        onClose={() => setPendingEnable(null)}
+        onConfirm={async () => {
+          if (!pendingEnable) return;
+          try {
+            await update.mutateAsync(pendingEnable);
+            setEditing(null);
+          } catch {
+            /* toast shown by the hook */
+          } finally {
+            setPendingEnable(null);
           }
         }}
       />

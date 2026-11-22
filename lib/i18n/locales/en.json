@@ -481,7 +481,8 @@
       "loading": "Loading order…",
       "fulfillmentComplaintBtn": "Report no shipping",
       "fulfillmentComplaintTitle": "Report unpaid shipping progress",
-      "fulfillmentComplaintDesc": "Describe the issue (paid but shop has not shipped)."
+      "fulfillmentComplaintDesc": "Describe the issue (paid but shop has not shipped).",
+      "region": "Region: {region}"
     },
     "payment": {
       "title": "Payment proof",
@@ -590,6 +591,28 @@
       "amountDue": "Amount to pay",
       "rateLocked": "Exchange rate locked when you ordered: {rate}",
       "ledgerNote": "Order total in the shop ledger: {twd}"
+    },
+    "paidAt": {
+      "title": "Payment date",
+      "current": "Current payment date (GMT+8): {date}",
+      "help": "Super Admin only. Changes the recorded payment date and nothing else: commissions, wallets and sales eligibility are not recalculated. Refused when it would move the order across a locked dividend quarter.",
+      "newDate": "New payment date and time (GMT+8)",
+      "save": "Save payment date",
+      "saved": "Payment date updated.",
+      "unchanged": "Payment date unchanged.",
+      "historyTitle": "Edit history",
+      "historyEmpty": "No edits yet.",
+      "by": "By {user}",
+      "errors": {
+        "required": "Pick a date and time.",
+        "invalidDate": "That date does not exist in the calendar.",
+        "future": "The payment date cannot be in the future.",
+        "beforeCreated": "The payment date cannot be before the order was created.",
+        "unchanged": "This is already the payment date.",
+        "invalid": "The payment date is not valid: it must be a real date and time, not in the future and not before the order was created.",
+        "quarterLocked": "This change would move the order across a locked dividend quarter, so it is refused.",
+        "forbidden": "Only a Super Admin can change the payment date."
+      }
     }
   },
   "wishlist": {
@@ -648,7 +671,7 @@
     },
     "verifyOtp": {
       "title": "Verify email",
-      "description": "Enter the 6-digit code we sent to your email.",
+      "description": "Enter the 6-digit code we sent to your email and set your password.",
       "asideTitle": "Almost there",
       "asideText": "One quick code to confirm your email and activate your MQ account.",
       "signingIn": "Signing in…",
@@ -750,7 +773,13 @@
       "myShop": "My shop",
       "myShopDesc": "Manage your shop on MQ",
       "network": "Network",
-      "networkDesc": "Your MLM downline tree"
+      "networkDesc": "Your MLM downline tree",
+      "refunds": "My refunds",
+      "refundsDesc": "Refunds owed to you: confirm receipt or report a problem",
+      "subAccounts": "Sub-accounts",
+      "subAccountsDesc": "Accounts you manage under your own: create, invite, withdraw",
+      "dividendCredits": "My dividend credits",
+      "dividendCreditsDesc": "Quarterly dividends credited to your wallet"
     },
     "otp": {
       "timeRemaining": "Time remaining",
@@ -839,7 +868,10 @@
       "settings": "System settings",
       "dividendRates": "Dividend rates",
       "dividendSlots": "Dividend slots",
-      "dividendReport": "Dividend report"
+      "dividendReport": "Dividend report",
+      "refundCases": "Refund tracking",
+      "accountingExport": "Accounting export",
+      "dividendSettlements": "Dividend settlements"
     },
     "common": {
       "create": "Create",
@@ -909,7 +941,8 @@
         "required": "Enter a reason.",
         "tooShort": "The reason must be at least 3 characters.",
         "tooLong": "The reason must be at most 500 characters."
-      }
+      },
+      "region": "Region"
     },
     "overview": {
       "title": "Admin",
@@ -1670,7 +1703,8 @@
           "invalid": "Enter an amount like 250 or 250.50 (at most 2 decimals).",
           "zero": "The refund must be greater than 0.",
           "exceeds": "The refund is more than what is left to refund on this order."
-        }
+        },
+        "displayEquivalent": "About {amount} in the buyer's display currency (the refund itself is recorded in TWD)."
       }
     },
     "financePage": {
@@ -2125,7 +2159,9 @@
         "notInteger": "The value must be a whole number.",
         "belowMin": "The value must be at least {min}.",
         "aboveMax": "The value must not exceed {max}.",
-        "notNullable": "This setting cannot be cleared."
+        "notNullable": "This setting cannot be cleared.",
+        "notDecimal": "Enter a number with at most 2 decimals (for example 5 or 5.25).",
+        "notQuarter": "Enter a quarter like 2026Q4 (or 20264): year 2000 to 2100 and quarter 1 to 4."
       },
       "keys": {
         "dividendEditWindowDays": {
@@ -2147,8 +2183,46 @@
           "label": "Maximum total slots",
           "description": "Maximum dividend slots across all accounts.",
           "nullMeaning": "No cap."
+        },
+        "refundOverdueDays": {
+          "label": "Refund overdue after (days)",
+          "description": "A refund case that is not closed after this many days is flagged overdue in the refund tracking screen.",
+          "nullMeaning": "No case is flagged overdue (the age in days is still shown)."
+        },
+        "taxEnabled": {
+          "label": "Remove tax from the dividend base",
+          "description": "When on, the dividend sales base excludes tax (order prices are treated as tax-inclusive). When off, nothing is removed. Only the dividend report uses this."
+        },
+        "taxRatePercent": {
+          "label": "Tax rate (%)",
+          "description": "Tax rate in percent (0 to 100, at most 2 decimals) used while the tax switch is on, for example 5 or 5.25."
+        },
+        "dividendAutoCreditEnabled": {
+          "label": "Automatic dividend credit",
+          "description": "When on, a locked dividend quarter is settled automatically: the pool is frozen once and every account is credited to its wallet. Off (default) = nothing is written and nothing is credited. Do NOT turn it on in a real environment before the client has answered Q1 and C3b, and set the first quarter first."
+        },
+        "dividendAutoCreditFromQuarter": {
+          "label": "First quarter of the automatic credit",
+          "description": "The first dividend quarter that may be settled automatically (2026Q4 or 20264). While it is empty nothing is settled even if the switch is on; earlier quarters are never settled. Set it BEFORE turning the switch on.",
+          "nullMeaning": "Not set: nothing is settled automatically."
+        },
+        "maxSubAccountsPerAccount": {
+          "label": "Sub-accounts per account (maximum)",
+          "description": "How many live sub-accounts one account may have (default 100). Pending ones count."
+        },
+        "maxSubAccountDepth": {
+          "label": "Sub-account depth (maximum)",
+          "description": "How many levels of sub-accounts below sub-accounts are allowed."
+        },
+        "subAccountCreationsPerHour": {
+          "label": "Sub-account creations per hour",
+          "description": "How many sub-accounts one person may create per hour (owner and admin paths)."
         }
-      }
+      },
+      "on": "On",
+      "off": "Off",
+      "rangeDecimal": "Number from {min} to {max} with at most 2 decimals.",
+      "rangeQuarter": "Quarter as 2026Q4 (or 20264), from 2000 Q1 to 2100 Q4."
     },
     "dividend": {
       "readOnlyNote": "You can view this page. Only a Super Admin can make changes.",
@@ -2332,7 +2406,8 @@
       "promotions": "Promotions",
       "rma": "RMA",
       "materials": "Materials",
-      "reviews": "Reviews"
+      "reviews": "Reviews",
+      "refunds": "Refunds owed"
     },
     "titles": {
       "overview": "Seller Center",
@@ -2370,7 +2445,9 @@
       "materials": "Marketing materials",
       "materialsDesc": "Download seller assets.",
       "reviews": "Reviews",
-      "reviewsDesc": "Reply to buyer reviews on your products."
+      "reviewsDesc": "Reply to buyer reviews on your products.",
+      "refunds": "Refunds owed",
+      "refundsDesc": "Refund cases of your shop: transfer the money, then mark the case as paid."
     },
     "promotions": {
       "newBtn": "New promotion",
@@ -3326,7 +3403,9 @@
     "dividendQuarterLocked": "This quarter is locked and can no longer be edited.",
     "dividendSlotCapExceeded": "The slot cap would be exceeded.",
     "dividendSlotInsufficient": "The source account does not hold enough slots.",
-    "rmaRefundAmountInvalid": "The refund amount is not valid (it must be greater than 0 and not exceed the remaining refundable amount)."
+    "rmaRefundAmountInvalid": "The refund amount is not valid (it must be greater than 0 and not exceed the remaining refundable amount).",
+    "orderPaidAtInvalid": "The payment date is not valid.",
+    "regionInvalid": "This region is not available."
   },
   "superAdmin": {
     "title": "System administration",
@@ -3455,7 +3534,8 @@
       "ACTIVE": "Active",
       "PENDING": "Pending",
       "LOCKED": "Locked",
-      "DELETED": "Deleted"
+      "DELETED": "Deleted",
+      "PENDING_ACTIVATION": "Waiting for confirmation"
     },
     "financeItem": {
       "PENDING": "Pending",
@@ -3762,7 +3842,8 @@
     "selectSubtitle": "Products shown will be based on your selected region.",
     "selectHint": "You can change your shopping region anytime from the header.",
     "confirm": "Confirm Region",
-    "switchRegion": "Switch Shopping Region"
+    "switchRegion": "Switch Shopping Region",
+    "switchFailed": "The region could not be changed. Your region stays as it was."
   },
   "crossBorder": {
     "title": "Cross-Border Items Detected",
@@ -3774,5 +3855,503 @@
     "continueAnyway": "Continue with International Shipping",
     "regionSwitched": "Shopping region updated! Product listings will refresh.",
     "badge": "Intl"
+  },
+  "refundCases": {
+    "status": {
+      "OPEN": "Open (waiting for the seller)",
+      "SELLER_MARKED_PAID": "Marked as paid (waiting for the buyer)",
+      "BUYER_DISPUTED": "Disputed by the buyer",
+      "BUYER_CONFIRMED": "Confirmed by the buyer",
+      "CLOSED": "Closed"
+    },
+    "kind": {
+      "partial": "Partial refund",
+      "full": "Full refund"
+    },
+    "source": {
+      "CANCEL": "Cancelled order",
+      "RMA": "Return request"
+    },
+    "overdue": "Overdue",
+    "shopLabel": "Shop",
+    "buyerLabel": "Buyer",
+    "opened": "Opened {date}",
+    "age": "{days} days old",
+    "reference": "Reference",
+    "selfDealing": {
+      "badge": "Same account on both sides",
+      "note": "The buyer is also the owner of the shop, so this refund cannot be confirmed here. Only support can complete it.",
+      "staffNote": "Buyer and shop owner are the same account. Only an admin override can complete this case."
+    },
+    "action": {
+      "MARK_PAID": "Mark as paid",
+      "CONFIRM": "Confirm received",
+      "DISPUTE": "Not received",
+      "OVERRIDE": "Override status"
+    },
+    "showHistory": "Show history",
+    "hideHistory": "Hide history",
+    "updatedBySupport": "Updated by support",
+    "open": "Open",
+    "event": {
+      "CREATED": "Case opened",
+      "SELLER_MARK_PAID": "Seller marked the refund as paid",
+      "BUYER_CONFIRM": "Buyer confirmed receipt",
+      "BUYER_DISPUTE": "Buyer reported the refund as not received",
+      "AUTO_CLOSE": "Case closed",
+      "ADMIN_OVERRIDE": "Status changed by support",
+      "RMA_SYNC": "Updated from the return request"
+    },
+    "actor": {
+      "BUYER": "Buyer",
+      "SELLER": "Seller",
+      "ADMIN": "Admin",
+      "SUPER_ADMIN": "Super Admin",
+      "STAFF": "Staff",
+      "SYSTEM": "System"
+    },
+    "events": {
+      "title": "History",
+      "empty": "No events yet.",
+      "onBehalf": "on behalf of {who}"
+    },
+    "buyerPage": {
+      "title": "My refunds",
+      "intro": "Refunds owed to you. When the seller marks a refund as paid, confirm it once the money arrives, or report that it did not.",
+      "empty": "You have no refund cases."
+    },
+    "sellerPage": {
+      "intro": "Refunds you owe to buyers. Transfer the money outside the app, then mark the case as paid.",
+      "empty": "No refund cases for your shop."
+    },
+    "admin": {
+      "title": "Refund tracking",
+      "description": "Every refund owed to a buyer, from cancelled paid orders and return requests, with its full history.",
+      "empty": "No refund cases match these filters.",
+      "detailTitle": "Refund case",
+      "back": "Back to the list"
+    },
+    "filter": {
+      "status": "Status",
+      "source": "Source",
+      "kind": "Type",
+      "shopId": "Shop ID",
+      "orderCode": "Order code (exact)",
+      "from": "Opened from (GMT+8)",
+      "to": "Opened to (GMT+8)",
+      "overdueOnly": "Overdue only",
+      "apply": "Apply filters",
+      "reset": "Reset",
+      "errors": {
+        "badFrom": "The start date is missing or not a real date.",
+        "badTo": "The end date is missing or not a real date.",
+        "rangeOrder": "The start date must not be after the end date.",
+        "rangeTooLong": "The date range must not exceed 366 days.",
+        "badShop": "The shop ID must be a valid ID (UUID)."
+      }
+    },
+    "summary": {
+      "open": "Open",
+      "awaitingBuyer": "Waiting for buyer",
+      "disputed": "Disputed",
+      "buyerConfirmed": "Confirmed",
+      "closed": "Closed",
+      "overdue": "Overdue",
+      "total": "Total",
+      "currency": "Currency",
+      "overdueOff": "Overdue flagging is off (setting refundOverdueDays is not set).",
+      "overdueRule": "A case is overdue when it is not closed after {days} days."
+    },
+    "col": {
+      "order": "Order",
+      "shop": "Shop",
+      "buyer": "Buyer",
+      "status": "Status",
+      "amount": "Amount",
+      "opened": "Opened"
+    },
+    "detail": {
+      "sellerMarked": "Seller marked paid",
+      "buyerConfirmed": "Buyer confirmed",
+      "disputed": "Disputed",
+      "closed": "Closed",
+      "rma": "Return request",
+      "proofYes": "refund proof uploaded",
+      "proofNo": "no refund proof yet"
+    },
+    "modal": {
+      "markPaid": {
+        "title": "Mark refund as paid",
+        "desc": "Confirm that you transferred the refund to the buyer outside the app. The buyer is asked to confirm receipt.",
+        "confirm": "Mark as paid",
+        "reference": "Transfer reference (optional)"
+      },
+      "confirm": {
+        "title": "Confirm receipt",
+        "desc": "Confirm that the refund reached you. This closes the case.",
+        "confirm": "Confirm received"
+      },
+      "dispute": {
+        "title": "Report: refund not received",
+        "desc": "Tell us what is wrong. The shop and the platform support team are notified. You can report at most 3 times.",
+        "confirm": "Send report"
+      },
+      "override": {
+        "title": "Override case status",
+        "desc": "Support decision. Buyer and shop only see \"Updated by support\", never your reason.",
+        "confirm": "Apply override",
+        "toStatus": "New status",
+        "pick": "Choose a status",
+        "internalNote": "The reason is kept in the internal history and is not shown to the buyer or the seller.",
+        "rmaNote": "This case is linked to a return request: the change is carried out through the return request and may be refused if the request is not in the matching state."
+      },
+      "noteRequired": "Note (required, 3 to 1000 characters)",
+      "noteOptional": "Note (optional)",
+      "errors": {
+        "note": {
+          "required": "Enter a text.",
+          "tooShort": "Enter at least 3 characters.",
+          "tooLong": "Use at most 1000 characters.",
+          "invalid": "The text contains a character that is not allowed."
+        },
+        "reference": {
+          "tooLong": "The reference must have at most 120 characters.",
+          "invalid": "The reference contains a character that is not allowed."
+        },
+        "toStatus": {
+          "required": "Choose the new status.",
+          "same": "The case already has this status."
+        }
+      }
+    },
+    "errors": {
+      "selfDealing": "You are both the buyer and the owner of this shop, so you cannot confirm this refund. Contact support to complete it.",
+      "disputeLimit": "You have already reported this refund {max} times. Please contact support.",
+      "invalidTransition": "This case has changed and the action is no longer possible. The list was refreshed.",
+      "notFound": "This refund case was not found.",
+      "invalid": "The refund action is not valid.",
+      "rmaProofFirst": "This refund belongs to a return request. Upload the transfer proof on the return request first, then mark the refund as paid.",
+      "rmaEscalateFirst": "This case is linked to a return request that must be escalated first (or must be in the matching state) before support can change it."
+    },
+    "toast": {
+      "markedPaid": "Refund marked as paid.",
+      "confirmed": "Refund confirmed.",
+      "disputed": "Report sent.",
+      "overridden": "Case status updated."
+    },
+    "rma": {
+      "hint": "This refund comes from a return request: upload the transfer proof on the return request before marking it as paid.",
+      "open": "Open return requests"
+    }
+  },
+  "accountingExport": {
+    "title": "Accounting export",
+    "description": "Download CSV files for reconciliation: refund cases, commission ledger movements and wallet transactions.",
+    "kind": "Export",
+    "kinds": {
+      "refund-cases": "Refund cases (with history)",
+      "commission-ledger": "Commission ledger movements",
+      "wallet-transactions": "Wallet transactions",
+      "dividend-settlements": "Dividend settlements (automatic credit)"
+    },
+    "from": "From (GMT+8)",
+    "to": "To (GMT+8)",
+    "region": "Region (optional)",
+    "allRegions": "All regions",
+    "rangeHint": "Both dates are required and inclusive. The range can be at most 366 days; split a longer period into several files.",
+    "ledgerType": "Reward type",
+    "beneficiaryId": "Beneficiary ID (optional)",
+    "walletReason": "Reason",
+    "userId": "User ID (optional)",
+    "download": "Download CSV",
+    "downloading": "Preparing the file...",
+    "preview": "Preview totals",
+    "concurrencyHint": "You can run at most 2 exports at the same time. A large file can take a while; keep this page open.",
+    "downloaded": "Saved {file}.",
+    "summary": {
+      "title": "Totals for these filters",
+      "rows": "Rows",
+      "note": "The CSV ends with TOTAL lines that match these numbers.",
+      "held": "held {amount}",
+      "in": "In",
+      "out": "Out",
+      "netLabel": "Net",
+      "net": {
+        "twd": "Net TWD",
+        "points": "Net points"
+      },
+      "movement": {
+        "CREDIT": "Credits",
+        "REVERSAL": "Reversals",
+        "PENDING": "Pending (held)",
+        "VOID": "Voided"
+      },
+      "direction": {
+        "IN": "In",
+        "OUT": "Out"
+      },
+      "pool": "Pool",
+      "remainder": "Remainder (difference income)",
+      "itemsTotal": "Total of the lines",
+      "settlements": "Settlements"
+    },
+    "formErrors": {
+      "badFrom": "Enter a real start date.",
+      "badTo": "Enter a real end date.",
+      "rangeOrder": "The start date must not be after the end date.",
+      "rangeTooLong": "The range must not exceed 366 days.",
+      "badShop": "The shop ID must be a valid ID (UUID).",
+      "badRegion": "Choose one of the available regions.",
+      "badReason": "Choose a valid reason.",
+      "badBeneficiary": "The beneficiary ID must be a valid ID (UUID).",
+      "badUser": "The user ID must be a valid ID (UUID).",
+      "badQuarter": "Use a quarter like 2026Q3."
+    },
+    "errors": {
+      "tooManyRows": "This export would have {rows} rows, above the limit of {max}. Narrow the date range or the filters, or split it into several files.",
+      "timeout": "The export took too long and was stopped. Try a shorter date range or try again.",
+      "tooMany": "Too many exports are running or were requested too quickly (at most 2 at the same time per person). Wait a moment and try again.",
+      "unavailable": "The export service is temporarily unavailable. Try again in a few minutes.",
+      "forbidden": "You are not allowed to export accounting data.",
+      "badRequest": "The dates or filters are not valid. Check the range (at most 366 days) and try again.",
+      "failed": "The export failed. Try again.",
+      "aborted": "The download was interrupted and the file is incomplete, so it was not saved. Try again.",
+      "incomplete": "The file ended with an error ({reason}) and is incomplete, so it was not saved. Try again or use a shorter range.",
+      "notCsv": "The server did not return a complete CSV file (no TOTAL line at the end), so nothing was saved. Try again; if it keeps happening, tell an administrator."
+    },
+    "quarter": "Quarter (optional)",
+    "quarterHint": "Like 2026Q3. Empty = every settled quarter. This export has no date range and no region filter."
+  },
+  "subAccounts": {
+    "title": "Sub-accounts",
+    "intro": "Sub-accounts are separate accounts with their own e-mail and password that belong to your account. Their purchases follow the same referral and team rules as before. Each account can have a limited number of them.",
+    "counter": "Sub-accounts",
+    "nOfCap": "{n} of {cap}",
+    "pending": "Waiting for confirmation",
+    "pendingHint": "Waiting for the person at this e-mail to confirm. It is released automatically after {days} days.",
+    "empty": "You have no sub-accounts yet.",
+    "withdraw": "Withdraw",
+    "withdrawConfirm": {
+      "title": "Withdraw this sub-account?",
+      "desc": "The reservation for {email} is cancelled and its place is given back. The person can no longer confirm it."
+    },
+    "create": {
+      "title": "Create a sub-account",
+      "ownerExplain": "The sub-account stays waiting until the person at that e-mail confirms it with the code we e-mail to them. You never see the code or the password. Use only an address that person controls.",
+      "adminExplain": "Created on behalf of this account. It is active immediately. A reason is required and is recorded.",
+      "email": "E-mail",
+      "fullName": "Name (optional)",
+      "region": "Region",
+      "regionDefault": "Default (TW)",
+      "submit": "Create sub-account",
+      "atCap": "You have reached the maximum number of sub-accounts.",
+      "mailSent": "Created. The code was e-mailed to that address; the sub-account is active once the person confirms it.",
+      "mailNotSent": "Created, but the code e-mail was not sent right now. The person can request a code on the forgot-password page with that e-mail.",
+      "errors": {
+        "email": {
+          "required": "Enter an e-mail address.",
+          "invalid": "Enter a valid e-mail address.",
+          "tooLong": "The e-mail address is too long."
+        },
+        "fullName": {
+          "tooLong": "The name must have at most 200 characters.",
+          "invalid": "The name contains a character that is not allowed."
+        },
+        "regionCode": {
+          "invalid": "Choose one of the available regions."
+        }
+      }
+    },
+    "col": {
+      "email": "E-mail",
+      "name": "Name",
+      "status": "Status",
+      "region": "Region",
+      "created": "Created"
+    },
+    "invites": {
+      "title": "Invite links",
+      "explain": "An invite link lets one person register their own account as your sub-account. A link works once and expires after 7 days.",
+      "create": "Create invite link",
+      "newTitle": "Your new invite link",
+      "onceWarning": "Copy it now: for security it is shown only once and cannot be shown again.",
+      "link": "Invite link",
+      "expires": "Expires {date}",
+      "copy": "Copy link",
+      "copied": "Link copied.",
+      "copyFailed": "Copying failed. Select the link above and copy it by hand.",
+      "dismiss": "Hide",
+      "replayed": "This invite was already created, but its link can no longer be shown. Revoke it below and create a new one.",
+      "empty": "No invite links yet.",
+      "expiresCol": "Expires",
+      "revoke": "Revoke",
+      "status": {
+        "PENDING": "Open",
+        "USED": "Used",
+        "REVOKED": "Revoked",
+        "EXPIRED": "Expired"
+      }
+    },
+    "toast": {
+      "created": "Sub-account created.",
+      "withdrawn": "Sub-account withdrawn.",
+      "revoked": "Invite revoked.",
+      "discarded": "Pending sub-account discarded."
+    },
+    "errors": {
+      "limit": "The maximum number of sub-accounts for this account is reached.",
+      "depthLimit": "The maximum sub-account depth is reached.",
+      "parentInvalid": "This account cannot have sub-accounts.",
+      "hasChildren": "This account still has sub-accounts, so it cannot be removed.",
+      "reparentForbidden": "A sub-account cannot be moved to another sponsor.",
+      "inviteInvalid": "This invite link is not valid: it may be wrong, already used, revoked or expired. Ask the account owner for a new one.",
+      "inviteNotFound": "This invite was not found.",
+      "inviteLimit": "There are too many open invite links. Revoke one first.",
+      "notPending": "This sub-account is no longer waiting for confirmation.",
+      "declinedRecently": "This address cannot be added right now. Try again later or use a different address.",
+      "pendingActivation": "This account is waiting for its owner of the e-mail to confirm it, so this action is not available.",
+      "budget": "Too many sub-accounts were created recently. Try again later.",
+      "notFound": "Not found. It may already have been removed.",
+      "tooMany": "Too many requests. Please wait a moment and try again."
+    },
+    "register": {
+      "inviteBanner": "You are registering with a sub-account invite. The new account will belong to the person who invited you."
+    },
+    "decline": {
+      "title": "Decline an account",
+      "description": "Someone reserved an account for this e-mail address. Enter the 6-digit code from the message to refuse it.",
+      "code": "Code from the message",
+      "submit": "Decline the account",
+      "done": "Done. The reserved account was declined.",
+      "failed": "The account could not be declined.",
+      "acceptHint": "Want to accept it instead?",
+      "acceptLink": "Set your password here",
+      "errors": {
+        "email": "Enter a valid e-mail address.",
+        "code": "Enter the 6-digit code."
+      }
+    },
+    "admin": {
+      "title": "Sub-accounts of an account",
+      "back": "Back to users",
+      "root": "Root account",
+      "isSub": "This account is a sub-account (level {depth}).",
+      "isRoot": "This account is a root account.",
+      "readOnly": "Read only: only an Admin or Super Admin can create or discard sub-accounts.",
+      "empty": "This account has no sub-accounts.",
+      "discard": "Discard pending",
+      "discardTitle": "Discard the pending sub-account",
+      "discardDesc": "Cancels the reservation for {email}. A reason is required and is recorded.",
+      "truncated": "The list is cut at {limit} rows; narrow it by opening a sub-account.",
+      "open": "Sub-accounts"
+    }
+  },
+  "dividendSettlements": {
+    "title": "Dividend settlements",
+    "description": "Quarterly dividend credited automatically to wallets: pool, remainder, every account line and its wallet transaction.",
+    "empty": "No quarter has been settled.",
+    "open": "Open",
+    "back": "Back to settlements",
+    "detailTitle": "Settlement",
+    "noItems": "No lines match this filter.",
+    "counts": "{credited} credited, {pending} pending, {skipped} skipped of {total}",
+    "armed": {
+      "label": "Automatic credit",
+      "armed": "Armed: it will settle locked quarters from the first quarter on",
+      "enabledNoQuarter": "Switch on but no first quarter: nothing is settled",
+      "off": "Off: nothing is settled",
+      "unknown": "State unknown",
+      "switch": "Switch",
+      "fromQuarter": "First quarter"
+    },
+    "warning": {
+      "title": "Do not turn the automatic dividend credit on in a real environment yet",
+      "body": "The switch must stay OFF until the client has answered Q1 (parallel with or replacing the global fund) and C3b (dividend per region). Turning it on credits real wallets and cannot be undone.",
+      "order": "Set the first quarter BEFORE turning the switch on: with the switch on and no first quarter nothing is settled; quarters before it are never settled."
+    },
+    "col": {
+      "quarter": "Quarter",
+      "status": "Status",
+      "pool": "Pool",
+      "remainder": "Remainder",
+      "paid": "Paid",
+      "items": "Lines",
+      "account": "Account",
+      "slots": "Slots",
+      "amount": "Amount",
+      "points": "Points",
+      "walletTx": "Wallet transaction"
+    },
+    "facts": {
+      "retained": "Kept by the company",
+      "slots": "Total slots",
+      "fx": "FX rate (TWD to USD)",
+      "peg": "Point value (USD)",
+      "tax": "Tax taken out",
+      "lockAt": "Quarter locked",
+      "snapshotAt": "Frozen at",
+      "finishedAt": "Finished",
+      "failedReason": "Reason"
+    },
+    "settlementStatus": {
+      "RUNNING": "Running",
+      "COMPLETED": "Completed",
+      "FAILED": "Failed"
+    },
+    "itemStatus": {
+      "PENDING": "Pending",
+      "CREDITED": "Credited",
+      "SKIPPED_ZERO": "Skipped (zero)",
+      "SKIPPED_NO_WALLET": "Skipped (cannot be paid)"
+    },
+    "skipReason": {
+      "NO_WALLET": "No wallet",
+      "DELETED": "Account deleted",
+      "PENDING_ACTIVATION": "Account not confirmed yet",
+      "NO_USER": "Account not found"
+    },
+    "run": {
+      "title": "Run a settlement now",
+      "explain": "Super Admin only. The run is synchronous: it freezes the quarter if needed and credits every account before it answers, so a big quarter can take a while. Keep this page open. Running again is safe: finished accounts are not paid twice.",
+      "quarter": "Quarter",
+      "badQuarter": "Enter a quarter like 2026Q4.",
+      "button": "Run now",
+      "running": "Running...",
+      "confirmTitle": "Run the {quarter} settlement now?",
+      "confirmDesc": "This credits real wallets. It runs until it is done; do not close the page.",
+      "readOnly": "Read only: only a Super Admin can run a settlement.",
+      "result": "Credited {credited}, skipped {skipped}, pending {pending}, errors {errors}.",
+      "partialHint": "Not everything was paid. Run again to continue.",
+      "outcome": {
+        "COMPLETED": "Completed",
+        "ALREADY_COMPLETED": "Already completed",
+        "PARTIAL": "Partly done"
+      }
+    },
+    "errors": {
+      "disabled": "The automatic dividend credit is switched off.",
+      "fromRequired": "Set the first quarter of the automatic credit first (in settings).",
+      "notLocked": "Quarter {quarter} is not locked yet, so it cannot be settled.",
+      "beforeStart": "Quarter {quarter} is before the first quarter of the automatic credit ({fromQuarter}), so it is never settled.",
+      "failed": "The {quarter} settlement failed its reconciliation check and needs a manual review; it cannot be run again.",
+      "notFound": "This quarter has no settlement.",
+      "creditNotFound": "This dividend line was not found."
+    },
+    "enableConfirm": {
+      "title": "Turn on the automatic dividend credit?",
+      "fromSet": "First quarter is set: {quarter}. Locked quarters from then on will be settled into real wallets.",
+      "fromNotSet": "First quarter is NOT set: nothing will be settled until you set it. Set it first.",
+      "check": "I understand: the client has answered Q1 and C3b, this is not a real environment before that, and the first quarter is set.",
+      "confirm": "Turn it on"
+    }
+  },
+  "dividendCredits": {
+    "title": "My dividend credits",
+    "intro": "Quarterly dividends credited to your wallet. Amounts are in TWD and in wallet points.",
+    "empty": "No dividend has been credited to you yet.",
+    "detailTitle": "Dividend credit",
+    "back": "Back to my dividend credits",
+    "creditedAt": "Credited",
+    "settlement": "Settlement"
   }
 }

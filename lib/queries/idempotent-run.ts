@@ -21,3 +21,22 @@ export function createIdempotentRunner(store = createIdempotencyKeyStore()) {
     },
   };
 }
+
+/**
+ * One Idempotency-Key lifecycle per operation key (for example "<caseId>:dispute"): a retry of the same
+ * action on the same case after a lost response reuses its key, and an action on the same case does
+ * not share (or rotate) the key of a different action.
+ */
+export function createKeyedRunners() {
+  const runners = new Map<string, ReturnType<typeof createIdempotentRunner>>();
+  return {
+    forKey(key: string) {
+      let r = runners.get(key);
+      if (!r) {
+        r = createIdempotentRunner();
+        runners.set(key, r);
+      }
+      return r;
+    },
+  };
+}

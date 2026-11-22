@@ -6,6 +6,7 @@ import type { RmaStatus } from "@/lib/api/orders";
 import { useShopRma, useShopRmaAction } from "@/lib/queries/orders";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminReasonModal } from "@/components/admin/AdminReasonModal";
+import { SellerRmaApproveFlow } from "@/components/seller/SellerRmaApproveFlow";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
 import { OrderListSkeleton } from "@/components/ui/Skeleton";
@@ -26,6 +27,7 @@ function SellerRmaInner() {
   const { t } = useLanguage();
   const [filter, setFilter] = useState<FilterValue>("REQUESTED");
   const [noteModal, setNoteModal] = useState<NoteModal>(null);
+  const [approveTarget, setApproveTarget] = useState<{ rmaId: string; orderId: string } | null>(null);
   const escalatedOnly = filter === "ESCALATED";
   const status = escalatedOnly || !filter ? undefined : filter;
   const { data, isLoading, isError, error } = useShopRma(status, escalatedOnly);
@@ -121,9 +123,7 @@ function SellerRmaInner() {
                   type="button"
                   className="mq-btn mq-btn-primary text-xs"
                   disabled={busy}
-                  onClick={() =>
-                    void action.mutateAsync({ id: r.id, action: "approve", orderId: r.orderId })
-                  }
+                  onClick={() => setApproveTarget({ rmaId: r.id, orderId: r.orderId })}
                 >
                   {t("seller.rmaPage.approve")}
                 </button>
@@ -203,6 +203,7 @@ function SellerRmaInner() {
         </div>
       ))}
 
+      <SellerRmaApproveFlow target={approveTarget} onClose={() => setApproveTarget(null)} />
       <AdminReasonModal
         open={Boolean(noteModal)}
         title={
