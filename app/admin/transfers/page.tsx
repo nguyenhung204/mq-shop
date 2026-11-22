@@ -58,6 +58,7 @@ function TransfersInner() {
 
   const [fromId, setFromId] = useState("");
   const [toId, setToId] = useState("");
+  const [formError, setFormError] = useState("");
   const [note, setNote] = useState("");
   const [lines, setLines] = useState<FormLine[]>([{ sku: "", quantity: "1" }]);
 
@@ -87,6 +88,7 @@ function TransfersInner() {
     const copy = [...lines];
     copy[i] = { ...copy[i]!, [field]: value };
     setLines(copy);
+    if (formError) setFormError("");
   };
 
   const resetForm = () => {
@@ -94,11 +96,13 @@ function TransfersInner() {
     setToId("");
     setNote("");
     setLines([{ sku: "", quantity: "1" }]);
+    setFormError("");
     setShowCreate(false);
   };
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setFormError("");
     const validItems: { sku: string; quantity: number }[] = [];
     for (const l of lines) {
       const sku = l.sku.trim();
@@ -110,14 +114,14 @@ function TransfersInner() {
         allowZero: false,
       });
       if (!qtyRes.ok) {
-        toast.error(
-          getMoneyInputErrorMessage(qtyRes.error, t, {
-            locale,
-            maxDecimals: 0,
-            min: 1,
-            max: 1000000,
-          }),
-        );
+        const msg = getMoneyInputErrorMessage(qtyRes.error, t, {
+          locale,
+          maxDecimals: 0,
+          min: 1,
+          max: 1000000,
+        });
+        setFormError(msg);
+        toast.error(msg);
         return;
       }
       validItems.push({ sku, quantity: qtyRes.value });
@@ -161,6 +165,11 @@ function TransfersInner() {
             onSubmit={(e) => void onSubmit(e)}
           >
             <h2 className="text-base font-medium">{t("seller.transfers.create")}</h2>
+            {formError ? (
+              <div className="mq-alert mq-alert-error" role="alert">
+                {formError}
+              </div>
+            ) : null}
             <div className="grid sm:grid-cols-2 gap-3">
               <label className="block text-xs space-y-1">
                 <span className="text-mq-text-muted">{t("seller.transfers.fromWarehouse")}</span>

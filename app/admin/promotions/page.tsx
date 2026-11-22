@@ -130,7 +130,7 @@ function buildBody(
   }
 
   if (form.type !== "FREE_SHIP") {
-    const maxDiscount = form.type === "PERCENT" ? 100 : 999999999999.99;
+    const maxDiscount = form.type === "PERCENT" ? 100 : 9999999999.99;
     const discParsed = parseLocaleMoneyInput(form.discountValue, {
       locale,
       maxDecimals: 2,

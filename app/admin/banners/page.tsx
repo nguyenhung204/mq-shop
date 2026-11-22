@@ -62,6 +62,7 @@ function BannersInner() {
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<Banner | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
+  const [sortOrderError, setSortOrderError] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<Banner | null>(null);
 
   const { data, isLoading, isError, error } = useAdminBanners(lang, page);
@@ -81,6 +82,7 @@ function BannersInner() {
   const startEdit = (b: Banner) => {
     setEditing(b);
     setLang(b.lang);
+    setSortOrderError("");
     setForm({
       title: b.title,
       linkUrl: b.linkUrl ?? "",
@@ -93,10 +95,12 @@ function BannersInner() {
   const cancelEdit = () => {
     setEditing(null);
     setForm(emptyForm());
+    setSortOrderError("");
   };
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setSortOrderError("");
     let sortOrder = 0;
     if (form.sortOrder.trim() !== "") {
       const sortRes = parseLocaleIntInput(form.sortOrder, {
@@ -106,14 +110,14 @@ function BannersInner() {
         allowZero: true,
       });
       if (!sortRes.ok) {
-        toast.error(
-          getMoneyInputErrorMessage(sortRes.error, t, {
-            locale,
-            maxDecimals: 0,
-            min: 0,
-            max: 1000000,
-          }),
-        );
+        const msg = getMoneyInputErrorMessage(sortRes.error, t, {
+          locale,
+          maxDecimals: 0,
+          min: 0,
+          max: 1000000,
+        });
+        setSortOrderError(msg);
+        toast.error(msg);
         return;
       }
       sortOrder = sortRes.value;
@@ -196,14 +200,25 @@ function BannersInner() {
             value={form.linkUrl}
             onChange={(e) => setForm({ ...form, linkUrl: e.target.value })}
           />
-          <input
-            className="mq-input"
-            type="text"
-            inputMode="numeric"
-            placeholder={t("admin.banners.orderPh")}
-            value={form.sortOrder}
-            onChange={(e) => setForm({ ...form, sortOrder: e.target.value })}
-          />
+          <div>
+            <input
+              className={`mq-input ${sortOrderError ? "border-red-500" : ""}`}
+              type="text"
+              inputMode="numeric"
+              placeholder={t("admin.banners.orderPh")}
+              value={form.sortOrder}
+              aria-invalid={Boolean(sortOrderError)}
+              onChange={(e) => {
+                setForm({ ...form, sortOrder: e.target.value });
+                if (sortOrderError) setSortOrderError("");
+              }}
+            />
+            {sortOrderError ? (
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400" role="alert">
+                {sortOrderError}
+              </p>
+            ) : null}
+          </div>
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"

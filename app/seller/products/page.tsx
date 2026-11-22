@@ -310,7 +310,7 @@ function ProductsInner() {
         setFormError(t("seller.productsPage.skuRequiredError"));
         return null;
       }
-      if (!Number.isFinite(sellingPrice) || sellingPrice < 0) {
+      if (!Number.isFinite(sellingPrice) || sellingPrice < 0 || sellingPrice > 9999999999.99) {
         setFormError(t("seller.productsPage.invalidSellPriceError", { sku }));
         return null;
       }
@@ -705,6 +705,7 @@ function ProductsInner() {
                         })
                       }
                       min={0}
+                      max={9999999999.99}
                       required
                     />
                     <div className="flex items-center gap-2 justify-end">

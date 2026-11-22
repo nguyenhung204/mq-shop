@@ -421,38 +421,55 @@ export function useTransferDetail(id: string | null) {
 
 export function useCreateTransfer() {
   const invalidate = useInventoryInvalidate();
+  const idempotency = useMemo(() => createIdempotencyKeyStore(), []);
   return useMutation({
-    mutationFn: (body: CreateTransferRequest) => transferApi.create(body),
+    mutationFn: (body: CreateTransferRequest) =>
+      transferApi.create(body, idempotency.keyFor(body)),
     onSuccess: () => {
+      idempotency.invalidate();
       invalidate();
       toast.success(tt("toast.transferCreated"));
     },
-    onError: (e) => toast.error(inventoryErrorMessage(e, tt("toast.transferFailed"))),
+    onError: (e) => {
+      onIdempotencyError(e, idempotency);
+      toast.error(inventoryErrorMessage(e, tt("toast.transferFailed")));
+    },
   });
 }
 
 export function useApproveTransfer() {
   const invalidate = useInventoryInvalidate();
+  const idempotency = useMemo(() => createIdempotencyKeyStore(), []);
   return useMutation({
-    mutationFn: (id: string) => transferApi.approve(id),
+    mutationFn: (id: string) =>
+      transferApi.approve(id, idempotency.keyFor({ transferId: id, action: "approve" })),
     onSuccess: () => {
+      idempotency.invalidate();
       invalidate();
       toast.success(tt("toast.transferApproved"));
     },
-    onError: (e) => toast.error(inventoryErrorMessage(e, tt("toast.transferFailed"))),
+    onError: (e) => {
+      onIdempotencyError(e, idempotency);
+      toast.error(inventoryErrorMessage(e, tt("toast.transferFailed")));
+    },
   });
 }
 
 export function useReceiveTransfer() {
   const invalidate = useInventoryInvalidate();
+  const idempotency = useMemo(() => createIdempotencyKeyStore(), []);
   return useMutation({
     mutationFn: ({ id, body }: { id: string; body: ReceiveTransferRequest }) =>
-      transferApi.receive(id, body),
+      transferApi.receive(id, body, idempotency.keyFor({ transferId: id, action: "receive", body })),
     onSuccess: () => {
+      idempotency.invalidate();
       invalidate();
       toast.success(tt("toast.transferReceived"));
     },
-    onError: (e) => toast.error(inventoryErrorMessage(e, tt("toast.transferFailed"))),
+    onError: (e) => {
+      onIdempotencyError(e, idempotency);
+      toast.error(inventoryErrorMessage(e, tt("toast.transferFailed")));
+    },
   });
 }
 

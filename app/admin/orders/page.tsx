@@ -24,7 +24,7 @@ import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { NeedsHandlingBadge } from "@/components/orders/NeedsHandlingBadge";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-import { parseLocaleIntInput } from "@/lib/money";
+import { getMoneyInputErrorMessage, parseLocaleIntInput } from "@/lib/money";
 import { translateStatus } from "@/lib/i18n/status";
 import { CountrySelect } from "@/components/ui/CountrySelect";
 import { PhoneInput } from "@/components/ui/PhoneInput";
@@ -64,7 +64,7 @@ function variantOptionLabel(v: ProductVariant): string {
 }
 
 function OrdersInner() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { hasRole } = useAuth();
   const searchParams = useSearchParams();
   const highlightOrderId = searchParams.get("orderId");
@@ -172,6 +172,26 @@ function OrdersInner() {
   const adminQuote = useAdminShippingQuote();
   const adminCheckout = useAdminCheckout();
 
+  const qtyRes = useMemo(
+    () =>
+      parseLocaleIntInput(qty, {
+        locale,
+        min: 1,
+        max: 9999,
+        allowZero: false,
+      }),
+    [qty, locale],
+  );
+  const qtyError = useMemo(() => {
+    if (!qty.trim() || qtyRes.ok) return "";
+    return getMoneyInputErrorMessage(qtyRes.error, t, {
+      locale,
+      maxDecimals: 0,
+      min: 1,
+      max: 9999,
+    });
+  }, [qty, qtyRes, t, locale]);
+
   const quoteBody = useMemo(() => {
     if (
       !buyerId ||
@@ -184,11 +204,6 @@ function OrdersInner() {
     ) {
       return null;
     }
-    const qtyRes = parseLocaleIntInput(qty, {
-      min: 1,
-      max: 9999,
-      allowZero: false,
-    });
     if (!qtyRes.ok) return null;
     return {
       buyerId,
@@ -205,7 +220,7 @@ function OrdersInner() {
   }, [
     buyerId,
     variantId,
-    qty,
+    qtyRes,
     fullName,
     phoneNational,
     phoneDialCountry,
@@ -295,14 +310,22 @@ function OrdersInner() {
               />
             </div>
           </label>
-          <input
-            className="mq-input"
-            type="text"
-            inputMode="numeric"
-            value={qty}
-            onChange={(e) => setQty(e.target.value)}
-            aria-label={t("admin.ordersPage.quantity")}
-          />
+          <div>
+            <input
+              className={`mq-input ${qtyError ? "border-red-500" : ""}`}
+              type="text"
+              inputMode="numeric"
+              value={qty}
+              onChange={(e) => setQty(e.target.value)}
+              aria-invalid={Boolean(qtyError)}
+              aria-label={t("admin.ordersPage.quantity")}
+            />
+            {qtyError ? (
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400" role="alert">
+                {qtyError}
+              </p>
+            ) : null}
+          </div>
           <select
             className="mq-input"
             value={paymentMethod}
