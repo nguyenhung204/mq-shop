@@ -291,3 +291,18 @@ export function parsePriceText(text: string | null | undefined): number | null {
   const n = Number(text);
   return Number.isFinite(n) ? n : null;
 }
+
+/**
+ * What a quantity box does when the user leaves it (blur/Enter): a valid number is committed
+ * (only reported when it differs from the parent's), an invalid text reverts to the parent's
+ * current value so the box always matches the real quantity once focus is gone.
+ */
+export function resolveQuantityCommit(
+  text: string,
+  current: number,
+  opts: { locale: string; min?: number; max?: number },
+): { value: number; changed: boolean; text: string } {
+  const { value } = evaluateQuantityInput(text, opts);
+  if (value == null) return { value: current, changed: false, text: String(current) };
+  return { value, changed: value !== current, text: String(value) };
+}

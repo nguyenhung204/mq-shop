@@ -112,3 +112,18 @@ describe("parsePriceText", () => {
     expect(parsePriceText("12.5")).toBe(12.5);
   });
 });
+
+import { resolveQuantityCommit } from "./currency";
+
+describe("resolveQuantityCommit", () => {
+  const o = { locale: "en-US", min: 1, max: 99 };
+  it("invalid text reverts to the parent's value, never changes it", () => {
+    for (const bad of ["1.5", "1e3", "12abc", "0", "100", "", "-1"]) {
+      expect(resolveQuantityCommit(bad, 5, o)).toEqual({ value: 5, changed: false, text: "5" });
+    }
+  });
+  it("valid text is committed and normalised", () => {
+    expect(resolveQuantityCommit(" 7 ", 5, o)).toEqual({ value: 7, changed: true, text: "7" });
+    expect(resolveQuantityCommit("5", 5, o)).toEqual({ value: 5, changed: false, text: "5" });
+  });
+});

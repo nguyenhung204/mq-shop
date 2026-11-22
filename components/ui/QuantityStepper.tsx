@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-import { evaluateQuantityInput } from "@/lib/ui/currency";
+import { evaluateQuantityInput, resolveQuantityCommit } from "@/lib/ui/currency";
 import { getMoneyInputErrorMessage } from "@/lib/money";
 
 type Props = {
@@ -53,10 +53,12 @@ export function QuantityStepper({
     onInvalidChange?.(invalid);
   }, [invalid, onInvalidChange]);
 
-  // Invalid text is kept as typed and reported; the quantity is never silently changed.
+  // While typing, invalid text stays visible with its error. On blur/Enter it is reverted to the
+  // parent's current quantity, so the box always shows the number the cart/order really uses.
   const commit = () => {
-    if (evaluation.value == null) return;
-    if (evaluation.value !== value) onChange(evaluation.value);
+    const r = resolveQuantityCommit(draft, value, { locale, min, max });
+    setDraft(r.text);
+    if (r.changed) onChange(r.value);
   };
 
   return (
