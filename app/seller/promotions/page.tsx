@@ -26,7 +26,7 @@ import { TableSkeleton } from "@/components/ui/Skeleton";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { formatDateTimeGmt8, gmt8DateTimeLocalToIso, isoToGmt8DateTimeLocal } from "@/lib/i18n/gmt8-calendar";
 import { toIntlLocale } from "@/lib/i18n/locale-format";
-import { getMoneyInputErrorMessage, parseLocaleMoneyInput } from "@/lib/money";
+import { getMoneyInputErrorMessage, localizeDecimalString, parseLocaleMoneyInput } from "@/lib/money";
 
 const TYPES: PromotionType[] = ["PERCENT", "FIXED", "FREE_SHIP", "VOUCHER"];
 const STATUSES: Array<PromotionStatus | ""> = [
@@ -84,13 +84,16 @@ const emptyForm = (): FormState => ({
   categoryIds: [],
 });
 
-function formFromPromotion(p: Promotion): FormState {
+function formFromPromotion(p: Promotion, locale: string | null): FormState {
   return {
     name: p.name,
     type: p.type,
-    discountValue: p.discountValue === "0" && p.type === "FREE_SHIP" ? "" : p.discountValue,
+    discountValue:
+      p.discountValue === "0" && p.type === "FREE_SHIP"
+        ? ""
+        : localizeDecimalString(p.discountValue, locale ?? "en"),
     code: p.code ?? "",
-    budget: p.budget ?? "",
+    budget: localizeDecimalString(p.budget, locale ?? "en"),
     startAt: toLocalInput(p.startAt),
     endAt: toLocalInput(p.endAt),
     skus: [...p.skus],
@@ -218,7 +221,7 @@ function PromotionsInner() {
   const openEdit = (p: Promotion) => {
     if (p.status !== "PENDING") return;
     setEditingId(p.id);
-    setForm(formFromPromotion(p));
+    setForm(formFromPromotion(p, locale));
     setFormError("");
     setShowForm(true);
   };
