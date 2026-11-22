@@ -405,20 +405,26 @@ export function formatWholeDisplay(whole: number, locale = "en-US", currency?: s
 
 /**
  * Text to prefill into a locale-parsed input from an API decimal (string or number):
- * no grouping, locale decimal separator, up to `maxDecimals` digits with trailing zeros
- * trimmed, so parseLocaleMoneyInput accepts it in every locale and returns the same value.
+ * no grouping, locale decimal separator, string-only handling (never rounds), trailing zeros
+ * trimmed, so parseLocaleMoneyInput accepts it in every locale with the same digits.
  */
 export function formatPrefillDecimal(
   value: string | number | null | undefined,
   locale = "en-US",
-  maxDecimals = 8,
 ): string {
   if (value == null || value === "") return "";
-  const n = Number(value);
-  if (!Number.isFinite(n)) return "";
-  const fixed = n.toFixed(maxDecimals);
-  const trimmed = fixed.includes(".") ? fixed.replace(/\.?0+$/, "") : fixed;
-  return isViLocale(locale) ? trimmed.replace(".", ",") : trimmed;
+  let s: string;
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) return "";
+    s = /e/i.test(String(value))
+      ? value.toLocaleString("en-US", { useGrouping: false, maximumFractionDigits: 20 })
+      : String(value);
+  } else {
+    s = value.trim();
+  }
+  if (!/^-?\d+(?:\.\d+)?$/.test(s)) return "";
+  if (s.includes(".")) s = s.replace(/\.?0+$/, "");
+  return isViLocale(locale) ? s.replace(".", ",") : s;
 }
 
 /** Swap the ASCII decimal point of an API decimal string for the locale separator; digits untouched. */

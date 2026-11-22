@@ -22,6 +22,16 @@ describe("formatPrefillDecimal", () => {
     expect(formatPrefillDecimal("1.00000000", "zh-TW")).toBe("1");
   });
 
+  it("never rounds beyond 8 dp and never emits exponents", () => {
+    expect(formatPrefillDecimal("0.123456789012", "en")).toBe("0.123456789012");
+    expect(formatPrefillDecimal("0.123456789012", "vi")).toBe("0,123456789012");
+    expect(formatPrefillDecimal(1e-9, "en")).toBe("0.000000001");
+    expect(formatPrefillDecimal(1e21, "en")).toBe("1000000000000000000000");
+    expect(formatPrefillDecimal("100", "vi")).toBe("100");
+    expect(formatPrefillDecimal("100.50", "en")).toBe("100.5");
+    expect(formatPrefillDecimal("1e3", "en")).toBe("");
+  });
+
   it("returns empty for missing or non-finite input", () => {
     expect(formatPrefillDecimal(null, "en")).toBe("");
     expect(formatPrefillDecimal("", "en")).toBe("");
