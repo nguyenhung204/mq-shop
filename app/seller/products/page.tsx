@@ -31,6 +31,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { translateStatus } from "@/lib/i18n/status";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
+import { parsePriceText } from "@/lib/ui/currency";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { categoryLabel } from "@/lib/api/categoryLabel";
@@ -305,12 +306,12 @@ function ProductsInner() {
     }[] = [];
     for (const v of variants) {
       const sku = v.sku.trim();
-      const sellingPrice = Number(v.sellingPrice);
+      const sellingPrice = parsePriceText(v.sellingPrice);
       if (!sku) {
         setFormError(t("seller.productsPage.skuRequiredError"));
         return null;
       }
-      if (!Number.isFinite(sellingPrice) || sellingPrice < 0 || sellingPrice > 9999999999.99) {
+      if (sellingPrice == null || sellingPrice < 0 || sellingPrice > 9999999999.99) {
         setFormError(t("seller.productsPage.invalidSellPriceError", { sku }));
         return null;
       }

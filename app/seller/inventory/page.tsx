@@ -37,6 +37,7 @@ import { translateStatus } from "@/lib/i18n/status";
 import { formatWarehouseLabel } from "@/lib/inventory/warehouse-label";
 import { CountrySelect } from "@/components/ui/CountrySelect";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
+import { parsePriceText } from "@/lib/ui/currency";
 import {
   AdminActions,
   AdminIconButton,
@@ -407,8 +408,8 @@ function VariantsTab() {
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const trimmedSku = sku.trim();
-    const sell = Number(sellingPrice);
-    if (!productId || !trimmedSku || !Number.isFinite(sell) || sell < 0 || sell > 9999999999.99) return;
+    const sell = parsePriceText(sellingPrice);
+    if (!productId || !trimmedSku || sell == null || sell < 0 || sell > 9999999999.99) return;
     let options: Record<string, string> | undefined;
     const trimmedOpts = optionsText.trim();
     if (trimmedOpts) {

@@ -13,6 +13,7 @@ import React, {
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import {
   evaluateCurrencyInput,
+  reevaluateOnLocaleChange,
   formatLocaleNumber,
   getCurrencyAffix,
   getCurrencyDecimals,
@@ -113,8 +114,22 @@ export function CurrencyInput({
     lastEmittedValueRef.current = value;
 
     if (value == null || !Number.isFinite(value)) {
-      // A locale switch alone must not wipe text the user typed (it may just be invalid).
-      if (!localeChanged) setDisplayString("");
+      if (!localeChanged) {
+        setDisplayString("");
+        return;
+      }
+      // A locale switch must not wipe typed text, but the text may now be valid (or invalid):
+      // judge it under the new locale and tell the parent so both stay consistent.
+      const re = reevaluateOnLocaleChange(displayString, value, {
+        locale: activeLocale,
+        decimals,
+        min,
+        max,
+      });
+      if (re.emit) {
+        lastEmittedValueRef.current = re.value;
+        onChange(re.value);
+      }
       return;
     }
     setDisplayString(
@@ -123,7 +138,7 @@ export function CurrencyInput({
         maxDecimals: decimals,
       }),
     );
-  }, [value, activeLocale, decimals]);
+  }, [value, activeLocale, decimals, displayString, min, max, onChange]);
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {

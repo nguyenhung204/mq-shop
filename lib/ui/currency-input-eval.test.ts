@@ -80,3 +80,35 @@ describe("evaluateQuantityInput", () => {
     expect(evaluateQuantityInput("1.000", { locale: "vi", min: 1 })).toEqual(good(1000));
   });
 });
+
+import { parsePriceText, reevaluateOnLocaleChange } from "./currency";
+
+describe("reevaluateOnLocaleChange", () => {
+  const en = { locale: "en-US", decimals: 0 };
+  const vi = { locale: "vi-VN", decimals: 0 };
+  it("text that turns valid after a switch en -> vi is emitted to the parent", () => {
+    expect(evaluateCurrencyInput("1.234", en).value).toBeNull();
+    expect(reevaluateOnLocaleChange("1.234", null, vi)).toEqual({ emit: true, value: 1234 });
+  });
+  it("text that turns invalid after a switch vi -> en emits null", () => {
+    expect(reevaluateOnLocaleChange("1.234", 1234, en)).toEqual({ emit: true, value: null });
+  });
+  it("no emit when the parent already holds the same value", () => {
+    expect(reevaluateOnLocaleChange("1234", 1234, vi)).toEqual({ emit: false, value: 1234 });
+    expect(reevaluateOnLocaleChange("1.234", undefined, en)).toEqual({ emit: false, value: null });
+  });
+});
+
+describe("parsePriceText", () => {
+  it("empty or blank is not 0", () => {
+    expect(parsePriceText("")).toBeNull();
+    expect(parsePriceText("  ")).toBeNull();
+    expect(parsePriceText(undefined)).toBeNull();
+    expect(parsePriceText("abc")).toBeNull();
+  });
+  it("numbers pass, including a real 0", () => {
+    expect(parsePriceText("0")).toBe(0);
+    expect(parsePriceText("1234")).toBe(1234);
+    expect(parsePriceText("12.5")).toBe(12.5);
+  });
+});

@@ -271,3 +271,23 @@ export function evaluateQuantityInput(
   const res = parseLocaleIntInput(raw, opts);
   return res.ok ? { value: res.value, error: null } : { value: null, error: res.error };
 }
+
+/**
+ * After the locale/decimals change, the text already typed may become valid or invalid.
+ * Returns whether the parent must be told (value differs from what it last received).
+ */
+export function reevaluateOnLocaleChange(
+  text: string,
+  lastEmitted: number | null | undefined,
+  opts: { locale: string; decimals: number; min?: number; max?: number },
+): { emit: boolean; value: number | null } {
+  const { value } = evaluateCurrencyInput(text, opts);
+  return { emit: value !== (lastEmitted ?? null), value };
+}
+
+/** Price text held by a form (`""` means no price). Empty/blank/non-numeric is null, never 0. */
+export function parsePriceText(text: string | null | undefined): number | null {
+  if (text == null || !text.trim()) return null;
+  const n = Number(text);
+  return Number.isFinite(n) ? n : null;
+}
