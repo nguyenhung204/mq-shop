@@ -8,6 +8,11 @@ import { useCalculateLandingCost } from "@/lib/queries/finance";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
+import {
+  getMoneyInputErrorMessage,
+  parseLocaleIntInput,
+  parseLocaleMoneyInput,
+} from "@/lib/money";
 
 type LineForm = {
   key: string;
@@ -23,17 +28,6 @@ function newLine(): LineForm {
     quantity: "1",
     discount: "",
   };
-}
-
-function isNonNegNumber(value: string, allowEmpty = false): boolean {
-  if (!value.trim()) return allowEmpty;
-  const n = Number(value);
-  return Number.isFinite(n) && n >= 0;
-}
-
-function isPositiveInt(value: string): boolean {
-  const n = Number(value);
-  return Number.isInteger(n) && n >= 1;
 }
 
 export function LandingCostCalculator() {
@@ -59,44 +53,79 @@ export function LandingCostCalculator() {
     e.preventDefault();
     setFormError("");
 
+    const moneyOpts = {
+      locale,
+      maxDecimals: 2,
+      allowZero: true,
+      allowNegative: false,
+      max: 999999999999.99,
+    };
+
     const items: LandingCostItemInput[] = [];
     for (const line of lines) {
-      if (!isNonNegNumber(line.unitPrice) || !isPositiveInt(line.quantity)) {
-        setFormError(t("landingCost.formError"));
+      const unitParsed = parseLocaleMoneyInput(line.unitPrice, moneyOpts);
+      if (!unitParsed.ok) {
+        setFormError(getMoneyInputErrorMessage(unitParsed.error, t, moneyOpts));
         return;
       }
-      if (!isNonNegNumber(line.discount, true)) {
-        setFormError(t("landingCost.formError"));
+      const qtyParsed = parseLocaleIntInput(line.quantity, {
+        locale,
+        min: 1,
+        max: 1000000,
+        allowZero: false,
+      });
+      if (!qtyParsed.ok) {
+        setFormError(
+          getMoneyInputErrorMessage(qtyParsed.error, t, {
+            locale,
+            maxDecimals: 0,
+            min: 1,
+            max: 1000000,
+          }),
+        );
         return;
       }
       const item: LandingCostItemInput = {
-        unitPrice: line.unitPrice.trim(),
-        quantity: Number(line.quantity),
+        unitPrice: unitParsed.canonical,
+        quantity: qtyParsed.value,
       };
-      if (line.discount.trim()) item.discount = line.discount.trim();
+      if (line.discount.trim()) {
+        const discParsed = parseLocaleMoneyInput(line.discount, moneyOpts);
+        if (!discParsed.ok) {
+          setFormError(getMoneyInputErrorMessage(discParsed.error, t, moneyOpts));
+          return;
+        }
+        item.discount = discParsed.canonical;
+      }
       items.push(item);
     }
 
-    for (const [value, label] of [
-      [shippingFee, "shipping"],
-      [vatAmount, "vat"],
-      [packagingFee, "packaging"],
-      [promoDiscount, "promo"],
-    ] as const) {
-      if (!isNonNegNumber(value, true)) {
-        setFormError(t("landingCost.formError"));
-        return;
+    const parseOptionalMoney = (raw: string): string | null | undefined => {
+      if (!raw.trim()) return undefined;
+      const parsed = parseLocaleMoneyInput(raw, moneyOpts);
+      if (!parsed.ok) {
+        setFormError(getMoneyInputErrorMessage(parsed.error, t, moneyOpts));
+        return null;
       }
-      void label;
-    }
+      return parsed.canonical;
+    };
+
+    const shipCanon = parseOptionalMoney(shippingFee);
+    if (shipCanon === null) return;
+    const vatCanon = parseOptionalMoney(vatAmount);
+    if (vatCanon === null) return;
+    const pkgCanon = parseOptionalMoney(packagingFee);
+    if (pkgCanon === null) return;
+    const promoCanon = parseOptionalMoney(promoDiscount);
+    if (promoCanon === null) return;
 
     try {
       const data = await calculate.mutateAsync({
         items,
-        ...(shippingFee.trim() ? { shippingFee: shippingFee.trim() } : {}),
-        ...(vatAmount.trim() ? { vatAmount: vatAmount.trim() } : {}),
-        ...(packagingFee.trim() ? { packagingFee: packagingFee.trim() } : {}),
-        ...(promoDiscount.trim() ? { promoDiscount: promoDiscount.trim() } : {}),
+        ...(shipCanon !== undefined ? { shippingFee: shipCanon } : {}),
+        ...(vatCanon !== undefined ? { vatAmount: vatCanon } : {}),
+        ...(pkgCanon !== undefined ? { packagingFee: pkgCanon } : {}),
+        ...(promoCanon !== undefined ? { promoDiscount: promoCanon } : {}),
       });
       setResult(data);
     } catch (err) {

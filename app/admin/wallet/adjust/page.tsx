@@ -14,6 +14,7 @@ import {
   type SearchableSelectOption,
 } from "@/components/ui/SearchableSelect";
 import { LedgerTwdNote } from "@/components/finance/LedgerTwdNote";
+import { getMoneyInputErrorMessage, parseLocaleMoneyInput } from "@/lib/money";
 
 function userLabel(u: AuthUser): string {
   const name = u.fullName?.trim();
@@ -22,7 +23,7 @@ function userLabel(u: AuthUser): string {
 }
 
 function WalletAdjustInner() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const adjust = useAdjustWalletBalance();
 
   const { data: usersPage } = useQuery({
@@ -53,6 +54,7 @@ function WalletAdjustInner() {
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [localError, setLocalError] = useState("");
+  const [amountError, setAmountError] = useState("");
   const [okMsg, setOkMsg] = useState("");
 
   const selected = users.find((u) => u.id === userId);
@@ -60,25 +62,40 @@ function WalletAdjustInner() {
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLocalError("");
+    setAmountError("");
     setOkMsg("");
     if (!userId) {
       setLocalError(t("admin.walletAdjust.userRequired"));
       return;
     }
-    const n = Number(amount);
-    if (!Number.isFinite(n) || n === 0) {
-      setLocalError(t("admin.walletAdjust.amountInvalid"));
+    const parsedAmount = parseLocaleMoneyInput(amount, {
+      locale,
+      maxDecimals: 2,
+      allowZero: false,
+      allowNegative: true,
+      min: -1000000,
+      max: 1000000,
+    });
+    if (!parsedAmount.ok) {
+      setAmountError(
+        getMoneyInputErrorMessage(parsedAmount.error, t, {
+          locale,
+          maxDecimals: 2,
+          min: -1000000,
+          max: 1000000,
+        }),
+      );
       return;
     }
     try {
       await adjust.mutateAsync({
         userId,
-        amount: n,
+        amount: parsedAmount.value,
         note: note.trim() || undefined,
       });
       setOkMsg(
         t("admin.walletAdjust.success", {
-          amount: formatPoints(n, t("common.pointUnit")),
+          amount: formatPoints(parsedAmount.value, t("common.pointUnit")),
           email: selected?.email ?? "—",
         }),
       );
@@ -134,14 +151,23 @@ function WalletAdjustInner() {
           <label className="block text-sm">
             <span className="text-xs text-mq-text-muted">{t("admin.walletAdjust.amount")}</span>
             <input
-              className="mq-input mt-1"
-              type="number"
-              step="0.01"
+              className={`mq-input mt-1 ${amountError ? "border-red-500" : ""}`}
+              type="text"
+              inputMode="decimal"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => {
+                setAmount(e.target.value);
+                if (amountError) setAmountError("");
+              }}
+              aria-invalid={Boolean(amountError)}
               required
               placeholder={t("admin.walletAdjust.amountPh")}
             />
+            {amountError ? (
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400" role="alert">
+                {amountError}
+              </p>
+            ) : null}
           </label>
           <label className="block text-sm">
             <span className="text-xs text-mq-text-muted">{t("admin.walletAdjust.note")}</span>

@@ -19,8 +19,8 @@ import {
   getCurrencyAffix,
   getCurrencyDecimals,
   getLocaleSeparators,
-  parseLocaleNumber,
 } from "@/lib/ui/currency";
+import { formatBlurMoneyInput, parseLocaleMoneyInput } from "@/lib/money";
 
 export interface CurrencyInputProps
   extends Omit<
@@ -230,23 +230,27 @@ export function CurrencyInput({
   const handleBlur = useCallback(
     (e: FocusEvent<HTMLInputElement>) => {
       setIsFocused(false);
-      const parsed = parseLocaleNumber(displayString, activeLocale, decimals);
-      if (parsed == null) {
+      const res = parseLocaleMoneyInput(displayString, {
+        locale: activeLocale,
+        maxDecimals: decimals,
+        allowZero: true,
+        allowNegative: min == null || min < 0,
+        min,
+        max,
+      });
+      if (!res.ok) {
         setDisplayString("");
         lastEmittedValueRef.current = null;
         onChange(null);
       } else {
-        const formatted = formatLocaleNumber(parsed, activeLocale, {
-          minDecimals: decimals > 0 ? decimals : 0,
-          maxDecimals: decimals,
-        });
+        const formatted = formatBlurMoneyInput(res.canonical, activeLocale, decimals);
         setDisplayString(formatted);
-        lastEmittedValueRef.current = parsed;
-        onChange(parsed);
+        lastEmittedValueRef.current = res.value;
+        onChange(res.value);
       }
       onBlur?.(e);
     },
-    [displayString, activeLocale, decimals, onChange, onBlur],
+    [displayString, activeLocale, decimals, min, max, onChange, onBlur],
   );
 
   const inputElement = (

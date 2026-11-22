@@ -3075,6 +3075,10 @@
     "productNotActive": "This product is not active and cannot be used here.",
     "inventoryTransferReceiveMismatch": "Received quantities do not match the transfer.",
     "walletAmountInvalid": "Enter a valid amount greater than zero.",
+    "amountInvalid": "Invalid amount. Please check the number format.",
+    "amountNotPositive": "Amount must be greater than zero.",
+    "amountTooLarge": "Amount exceeds the maximum allowed limit.",
+    "amountTooManyDecimals": "Too many decimal places.",
     "csrfOriginRejected": "Request blocked: it did not come from an allowed site. Reload the page and try again.",
     "categoryParentCycle": "A category cannot be moved under itself or one of its descendants.",
     "reviewNotAllowed": "This review action is not allowed (reviews are only allowed for delivered orders, and a review hidden by a moderator cannot be deleted).",
@@ -4353,5 +4357,19 @@
     "back": "Back to my dividend credits",
     "creditedAt": "Credited",
     "settlement": "Settlement"
+  },
+  "moneyInput": {
+    "empty": "Please enter a value.",
+    "invalidChars": "Only digits and valid separators are allowed (e.g. {example}).",
+    "ambiguousFormat": "Ambiguous number format for your language. Use {example}.",
+    "tooManyDecimals": "At most {maxDecimals} decimal place(s) allowed (e.g. {example}).",
+    "negativeNotAllowed": "Negative values are not allowed.",
+    "zeroNotAllowed": "Value must be greater than zero.",
+    "tooLarge": "Value is too large.",
+    "belowMin": "Value must be at least {min}.",
+    "aboveMax": "Value must be at most {max}.",
+    "invalidRange": "Minimum price cannot exceed maximum price.",
+    "invalidPercent": "Enter a valid percentage between 0 and 100 (at most {maxDecimals} decimal places, e.g. {example}).",
+    "invalidInteger": "Enter a whole number between {min} and {max}."
   }
 }

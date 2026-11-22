@@ -3,8 +3,13 @@ import {
   bpsToPercentString,
   centsToDecimalString,
   formatBpsPercent,
+  formatBlurMoneyInput,
   formatCentsDisplay,
+  getMoneyInputErrorMessage,
+  mapBackendAmountErrorKey,
   parseDecimalToCents,
+  parseLocaleIntInput,
+  parseLocaleMoneyInput,
   parsePercentToBps,
   toCents,
 } from "./money";
@@ -89,5 +94,182 @@ describe("formatBpsPercent (display call sites)", () => {
   });
   it("a malformed value shows '-' and never throws", () => {
     for (const bad of [Number.NaN, Number.POSITIVE_INFINITY, 1.5, 2 ** 53]) expect(formatBpsPercent(bad), String(bad)).toBe("-");
+  });
+});
+
+describe("parseLocaleMoneyInput (matrix 2A & 2B)", () => {
+  it("normalizes hidden chars, whitespace, fullwidth, and Arabic-Indic digits", () => {
+    expect(parseLocaleMoneyInput(" \u200B\uFEFF\u00A01,234.50\u00A0 ", { locale: "en-US" })).toEqual({
+      ok: true,
+      canonical: "1234.50",
+      cents: 123450,
+      value: 1234.5,
+    });
+    expect(parseLocaleMoneyInput("１，２３４．５０", { locale: "zh-TW" })).toEqual({
+      ok: true,
+      canonical: "1234.50",
+      cents: 123450,
+      value: 1234.5,
+    });
+    expect(parseLocaleMoneyInput("١٢٣٤.٥٠", { locale: "en" })).toEqual({
+      ok: true,
+      canonical: "1234.50",
+      cents: 123450,
+      value: 1234.5,
+    });
+    expect(parseLocaleMoneyInput("۱۲۳۴,۵۰", { locale: "vi" })).toEqual({
+      ok: true,
+      canonical: "1234.50",
+      cents: 123450,
+      value: 1234.5,
+    });
+  });
+
+  it("handles locale grouping & decimal separators for en, zh-TW, and vi", () => {
+    expect(parseLocaleMoneyInput("1.234,56", { locale: "vi", maxDecimals: 2 })).toEqual({
+      ok: true,
+      canonical: "1234.56",
+      cents: 123456,
+      value: 1234.56,
+    });
+    expect(parseLocaleMoneyInput("1.234", { locale: "vi", maxDecimals: 0 })).toEqual({
+      ok: true,
+      canonical: "1234",
+      cents: 123400,
+      value: 1234,
+    });
+    expect(parseLocaleMoneyInput("1,234.56", { locale: "en", maxDecimals: 2 })).toEqual({
+      ok: true,
+      canonical: "1234.56",
+      cents: 123456,
+      value: 1234.56,
+    });
+    expect(parseLocaleMoneyInput("1,234", { locale: "zh-TW", maxDecimals: 0 })).toEqual({
+      ok: true,
+      canonical: "1234",
+      cents: 123400,
+      value: 1234,
+    });
+  });
+
+  it("rejects ambiguous formats without guessing", () => {
+    expect(parseLocaleMoneyInput("1.234", { locale: "en", maxDecimals: 0 })).toEqual({
+      ok: false,
+      error: "AMBIGUOUS_FORMAT",
+    });
+    expect(parseLocaleMoneyInput("1.234", { locale: "zh-TW", maxDecimals: 0 })).toEqual({
+      ok: false,
+      error: "AMBIGUOUS_FORMAT",
+    });
+    expect(parseLocaleMoneyInput("1,234", { locale: "vi", maxDecimals: 0 })).toEqual({
+      ok: false,
+      error: "AMBIGUOUS_FORMAT",
+    });
+    expect(parseLocaleMoneyInput("1234.50", { locale: "vi", maxDecimals: 2 })).toEqual({
+      ok: false,
+      error: "AMBIGUOUS_FORMAT",
+    });
+    expect(parseLocaleMoneyInput("1,234.56", { locale: "vi", maxDecimals: 2 })).toEqual({
+      ok: false,
+      error: "AMBIGUOUS_FORMAT",
+    });
+    expect(parseLocaleMoneyInput("1.234,56", { locale: "en", maxDecimals: 2 })).toEqual({
+      ok: false,
+      error: "AMBIGUOUS_FORMAT",
+    });
+    expect(parseLocaleMoneyInput("1,23,456", { locale: "en", maxDecimals: 2 })).toEqual({
+      ok: false,
+      error: "AMBIGUOUS_FORMAT",
+    });
+  });
+
+  it("rejects invalid chars, symbols, scientific notation, malformed dots, and NaN/Infinity", () => {
+    for (const bad of [
+      "1 234",
+      "NT$100",
+      "100đ",
+      "$50",
+      "12abc",
+      "abc",
+      "1e21",
+      "1E3",
+      ".5",
+      "5.",
+      "0.",
+      "+5",
+      "NaN",
+      "Infinity",
+      "-Infinity",
+    ]) {
+      expect(parseLocaleMoneyInput(bad, { locale: "en" }), bad).toEqual({
+        ok: false,
+        error: "INVALID_CHARS",
+      });
+    }
+    expect(parseLocaleMoneyInput("   ", { locale: "en" })).toEqual({
+      ok: false,
+      error: "EMPTY",
+    });
+  });
+
+  it("enforces decimals, zero, negative, min, and max bounds", () => {
+    expect(parseLocaleMoneyInput("0.001", { locale: "en", maxDecimals: 2 })).toEqual({
+      ok: false,
+      error: "TOO_MANY_DECIMALS",
+    });
+    expect(parseLocaleMoneyInput("1.50", { locale: "en", maxDecimals: 0 })).toEqual({
+      ok: false,
+      error: "TOO_MANY_DECIMALS",
+    });
+    expect(parseLocaleMoneyInput("0", { locale: "en", allowZero: false })).toEqual({
+      ok: false,
+      error: "ZERO_NOT_ALLOWED",
+    });
+    expect(parseLocaleMoneyInput("-5", { locale: "en", allowNegative: false })).toEqual({
+      ok: false,
+      error: "NEGATIVE_NOT_ALLOWED",
+    });
+    expect(parseLocaleMoneyInput("-0", { locale: "en", allowNegative: false })).toEqual({
+      ok: false,
+      error: "NEGATIVE_NOT_ALLOWED",
+    });
+    expect(parseLocaleMoneyInput("-0", { locale: "en", allowNegative: true })).toEqual({
+      ok: false,
+      error: "INVALID_CHARS",
+    });
+    expect(parseLocaleMoneyInput("1000000000000", { locale: "en" })).toEqual({
+      ok: false,
+      error: "TOO_LARGE",
+    });
+    expect(parseLocaleMoneyInput("5", { locale: "en", min: 10 })).toEqual({
+      ok: false,
+      error: "BELOW_MIN",
+    });
+    expect(parseLocaleMoneyInput("100.01", { locale: "en", max: 100 })).toEqual({
+      ok: false,
+      error: "ABOVE_MAX",
+    });
+  });
+
+  it("parses integers, formats blur output, and maps backend error codes", () => {
+    expect(parseLocaleIntInput("1.000", { locale: "vi", min: 1, max: 1000000 })).toEqual({
+      ok: true,
+      value: 1000,
+      canonical: "1000",
+    });
+    expect(parseLocaleIntInput("1.5", { locale: "en", min: 1, max: 1000000 })).toEqual({
+      ok: false,
+      error: "TOO_MANY_DECIMALS",
+    });
+    expect(formatBlurMoneyInput("1234.5", "vi", 2)).toBe("1.234,50");
+    expect(formatBlurMoneyInput("1234.5", "en", 2)).toBe("1,234.50");
+    expect(formatBlurMoneyInput("1234", "zh-TW", 0)).toBe("1,234");
+    expect(mapBackendAmountErrorKey("AMOUNT_INVALID")).toBe("toast.amountInvalid");
+    expect(mapBackendAmountErrorKey("AMOUNT_NOT_POSITIVE")).toBe("toast.amountNotPositive");
+    expect(mapBackendAmountErrorKey("AMOUNT_TOO_LARGE")).toBe("toast.amountTooLarge");
+    expect(mapBackendAmountErrorKey("AMOUNT_TOO_MANY_DECIMALS")).toBe("toast.amountTooManyDecimals");
+    expect(getMoneyInputErrorMessage("AMBIGUOUS_FORMAT", (k, v) => `${k}:${v?.example}`, { locale: "vi" })).toBe(
+      "moneyInput.ambiguousFormat:1.234,50",
+    );
   });
 });

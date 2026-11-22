@@ -15,6 +15,8 @@ import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { toast } from "sonner";
+import { getMoneyInputErrorMessage, parseLocaleIntInput } from "@/lib/money";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -39,13 +41,14 @@ const emptyForm = (): FormState => ({
 function buildFormData(
   form: FormState,
   lang: BannerLang,
+  sortOrder: number,
   opts?: { includeImage?: boolean },
 ): FormData {
   const fd = new FormData();
   fd.append("title", form.title.trim());
   fd.append("lang", lang);
   if (form.linkUrl.trim()) fd.append("linkUrl", form.linkUrl.trim());
-  fd.append("sortOrder", String(Number(form.sortOrder) || 0));
+  fd.append("sortOrder", String(sortOrder));
   fd.append("isActive", String(form.isActive));
   if (opts?.includeImage !== false && form.file) {
     fd.append("image", form.file);
@@ -54,7 +57,7 @@ function buildFormData(
 }
 
 function BannersInner() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [lang, setLang] = useState<BannerLang>("VI");
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<Banner | null>(null);
@@ -94,14 +97,35 @@ function BannersInner() {
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    let sortOrder = 0;
+    if (form.sortOrder.trim() !== "") {
+      const sortRes = parseLocaleIntInput(form.sortOrder, {
+        locale,
+        min: 0,
+        max: 1000000,
+        allowZero: true,
+      });
+      if (!sortRes.ok) {
+        toast.error(
+          getMoneyInputErrorMessage(sortRes.error, t, {
+            locale,
+            maxDecimals: 0,
+            min: 0,
+            max: 1000000,
+          }),
+        );
+        return;
+      }
+      sortOrder = sortRes.value;
+    }
     if (editing) {
-      const fd = buildFormData(form, lang, { includeImage: Boolean(form.file) });
+      const fd = buildFormData(form, lang, sortOrder, { includeImage: Boolean(form.file) });
       await updateBanner.mutateAsync({ id: editing.id, formData: fd });
       cancelEdit();
       return;
     }
     if (!form.file) return;
-    await createBanner.mutateAsync(buildFormData(form, lang));
+    await createBanner.mutateAsync(buildFormData(form, lang, sortOrder));
     setForm(emptyForm());
   };
 
@@ -174,8 +198,8 @@ function BannersInner() {
           />
           <input
             className="mq-input"
-            type="number"
-            min={0}
+            type="text"
+            inputMode="numeric"
             placeholder={t("admin.banners.orderPh")}
             value={form.sortOrder}
             onChange={(e) => setForm({ ...form, sortOrder: e.target.value })}

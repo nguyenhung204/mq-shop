@@ -3075,6 +3075,10 @@
     "productNotActive": "此商品尚未上架，無法在此使用。",
     "inventoryTransferReceiveMismatch": "收貨數量與調撥單不符。",
     "walletAmountInvalid": "請輸入大於 0 的有效金額。",
+    "amountInvalid": "金額格式無效，請檢查數字格式。",
+    "amountNotPositive": "金額必須大於 0。",
+    "amountTooLarge": "金額超過允許的最大上限。",
+    "amountTooManyDecimals": "小數位數過多。",
     "csrfOriginRejected": "請求已被封鎖：並非來自允許的網站。請重新整理頁面後再試。",
     "categoryParentCycle": "分類不可移到自己或其子分類之下。",
     "reviewNotAllowed": "不允許此評價操作（僅已送達訂單可評價，且被管理員隱藏的評價無法刪除）。",
@@ -4353,5 +4357,19 @@
     "back": "返回我的股利入帳",
     "creditedAt": "入帳時間",
     "settlement": "結算"
+  },
+  "moneyInput": {
+    "empty": "請輸入數值。",
+    "invalidChars": "僅允許數字與有效分隔符號（例如：{example}）。",
+    "ambiguousFormat": "數字格式在目前語言下有歧義，請使用 {example}。",
+    "tooManyDecimals": "最多允許 {maxDecimals} 位小數（例如：{example}）。",
+    "negativeNotAllowed": "不允許輸入負數。",
+    "zeroNotAllowed": "數值必須大於 0。",
+    "tooLarge": "數值過大。",
+    "belowMin": "數值不得小於 {min}。",
+    "aboveMax": "數值不得大於 {max}。",
+    "invalidRange": "最低價格不可大於最高價格。",
+    "invalidPercent": "請輸入 0 到 100 之間的有效百分比（最多 {maxDecimals} 位小數，例如：{example}）。",
+    "invalidInteger": "請輸入 {min} 到 {max} 之間的整數。"
   }
 }

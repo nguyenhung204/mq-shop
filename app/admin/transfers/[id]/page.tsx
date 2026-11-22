@@ -14,6 +14,8 @@ import {
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { toast } from "sonner";
+import { getMoneyInputErrorMessage, parseLocaleIntInput } from "@/lib/money";
 import { translateStatus } from "@/lib/i18n/status";
 import { formatWarehouseLabel } from "@/lib/inventory/warehouse-label";
 import {
@@ -40,7 +42,7 @@ function formatWhen(iso: string | null | undefined): string | null {
 }
 
 function TransferDetailInner() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const params = useParams();
   const id = params.id as string;
 
@@ -66,13 +68,31 @@ function TransferDetailInner() {
       } else if (pendingAction === "cancel") {
         await cancelMut.mutateAsync(id);
       } else if (pendingAction === "receive") {
+        const items: { sku: string; receivedQuantity: number }[] = [];
+        for (const r of receiveItems) {
+          const res = parseLocaleIntInput(r.receivedQuantity, {
+            locale,
+            min: 0,
+            max: 1000000,
+            allowZero: true,
+          });
+          if (!res.ok) {
+            toast.error(
+              getMoneyInputErrorMessage(res.error, t, {
+                locale,
+                maxDecimals: 0,
+                min: 0,
+                max: 1000000,
+              }),
+            );
+            return;
+          }
+          items.push({ sku: r.sku, receivedQuantity: res.value });
+        }
         await receiveMut.mutateAsync({
           id,
           body: {
-            items: receiveItems.map((r) => ({
-              sku: r.sku,
-              receivedQuantity: Number(r.receivedQuantity),
-            })),
+            items,
             note: receiveNote.trim() || undefined,
           },
         });
@@ -111,6 +131,25 @@ function TransferDetailInner() {
 
   const onReceive = (e: FormEvent) => {
     e.preventDefault();
+    for (const r of receiveItems) {
+      const res = parseLocaleIntInput(r.receivedQuantity, {
+        locale,
+        min: 0,
+        max: 1000000,
+        allowZero: true,
+      });
+      if (!res.ok) {
+        toast.error(
+          getMoneyInputErrorMessage(res.error, t, {
+            locale,
+            maxDecimals: 0,
+            min: 0,
+            max: 1000000,
+          }),
+        );
+        return;
+      }
+    }
     setPendingAction("receive");
   };
 
@@ -257,8 +296,8 @@ function TransferDetailInner() {
                   <span className="font-mono text-xs flex-1">{r.sku}</span>
                   <input
                     className="mq-input w-24"
-                    type="number"
-                    min="0"
+                    type="text"
+                    inputMode="numeric"
                     value={r.receivedQuantity}
                     onChange={(e) => {
                       const copy = [...receiveItems];

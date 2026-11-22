@@ -20,6 +20,11 @@ import {
 } from "@/components/ui/SearchableSelect";
 import { Container, PageHero } from "@/components/ui/shared";
 import { getErrorMessage } from "@/lib/queries/utils";
+import {
+  formatBlurMoneyInput,
+  getMoneyInputErrorMessage,
+  parseLocaleMoneyInput,
+} from "@/lib/money";
 
 const AMOUNT_PRESETS = [10, 20, 50, 100, 200, 500] as const;
 
@@ -49,6 +54,7 @@ function P2pPanel({
   const [pin, setPin] = useState("");
   const [preview, setPreview] = useState<TransferPreviewResult | null>(null);
   const [localError, setLocalError] = useState("");
+  const [amountError, setAmountError] = useState("");
   const [done, setDone] = useState(false);
 
   const needsPin = user ? user.hasWalletPin === false : false;
@@ -81,17 +87,20 @@ function P2pPanel({
       value: formatPreset(n),
     }));
     if (available > 0) {
-      const maxLabel = formatPreset(Math.round(available * 100) / 100);
-      if (!chips.some((c) => c.value === maxLabel)) {
+      const maxCanonical = (Math.round(available * 100) / 100).toFixed(2).replace(/\.?0+$/, "");
+      const maxVal = maxCanonical.includes(".")
+        ? formatBlurMoneyInput(maxCanonical, locale ?? "en", 2)
+        : maxCanonical;
+      if (!chips.some((c) => c.value === maxVal)) {
         chips.push({
           key: "all",
           label: t("wallet.p2pAmountAll"),
-          value: maxLabel,
+          value: maxVal,
         });
       }
     }
     return chips;
-  }, [available, t]);
+  }, [available, locale, t]);
 
   const recipientById = useMemo(() => {
     const map = new Map<string, { email: string; label: string }>();
@@ -161,13 +170,26 @@ function P2pPanel({
     e.preventDefault();
     if (!preview) return;
     setLocalError("");
-    if (!/^\d{6}$/.test(pin)) {
-      setLocalError(t("wallet.pinMismatch"));
+    setAmountError("");
+    const parsedAmount = parseLocaleMoneyInput(amount, {
+      locale,
+      maxDecimals: 2,
+      allowZero: false,
+      allowNegative: false,
+      max: 999999999999.99,
+    });
+    if (!parsedAmount.ok) {
+      setAmountError(
+        getMoneyInputErrorMessage(parsedAmount.error, t, {
+          locale,
+          maxDecimals: 2,
+          max: 999999999999.99,
+        }),
+      );
       return;
     }
-    const n = Number(amount);
-    if (!Number.isFinite(n) || n <= 0) {
-      setLocalError(t("wallet.p2pAmountInvalid"));
+    if (!/^\d{6}$/.test(pin)) {
+      setLocalError(t("wallet.pinMismatch"));
       return;
     }
     try {
@@ -175,7 +197,7 @@ function P2pPanel({
         ...(pickedUserId
           ? { userId: pickedUserId }
           : { email: email.trim() }),
-        amount: n,
+        amount: parsedAmount.value,
         pin,
       });
       setDone(true);
@@ -262,14 +284,22 @@ function P2pPanel({
               <label className="block text-sm">
                 <span className="text-xs text-mq-text-muted">{t("wallet.p2pAmount")}</span>
                 <input
-                  className="mq-input mt-1"
-                  type="number"
-                  step="0.01"
-                  min="0.01"
+                  className={`mq-input mt-1 ${amountError ? "border-red-500" : ""}`}
+                  type="text"
+                  inputMode="decimal"
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  onChange={(e) => {
+                    setAmount(e.target.value);
+                    if (amountError) setAmountError("");
+                  }}
+                  aria-invalid={Boolean(amountError)}
                   required
                 />
+                {amountError ? (
+                  <p className="mt-1 text-xs text-red-600 dark:text-red-400" role="alert">
+                    {amountError}
+                  </p>
+                ) : null}
               </label>
               {available > 0 ? (
                 <p className="text-xs text-mq-text-muted">

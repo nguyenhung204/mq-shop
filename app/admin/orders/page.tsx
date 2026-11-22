@@ -24,6 +24,7 @@ import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButton";
 import { NeedsHandlingBadge } from "@/components/orders/NeedsHandlingBadge";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { parseLocaleIntInput } from "@/lib/money";
 import { translateStatus } from "@/lib/i18n/status";
 import { CountrySelect } from "@/components/ui/CountrySelect";
 import { PhoneInput } from "@/components/ui/PhoneInput";
@@ -183,9 +184,15 @@ function OrdersInner() {
     ) {
       return null;
     }
+    const qtyRes = parseLocaleIntInput(qty, {
+      min: 1,
+      max: 9999,
+      allowZero: false,
+    });
+    if (!qtyRes.ok) return null;
     return {
       buyerId,
-      items: [{ variantId, quantity: Number(qty) || 1 }],
+      items: [{ variantId, quantity: qtyRes.value }],
       shippingAddress: {
         fullName,
         phone: toE164(phoneDialCountry, phoneNational),
@@ -290,8 +297,8 @@ function OrdersInner() {
           </label>
           <input
             className="mq-input"
-            type="number"
-            min="1"
+            type="text"
+            inputMode="numeric"
             value={qty}
             onChange={(e) => setQty(e.target.value)}
             aria-label={t("admin.ordersPage.quantity")}

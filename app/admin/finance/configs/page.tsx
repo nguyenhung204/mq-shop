@@ -24,6 +24,7 @@ import { AdminCardListSkeleton } from "@/components/ui/Skeleton";
 import { useAdminShops } from "@/lib/queries/admin";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { POINT_USD_VALUE, formatPointUsdValue } from "@/lib/points";
+import { getMoneyInputErrorMessage, parseLocaleMoneyInput } from "@/lib/money";
 
 const STATUSES: Array<FinanceConfigStatus | ""> = [
   "",
@@ -63,33 +64,73 @@ function statusBadgeClass(status: FinanceConfigStatus): string {
   }
 }
 
-function isPercent(value: string): boolean {
-  const n = Number(value);
-  return Number.isFinite(n) && n >= 0 && n <= 100;
-}
-
-function isPointUsd(value: string): boolean {
-  const n = Number(value);
-  return Number.isFinite(n) && n > 0 && n <= 100;
-}
-
-function buildBody(form: FormState): CreateFinanceConfigBody | null {
-  if (!isPercent(form.platformFeePercent) || !isPercent(form.commissionPercent)) {
-    return null;
+function buildBody(
+  form: FormState,
+  locale: string | null,
+  t: (key: string, vars?: Record<string, string>) => string,
+): { body: CreateFinanceConfigBody } | { error: string } {
+  const pf = parseLocaleMoneyInput(form.platformFeePercent, {
+    locale,
+    maxDecimals: 2,
+    allowZero: true,
+    allowNegative: false,
+    min: 0,
+    max: 100,
+  });
+  if (!pf.ok) {
+    return {
+      error: getMoneyInputErrorMessage(pf.error, t, {
+        locale,
+        maxDecimals: 2,
+        min: 0,
+        max: 100,
+      }),
+    };
   }
-  if (!isPointUsd(form.pointUsdValue)) {
-    return null;
+  const cm = parseLocaleMoneyInput(form.commissionPercent, {
+    locale,
+    maxDecimals: 2,
+    allowZero: true,
+    allowNegative: false,
+    min: 0,
+    max: 100,
+  });
+  if (!cm.ok) {
+    return {
+      error: getMoneyInputErrorMessage(cm.error, t, {
+        locale,
+        maxDecimals: 2,
+        min: 0,
+        max: 100,
+      }),
+    };
+  }
+  const pu = parseLocaleMoneyInput(form.pointUsdValue, {
+    locale,
+    maxDecimals: 8,
+    allowZero: false,
+    allowNegative: false,
+    max: 100,
+  });
+  if (!pu.ok) {
+    return {
+      error: getMoneyInputErrorMessage(pu.error, t, {
+        locale,
+        maxDecimals: 8,
+        max: 100,
+      }),
+    };
   }
   const body: CreateFinanceConfigBody = {
-    platformFeePercent: form.platformFeePercent.trim(),
-    commissionPercent: form.commissionPercent.trim(),
-    pointUsdValue: form.pointUsdValue.trim(),
+    platformFeePercent: pf.canonical,
+    commissionPercent: cm.canonical,
+    pointUsdValue: pu.canonical,
   };
   const gateway = form.gatewayName.trim();
   if (gateway) body.gatewayName = gateway;
   if (form.apiKey.trim()) body.apiKey = form.apiKey.trim();
   if (form.secretKey.trim()) body.secretKey = form.secretKey.trim();
-  return body;
+  return { body };
 }
 
 function formatWhen(iso: string | null | undefined): string {
@@ -152,17 +193,13 @@ function FinanceConfigsInner() {
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setFormError("");
-    const body = buildBody(form);
-    if (!body) {
-      setFormError(
-        isPercent(form.platformFeePercent) && isPercent(form.commissionPercent)
-          ? t("admin.financeConfigs.formErrorPointUsd")
-          : t("admin.financeConfigs.formError"),
-      );
+    const res = buildBody(form, locale, t);
+    if ("error" in res) {
+      setFormError(res.error);
       return;
     }
     try {
-      await createConfig.mutateAsync(body);
+      await createConfig.mutateAsync(res.body);
       setForm(emptyForm());
       setStatus("PENDING_APPROVAL");
       setPage(1);

@@ -29,6 +29,11 @@ import {
   validateRankConfigInput,
   type MlmBoundError,
 } from "@/lib/mlm/rank-bounds";
+import {
+  getMoneyInputErrorMessage,
+  parseLocaleIntInput,
+  parseLocaleMoneyInput,
+} from "@/lib/money";
 
 function modeLabel(mode: string, t: (k: string) => string): string {
   if (mode === "qualify_orders") return t("admin.mlm.rules.modeQualifyOrders");
@@ -48,7 +53,7 @@ function boundErrorMessage(
 }
 
 export function MlmPromotionRulesSection() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { data: rules, isLoading, isError, error } = usePromotionRules();
   const createRule = useCreatePromotionRule();
   const updateRule = useUpdatePromotionRule();
@@ -90,28 +95,74 @@ export function MlmPromotionRulesSection() {
     });
   };
 
-  const onSubmitCreate = async (e: FormEvent) => {
-    e.preventDefault();
-    const fromRank = Number(form.fromRank);
-    const toRank = Number(form.toRank);
-    const pairErr = validatePromotionRankPair(fromRank, toRank);
+  const parseRuleFields = () => {
+    const fromRes = parseLocaleIntInput(form.fromRank, {
+      locale,
+      min: MLM_RANK_MIN,
+      max: MLM_RANK_MAX,
+    });
+    const toRes = parseLocaleIntInput(form.toRank, {
+      locale,
+      min: MLM_RANK_MIN,
+      max: MLM_RANK_MAX,
+    });
+    if (!fromRes.ok || !toRes.ok) {
+      toast.error(t("admin.mlm.rankInvalid"));
+      return null;
+    }
+    const pairErr = validatePromotionRankPair(fromRes.value, toRes.value);
     if (pairErr) {
       toast.error(boundErrorMessage(pairErr, t));
-      return;
+      return null;
     }
+    let reqRank: number | null = null;
     if (form.mode === "f1_rank") {
-      const req = Number(form.requiredF1Rank);
-      if (!isValidMlmRank(req)) {
+      const reqRes = parseLocaleIntInput(form.requiredF1Rank, {
+        locale,
+        min: MLM_RANK_MIN,
+        max: MLM_RANK_MAX,
+      });
+      if (!reqRes.ok || !isValidMlmRank(reqRes.value)) {
         toast.error(t("admin.mlm.rankInvalid"));
-        return;
+        return null;
       }
+      reqRank = reqRes.value;
     }
+    const countRes = parseLocaleIntInput(form.count, {
+      locale,
+      min: 1,
+      max: 10000,
+      allowZero: false,
+    });
+    if (!countRes.ok) {
+      toast.error(
+        getMoneyInputErrorMessage(countRes.error, t, {
+          locale,
+          maxDecimals: 0,
+          min: 1,
+          max: 10000,
+        }),
+      );
+      return null;
+    }
+    return {
+      fromRank: fromRes.value,
+      toRank: toRes.value,
+      requiredF1Rank: reqRank,
+      count: countRes.value,
+    };
+  };
+
+  const onSubmitCreate = async (e: FormEvent) => {
+    e.preventDefault();
+    const parsed = parseRuleFields();
+    if (!parsed) return;
     await createRule.mutateAsync({
-      fromRank,
-      toRank,
+      fromRank: parsed.fromRank,
+      toRank: parsed.toRank,
       mode: form.mode,
-      requiredF1Rank: form.mode === "f1_rank" ? Number(form.requiredF1Rank) : null,
-      count: Number(form.count),
+      requiredF1Rank: parsed.requiredF1Rank,
+      count: parsed.count,
     });
     setCreating(false);
     resetForm();
@@ -120,28 +171,16 @@ export function MlmPromotionRulesSection() {
   const onSubmitEdit = async (e: FormEvent) => {
     e.preventDefault();
     if (editingId == null) return;
-    const fromRank = Number(form.fromRank);
-    const toRank = Number(form.toRank);
-    const pairErr = validatePromotionRankPair(fromRank, toRank);
-    if (pairErr) {
-      toast.error(boundErrorMessage(pairErr, t));
-      return;
-    }
-    if (form.mode === "f1_rank") {
-      const req = Number(form.requiredF1Rank);
-      if (!isValidMlmRank(req)) {
-        toast.error(t("admin.mlm.rankInvalid"));
-        return;
-      }
-    }
+    const parsed = parseRuleFields();
+    if (!parsed) return;
     await updateRule.mutateAsync({
       id: editingId,
       body: {
-        fromRank,
-        toRank,
+        fromRank: parsed.fromRank,
+        toRank: parsed.toRank,
         mode: form.mode,
-        requiredF1Rank: form.mode === "f1_rank" ? Number(form.requiredF1Rank) : null,
-        count: Number(form.count),
+        requiredF1Rank: parsed.requiredF1Rank,
+        count: parsed.count,
         isActive: form.isActive,
       },
     });
@@ -251,9 +290,8 @@ export function MlmPromotionRulesSection() {
               <span className="text-mq-text-muted">{t("admin.mlm.rules.from")}</span>
               <input
                 className="mq-input"
-                type="number"
-                min={MLM_RANK_MIN}
-                max={MLM_RANK_MAX}
+                type="text"
+                inputMode="numeric"
                 value={form.fromRank}
                 onChange={(e) => setForm({ ...form, fromRank: e.target.value })}
                 required
@@ -263,9 +301,8 @@ export function MlmPromotionRulesSection() {
               <span className="text-mq-text-muted">{t("admin.mlm.rules.to")}</span>
               <input
                 className="mq-input"
-                type="number"
-                min={MLM_RANK_MIN}
-                max={MLM_RANK_MAX}
+                type="text"
+                inputMode="numeric"
                 value={form.toRank}
                 onChange={(e) => setForm({ ...form, toRank: e.target.value })}
                 required
@@ -290,9 +327,8 @@ export function MlmPromotionRulesSection() {
                 <span className="text-mq-text-muted">{t("admin.mlm.rules.requiredF1")}</span>
                 <input
                   className="mq-input"
-                  type="number"
-                  min={MLM_RANK_MIN}
-                  max={MLM_RANK_MAX}
+                  type="text"
+                  inputMode="numeric"
                   value={form.requiredF1Rank}
                   onChange={(e) => setForm({ ...form, requiredF1Rank: e.target.value })}
                   required
@@ -303,8 +339,8 @@ export function MlmPromotionRulesSection() {
               <span className="text-mq-text-muted">{t("admin.mlm.rules.count")}</span>
               <input
                 className="mq-input"
-                type="number"
-                min="1"
+                type="text"
+                inputMode="numeric"
                 value={form.count}
                 onChange={(e) => setForm({ ...form, count: e.target.value })}
                 required
@@ -360,7 +396,7 @@ export function MlmPromotionRulesSection() {
 }
 
 export function MlmCreateRankSection() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const createRank = useCreateRankConfig();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
@@ -380,16 +416,70 @@ export function MlmCreateRankSection() {
     if (form.nameVi.trim()) nameI18n.vi = form.nameVi.trim();
     if (form.nameEn.trim()) nameI18n.en = form.nameEn.trim();
     if (form.nameZhTw.trim()) nameI18n["zh-TW"] = form.nameZhTw.trim();
-    const rank = Number(form.rank);
-    const teamPercent = Number(form.teamPercent);
-    const referralPercent = Number(form.referralPercent);
-    const globalFundTier = form.globalFundTier.trim()
-      ? Number(form.globalFundTier)
-      : null;
+    const rankRes = parseLocaleIntInput(form.rank, {
+      locale,
+      min: MLM_RANK_MIN,
+      max: MLM_RANK_MAX,
+    });
+    if (!rankRes.ok) {
+      toast.error(t("admin.mlm.rankInvalid"));
+      return;
+    }
+    const tpRes = parseLocaleMoneyInput(form.teamPercent, {
+      locale,
+      maxDecimals: 4,
+      allowZero: true,
+      allowNegative: false,
+      min: MLM_TEAM_PERCENT_MIN,
+      max: MLM_TEAM_PERCENT_MAX,
+    });
+    if (!tpRes.ok) {
+      toast.error(
+        getMoneyInputErrorMessage(tpRes.error, t, {
+          locale,
+          maxDecimals: 4,
+          min: MLM_TEAM_PERCENT_MIN,
+          max: MLM_TEAM_PERCENT_MAX,
+        }),
+      );
+      return;
+    }
+    const rpRes = parseLocaleMoneyInput(form.referralPercent, {
+      locale,
+      maxDecimals: 4,
+      allowZero: true,
+      allowNegative: false,
+      min: MLM_REFERRAL_PERCENT_MIN,
+      max: MLM_REFERRAL_PERCENT_MAX,
+    });
+    if (!rpRes.ok) {
+      toast.error(
+        getMoneyInputErrorMessage(rpRes.error, t, {
+          locale,
+          maxDecimals: 4,
+          min: MLM_REFERRAL_PERCENT_MIN,
+          max: MLM_REFERRAL_PERCENT_MAX,
+        }),
+      );
+      return;
+    }
+    let globalFundTier: number | null = null;
+    if (form.globalFundTier.trim()) {
+      const gfRes = parseLocaleIntInput(form.globalFundTier, {
+        locale,
+        min: MLM_GLOBAL_TIER_MIN,
+        max: MLM_GLOBAL_TIER_MAX,
+      });
+      if (!gfRes.ok) {
+        toast.error(t("admin.mlm.globalTierInvalid"));
+        return;
+      }
+      globalFundTier = gfRes.value;
+    }
     const boundErr = validateRankConfigInput({
-      rank,
-      teamPercent,
-      referralPercent,
+      rank: rankRes.value,
+      teamPercent: tpRes.value,
+      referralPercent: rpRes.value,
       globalFundTier,
     });
     if (boundErr) {
@@ -397,11 +487,11 @@ export function MlmCreateRankSection() {
       return;
     }
     await createRank.mutateAsync({
-      rank,
+      rank: rankRes.value,
       name: form.name.trim(),
       nameI18n: Object.keys(nameI18n).length > 0 ? nameI18n : undefined,
-      teamPercent,
-      referralPercent,
+      teamPercent: tpRes.value,
+      referralPercent: rpRes.value,
       globalFundTier,
     });
     setOpen(false);
@@ -429,9 +519,8 @@ export function MlmCreateRankSection() {
           <span className="text-mq-text-muted">Rank #</span>
           <input
             className="mq-input"
-            type="number"
-            min={MLM_RANK_MIN}
-            max={MLM_RANK_MAX}
+            type="text"
+            inputMode="numeric"
             value={form.rank}
             onChange={(e) => setForm({ ...form, rank: e.target.value })}
             required
@@ -475,10 +564,8 @@ export function MlmCreateRankSection() {
           <span className="text-mq-text-muted">{t("admin.mlm.team")} %</span>
           <input
             className="mq-input"
-            type="number"
-            step="0.01"
-            min={MLM_TEAM_PERCENT_MIN}
-            max={MLM_TEAM_PERCENT_MAX}
+            type="text"
+            inputMode="decimal"
             value={form.teamPercent}
             onChange={(e) => setForm({ ...form, teamPercent: e.target.value })}
             required
@@ -488,10 +575,8 @@ export function MlmCreateRankSection() {
           <span className="text-mq-text-muted">{t("admin.mlm.referral")} %</span>
           <input
             className="mq-input"
-            type="number"
-            step="0.01"
-            min={MLM_REFERRAL_PERCENT_MIN}
-            max={MLM_REFERRAL_PERCENT_MAX}
+            type="text"
+            inputMode="decimal"
             value={form.referralPercent}
             onChange={(e) => setForm({ ...form, referralPercent: e.target.value })}
             required
@@ -501,10 +586,8 @@ export function MlmCreateRankSection() {
           <span className="text-mq-text-muted">{t("admin.mlm.globalTier")}</span>
           <input
             className="mq-input"
-            type="number"
-            step="1"
-            min={MLM_GLOBAL_TIER_MIN}
-            max={MLM_GLOBAL_TIER_MAX}
+            type="text"
+            inputMode="numeric"
             value={form.globalFundTier}
             onChange={(e) => setForm({ ...form, globalFundTier: e.target.value })}
             placeholder="—"

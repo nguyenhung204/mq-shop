@@ -20,6 +20,7 @@ import {
   walletPayoutStatusBadgeClass,
 } from "@/components/wallet/walletPayoutUi";
 import { usePointsDisplayFx } from "@/lib/hooks/usePointsDisplayFx";
+import { getMoneyInputErrorMessage, parseLocaleMoneyInput } from "@/lib/money";
 
 const STATUSES: Array<PayoutRequestStatus | ""> = [
   "",
@@ -60,6 +61,7 @@ function WithdrawPanel({
   const [accountNumber, setAccountNumber] = useState("");
   const [accountName, setAccountName] = useState("");
   const [localError, setLocalError] = useState("");
+  const [amountError, setAmountError] = useState("");
   const [status, setStatus] = useState<PayoutRequestStatus | "">("");
   const [page, setPage] = useState(1);
 
@@ -73,7 +75,18 @@ function WithdrawPanel({
 
   const needsPin = user ? user.hasWalletPin === false : false;
 
-  const amountNum = Number(amount);
+  const parsedLive = useMemo(
+    () =>
+      parseLocaleMoneyInput(amount, {
+        locale,
+        maxDecimals: 2,
+        allowZero: false,
+        allowNegative: false,
+        max: 999999999999.99,
+      }),
+    [amount, locale],
+  );
+  const amountNum = parsedLive.ok ? parsedLive.value : 0;
   const fiatEstimate = useMemo(
     () => estimateWithdraw(amountNum),
     [amountNum, estimateWithdraw],
@@ -82,18 +95,31 @@ function WithdrawPanel({
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLocalError("");
+    setAmountError("");
+    const parsedAmount = parseLocaleMoneyInput(amount, {
+      locale,
+      maxDecimals: 2,
+      allowZero: false,
+      allowNegative: false,
+      max: 999999999999.99,
+    });
+    if (!parsedAmount.ok) {
+      setAmountError(
+        getMoneyInputErrorMessage(parsedAmount.error, t, {
+          locale,
+          maxDecimals: 2,
+          max: 999999999999.99,
+        }),
+      );
+      return;
+    }
     if (!/^\d{6}$/.test(pin)) {
       setLocalError(t("wallet.pinMismatch"));
       return;
     }
-    const n = Number(amount);
-    if (!Number.isFinite(n) || n <= 0) {
-      setLocalError(t("wallet.p2pAmountInvalid"));
-      return;
-    }
     try {
       await withdraw.mutateAsync({
-        amount: n,
+        amount: parsedAmount.value,
         pin,
         bankInfo: { bankName, accountNumber, accountName },
       });
@@ -143,15 +169,23 @@ function WithdrawPanel({
           <label className="block text-sm">
             <span className="text-xs text-mq-text-muted">{t("wallet.p2pAmount")}</span>
             <input
-              className="mq-input mt-1"
-              type="number"
-              step="0.01"
-              min="0.01"
+              className={`mq-input mt-1 ${amountError ? "border-red-500" : ""}`}
+              type="text"
+              inputMode="decimal"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => {
+                setAmount(e.target.value);
+                if (amountError) setAmountError("");
+              }}
+              aria-invalid={Boolean(amountError)}
               required
               disabled={needsPin}
             />
+            {amountError ? (
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400" role="alert">
+                {amountError}
+              </p>
+            ) : null}
           </label>
           {fiatEstimate.twd != null ? (
             <div className="text-sm text-mq-text-secondary -mt-1 space-y-0.5">

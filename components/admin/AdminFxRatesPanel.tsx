@@ -7,6 +7,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useActiveFinanceConfig } from "@/lib/queries/finance";
 import { getErrorMessage } from "@/lib/queries/utils";
 import { formatPointUsdValue } from "@/lib/points";
+import { getMoneyInputErrorMessage, parseLocaleMoneyInput } from "@/lib/money";
 
 const QUOTES = ["MYR", "VND", "SGD", "USD"] as const;
 
@@ -40,6 +41,7 @@ export function AdminFxRatesPanel() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [rates, setRates] = useState<Record<string, string>>({});
+  const [rateErrors, setRateErrors] = useState<Record<string, string>>({});
   const [note, setNote] = useState("");
 
   const load = async () => {
@@ -65,14 +67,38 @@ export function AdminFxRatesPanel() {
 
   const onSave = async (e: FormEvent) => {
     e.preventDefault();
+    const nextErrors: Record<string, string> = {};
+    const parsedRates: Record<string, number> = {};
+    for (const q of QUOTES) {
+      const maxRate = q === "VND" ? 100000 : 10;
+      const res = parseLocaleMoneyInput(rates[q] ?? "", {
+        locale,
+        maxDecimals: 8,
+        allowZero: false,
+        allowNegative: false,
+        max: maxRate,
+      });
+      if (!res.ok) {
+        nextErrors[q] = getMoneyInputErrorMessage(res.error, t, {
+          locale,
+          maxDecimals: 8,
+          max: maxRate,
+        });
+      } else {
+        parsedRates[q] = res.value;
+      }
+    }
+    setRateErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
+
     setSaving(true);
     try {
       const body = {
         rates: {
-          MYR: Number(rates.MYR),
-          VND: Number(rates.VND),
-          SGD: Number(rates.SGD),
-          USD: Number(rates.USD),
+          MYR: parsedRates.MYR!,
+          VND: parsedRates.VND!,
+          SGD: parsedRates.SGD!,
+          USD: parsedRates.USD!,
         },
         note: note.trim() || undefined,
       };
@@ -125,16 +151,24 @@ export function AdminFxRatesPanel() {
                     {t("admin.fx.quoteLabel", { code: q })}
                   </span>
                   <input
-                    className="mq-input w-full"
-                    type="number"
-                    step="any"
-                    min="0"
+                    className={`mq-input w-full ${rateErrors[q] ? "border-red-500" : ""}`}
+                    type="text"
+                    inputMode="decimal"
                     required
                     value={rates[q] ?? ""}
-                    onChange={(e) =>
-                      setRates({ ...rates, [q]: e.target.value })
-                    }
+                    aria-invalid={Boolean(rateErrors[q])}
+                    onChange={(e) => {
+                      setRates({ ...rates, [q]: e.target.value });
+                      if (rateErrors[q]) {
+                        setRateErrors((prev) => ({ ...prev, [q]: "" }));
+                      }
+                    }}
                   />
+                  {rateErrors[q] ? (
+                    <p className="mt-1 text-xs text-red-600 dark:text-red-400" role="alert">
+                      {rateErrors[q]}
+                    </p>
+                  ) : null}
                 </label>
               ))}
             </div>

@@ -12,6 +12,8 @@ import {
 } from "@/lib/queries/inventory";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { toast } from "sonner";
+import { getMoneyInputErrorMessage, parseLocaleIntInput } from "@/lib/money";
 import { translateStatus } from "@/lib/i18n/status";
 import { formatWarehouseLabel } from "@/lib/inventory/warehouse-label";
 import { PaginationBar } from "@/components/ui/PaginationBar";
@@ -35,7 +37,7 @@ function statusBadgeClass(status: string): string {
 type FormLine = { sku: string; quantity: string };
 
 function TransfersInner() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [statusFilter, setStatusFilter] = useState<TransferStatus | "">("");
   const [page, setPage] = useState(1);
   const [showCreate, setShowCreate] = useState(false);
@@ -97,9 +99,29 @@ function TransfersInner() {
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const validItems = lines
-      .filter((l) => l.sku.trim() && Number(l.quantity) > 0)
-      .map((l) => ({ sku: l.sku.trim(), quantity: Number(l.quantity) }));
+    const validItems: { sku: string; quantity: number }[] = [];
+    for (const l of lines) {
+      const sku = l.sku.trim();
+      if (!sku) continue;
+      const qtyRes = parseLocaleIntInput(l.quantity, {
+        locale,
+        min: 1,
+        max: 1000000,
+        allowZero: false,
+      });
+      if (!qtyRes.ok) {
+        toast.error(
+          getMoneyInputErrorMessage(qtyRes.error, t, {
+            locale,
+            maxDecimals: 0,
+            min: 1,
+            max: 1000000,
+          }),
+        );
+        return;
+      }
+      validItems.push({ sku, quantity: qtyRes.value });
+    }
     if (!validItems.length) return;
     try {
       await createTransfer.mutateAsync({
@@ -209,9 +231,8 @@ function TransfersInner() {
                 </select>
                 <input
                   className="mq-input w-full"
-                  type="number"
-                  min="1"
-                  max={maxQty}
+                  type="text"
+                  inputMode="numeric"
                   aria-label={t("seller.inventoryPage.quantity")}
                   title={
                     maxQty != null

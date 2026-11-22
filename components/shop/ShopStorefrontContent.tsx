@@ -54,6 +54,7 @@ export function ShopStorefrontContent() {
   const [maxDraft, setMaxDraft] = useState<number | null>(() =>
     maxPrice != null ? Math.round(convert(maxPrice) * 100) / 100 : null,
   );
+  const [priceError, setPriceError] = useState("");
 
   // Keep controlled drafts in sync when navigating via chips / back-forward.
   useEffect(() => {
@@ -168,7 +169,11 @@ export function ShopStorefrontContent() {
 
   const onApplyPrice = (e: FormEvent) => {
     e.preventDefault();
-    if (minDraft != null && maxDraft != null && minDraft > maxDraft) return;
+    if (minDraft != null && maxDraft != null && minDraft > maxDraft) {
+      setPriceError(t("moneyInput.invalidRange"));
+      return;
+    }
+    setPriceError("");
 
     const minTwd =
       minDraft != null ? Math.max(0, convertToTwd(minDraft)) : null;
@@ -176,8 +181,8 @@ export function ShopStorefrontContent() {
       maxDraft != null ? Math.max(0, convertToTwd(maxDraft)) : null;
 
     updateParams({
-      minPrice: minTwd != null ? String(Number(minTwd.toFixed(2))) : null,
-      maxPrice: maxTwd != null ? String(Number(maxTwd.toFixed(2))) : null,
+      minPrice: minTwd != null ? minTwd.toFixed(2).replace(/\.?0+$/, "") : null,
+      maxPrice: maxTwd != null ? maxTwd.toFixed(2).replace(/\.?0+$/, "") : null,
     });
   };
 
@@ -186,6 +191,7 @@ export function ShopStorefrontContent() {
     setSearchDraft("");
     setMinDraft(null);
     setMaxDraft(null);
+    setPriceError("");
     startTransition(() => router.push(pathname));
   };
 
@@ -371,17 +377,28 @@ export function ShopStorefrontContent() {
                   currency={currency}
                   placeholder={t("storefront.minPrice")}
                   value={minDraft}
-                  onChange={setMinDraft}
+                  onChange={(v) => {
+                    setMinDraft(v);
+                    if (priceError) setPriceError("");
+                  }}
                   min={0}
                 />
                 <CurrencyInput
                   currency={currency}
                   placeholder={t("storefront.maxPrice")}
                   value={maxDraft}
-                  onChange={setMaxDraft}
+                  onChange={(v) => {
+                    setMaxDraft(v);
+                    if (priceError) setPriceError("");
+                  }}
                   min={0}
                 />
               </div>
+              {priceError ? (
+                <p className="text-xs text-red-600 dark:text-red-400" role="alert">
+                  {priceError}
+                </p>
+              ) : null}
               <button type="submit" className="mq-btn mq-btn-outline w-full text-sm">
                 {t("storefront.applyPrice")}
               </button>

@@ -32,6 +32,7 @@ import {
 import { useSellerProducts } from "@/lib/queries/seller";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { parseLocaleIntInput } from "@/lib/money";
 import { translateStatus } from "@/lib/i18n/status";
 import { formatWarehouseLabel } from "@/lib/inventory/warehouse-label";
 import { CountrySelect } from "@/components/ui/CountrySelect";
@@ -666,14 +667,18 @@ function SlipsTab({
     for (const line of lines) {
       const sku = line.sku.trim();
       if (!sku) continue;
-      const quantity = Number(line.quantity);
-      if (!Number.isInteger(quantity) || quantity < 1) {
+      const qtyRes = parseLocaleIntInput(line.quantity, {
+        min: 1,
+        max: 1000000,
+        allowZero: false,
+      });
+      if (!qtyRes.ok) {
         setFormError(t("seller.inventoryPage.invalidQuantityError", { sku }));
         return;
       }
       payloadItems.push({
         sku,
-        quantity,
+        quantity: qtyRes.value,
       });
     }
     try {
@@ -834,9 +839,8 @@ function SlipsTab({
                 </select>
                 <input
                   className="mq-input"
-                  type="number"
-                  min={1}
-                  step={1}
+                  type="text"
+                  inputMode="numeric"
                   aria-label={t("seller.inventoryPage.quantity")}
                   value={line.quantity}
                   onChange={(e) => updateLine(line.key, { quantity: e.target.value })}
