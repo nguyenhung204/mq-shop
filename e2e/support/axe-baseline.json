@@ -1,0 +1,21 @@
+[
+ "/account|aria-allowed-attr",
+ "/cart|aria-allowed-attr",
+ "/checkout|aria-allowed-attr",
+ "/contact-us|aria-allowed-attr",
+ "/contact-us|label",
+ "/faqs|aria-allowed-attr",
+ "/my-account/register|aria-allowed-attr",
+ "/my-account|aria-allowed-attr",
+ "/orders/[id]|aria-allowed-attr",
+ "/orders|aria-allowed-attr",
+ "/refunds|aria-allowed-attr",
+ "/seller/orders|aria-allowed-attr",
+ "/seller/products|aria-allowed-attr",
+ "/seller/rma|aria-allowed-attr",
+ "/seller|aria-allowed-attr",
+ "/shop|aria-allowed-attr",
+ "/sub-accounts|aria-allowed-attr",
+ "/wallet|aria-allowed-attr",
+ "/|aria-allowed-attr"
+]

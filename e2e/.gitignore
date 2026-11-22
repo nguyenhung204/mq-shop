@@ -2,3 +2,5 @@
 .run/
 .results/
 .report/
+.report-extra/
+.results-*/
