@@ -67,6 +67,7 @@ export const API_ERROR_I18N: Record<string, string> = {
   PRODUCT_NOT_ACTIVE: "toast.productNotActive",
   INVENTORY_TRANSFER_RECEIVE_MISMATCH: "toast.inventoryTransferReceiveMismatch",
   WALLET_AMOUNT_INVALID: "toast.walletAmountInvalid",
+  WALLET_AMOUNT_TOO_LARGE: "toast.amountTooLarge",
   AMOUNT_INVALID: "toast.amountInvalid",
   AMOUNT_NOT_POSITIVE: "toast.amountNotPositive",
   AMOUNT_TOO_LARGE: "toast.amountTooLarge",
