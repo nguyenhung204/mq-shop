@@ -62,3 +62,13 @@ describe("M1 roles the server refuses are neither in the menu nor admitted by th
     expect(card("/admin/landing-cost")).toContain('roles: ["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"]');
   });
 });
+
+describe("FX rates stay reachable for ADMIN (server grants CONFIG_SYS to ADMIN, not CONFIG_FEE)", () => {
+  it("has its own page and menu entry for ADMIN and SUPER_ADMIN, and the page does not redirect away", () => {
+    const src = pageSrc("/admin/fx-rates")!;
+    expect(src).not.toContain("redirect(");
+    expect(src).toContain("AdminFxRatesPanel");
+    expect(guardRoles(src)?.slice().sort()).toEqual(["ADMIN", "SUPER_ADMIN"]);
+    expect(navRoles("/admin/fx-rates")).toEqual(["ADMIN", "SUPER_ADMIN"]);
+  });
+});

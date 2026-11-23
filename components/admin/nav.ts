@@ -280,6 +280,14 @@ export const adminNavItems: AdminNavItem[] = [
     group: "finance_mlm",
   },
   {
+    href: "/admin/fx-rates",
+    labelKey: "admin.fx.title",
+    icon: Coins,
+    permissions: ["CONFIG_SYS"],
+    roles: ["ADMIN", "SUPER_ADMIN"],
+    group: "finance_mlm",
+  },
+  {
     href: "/admin/promotions",
     labelKey: "admin.nav.promotions",
     icon: BadgePercent,
