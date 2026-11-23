@@ -2217,6 +2217,10 @@
         "subAccountCreationsPerHour": {
           "label": "每小時可建立的子帳號數",
           "description": "每人每小時最多可建立多少子帳號（帳號擁有者與管理員皆適用）。"
+        },
+        "shippingFeeTwd": {
+          "label": "運費（TWD）",
+          "description": "每筆結帳收取的運費（0 至 1,000,000，最多 2 位小數），並記錄於訂單。已成立的訂單維持原運費。預設 5.00。"
         }
       },
       "on": "開啟",

@@ -2217,6 +2217,10 @@
         "subAccountCreationsPerHour": {
           "label": "Số tài khoản phụ được tạo mỗi giờ",
           "description": "Một người được tạo tối đa bao nhiêu tài khoản phụ mỗi giờ (cả chủ tài khoản và admin)."
+        },
+        "shippingFeeTwd": {
+          "label": "Phí vận chuyển (TWD)",
+          "description": "Phí vận chuyển tính cho mỗi đơn khi thanh toán (0 đến 1.000.000, tối đa 2 chữ số thập phân), ghi vào đơn. Đơn đã tạo giữ phí cũ. Mặc định 5.00."
         }
       },
       "on": "Bật",

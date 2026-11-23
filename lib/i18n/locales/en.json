@@ -2217,6 +2217,10 @@
         "subAccountCreationsPerHour": {
           "label": "Sub-account creations per hour",
           "description": "How many sub-accounts one person may create per hour (owner and admin paths)."
+        },
+        "shippingFeeTwd": {
+          "label": "Shipping fee (TWD)",
+          "description": "Shipping fee charged on every checkout (0 to 1,000,000, up to 2 decimals) and recorded on the order. Orders already placed keep their fee. Default 5.00."
         }
       },
       "on": "On",
