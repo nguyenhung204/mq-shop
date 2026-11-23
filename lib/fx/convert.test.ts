@@ -76,3 +76,19 @@ describe("the other TWD formatters follow the same rule", () => {
     expect(formatPrice(2350.5)).toBe("NT$2,350.50");
   });
 });
+
+describe("formatMoneyForCurrency TWD edge values and formatDisplayMoney", () => {
+  it("non-finite and tiny values do not throw and keep the TWD rule", () => {
+    expect(formatMoneyForCurrency(Number.NaN, "TWD")).toBe("NT$0");
+    expect(formatMoneyForCurrency(Number.POSITIVE_INFINITY, "TWD")).toBe("NT$0");
+    expect(formatMoneyForCurrency(-0, "TWD")).toBe("NT$0");
+    expect(formatMoneyForCurrency(1e-7, "TWD")).toBe("NT$0");
+    expect(formatMoneyForCurrency(-0.004, "TWD")).toBe("NT$0"); // rounds to zero: no "-NT$0"
+  });
+  it("formatDisplayMoney shows TWD cents exactly (withdrawal rows)", async () => {
+    const { formatDisplayMoney } = await import("@/lib/points");
+    expect(formatDisplayMoney("2355.50", "TWD")).toBe("NT$2,355.50");
+    expect(formatDisplayMoney(0.5, "TWD")).toBe("NT$0.50");
+    expect(formatDisplayMoney(2350, "TWD")).toBe("NT$2,350");
+  });
+});

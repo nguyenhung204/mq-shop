@@ -25,7 +25,7 @@ export function getLocaleSeparators(locale = "en-US"): LocaleSeparators {
 }
 
 /**
- * Returns allowed decimal precision for a currency (e.g. 0 for VND/TWD, 2 for USD/MYR/SGD).
+ * Returns allowed decimal precision for a currency (0 for VND/JPY/KRW, 2 for TWD/USD/MYR/SGD; TWD keeps its cents).
  */
 export function getCurrencyDecimals(currency: string): number {
   return getFxDecimals(currency);

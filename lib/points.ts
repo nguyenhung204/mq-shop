@@ -8,6 +8,8 @@ export const POINT_USD_VALUE = 0.99999;
 
 export const FX_BASE_CURRENCY = "TWD";
 
+import { formatMoneyForCurrency } from "@/lib/fx/convert";
+
 export function resolvePointUsdValue(value: number | string | null | undefined): number {
   const n = typeof value === "string" ? Number(value) : value;
   if (typeof n === "number" && Number.isFinite(n) && n > 0) return n;
@@ -65,6 +67,8 @@ export function formatDisplayMoney(
 ): string {
   const n = typeof value === "string" ? Number(value) : value ?? 0;
   const code = (currency || FX_BASE_CURRENCY).toUpperCase();
+  // TWD: exact to the cent when the amount has cents (2,355.50), whole when round (same rule as every other TWD display)
+  if (code === "TWD") return formatMoneyForCurrency(n, "TWD", "en-US");
   if (!Number.isFinite(n)) {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
