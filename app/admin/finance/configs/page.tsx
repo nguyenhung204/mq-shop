@@ -603,7 +603,7 @@ function FinanceConfigsInner() {
 
 export default function AdminFinanceConfigsPage() {
   return (
-    <AuthGuard roles={["SUPER_ADMIN", "ACCOUNTANT", "ADMIN"]} permissions={["CONFIG_FEE"]}>
+    <AuthGuard roles={["SUPER_ADMIN", "ACCOUNTANT"]} permissions={["CONFIG_FEE"]}>
       <FinanceConfigsInner />
     </AuthGuard>
   );

@@ -35,7 +35,7 @@ const UI_MATRIX: Record<string, UiRule> = {
   "/admin": { allow: STAFF },
   "/admin/accounting-export": { allow: [AC, AD, SA] },
   "/admin/accounts/[id]/sub-accounts": { allow: [AC, AD, SA] },
-  "/admin/audit-logs": { allow: [AD, SA] }, // nav.ts also shows it to ACCOUNTANT: see "menu links" test below
+  "/admin/audit-logs": { allow: [AD, SA] }, // the server grants VIEW_AUDIT_LOG to ACCOUNTANT too, but the page and the menu do not offer it (M1)
   "/admin/backups": { allow: [SA] },
   "/admin/banners": { allow: [AD, SA] },
   "/admin/categories": { allow: [AD, SA] },
@@ -47,12 +47,12 @@ const UI_MATRIX: Record<string, UiRule> = {
   "/admin/dividend/settlements/[quarter]": { allow: [AC, AD, SA] },
   "/admin/dividend/slots": { allow: [AC, AD, SA] },
   "/admin/dsar": { allow: [AD, SA] },
-  "/admin/finance/configs": { allow: [AC, AD, SA] },
-  "/admin/fx-rates": { allow: [AC, AD, SA], landing: "/admin/finance/configs" },
+  "/admin/finance/configs": { allow: [AC, SA] }, // ADMIN has no CONFIG_FEE (M1)
+  "/admin/fx-rates": { allow: [AC, SA], landing: "/admin/finance/configs" },
   "/admin/inventory": { allow: [WH, AD, SA] },
   "/admin/landing-cost": { allow: [AC, AD, SA] },
   "/admin/marketing": { allow: [AD, SA] },
-  "/admin/mlm": { allow: [AC, AD, SA] },
+  "/admin/mlm": { allow: [AC, SA] }, // ADMIN has no CONFIG_MLM (M1)
   "/admin/mlm/commissions/report": { allow: [AC, AD, SA] },
   "/admin/notifications": { allow: [AD, SA] },
   "/admin/notifications/catalog": { allow: [AD, SA], landing: "/admin/notifications" },
@@ -63,7 +63,7 @@ const UI_MATRIX: Record<string, UiRule> = {
   "/admin/payouts/[id]": { allow: [AC, AD, SA] },
   "/admin/platform-staff": { allow: [AD, SA] },
   "/admin/products": { allow: [AD, SA] },
-  "/admin/products-view": { allow: [WH, AD, SA] },
+  "/admin/products-view": { allow: [AD, SA] }, // WAREHOUSE: GET /products is 403 (M1)
   "/admin/promotions": { allow: [AD, SA] },
   "/admin/rank-tree": { allow: STAFF },
   "/admin/rbac": { allow: [SA] },
@@ -79,7 +79,7 @@ const UI_MATRIX: Record<string, UiRule> = {
   "/admin/staff": { allow: [AD, SA] },
   "/admin/system": { allow: [SA] },
   "/admin/transactions": { allow: [AC, AD, SA] },
-  "/admin/transfers": { allow: [WH, AD, SA] },
+  "/admin/transfers": { allow: [AD, SA] }, // WAREHOUSE: GET /inventory/warehouses is 403 (M1); the detail page below stays open
   "/admin/transfers/[id]": { allow: [WH, AD, SA] },
   "/admin/users": { allow: [AD, SA] },
   "/admin/wallet/adjust": { allow: [AD, SA] },
@@ -199,11 +199,14 @@ test.describe("C. role x route (UI guard)", () => {
 // =====================================================================================================
 // D. Menu links shown to a role must be reachable by that role (nav.ts vs guards)
 // =====================================================================================================
-// SPEC MƠ HỒ: chờ quyết định của chủ dự án (menu nav.ts hiện link theo quyền, guard trang theo vai; hai nơi lệch nhau).
-// KNOWN ISSUES (pinned): if one is fixed or a new one appears this test goes red so the list gets updated.
-const KNOWN_DEAD_MENU_LINKS: Record<string, string[]> = {
-  ACCOUNTANT: ["/admin/audit-logs: shown to ACCOUNTANT but the page guard refuses ACCOUNTANT"],
-  CS: ["/admin/landing-cost: shown to CS but the page guard refuses CS"],
+// M1 (fixed): the menu (nav.ts) and the page guards agree. Previously pinned as known issues:
+// /admin/audit-logs was shown to ACCOUNTANT and /admin/landing-cost to CS although the page refuses them.
+// The server does grant VIEW_AUDIT_LOG (ACCOUNTANT) and CALC_LAND_COST (CS); opening those pages is the owner's call.
+const MENU_MUST_NOT_SHOW: Record<string, string[]> = {
+  ACCOUNTANT: ["/admin/audit-logs"],
+  CS: ["/admin/landing-cost"],
+  ADMIN: ["/admin/mlm", "/admin/finance/configs"],
+  WAREHOUSE: ["/admin/products-view", "/admin/transfers"],
 };
 test.describe("D. admin sidebar links vs guards", () => {
   for (const role of STAFF) {
@@ -220,25 +223,23 @@ test.describe("D. admin sidebar links vs guards", () => {
         if (!rule) { bad.push(`${href}: no matrix rule`); continue; }
         if (!rule.allow.includes(role)) bad.push(`${href}: shown to ${role} but the page guard refuses ${role}`);
       }
-      const known = KNOWN_DEAD_MENU_LINKS[role] ?? [];
-      if (known.length) test.info().annotations.push({ type: "known-issue", description: `SPEC MƠ HỒ: chờ quyết định. ${known.join("; ")}` });
-      expect(bad, "violations must equal the recorded known issues").toEqual(known);
+      expect(bad, "every sidebar link must be admitted by its page guard").toEqual([]);
+      for (const hidden of MENU_MUST_NOT_SHOW[role] ?? []) expect(hrefs, `${role} must not see ${hidden} in the sidebar`).not.toContain(hidden);
       await context.close();
     });
   }
 });
 
 // =====================================================================================================
-// G. A page the UI guard admits must not be refused by its own primary API (UI guard vs RBAC mismatch).
-//    SPEC MƠ HỒ: chờ quyết định của chủ dự án/khách (guard UI cho vào, RBAC backend từ chối). Không sửa sản phẩm.
-//    The test still runs every check and PINS the current status; a fixed pair (200) or a new refusal makes it red so this list is updated.
-//    KNOWN ISSUES (all currently HTTP 403):
-//    - WAREHOUSE /admin/products-view -> GET /products 403 (seller-scope list; page shows no products)
-//    - WAREHOUSE /admin/transfers -> GET /inventory/warehouses 403 (page cannot offer a warehouse to transfer from/to)
-//    - ADMIN /admin/mlm -> GET /admin/mlm/ranks 403 (CONFIG_MLM: ADMIN=N) although nav.ts and the guard admit ADMIN
-//    - ADMIN /admin/finance/configs -> GET /admin/finance/configs[/active] 403 (CONFIG_FEE: ADMIN=N) although the guard admits ADMIN
+// G. A page whose primary API the server refuses to the role must not be admitted by the UI (M1, fixed).
+//    Decision: the server RBAC matrix is right; the UI follows. Previously pinned as known issues (all HTTP 403):
+//    - WAREHOUSE /admin/products-view -> GET /products 403
+//    - WAREHOUSE /admin/transfers -> GET /inventory/warehouses 403
+//    - ADMIN /admin/mlm -> GET /admin/mlm/ranks 403 (CONFIG_MLM: ADMIN=N)
+//    - ADMIN /admin/finance/configs -> GET /admin/finance/configs[/active] 403 (CONFIG_FEE: ADMIN=N)
+//    Now: the matrix refuses the role, a direct visit lands on "/", the page never calls its API, and the sidebar has no link.
 // =====================================================================================================
-test.describe("G. allowed page vs its own API", () => {
+test.describe("G. refused page vs its own API", () => {
   const PAIRS: Array<[Role, string, RegExp]> = [
     [WH, "/admin/products-view", /:3005\/api\/v1\/products\?/],
     [WH, "/admin/transfers", /:3005\/api\/v1\/inventory\/warehouses/],
@@ -246,15 +247,24 @@ test.describe("G. allowed page vs its own API", () => {
     [AD, "/admin/finance/configs", /:3005\/api\/v1\/admin\/finance\/configs/],
   ];
   for (const [role, route, primary] of PAIRS) {
-    test(`${role} ${route}: the page's own API call is refused (known issue, pinned)`, async ({ browser }) => {
-      expect(ruleOf(route)!.allow).toContain(role);
+    test(`${role} ${route}: refused by the UI guard, bounced to /, API never called, no menu link`, async ({ browser }) => {
+      expect(ruleOf(route)!.allow).not.toContain(role);
       const { context, page } = await viewerContext(browser, role);
-      const first = page.waitForResponse((r) => primary.test(r.url()), { timeout: 15_000 });
+      const calls: string[] = [];
+      const denied: string[] = [];
+      page.on("response", (r) => {
+        if (primary.test(r.url())) calls.push(r.url());
+        if (r.url().includes(":3005") && r.status() === 403) denied.push(`${r.request().method()} ${new URL(r.url()).pathname}`);
+      });
       await page.goto(route, { waitUntil: "domcontentloaded" });
-      const res = await first;
-      const call = `${role} on ${route}: ${res.request().method()} ${new URL(res.url()).pathname} -> ${res.status()}`;
-      test.info().annotations.push({ type: "known-issue", description: `SPEC MƠ HỒ: chờ quyết định. ${call}` });
-      expect(res.status(), `pinned known issue changed (update the list if fixed): ${call}`).toBe(403);
+      await settleAfterGoto(page);
+      await expect.poll(() => new URL(page.url()).pathname, { message: `${role} on ${route}`, timeout: 10_000 }).toBe(HOME);
+      expect(calls, `${role} on ${route}: the page must not call its own API`).toEqual([]);
+      expect(denied, `${role} on ${route}: no 403 from the page`).toEqual([]);
+      await page.goto("/admin", { waitUntil: "domcontentloaded" });
+      await settleAfterGoto(page);
+      const hrefs = await page.locator("aside a[href^='/admin']").evaluateAll((as) => as.map((a) => (a as HTMLAnchorElement).getAttribute("href")!.split("?")[0]));
+      expect(hrefs).not.toContain(route);
       await context.close();
     });
   }

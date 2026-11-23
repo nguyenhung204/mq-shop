@@ -93,14 +93,6 @@ export const adminNavItems: AdminNavItem[] = [
     group: "catalog_ops",
   },
   {
-    href: "/admin/products-view",
-    labelKey: "admin.nav.products",
-    icon: Package,
-    permissions: ["VIEW_PROD_BKG"],
-    roles: ["WAREHOUSE"],
-    group: "catalog_ops",
-  },
-  {
     href: "/admin/reviews",
     labelKey: "admin.nav.reviews",
     icon: Star,
@@ -120,7 +112,7 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.transfers",
     icon: ArrowRightLeft,
     permissions: ["SYNC_INVENTORY"],
-    roles: ["WAREHOUSE", "ADMIN", "SUPER_ADMIN"],
+    roles: ["ADMIN", "SUPER_ADMIN"],
     group: "catalog_ops",
   },
   {
@@ -212,7 +204,7 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.mlm",
     icon: Network,
     permissions: ["CONFIG_MLM", "APPROVE_MLM", "VIEW_MLM_TREE"],
-    roles: ["SUPER_ADMIN", "ACCOUNTANT", "ADMIN"],
+    roles: ["SUPER_ADMIN", "ACCOUNTANT"],
     group: "finance_mlm",
   },
   {
@@ -276,6 +268,7 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.landingCost",
     icon: Calculator,
     permissions: ["CALC_LAND_COST"],
+    roles: ["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"],
     group: "finance_mlm",
   },
   {
@@ -335,7 +328,7 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.audit",
     icon: ClipboardList,
     permissions: ["VIEW_AUDIT_LOG"],
-    roles: ["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"],
+    roles: ["ADMIN", "SUPER_ADMIN"],
     group: "system",
   },
   {

@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowRightLeft, ClipboardCheck } from "lucide-react";
+import { ClipboardCheck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useAdminInventorySlips, useTransfers } from "@/lib/queries/inventory";
+import { useAdminInventorySlips } from "@/lib/queries/inventory";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Skeleton } from "@/components/ui/Skeleton";
 
@@ -26,14 +26,12 @@ export function AdminInventoryQueues() {
   const { t } = useLanguage();
 
   const slips = useAdminInventorySlips({ status: "PENDING", pageSize: 1 });
-  const transfers = useTransfers({ status: "IN_TRANSIT", pageSize: 1 });
 
-  const isLoading = slips.isLoading || transfers.isLoading;
+  const isLoading = slips.isLoading;
 
   if (isLoading) {
     return (
       <div className="mq-admin-queue-grid" aria-busy="true">
-        <Skeleton className="h-[4.5rem] rounded-2xl" />
         <Skeleton className="h-[4.5rem] rounded-2xl" />
       </div>
     );
@@ -46,13 +44,6 @@ export function AdminInventoryQueues() {
       label: t("admin.overview.inventory.slipsPending"),
       count: slips.data?.meta?.total ?? 0,
       href: "/admin/inventory?tab=slips",
-    },
-    {
-      key: "transfersInTransit",
-      icon: ArrowRightLeft,
-      label: t("admin.overview.inventory.transfersInTransit"),
-      count: transfers.data?.meta?.total ?? 0,
-      href: "/admin/transfers",
     },
   ];
 

@@ -370,7 +370,7 @@ function TransfersInner() {
 export default function AdminTransfersPage() {
   return (
     <AuthGuard
-      roles={["WAREHOUSE", "ADMIN", "SUPER_ADMIN"]}
+      roles={["ADMIN", "SUPER_ADMIN"]}
       permissions={["SYNC_INVENTORY"]}
     >
       <TransfersInner />

@@ -119,6 +119,24 @@ describe("page role gates (real pages rendered per role)", () => {
   });
 });
 
+// M1: pages whose primary API the server refuses to the role (RBAC matrix). Only the refused roles are rendered:
+// they must get the guard placeholder (which redirects to "/"), never the page body with a 403.
+describe("M1 refused roles get the guard, not an empty page with a 403", () => {
+  const refused: Array<{ path: string; roles: string[] }> = [
+    { path: "@/app/admin/mlm/page", roles: ["ADMIN", "CS", "WAREHOUSE"] },
+    { path: "@/app/admin/finance/configs/page", roles: ["ADMIN", "CS", "WAREHOUSE"] },
+    { path: "@/app/admin/products-view/page", roles: ["WAREHOUSE", "CS", "ACCOUNTANT"] },
+    { path: "@/app/admin/transfers/page", roles: ["WAREHOUSE", "CS", "ACCOUNTANT"] },
+    { path: "@/app/admin/audit-logs/page", roles: ["ACCOUNTANT", "CS", "WAREHOUSE"] },
+    { path: "@/app/admin/landing-cost/page", roles: ["CS", "WAREHOUSE"] },
+  ];
+  for (const r of refused) {
+    it(`${r.path}: refused for ${r.roles.join(", ")}`, async () => {
+      for (const role of r.roles) expect(allowed(await render(r.path, [role])), `${r.path} as ${role}`).toBe(false);
+    });
+  }
+});
+
 describe("a malformed quarter segment is a not-found state, not a crash", () => {
   it("/settlements/%25 renders 'not found' for an admin and never calls the detail hook with garbage", async () => {
     const html = await render("@/app/admin/dividend/settlements/[quarter]/page", ["ADMIN"], { params: params({ quarter: "%25" }) });

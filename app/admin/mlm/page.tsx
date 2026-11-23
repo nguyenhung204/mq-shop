@@ -1819,7 +1819,7 @@ function MlmAdminInner() {
 export default function AdminMlmPage() {
   return (
     <AuthGuard
-      roles={["SUPER_ADMIN", "ACCOUNTANT", "ADMIN"]}
+      roles={["SUPER_ADMIN", "ACCOUNTANT"]}
       permissions={["CONFIG_MLM", "APPROVE_MLM", "VIEW_MLM_TREE"]}
     >
       <MlmAdminInner />

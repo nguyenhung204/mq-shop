@@ -88,7 +88,7 @@ function ProductsViewInner() {
 
 export default function AdminProductsViewPage() {
   return (
-    <AuthGuard roles={["WAREHOUSE", "ADMIN", "SUPER_ADMIN"]}>
+    <AuthGuard roles={["ADMIN", "SUPER_ADMIN"]}>
       <ProductsViewInner />
     </AuthGuard>
   );

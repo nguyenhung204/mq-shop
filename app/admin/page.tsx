@@ -74,6 +74,7 @@ const cards: {
     href: "/admin/audit-logs",
     navKey: "audit",
     permissions: ["VIEW_AUDIT_LOG"],
+    roles: ["ADMIN", "SUPER_ADMIN"],
     icon: ClipboardList,
   },
   {
@@ -118,13 +119,14 @@ const cards: {
     href: "/admin/mlm",
     navKey: "mlm",
     permissions: ["CONFIG_MLM", "VIEW_MLM_TREE", "VIEW_MLM_COMSN"],
-    roles: ["SUPER_ADMIN", "ACCOUNTANT", "ADMIN"],
+    roles: ["SUPER_ADMIN", "ACCOUNTANT"],
     icon: Network,
   },
   {
     href: "/admin/landing-cost",
     navKey: "landingCost",
     permissions: ["CALC_LAND_COST"],
+    roles: ["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"],
     icon: Calculator,
   },
   {
