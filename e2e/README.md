@@ -65,3 +65,10 @@ e2e/
   support/                 api, db, otp, factory, ui, helper theo nhóm luồng
   specs/NN-*.spec.ts       theo luồng của kịch bản 17 mục
 ```
+
+## Ghi chú job kiểm thử toàn hệ thống (23/11/2026)
+
+- Chạy riêng một file: `E2E_REBUILD=1 e2e/scripts/run.sh e2e/specs/15-permissions.spec.ts --project=parallel --retries=0` (cần `E2E_REBUILD=1` nếu vừa đổi code frontend hoặc vừa chạy build cổng cuối, vì cả hai ghi đè `.next`).
+- Spec 15 kiểm role x route cho mọi vai (736 test). Khi thêm trang admin mới: cập nhật bảng `UI_MATRIX`, `MENU_MUST_SHOW` hoặc `MENU_MUST_NOT_SHOW`, và guard trong `app/admin/**/page.tsx` phải khớp ma trận máy chủ `mq_backend/src/common/rbac/role-permission.matrix.ts`.
+- Bài học: `next.config.ts` có thể chuyển hướng trước cả trang (đã từng ghi đè `/admin/fx-rates`); unit test đọc mã nguồn trang không thấy được, chỉ E2E bắt được.
+- Test backend của job này cần DB riêng và Redis riêng (không dùng 5432/6379): `TEST_DB_URL`, `TEST_REDIS_URL`, `REDIS_URL` trỏ stack tạm `mqe2e-*` (cổng 55432/56379).

@@ -5,7 +5,7 @@ import { createSellerWithSku, createUser, getOrder } from "../support/factory";
 import { errOf, pageAs } from "../support/admin-flows";
 
 /**
- * Flow 5 (SERIAL): changing the display FX rates (UI /admin/finance/configs; /admin/fx-rates redirects there) never changes an
+ * Flow 5 (SERIAL): changing the display FX rates (UI /admin/fx-rates, its own page for ADMIN + SUPER_ADMIN) never changes an
  * existing order: its amount to pay and locked rate stay as they were. A new order uses the new rate. The original rates are
  * restored in `finally` (the rate table is versioned, so the restore adds a new "latest" row; history rows stay).
  */
@@ -23,9 +23,9 @@ test("an FX change does not move an old order; new orders use the new rate; rate
     const oldCents = displayCents(123_900n, String(fx.rates.USD));
     expect(BigInt(Math.round(old.payableAmount * 100))).toBe(oldCents);
 
-    // ---- /admin/fx-rates is only a redirect; the rate is changed on the real page
+    // ---- /admin/fx-rates is its own page for ADMIN + SUPER_ADMIN (no redirect since the RBAC alignment): the panel is edited there
     await admin.page.goto("/admin/fx-rates");
-    await expect(admin.page).toHaveURL(/\/admin\/finance\/configs/);
+    await expect(admin.page).toHaveURL(/\/admin\/fx-rates$/);
     const newUsd = orig.USD === 0.05 ? "0.06" : "0.05";
     await admin.page.getByLabel("How much USD for 1 TWD").fill(newUsd);
     const saved = admin.page.waitForResponse((r) => r.url().includes("/admin/fx/rates") && r.request().method() === "PUT");
