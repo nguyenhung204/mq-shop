@@ -1,4 +1,5 @@
 import { tt } from "@/lib/i18n/tt";
+import { formatMoneyForCurrency } from "@/lib/fx/convert";
 
 export function asArray<T>(data: unknown): T[] {
   if (!data) return [];
@@ -94,12 +95,7 @@ export function getErrorCode(error: unknown): string | null {
 export function formatMoney(value: string | number | undefined | null): string {
   const n = typeof value === "string" ? Number(value) : value ?? 0;
   if (Number.isNaN(n)) return "NT$0";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "TWD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(n);
+  return formatMoneyForCurrency(n, "TWD", "en-US");
 }
 
 export function formatPoints(

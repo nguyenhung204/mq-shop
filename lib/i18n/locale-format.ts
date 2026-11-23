@@ -1,4 +1,5 @@
 import type { Locale } from "./types";
+import { formatMoneyForCurrency } from "@/lib/fx/convert";
 
 export function toIntlLocale(locale: Locale | null | undefined): string {
   if (locale === "zh-TW") return "zh-Hant";
@@ -12,12 +13,7 @@ export function formatMoneyLocale(
 ): string {
   const n = typeof value === "string" ? Number(value) : value ?? 0;
   const safe = Number.isNaN(n) ? 0 : n;
-  return new Intl.NumberFormat(toIntlLocale(locale), {
-    style: "currency",
-    currency: "TWD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(safe);
+  return formatMoneyForCurrency(safe, "TWD", toIntlLocale(locale));
 }
 
 export function formatDateTimeLocale(

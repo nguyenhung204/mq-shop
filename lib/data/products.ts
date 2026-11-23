@@ -1,4 +1,5 @@
 import { productImages } from "@/lib/images";
+import { formatMoneyForCurrency } from "@/lib/fx/convert";
 
 export type Product = {
   id: string;
@@ -749,10 +750,5 @@ export function getProductsByCategory(categorySlug: string): Product[] {
 }
 
 export function formatPrice(price: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "TWD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(price);
+  return formatMoneyForCurrency(price, "TWD", "en-US");
 }

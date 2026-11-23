@@ -56,12 +56,6 @@ test.describe("19 cart -> checkout -> order (UI)", () => {
   for (const r of REGIONS) {
     test(`${r.code} (${r.cur}, UI ${r.lang}): PDP variants -> cart -> checkout -> order, every shown amount = oracle = DB`, async ({ browser }) => {
       const [S, M] = shop.variants;
-      if (r.cur === "TWD") {
-        test.info().annotations.push({
-          type: "known-issue",
-          description: "TWD oracle here is the CURRENT product rule (0 decimals, half up): 2350.50 is shown as 2,351. The pinned issue is the test.fail test 'TWD amount with cents' below; when it is fixed this oracle must change to 2 decimals.",
-        });
-      }
       const buyer = await buyerInRegion(r.code, `cart${r.code.toLowerCase()}`);
       const { page, context, health } = await uiAs(browser, buyer, { lang: r.lang, region: r.id });
       try {
@@ -204,7 +198,6 @@ test.describe("19 cart -> checkout -> order (UI)", () => {
   });
 
   test("TWD amount with cents (2350.50): product page, cart and 'amount to pay' show the exact ledger amount, not a rounded one", async ({ browser }) => {
-    test.fail(true, "KNOWN-ISSUE (open, report to lead): TWD is shown with 0 decimals (lib/fx/convert getFxDecimals), so 2350.50 shows as 2,351 and the amount to pay of a 2355.50 order as 2,356. Repro: zh-TW/TW buyer, variant 2350.50, open the product page and the order page of an order of 2355.50.");
     // Spec: ledger amounts are TWD numeric(12,2) and "the buyer pays displayTotal" (payable-amount.ts doc: 2 dp). A buyer told to pay a
     // rounded NT$2,356 for an order of 2355.50 would pay 0.50 more than the shop's ledger says.
     const M = shop.variants[1];
@@ -270,9 +263,8 @@ test.describe("19 cart -> checkout -> order (UI)", () => {
   });
 });
 
-/** displayAmount refuses exact ties; a TWD display of x.50 is a tie on purpose (Intl rounds half up, no float involved: rate is 1). */
+/** TWD is shown with its cents when it has any (rate 1: exact, no tie); other currencies use the rate oracle. */
 function shownOfSafe(c: bigint, cur: string, rate: string, lang: "en" | "vi" | "zh-TW"): string {
-  if (cur === "TWD") return fmtShown(String((c * 2n + 100n) / 200n), "TWD", lang);
   return shownOf(c, cur, rate, lang);
 }
 const toDecimal8 = (v: string): string => {
@@ -282,7 +274,7 @@ const toDecimal8 = (v: string): string => {
 /** DB display_total (2 dp text) as the decimal text at the precision of the currency, round-half-up (what the order page prints). */
 function centsDecimalAt(twoDp: string, cur: string): string {
   const c = toCents(twoDp);
-  if (cur === "TWD" || cur === "VND") return String((c * 2n + 100n) / 200n);
+  if (cur === "VND") return String((c * 2n + 100n) / 200n);
   return twoDp;
 }
 async function stockOf(variantIds: string[]): Promise<Record<string, { available: number; reserved: number }>> {

@@ -12,7 +12,8 @@ import { tr, type Locale } from "./money-inputs";
  */
 
 export const INTL: Record<Locale, string> = { en: "en-US", vi: "vi-VN", "zh-TW": "zh-TW" };
-export const DEC: Record<string, number> = { TWD: 0, VND: 0, MYR: 2, SGD: 2, USD: 2 };
+/** TWD keeps cents (owner decision N2): 2 dp in the exact amount; fmtShown drops the .00 of a whole amount. */
+export const DEC: Record<string, number> = { TWD: 2, VND: 0, MYR: 2, SGD: 2, USD: 2 };
 
 export const REGIONS = [
   { id: "tw", code: "TW", cur: "TWD", lang: "zh-TW" as Locale },
@@ -51,7 +52,8 @@ export function displayAmount(twdCents: bigint, rate: string, cur: string): stri
 
 /** What the page shows for `amountText` (decimal text) in `cur` and `locale`. */
 export function fmtShown(amountText: string, cur: string, locale: Locale): string {
-  const nf = new Intl.NumberFormat(INTL[locale], { style: "currency", currency: cur, minimumFractionDigits: DEC[cur], maximumFractionDigits: DEC[cur] });
+  const wholeTwd = cur === "TWD" && /^-?\d+(?:\.0+)?$/.test(amountText);
+  const nf = new Intl.NumberFormat(INTL[locale], { style: "currency", currency: cur, minimumFractionDigits: wholeTwd ? 0 : DEC[cur], maximumFractionDigits: DEC[cur] });
   return nf.format(amountText as unknown as number);
 }
 /** Shown text of a TWD amount (cents) in the currency of a region. */
