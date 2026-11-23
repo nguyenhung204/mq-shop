@@ -52,9 +52,11 @@ reset() { # fresh DB from template + empty Redis + backend restarted (clears the
 frontend() {
   kill_port 3000
   cd "$SHOP"
-  if [ ! -f .next/BUILD_ID ] || [ "${E2E_REBUILD:-0}" = 1 ] || [ ! -f "$RUN/built-for-e2e" ]; then
+  # Rebuild unless .next is the exact build this script made for E2E (marker = its BUILD_ID): any other build
+  # (e.g. the api.example.com gate build) changes BUILD_ID and forces a rebuild with the localhost API host.
+  if [ ! -f .next/BUILD_ID ] || [ "${E2E_REBUILD:-0}" = 1 ] || [ ! -f "$RUN/built-for-e2e" ] || [ "$(cat "$RUN/built-for-e2e")" != "$(cat .next/BUILD_ID)" ]; then
     NEXT_PUBLIC_API_HOST=http://localhost:3005 pnpm build > "$RUN/frontend-build.log" 2>&1
-    touch "$RUN/built-for-e2e"
+    cp .next/BUILD_ID "$RUN/built-for-e2e"
   fi
   NEXT_PUBLIC_API_HOST=http://localhost:3005 nohup pnpm start -p 3000 > "$RUN/frontend.log" 2>&1 &
   wait_http http://localhost:3000/ 200
