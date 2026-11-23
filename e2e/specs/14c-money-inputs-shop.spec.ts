@@ -233,7 +233,12 @@ const CURRENCY0: MoneyProfile = { maxDec: 2, allowZero: true, allowNeg: false, m
 const FILTER0: MoneyProfile = { maxDec: 2, allowZero: true, allowNeg: false };
 
 /** Blur display the product should show for a canonical integer: grouped by the language. */
-const blurDisplay = (canonical: string, locale: Locale) => canonical.replace(/\B(?=(\d{3})+(?!\d))/g, locale === "vi" ? "." : ",");
+/** TWD inputs keep their cents: on blur the product shows the integer part grouped by the language and ALWAYS two decimals (100 -> 100.00 en / 100,00 vi). */
+const blurDisplay = (canonical: string, locale: Locale) => {
+  const [int, frac = ""] = canonical.split(".");
+  const grouped = int.replace(/\B(?=(\d{3})+(?!\d))/g, locale === "vi" ? "." : ",");
+  return `${grouped}${locale === "vi" ? "," : "."}${frac.padEnd(2, "0").slice(0, 2)}`;
+};
 
 for (const locale of LOCALES) {
   test(`SKU selling price [${locale}]: rejected values show the exact message on blur, keep the text, no API call`, async ({ browser }) => {
@@ -261,7 +266,7 @@ for (const locale of LOCALES) {
       try { await form.locator("p[role=alert]").first().waitFor({ state: "visible", timeout: 1000 }); msg = (await form.locator("p[role=alert]").first().innerText()).trim(); } catch { /* none */ }
       await form.getByRole("button", { name: tr(locale, "seller.inventoryPage.createSku") }).click();
       await form.waitFor({ state: "hidden", timeout: 1500 }).catch(() => undefined); // an accepted submit closes the form; bounded wait before counting requests
-      row(rows, v.id, raw, `${blankMsg(locale, v.id, msg, moneyMsg(locale, exp.code, { maxDecimals: 0, min: 0, max: 9999999999.99 }))} | kept=true | req=0`, `${msg} | kept=${shown === raw}${shown === raw ? "" : ` (field became ${JSON.stringify(shown)})`} | req=${reqs.count() - n0}`, exp.code);
+      row(rows, v.id, raw, `${blankMsg(locale, v.id, msg, moneyMsg(locale, exp.code, { maxDecimals: 2, min: 0, max: 9999999999.99 }))} | kept=true | req=0`, `${msg} | kept=${shown === raw}${shown === raw ? "" : ` (field became ${JSON.stringify(shown)})`} | req=${reqs.count() - n0}`, exp.code);
     }
     saveResults("sku-price/invalid", locale, rows);
     await context.close();
@@ -291,7 +296,7 @@ for (const locale of LOCALES) {
       await form.getByRole("button", { name: tr(locale, "seller.inventoryPage.createSku") }).click();
       const r = await resp;
       const db = await sql("select selling_price::text p from inventory_variants where sku=$1 and product_id=$2", [sku, seller.productId]);
-      row(rows, v.id, raw, `shown=${blurDisplay(exp.canonical, locale)} status=2xx stored=${exp.canonical}`,
+      row(rows, v.id, raw, `shown=${blurDisplay(exp.canonical, locale)} status=2xx stored=${Number(exp.canonical)}`, // numeric(12,2) read back as a number: 100.50 is stored as 100.5
         `shown=${shown} status=${r ? (r.status() === 200 || r.status() === 201 ? "2xx" : r.status()) : "no request"} stored=${db[0] ? Number(db[0].p) : "none"}`);
     }
     saveResults("sku-price/valid", locale, rows);
@@ -320,7 +325,7 @@ for (const locale of LOCALES) {
       try { await form.locator("p[role=alert]").first().waitFor({ state: "visible", timeout: 1500 }); msg = (await form.locator("p[role=alert]").first().innerText()).trim(); } catch { /* none */ }
       const shown = await input.inputValue();
       const urlFiltered = /minPrice=/.test(page.url());
-      row(rows, v.id, raw, `${blankMsg(locale, v.id, msg, moneyMsg(locale, exp.code, { maxDecimals: 0, min: 0 }))} | kept=true | filtered=false`, `${msg} | kept=${shown === raw}${shown === raw ? "" : ` (field became ${JSON.stringify(shown)})`} | filtered=${urlFiltered || listing.count() > n0}`, exp.code);
+      row(rows, v.id, raw, `${blankMsg(locale, v.id, msg, moneyMsg(locale, exp.code, { maxDecimals: 2, min: 0 }))} | kept=true | filtered=false`, `${msg} | kept=${shown === raw}${shown === raw ? "" : ` (field became ${JSON.stringify(shown)})`} | filtered=${urlFiltered || listing.count() > n0}`, exp.code);
       if (urlFiltered) await page.goto("/shop");
     }
     saveResults("price-filter/invalid", locale, rows);
@@ -341,7 +346,7 @@ for (const locale of LOCALES) {
       await input.fill(raw);
       await input.blur();
       await form.getByRole("button", { name: tr(locale, "storefront.applyPrice") }).click();
-      const expectedParam = exp.canonical === "0" ? null : exp.canonical;
+      const expectedParam = Number(exp.canonical) === 0 ? null : String(Number(exp.canonical)); // the app sends the number: 100.50 -> 100.5
       let actualParam: string | null = "(no navigation)";
       try { await expect.poll(() => new URL(page.url()).searchParams.get("minPrice"), { timeout: 3000 }).toBe(expectedParam); actualParam = expectedParam; } catch { actualParam = new URL(page.url()).searchParams.get("minPrice") ?? "(none)"; }
       row(rows, v.id, raw, `minPrice=${expectedParam}`, `minPrice=${actualParam}`);
