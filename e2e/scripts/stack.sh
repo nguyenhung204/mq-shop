@@ -12,7 +12,9 @@ MINIO_IMG='firstfinger/minio:latest-amd64@sha256:264638de8c29d78c482353eeb6c8897
 
 wait_http() { for _ in $(seq 1 120); do c=$(curl -s -o /dev/null -w '%{http_code}' "$1" || true); [ "$c" = "$2" ] && return 0; sleep 1; done; echo "timeout waiting for $1" >&2; return 1; }
 running() { [ "$(docker inspect -f '{{.State.Running}}' "$1" 2>/dev/null || echo false)" = true ]; }
-kill_port() { local p; p=$(lsof -ti:"$1" || true); [ -n "$p" ] && kill $p 2>/dev/null || true; for _ in $(seq 1 20); do lsof -ti:"$1" >/dev/null 2>&1 || return 0; sleep 0.5; done; }
+# Only LISTENING processes: plain `lsof -ti:PORT` also lists every client connected to the port (the Playwright worker and
+# Chromium keep connections to :3005), and killing those closed the browser under a running test.
+kill_port() { local p; p=$(lsof -ti tcp:"$1" -sTCP:LISTEN || true); [ -n "$p" ] && kill $p 2>/dev/null || true; for _ in $(seq 1 20); do lsof -ti tcp:"$1" -sTCP:LISTEN >/dev/null 2>&1 || return 0; sleep 0.5; done; }
 
 infra() {
   running mqe2e-pg    || { docker rm -f mqe2e-pg >/dev/null 2>&1 || true;    docker run -d --name mqe2e-pg -e POSTGRES_USER=e2e -e POSTGRES_PASSWORD=e2e_pw_local -e POSTGRES_DB=postgres -p 55432:5432 postgres:16-alpine >/dev/null; }
