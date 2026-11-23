@@ -17,6 +17,11 @@ import {
 import { api } from "@/lib/api/client";
 import { transferApi } from "@/lib/api/inventory";
 
+// AdminFxRatesPanel reads the role (fee config is CONFIG_FEE, not for ADMIN).
+vi.mock("@/components/providers/AuthProvider", () => ({
+  useAuth: () => ({ hasRole: (r: string) => r === "SUPER_ADMIN" }),
+}));
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
   usePathname: () => "/",

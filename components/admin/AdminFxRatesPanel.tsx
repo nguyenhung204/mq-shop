@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { fxApi, type FxRatesResponse } from "@/lib/api/fx";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useActiveFinanceConfig } from "@/lib/queries/finance";
 import { getErrorMessage } from "@/lib/queries/utils";
@@ -40,7 +41,11 @@ function fxSourceLabel(
 /** Super-admin FX display rates (CONFIG_SYS). Ledger stays TWD. */
 export function AdminFxRatesPanel() {
   const { t, locale } = useLanguage();
-  const { data: activeFee } = useActiveFinanceConfig();
+  const { hasRole } = useAuth();
+  // GET admin/finance/configs/active needs CONFIG_FEE, which the server withholds from ADMIN (who still
+  // edits rates via CONFIG_SYS): do not call it, and do not show a made-up default point value.
+  const canReadFeeConfig = hasRole("SUPER_ADMIN") || hasRole("ACCOUNTANT");
+  const { data: activeFee } = useActiveFinanceConfig({ enabled: canReadFeeConfig });
   const [latest, setLatest] = useState<FxRatesResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -134,11 +139,13 @@ export function AdminFxRatesPanel() {
         <p className="text-xs text-amber-700 dark:text-amber-400 mt-2">
           {t("admin.fx.ledgerNote")}
         </p>
-        <p className="text-sm text-mq-text mt-2">
-          {t("common.onePointUsd", {
-            usd: formatPointUsdValue(activeFee?.pointUsdValue),
-          })}
-        </p>
+        {canReadFeeConfig ? (
+          <p className="text-sm text-mq-text mt-2">
+            {t("common.onePointUsd", {
+              usd: formatPointUsdValue(activeFee?.pointUsdValue),
+            })}
+          </p>
+        ) : null}
       </div>
 
       {loading ? (

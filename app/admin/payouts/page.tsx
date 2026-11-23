@@ -70,7 +70,7 @@ function inPeriod(iso: string, start: string, end: string): boolean {
 
 function PayoutsInner() {
   const { t } = useLanguage();
-  const { user, canMutatePermission, canApprovePermission } = useAuth();
+  const { user, hasRole, canMutatePermission, canApprovePermission } = useAuth();
   const canWritePayout = canMutatePermission("PAYOUT_SELLER");
   const canApprovePayout = canApprovePermission("PAYOUT_SELLER");
   const bounds = monthBounds();
@@ -90,7 +90,9 @@ function PayoutsInner() {
   const shopName = (id: string) =>
     shops.find((s) => s.id === id)?.name ?? t("admin.common.shop");
 
-  const { data: active } = useActiveFinanceConfig();
+  // GET admin/finance/configs/active needs CONFIG_FEE, which the server withholds from ADMIN.
+  const canReadFeeConfig = hasRole("SUPER_ADMIN") || hasRole("ACCOUNTANT");
+  const { data: active } = useActiveFinanceConfig({ enabled: canReadFeeConfig });
 
   const periodStartIso = periodStartDate ? toPeriodStart(periodStartDate) : "";
   const periodEndIso = periodEndDate ? toPeriodEnd(periodEndDate) : "";
@@ -195,28 +197,30 @@ function PayoutsInner() {
       <LedgerTwdNote className="mb-2" />
 
       <div className="space-y-5">
-        <div className="mq-card p-4 space-y-2">
-          <p className="text-xs uppercase tracking-wide text-mq-text-muted">
-            {t("admin.payouts.activeFee")}
-          </p>
-          {active ? (
-            <p className="text-sm">
-              {t("admin.payouts.platformFee")}:{" "}
-              <strong>{formatPercent(active.platformFeePercent)}</strong>
-              {" · "}
-              {t("admin.payouts.commission")}:{" "}
-              <strong>{formatPercent(active.commissionPercent)}</strong>
-              {active.gatewayName ? ` · ${active.gatewayName}` : ""}
+        {canReadFeeConfig ? (
+          <div className="mq-card p-4 space-y-2">
+            <p className="text-xs uppercase tracking-wide text-mq-text-muted">
+              {t("admin.payouts.activeFee")}
             </p>
-          ) : (
-            <p className="text-sm text-mq-text-muted">
-              {t("admin.payouts.noActiveFee")}{" "}
-              <Link href="/admin/finance/configs" className="underline">
-                {t("admin.payouts.openFeeConfig")}
-              </Link>
-            </p>
-          )}
-        </div>
+            {active ? (
+              <p className="text-sm">
+                {t("admin.payouts.platformFee")}:{" "}
+                <strong>{formatPercent(active.platformFeePercent)}</strong>
+                {" · "}
+                {t("admin.payouts.commission")}:{" "}
+                <strong>{formatPercent(active.commissionPercent)}</strong>
+                {active.gatewayName ? ` · ${active.gatewayName}` : ""}
+              </p>
+            ) : (
+              <p className="text-sm text-mq-text-muted">
+                {t("admin.payouts.noActiveFee")}{" "}
+                <Link href="/admin/finance/configs" className="underline">
+                  {t("admin.payouts.openFeeConfig")}
+                </Link>
+              </p>
+            )}
+          </div>
+        ) : null}
 
         {showCreate && canWritePayout && (
           <form className="mq-card p-5 space-y-4" onSubmit={(e) => void onCreate(e)}>
