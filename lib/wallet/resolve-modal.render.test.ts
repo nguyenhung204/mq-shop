@@ -22,9 +22,9 @@ const render = (status: PayoutRequestStatus, payoutGatewayRef?: string | null) =
 const radios = (html: string) => (html.match(/type="radio"/g) ?? []).length;
 
 describe("AdminResolvePayoutModal outcomes (rendered)", () => {
-  it("PROCESSING without gatewayRef offers both outcomes", () => {
-    expect(radios(render("PROCESSING", null))).toBe(2);
-    expect(radios(render("PROCESSING"))).toBe(2);
+  it("PROCESSING without gatewayRef offers only COMPLETED (it is already sent to the bank)", () => {
+    expect(radios(render("PROCESSING", null))).toBe(1);
+    expect(radios(render("PROCESSING"))).toBe(1);
   });
   it("PROCESSING with a gatewayRef offers only COMPLETED", () => {
     expect(radios(render("PROCESSING", "TX1"))).toBe(1);

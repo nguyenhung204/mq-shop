@@ -3068,6 +3068,7 @@
     "walletPayoutPayFailed": "Payout payment failed. Funds were returned to the user's available balance.",
     "walletPayoutProcessUnknown": "Unexpected payout status in the response. Reload the list and check the payout before retrying.",
     "payoutPaidCannotFail": "The gateway already paid this payout, so it cannot be marked as failed. Resolve it as completed.",
+    "payoutSentToBankCannotFail": "This payout was already sent to the bank, so it cannot be marked as failed. Reconcile with the bank first, then resolve it as completed.",
     "walletPayoutResolved": "Payout resolved",
     "walletPayoutAlreadyResolved": "This payout was already resolved; nothing changed.",
     "walletPayoutResolveFailed": "Could not resolve the payout",

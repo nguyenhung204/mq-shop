@@ -3068,6 +3068,7 @@
     "walletPayoutPayFailed": "Chi trả khoản rút thất bại. Số tiền đã được trả về số dư khả dụng của người dùng.",
     "walletPayoutProcessUnknown": "Phản hồi có trạng thái khoản rút không mong đợi. Hãy tải lại danh sách và kiểm tra khoản rút trước khi thử lại.",
     "payoutPaidCannotFail": "Cổng đã chi trả khoản rút này nên không thể đánh dấu thất bại. Hãy xử lý là hoàn tất.",
+    "payoutSentToBankCannotFail": "Khoản rút này đã được gửi sang ngân hàng nên không thể đánh dấu thất bại. Hãy đối soát với ngân hàng trước, rồi xử lý là hoàn tất.",
     "walletPayoutResolved": "Đã xử lý khoản rút",
     "walletPayoutAlreadyResolved": "Khoản rút này đã được xử lý trước đó; không có thay đổi.",
     "walletPayoutResolveFailed": "Không thể xử lý khoản rút",

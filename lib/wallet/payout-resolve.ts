@@ -14,15 +14,17 @@ export function canResolvePayoutStatus(status: PayoutRequestStatus): boolean {
 }
 
 /**
- * Outcomes the API accepts: a payout the gateway already paid (PAID_UNRECONCILED
- * or any gatewayRef) can only be COMPLETED (FAILED -> 409 PAYOUT_PAID_CANNOT_FAIL).
+ * Outcomes the API accepts. A payout that was paid (PAID_UNRECONCILED or any gatewayRef) or is already sent to the
+ * bank (PROCESSING) can only be COMPLETED: FAILED -> 409 PAYOUT_PAID_CANNOT_FAIL / PAYOUT_SENT_TO_BANK_CANNOT_FAIL
+ * (the points would be refunded while the bank may still pay). A PROCESSING row the bank confirms was never sent is
+ * closed by the manual SQL procedure in mq_backend/docs/deployment.md, not from this screen.
+ * The parameters are kept for the callers; every resolvable status now yields COMPLETED only.
  */
 export function allowedResolveOutcomes(
-  status: PayoutRequestStatus,
-  gatewayRef?: string | null,
+  _status: PayoutRequestStatus,
+  _gatewayRef?: string | null,
 ): ResolveOutcome[] {
-  const paid = status === "PAID_UNRECONCILED" || Boolean(gatewayRef?.trim());
-  return paid ? ["COMPLETED"] : ["COMPLETED", "FAILED"];
+  return ["COMPLETED"];
 }
 
 /**
