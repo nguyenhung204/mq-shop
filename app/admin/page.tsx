@@ -119,7 +119,7 @@ const cards: {
     href: "/admin/mlm",
     navKey: "mlm",
     permissions: ["CONFIG_MLM", "VIEW_MLM_TREE", "VIEW_MLM_COMSN"],
-    roles: ["SUPER_ADMIN", "ACCOUNTANT"],
+    roles: ["SUPER_ADMIN", "ACCOUNTANT", "ADMIN"],
     icon: Network,
   },
   {

@@ -112,3 +112,13 @@ describe("resolveNotificationRoute dividend notices (C5)", () => {
     for (const r of ["BUYER", "SELLER", "CS", "WAREHOUSE"]) expect(route("DIVIDEND_SETTLEMENT_FAILED", [r], { quarter: "2026Q4" }), r).toBeNull();
   });
 });
+
+describe("resolveNotificationRoute MLM admin routes", () => {
+  it("ADMIN, SUPER_ADMIN and ACCOUNTANT can open /admin/mlm (page guard admits all three); others get no link", () => {
+    for (const roles of [["ADMIN"], ["SUPER_ADMIN"], ["ACCOUNTANT"]] as const) {
+      expect(resolveNotificationRoute({ type: "COMMISSION_JOB_FAILED" }, { roles: [...roles] })).toBe("/admin/mlm");
+      expect(resolveNotificationRoute({ type: "MLM_REFERRAL_RATE_UPDATED" }, { roles: [...roles] })).toBe("/admin/mlm");
+    }
+    expect(resolveNotificationRoute({ type: "COMMISSION_JOB_FAILED" }, { roles: ["CS"] })).toBeNull();
+  });
+});

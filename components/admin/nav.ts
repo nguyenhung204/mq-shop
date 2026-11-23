@@ -204,7 +204,7 @@ export const adminNavItems: AdminNavItem[] = [
     labelKey: "admin.nav.mlm",
     icon: Network,
     permissions: ["CONFIG_MLM", "APPROVE_MLM", "VIEW_MLM_TREE"],
-    roles: ["SUPER_ADMIN", "ACCOUNTANT"],
+    roles: ["SUPER_ADMIN", "ACCOUNTANT", "ADMIN"],
     group: "finance_mlm",
   },
   {

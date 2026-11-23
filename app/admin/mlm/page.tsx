@@ -478,8 +478,11 @@ function MlmAdminInner() {
     hasRole("ACCOUNTANT") ||
     hasRole("ADMIN");
 
+  // GET admin/mlm/ranks needs CONFIG_MLM, which the server withholds from ADMIN (ADMIN only has the
+  // view-only overview/tree), so ADMIN must not call it (it would 403).
+  const canReadRanks = canMutateConfig || hasRole("SUPER_ADMIN") || hasRole("ACCOUNTANT");
   const { data: ranks, isLoading, isError, error } = useMlmRanks({
-    enabled: canMutateConfig || canViewFunds,
+    enabled: canReadRanks,
   });
   const ranksByNumber = useMemo(() => {
     const map = new Map<number, MlmRankConfig>();
@@ -1819,7 +1822,7 @@ function MlmAdminInner() {
 export default function AdminMlmPage() {
   return (
     <AuthGuard
-      roles={["SUPER_ADMIN", "ACCOUNTANT"]}
+      roles={["SUPER_ADMIN", "ACCOUNTANT", "ADMIN"]}
       permissions={["CONFIG_MLM", "APPROVE_MLM", "VIEW_MLM_TREE"]}
     >
       <MlmAdminInner />
