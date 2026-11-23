@@ -33,12 +33,9 @@ export function convertToTwd(
 }
 
 export function getFxDecimals(currency: string): number {
-  if (
-    currency === "VND" ||
-    currency === "TWD" ||
-    currency === "JPY" ||
-    currency === "KRW"
-  ) {
+  // TWD keeps its cents (a seller may price 2350.50 and the ledger stores it): displayed with 2 decimals only when
+  // the amount has cents (see formatMoneyForCurrency), and the money inputs accept 2 decimals.
+  if (currency === "VND" || currency === "JPY" || currency === "KRW") {
     return 0;
   }
   return 2;

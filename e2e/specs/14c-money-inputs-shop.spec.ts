@@ -213,7 +213,7 @@ test("promotion PERCENT 100 is the top of the range, 100.01 is refused (stored e
 
 // ---------------------------------------------------------------------------------------------------------------------
 // CurrencyInput cells: SKU selling price (seller /seller/inventory "Add SKU") and storefront price filter (/shop).
-//  Both use <CurrencyInput currency="TWD"> = 0 decimals, min 0 (no negatives), zero allowed, SKU max 9999999999.99. The error is shown on blur
+//  Both use <CurrencyInput currency="TWD"> = 2 decimals (TWD keeps its cents), min 0 (no negatives), zero allowed, SKU max 9999999999.99. The error is shown on blur
 //  under the field (role=alert) and the typed text must stay. Documented verdicts (TEST-GUIDE 8.1/8.2): "1.234" -> AMBIGUOUS_FORMAT on en/zh-TW,
 //  100.5 / 100.555 / 0.001 -> decimals error, NT$100 / 12abc / abc / 1e3 / +5 -> invalid chars, "1 000" -> invalid, fullwidth 123.45 -> normalised then
 //  TOO_MANY_DECIMALS, 1,234 (en) / 1.234 (vi) -> 1234.
@@ -229,8 +229,8 @@ function blankMsg(locale: Locale, id: string, actualMsg: string, strict: string)
   return actualMsg === "(no message)" || actualMsg === tr(locale, "moneyInput.empty") ? actualMsg : tr(locale, "moneyInput.empty");
 }
 
-const CURRENCY0: MoneyProfile = { maxDec: 0, allowZero: true, allowNeg: false, max: 9999999999.99 };
-const FILTER0: MoneyProfile = { maxDec: 0, allowZero: true, allowNeg: false };
+const CURRENCY0: MoneyProfile = { maxDec: 2, allowZero: true, allowNeg: false, max: 9999999999.99 };
+const FILTER0: MoneyProfile = { maxDec: 2, allowZero: true, allowNeg: false };
 
 /** Blur display the product should show for a canonical integer: grouped by the language. */
 const blurDisplay = (canonical: string, locale: Locale) => canonical.replace(/\B(?=(\d{3})+(?!\d))/g, locale === "vi" ? "." : ",");
@@ -304,7 +304,7 @@ for (const locale of LOCALES) {
     const listing = watchRequests(page, "GET", /minPrice=|maxPrice=/);
     await page.goto("/shop");
     const form = page.locator("form").filter({ has: page.getByPlaceholder(tr(locale, "storefront.minPrice")) });
-    await expect(form.getByText("TWD", { exact: true })).toBeVisible(); // display currency pinned: TWD = 0 decimals
+    await expect(form.getByText("TWD", { exact: true })).toBeVisible(); // display currency pinned: TWD (2 decimals input)
     const input = form.getByPlaceholder(tr(locale, "storefront.minPrice"));
     const rows: ResultRow[] = [];
     for (const v of VALUES) {

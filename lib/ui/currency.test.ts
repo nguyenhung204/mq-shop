@@ -32,9 +32,9 @@ describe("currency utilities", () => {
   });
 
   describe("getCurrencyDecimals", () => {
-    it("returns 0 for VND and TWD", () => {
+    it("returns 0 for VND, JPY, KRW and 2 for TWD (TWD keeps its cents)", () => {
       expect(getCurrencyDecimals("VND")).toBe(0);
-      expect(getCurrencyDecimals("TWD")).toBe(0);
+      expect(getCurrencyDecimals("TWD")).toBe(2);
       expect(getCurrencyDecimals("JPY")).toBe(0);
       expect(getCurrencyDecimals("KRW")).toBe(0);
     });

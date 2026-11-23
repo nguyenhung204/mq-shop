@@ -88,7 +88,7 @@ describe("hardened money forms (rendered)", () => {
       createElement(CurrencyInput, {
         value: 1000,
         onChange: () => {},
-        currency: "TWD",
+        currency: "VND",
         error: "Invalid format",
       }),
     );
