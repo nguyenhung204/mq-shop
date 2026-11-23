@@ -123,6 +123,8 @@ export type DividendReport = {
   }>;
   remainder: { label: string; cents: number; amount: string };
   excluded: { pendingRefundOrders: number };
+  /** Projection for orders still inside the return window; display only, never part of the totals above. */
+  provisional?: { orderCount: number; salesBaseCents: number; extraPoolCents: number; poolWithProvisionalCents: number; returnWindowDays: number };
   /** Informational only: NOT applied to the pool. */
   refundsAfterLock?: { refundCents: number; refund: string; orderCount: number; appliedToPool: boolean };
 };

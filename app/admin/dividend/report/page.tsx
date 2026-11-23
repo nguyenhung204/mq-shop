@@ -173,6 +173,17 @@ function ReportInner() {
               {view.pendingRefundOrders > 0 ? (
                 <p>{t("admin.dividend.report.pendingRefunds", { count: String(view.pendingRefundOrders) })}</p>
               ) : null}
+              {view.provisional ? (
+                <p className="rounded-lg border border-mq-border bg-mq-surface-subtle p-3" data-row="provisional">
+                  {t("admin.dividend.report.provisional", {
+                    count: String(view.provisional.orderCount),
+                    days: String(view.provisional.windowDays),
+                    base: view.provisional.salesBase,
+                    extra: view.provisional.extraPool,
+                    total: view.provisional.poolWith,
+                  })}
+                </p>
+              ) : null}
               {view.refundsAfterLock ? (
                 <p className="rounded-lg border border-mq-border bg-mq-surface-subtle p-3" data-row="refunds-after-lock">
                   {t("admin.dividend.report.refundsAfterLock", {

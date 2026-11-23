@@ -35,6 +35,15 @@ describe("reportState", () => {
 });
 
 describe("buildReportRows", () => {
+  it("shows the provisional reward apart, only when an order is waiting", () => {
+    expect(buildReportRows(report()).provisional).toBeNull();
+    const v = buildReportRows(
+      report({ provisional: { orderCount: 2, salesBaseCents: 190000, extraPoolCents: 19000, poolWithProvisionalCents: 119006, returnWindowDays: 7 } }),
+    );
+    expect(v.provisional).toEqual({ orderCount: 2, salesBase: "1,900.00 TWD", extraPool: "190.00 TWD", poolWith: "1,190.06 TWD", windowDays: 7 });
+    expect(v.totals.pool).toBe("1,000.06 TWD"); // the real figures do not move
+  });
+
   it("formats cents by integer split and shares as whole NTD", () => {
     const v = buildReportRows(report());
     expect(v.intervals[0]).toMatchObject({ ratePercent: "10.00%", salesBase: "10,000.05 TWD", pool: "1,000.00 TWD", isDefaultRate: true });

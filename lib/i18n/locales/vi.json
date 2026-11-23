@@ -2379,6 +2379,7 @@
         "remainderLabel": "khoản thu từ tính toán chênh lệch",
         "remainderHint": "Phần còn lại sau khi làm tròn xuống từng phần chia thành NTD nguyên. Hiển thị thành một dòng riêng, không bị bỏ đi.",
         "pendingRefunds": "{count} đơn đang chờ hoàn tiền không được tính vào cơ sở doanh số.",
+        "provisional": "Dự kiến, chưa chốt: {count} đơn đã giao còn trong {days} ngày đổi trả, doanh số {base}. Nếu tất cả đủ điều kiện, quỹ tăng thêm {extra} (tổng {total}). Số này chỉ để tham khảo, KHÔNG nằm trong các số liệu ở trên và không được ghi vào ví hay quỹ.",
         "refundsAfterLock": "Chỉ để tham khảo: các khoản hoàn tiền {amount} ({count} đơn) hoàn tất sau khi quý khóa. KHÔNG được áp dụng vào quỹ này."
       }
     }

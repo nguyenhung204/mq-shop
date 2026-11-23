@@ -27,6 +27,8 @@ export type ReportRows = {
   /** Informational only (appliedToPool is false on the server); null when there is nothing to show. */
   refundsAfterLock: { amount: string; orderCount: number } | null;
   pendingRefundOrders: number;
+  /** Provisional reward (thuong du kien); null when no order is waiting. Never added to the totals. */
+  provisional: { orderCount: number; salesBase: string; extraPool: string; poolWith: string; windowDays: number } | null;
 };
 
 /** Format every money field from integer cents / whole NTD; no arithmetic on amounts. */
@@ -60,5 +62,15 @@ export function buildReportRows(r: DividendReport, locale = "en-US"): ReportRows
     refundsAfterLock:
       late && late.refundCents > 0 ? { amount: money(late.refundCents), orderCount: late.orderCount } : null,
     pendingRefundOrders: r.excluded.pendingRefundOrders,
+    provisional:
+      r.provisional && r.provisional.orderCount > 0
+        ? {
+            orderCount: r.provisional.orderCount,
+            salesBase: money(r.provisional.salesBaseCents),
+            extraPool: money(r.provisional.extraPoolCents),
+            poolWith: money(r.provisional.poolWithProvisionalCents),
+            windowDays: r.provisional.returnWindowDays,
+          }
+        : null,
   };
 }

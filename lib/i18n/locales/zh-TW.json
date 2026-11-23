@@ -2379,6 +2379,7 @@
         "remainderLabel": "差額計算收入",
         "remainderHint": "每筆分配額無條件捨去為整數 NTD 後的剩餘金額，單獨列示，不會被捨棄。",
         "pendingRefunds": "{count} 筆待退款訂單未計入銷售基數。",
+        "provisional": "預估，尚未確定：{count} 筆已出貨訂單仍在 {days} 天退貨期內，銷售基數 {base}。若全數符合資格，基金將增加 {extra}（合計 {total}）。僅供參考：不包含在上方數字內，也不會寫入錢包或基金。",
         "refundsAfterLock": "僅供參考：季度鎖定後完成的退款 {amount}（{count} 筆訂單），並未套用於此股利池。"
       }
     }

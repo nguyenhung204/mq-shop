@@ -2379,6 +2379,7 @@
         "remainderLabel": "Income from difference calculation",
         "remainderHint": "What is left after rounding each share down to a whole NTD. It is shown as its own line and is not dropped.",
         "pendingRefunds": "{count} orders with a pending refund are left out of the sales base.",
+        "provisional": "Provisional, not final: {count} delivered orders still inside the {days}-day return window, sales base {base}. If all of them qualify, the fund grows by {extra} (total {total}). For information only: NOT part of the figures above and never written to a wallet or the fund.",
         "refundsAfterLock": "For information only: refunds of {amount} ({count} orders) were completed after the quarter locked. They are NOT applied to this pool."
       }
     }
