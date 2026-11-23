@@ -224,23 +224,34 @@ export interface ReferralSetup {
  * Defaults: unitPrice 100000 TWD (+ 5 shipping) => subtotal 100000 >= the 2000 referral minimum, commission 10000 TWD,
  * 10000 * 0.031 / 0.99999 = 310.00 points. The RMA window is re-opened afterwards (see SQL comments) so a refund can still be requested.
  */
-export async function createCreditedReferralOrder(opts: { unitPrice?: string; quantity?: number; referrerRank?: number } = {}): Promise<ReferralSetup> {
+/** Referrer (seller, rank 6) + referred buyer + DELIVERED order, not yet past the 7-day hold (no commission row yet). */
+export async function createDeliveredReferralOrder(opts: { unitPrice?: string; quantity?: number; referrerRank?: number } = {}): Promise<{ referrer: TestSeller; buyer: TestUser; order: any }> {
   const referrer = await createSellerWithSku({ unitPrice: opts.unitPrice, prefix: "ref" });
   await setRank(referrer.user.id, opts.referrerRank ?? 6);
   const buyer = await createUser({ prefix: "buyer", referrerCode: await referralCodeOf(referrer.user) });
   const order = await placeOrder(buyer, referrer, opts.quantity ?? 1);
   await deliverOrder(referrer, order.id);
-  // SQL: no API/time-travel exists for the 7-day RMA window. Push paid_at/delivered_at 8 days back so the order is eligible.
-  await sql(`UPDATE orders SET delivered_at = now() - interval '8 days', paid_at = now() - interval '9 days' WHERE id = $1`, [order.id]);
-  // SERVICE: eligibility is only run by an hourly cron (no HTTP route): call the same service method through the helper process.
-  const r = await runEligibility(order.id);
+  return { referrer, buyer, order };
+}
+
+/** Push an order past the 7-day hold and run the eligibility step (referral row is created). Does NOT re-open the RMA window. */
+export async function makeOrderEligible(orderId: string): Promise<{ marked: boolean; ledgerRow: boolean }> {
+  // SQL: no API/time-travel exists for the 7-day hold. Push paid_at/delivered_at 8/9 days back so the order is eligible.
+  await sql(`UPDATE orders SET delivered_at = now() - interval '8 days', paid_at = now() - interval '9 days' WHERE id = $1`, [orderId]);
+  // SERVICE: eligibility is only run by an hourly cron (no HTTP route): same service method through the helper process.
+  return runEligibility(orderId);
+}
+
+export async function createCreditedReferralOrder(opts: { unitPrice?: string; quantity?: number; referrerRank?: number; expectStatus?: "CREDITED" | "PENDING" } = {}): Promise<ReferralSetup> {
+  const { referrer, buyer, order } = await createDeliveredReferralOrder(opts);
+  const r = await makeOrderEligible(order.id);
   if (!r.marked || !r.ledgerRow) throw new Error(`eligibility did not credit referral: ${JSON.stringify(r)}`);
   // SQL: a buyer can only open an RMA within 7 days of delivery, but the commission is only paid after 7 days. In production the
   // refund therefore normally precedes the credit; to test "clawback of an already credited commission" re-open the window.
   await sql(`UPDATE orders SET delivered_at = now() - interval '1 day' WHERE id = $1`, [order.id]);
   const rows = await commissionRowsOfOrder(order.id);
   const ref = rows.find((x) => x.type === "REFERRAL");
-  if (!ref || ref.status !== "CREDITED") throw new Error(`referral row not CREDITED: ${JSON.stringify(rows)}`);
+  if (!ref || ref.status !== (opts.expectStatus ?? "CREDITED")) throw new Error(`referral row not ${opts.expectStatus ?? "CREDITED"}: ${JSON.stringify(rows)}`);
   return { referrer, buyer, order: await getOrder(buyer.api, order.id), creditedCents: decimalToCents(String(ref.meta.points)) };
 }
 

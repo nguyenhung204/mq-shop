@@ -55,6 +55,37 @@ describe("apiRequest 401 handling on public auth routes", () => {
     expect(getErrorMessage(err, "x", "zh-TW")).toBe("電子郵件或密碼不正確。");
   });
 
+  // Boundary of the public-route pattern: anything that is NOT a public pre-session route must keep the refresh path.
+  it.each([
+    "/auth/logout",
+    "/auth/loginXYZ",
+    "/auth/register-admin",
+    "/auth/verify-otp",
+    "/auth/sub-account",
+    "/x?next=/auth/login",
+    "/orders?redirect=/auth/login",
+  ])("401 on %s is NOT treated as a public route: it still tries the refresh first", async (path) => {
+    fetchMock
+      .mockResolvedValueOnce(jsonRes(401, { message: "Unauthorized" }))
+      .mockResolvedValueOnce(jsonRes(401, {}));
+    await rejection(apiRequest(path, { method: "POST", body: {} }));
+    expect(fetchMock.mock.calls.length).toBeGreaterThanOrEqual(2);
+    expect(String(fetchMock.mock.calls[1]![0])).toContain("/auth/refresh");
+  });
+
+  it.each([
+    "/auth/login?x=1",
+    "/auth/login/",
+    "auth/login",
+    "/auth/sub-account/decline",
+    "http://localhost:3005/api/v1/auth/login",
+  ])("401 on %s is a public route: no refresh call", async (path) => {
+    fetchMock.mockResolvedValueOnce(jsonRes(401, invalidCreds));
+    const err = await rejection(apiRequest(path, { method: "POST", body: {} }));
+    expect(err.code).toBe("INVALID_CREDENTIALS");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it("an ordinary protected route still refreshes then reports UNAUTHORIZED", async () => {
     fetchMock
       .mockResolvedValueOnce(jsonRes(401, { message: "Unauthorized" }))
