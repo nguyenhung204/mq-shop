@@ -21,7 +21,8 @@ import { discoverIds, fillRoute, listAppRoutes, NIL_UUID, settleAfterGoto, viewe
  *    (AuthGuard: allowed = roles ? roleOk : permOk). A refused role is sent to "/" (client-side router.replace).
  *  - Effective allowed roles = LAYOUT roles ∩ PAGE roles. /admin layout = the 5 staff roles; /seller layout = SELLER ONLY
  *    (so WAREHOUSE/CS are refused on /seller/inventory|rma|orders although those pages list them: dead code, not a leak).
- *  - Alias pages that only redirect (fx-rates, notifications/new|catalog, super-admin) use the target page's guard.
+ *  - Alias pages that only redirect (notifications/new|catalog, super-admin) use the target page's guard.
+ *    /admin/fx-rates is NOT an alias: it is its own page for ADMIN + SUPER_ADMIN (server: CONFIG_SYS ADMIN=P, ACCOUNTANT=N).
  *  - /admin/rank-tree has only a soft gate: CS/WAREHOUSE stay on the page but no `mlm/ranks` request is made.
  *  - Where the table is ambiguous, the matching API call decides (see the API matrix further down).
  */
@@ -48,11 +49,11 @@ const UI_MATRIX: Record<string, UiRule> = {
   "/admin/dividend/slots": { allow: [AC, AD, SA] },
   "/admin/dsar": { allow: [AD, SA] },
   "/admin/finance/configs": { allow: [AC, SA] }, // ADMIN has no CONFIG_FEE (M1)
-  "/admin/fx-rates": { allow: [AC, SA], landing: "/admin/finance/configs" },
+  "/admin/fx-rates": { allow: [AD, SA] }, // CONFIG_SYS: ADMIN=P, ACCOUNTANT=N (own page, no redirect)
   "/admin/inventory": { allow: [WH, AD, SA] },
   "/admin/landing-cost": { allow: [AC, AD, SA] },
   "/admin/marketing": { allow: [AD, SA] },
-  "/admin/mlm": { allow: [AC, SA] }, // ADMIN has no CONFIG_MLM (M1)
+  "/admin/mlm": { allow: [AC, AD, SA] }, // ADMIN: read-only overview + tree (VIEW_MLM_COMSN/TREE=A); config blocks hidden (CONFIG_MLM=N)
   "/admin/mlm/commissions/report": { allow: [AC, AD, SA] },
   "/admin/notifications": { allow: [AD, SA] },
   "/admin/notifications/catalog": { allow: [AD, SA], landing: "/admin/notifications" },
@@ -132,7 +133,7 @@ test.describe("B. guest (no session)", () => {
     test(`GUEST ${route} -> 307 /my-account?next=`, async () => {
       const ctx = await request.newContext({ baseURL: WEB, maxRedirects: 0 });
       const url = fillRoute(route, { values: new Proxy({}, { get: (_t, k) => (k === "quarter" ? "2026Q4" : NIL_UUID) }) as any, fallback: [] });
-      // alias pages (fx-rates, notifications/new|catalog) redirect to their target first (next.config / redirect()); follow by hand
+      // alias pages (notifications/new|catalog) redirect to their target first (next.config / redirect()); follow by hand
       let target = url;
       let loc = new URL(target, WEB);
       for (let hop = 0; hop < 3 && loc.pathname !== "/my-account"; hop++) {
@@ -203,10 +204,15 @@ test.describe("C. role x route (UI guard)", () => {
 // /admin/audit-logs was shown to ACCOUNTANT and /admin/landing-cost to CS although the page refuses them.
 // The server does grant VIEW_AUDIT_LOG (ACCOUNTANT) and CALC_LAND_COST (CS); opening those pages is the owner's call.
 const MENU_MUST_NOT_SHOW: Record<string, string[]> = {
-  ACCOUNTANT: ["/admin/audit-logs"],
+  ACCOUNTANT: ["/admin/audit-logs", "/admin/fx-rates"],
   CS: ["/admin/landing-cost"],
-  ADMIN: ["/admin/mlm", "/admin/finance/configs"],
+  ADMIN: ["/admin/finance/configs"],
   WAREHOUSE: ["/admin/products-view", "/admin/transfers"],
+};
+const MENU_MUST_SHOW: Record<string, string[]> = {
+  ADMIN: ["/admin/mlm", "/admin/fx-rates"],
+  ACCOUNTANT: ["/admin/mlm"],
+  SUPER_ADMIN: ["/admin/mlm", "/admin/fx-rates"],
 };
 test.describe("D. admin sidebar links vs guards", () => {
   for (const role of STAFF) {
@@ -225,6 +231,7 @@ test.describe("D. admin sidebar links vs guards", () => {
       }
       expect(bad, "every sidebar link must be admitted by its page guard").toEqual([]);
       for (const hidden of MENU_MUST_NOT_SHOW[role] ?? []) expect(hrefs, `${role} must not see ${hidden} in the sidebar`).not.toContain(hidden);
+      for (const shown of MENU_MUST_SHOW[role] ?? []) expect(hrefs, `${role} must see ${shown} in the sidebar`).toContain(shown);
       await context.close();
     });
   }
@@ -235,15 +242,30 @@ test.describe("D. admin sidebar links vs guards", () => {
 //    Decision: the server RBAC matrix is right; the UI follows. Previously pinned as known issues (all HTTP 403):
 //    - WAREHOUSE /admin/products-view -> GET /products 403
 //    - WAREHOUSE /admin/transfers -> GET /inventory/warehouses 403
-//    - ADMIN /admin/mlm -> GET /admin/mlm/ranks 403 (CONFIG_MLM: ADMIN=N)
+//    - ADMIN /admin/mlm -> GET /admin/mlm/ranks 403 (CONFIG_MLM: ADMIN=N). Fixed differently: ADMIN keeps the page (overview/tree, VIEW_MLM_*=A) and the page no longer calls ranks for ADMIN (see the ADMIN /admin/mlm test below).
 //    - ADMIN /admin/finance/configs -> GET /admin/finance/configs[/active] 403 (CONFIG_FEE: ADMIN=N)
 //    Now: the matrix refuses the role, a direct visit lands on "/", the page never calls its API, and the sidebar has no link.
 // =====================================================================================================
 test.describe("G. refused page vs its own API", () => {
+  test("ADMIN /admin/mlm: admitted, shows the overview, never asks for ranks, no 403", async ({ browser }) => {
+    expect(ruleOf("/admin/mlm")!.allow).toContain(AD);
+    const { context, page } = await viewerContext(browser, AD);
+    const ranks: string[] = [];
+    const denied: string[] = [];
+    page.on("response", (r) => {
+      if (/:3005\/api\/v1\/admin\/mlm\/ranks/.test(r.url())) ranks.push(r.url());
+      if (r.url().includes(":3005") && r.status() === 403) denied.push(`${r.request().method()} ${new URL(r.url()).pathname}`);
+    });
+    await page.goto("/admin/mlm", { waitUntil: "domcontentloaded" });
+    await settleAfterGoto(page);
+    expect(new URL(page.url()).pathname).toBe("/admin/mlm");
+    expect(ranks, "ADMIN must not call GET /admin/mlm/ranks (CONFIG_MLM=N)").toEqual([]);
+    expect(denied, "no 403 from the page").toEqual([]);
+    await context.close();
+  });
   const PAIRS: Array<[Role, string, RegExp]> = [
     [WH, "/admin/products-view", /:3005\/api\/v1\/products\?/],
     [WH, "/admin/transfers", /:3005\/api\/v1\/inventory\/warehouses/],
-    [AD, "/admin/mlm", /:3005\/api\/v1\/admin\/mlm\/ranks/],
     [AD, "/admin/finance/configs", /:3005\/api\/v1\/admin\/finance\/configs/],
   ];
   for (const [role, route, primary] of PAIRS) {

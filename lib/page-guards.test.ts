@@ -123,7 +123,7 @@ describe("page role gates (real pages rendered per role)", () => {
 // they must get the guard placeholder (which redirects to "/"), never the page body with a 403.
 describe("M1 refused roles get the guard, not an empty page with a 403", () => {
   const refused: Array<{ path: string; roles: string[] }> = [
-    { path: "@/app/admin/mlm/page", roles: ["ADMIN", "CS", "WAREHOUSE"] },
+    { path: "@/app/admin/mlm/page", roles: ["CS", "WAREHOUSE"] },
     { path: "@/app/admin/finance/configs/page", roles: ["ADMIN", "CS", "WAREHOUSE"] },
     { path: "@/app/admin/products-view/page", roles: ["WAREHOUSE", "CS", "ACCOUNTANT"] },
     { path: "@/app/admin/transfers/page", roles: ["WAREHOUSE", "CS", "ACCOUNTANT"] },
@@ -135,6 +135,26 @@ describe("M1 refused roles get the guard, not an empty page with a 403", () => {
       for (const role of r.roles) expect(allowed(await render(r.path, [role])), `${r.path} as ${role}`).toBe(false);
     });
   }
+});
+
+// FX rates page (server: CONFIG_SYS ADMIN=P, SUPER_ADMIN=A, ACCOUNTANT/CS/WAREHOUSE=N). The panel needs a data layer,
+// so it is stubbed: what is under test is the guard.
+vi.mock("@/components/admin/AdminFxRatesPanel", () => ({ AdminFxRatesPanel: () => createElement("div", null, "FX-PANEL-BODY") }));
+describe("/admin/fx-rates role gate (real page, real guard)", () => {
+  it("ADMIN and SUPER_ADMIN get the panel", async () => {
+    for (const role of ["ADMIN", "SUPER_ADMIN"]) {
+      const html = await render("@/app/admin/fx-rates/page", [role]);
+      expect(allowed(html), role).toBe(true);
+      expect(html, role).toContain("FX-PANEL-BODY");
+    }
+  });
+  it("ACCOUNTANT, CS, WAREHOUSE are refused and never see the panel", async () => {
+    for (const role of ["ACCOUNTANT", "CS", "WAREHOUSE"]) {
+      const html = await render("@/app/admin/fx-rates/page", [role]);
+      expect(allowed(html), role).toBe(false);
+      expect(html, role).not.toContain("FX-PANEL-BODY");
+    }
+  });
 });
 
 describe("a malformed quarter segment is a not-found state, not a crash", () => {
