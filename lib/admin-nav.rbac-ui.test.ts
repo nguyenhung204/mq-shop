@@ -71,6 +71,10 @@ describe("FX rates stay reachable for ADMIN (server grants CONFIG_SYS to ADMIN, 
     expect(guardRoles(src)?.slice().sort()).toEqual(["ADMIN", "SUPER_ADMIN"]);
     expect(navRoles("/admin/fx-rates")).toEqual(["ADMIN", "SUPER_ADMIN"]);
   });
+  it("next.config.ts does not redirect /admin/fx-rates away (a redirect there shadows the page; found by E2E spec 15)", () => {
+    const cfg = readFileSync(path.join(root, "next.config.ts"), "utf8");
+    expect(cfg).not.toMatch(/source:\s*["']\/admin\/fx-rates["']/);
+  });
 });
 
 describe("ADMIN on /admin/mlm: read-only blocks only (server: VIEW_MLM_COMSN/TREE = A, CONFIG_MLM = N)", () => {
