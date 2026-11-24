@@ -3743,7 +3743,7 @@
     "q1": "Chính sách đổi trả như thế nào?",
     "a1": "Chúng tôi hỗ trợ đổi trả miễn phí trong 14 ngày kể từ ngày giao hàng. Sản phẩm phải chưa qua sử dụng và còn nguyên bao bì. Liên hệ đội hỗ trợ để bắt đầu quy trình đổi trả.",
     "q2": "Thời gian vận chuyển mất bao lâu?",
-    "a2": "Vận chuyển tiêu chuẩn thường 3–5 ngày làm việc. Phí ship báo tại checkout bằng TWD (stub hiện tại NT$5). Freeship khi có khuyến mãi miễn phí vận chuyển.",
+    "a2": "Vận chuyển tiêu chuẩn thường 3–5 ngày làm việc. Phí ship báo tại checkout bằng TWD. Freeship khi có khuyến mãi miễn phí vận chuyển.",
     "q3": "Có giao hàng quốc tế không?",
     "a3": "Có, chúng tôi giao đến hơn 40 quốc gia. Phí vận chuyển quốc tế và thời gian giao hàng khác nhau tuỳ theo điểm đến.",
     "q4": "Làm sao để theo dõi đơn hàng?",
@@ -3827,7 +3827,7 @@
     "detailsLabel": "Chi tiết",
     "detailsContent": "Chất liệu: Cao cấp. Nguồn gốc: Thu mua có đạo đức. Bảo hành: 1 năm từ nhà sản xuất cho sản phẩm công nghệ. Bảo quản: Xem trang sản phẩm.",
     "shippingLabel": "Vận chuyển",
-    "shippingContent": "Tiêu chuẩn: thường 3–5 ngày. Phí từ shipping-quote (stub hiện tại NT$5, TWD). Freeship khi có promo free-ship. Phí quốc tế có thể khác.",
+    "shippingContent": "Tiêu chuẩn: thường 3–5 ngày. Phí ship được báo tại checkout bằng TWD. Freeship khi có promo free-ship. Phí quốc tế có thể khác.",
     "reviewsLabel": "Đánh giá",
     "reviewsContent": "Khách hàng yêu thích MQ. Đánh giá trung bình: 4.8/5 sao trên hơn 2,000 đánh giá. \"Trải nghiệm mua sắm online tuyệt vời nhất.\" — Người mua đã xác minh"
   },

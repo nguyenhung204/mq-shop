@@ -3743,7 +3743,7 @@
     "q1": "What is your return policy?",
     "a1": "We offer hassle-free returns within 14 days of delivery. Items must be unused and in original packaging. Contact our support team to initiate a return.",
     "q2": "How long does shipping take?",
-    "a2": "Standard shipping usually takes 3–5 business days. The fee is quoted at checkout in TWD (flat stub NT$5 today). Free shipping applies when a free-ship promotion is active.",
+    "a2": "Standard shipping usually takes 3–5 business days. The fee is quoted at checkout in TWD. Free shipping applies when a free-ship promotion is active.",
     "q3": "Do you ship internationally?",
     "a3": "Yes, we ship to over 40 countries worldwide. International shipping rates and delivery times vary by destination.",
     "q4": "How can I track my order?",
@@ -3827,7 +3827,7 @@
     "detailsLabel": "Details",
     "detailsContent": "Materials: Premium grade. Origin: Ethically sourced. Warranty: 1 year manufacturer warranty on all tech products. Care: See individual product pages.",
     "shippingLabel": "Shipping",
-    "shippingContent": "Standard: typically 3–5 business days. Fee from shipping-quote (current stub NT$5, TWD). Free shipping when a free-ship promotion is active. International rates may vary.",
+    "shippingContent": "Standard: typically 3–5 business days. The fee is quoted at checkout in TWD. Free shipping when a free-ship promotion is active. International rates may vary.",
     "reviewsLabel": "Reviews",
     "reviewsContent": "Our customers love MQ. Average rating: 4.8/5 stars across 2,000+ reviews. \"Best online shopping experience I've had.\" — Verified Buyer"
   },
