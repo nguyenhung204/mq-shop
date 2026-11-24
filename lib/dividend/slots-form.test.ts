@@ -78,9 +78,16 @@ describe("validateTransfer", () => {
     expect(validateTransfer({ ...base, slots: "5" }, ctx()).ok).toBe(true);
     expect(codes(validateTransfer({ ...base, slots: "6" }, ctx()))).toEqual(["slots:insufficient"]);
   });
-  it("unknown source holds nothing; expiring slots cannot move", () => {
+  it("unknown source holds nothing", () => {
     expect(codes(validateTransfer({ ...base, fromUserId: B, toUserId: A }, ctx()))).toEqual(["slots:insufficient"]);
-    expect(codes(validateTransfer(base, ctx({ holdings: [holding(A, 5, "2027-03-01T00:00:00.000Z")] })))).toEqual(["slots:expiring"]);
+  });
+  it("expiring slots move with their expiry: to an empty account or one with the same expiry; a different expiry is refused", () => {
+    const E = "2027-03-01T00:00:00.000Z";
+    expect(validateTransfer(base, ctx({ holdings: [holding(A, 5, E)] })).ok).toBe(true); // empty receiver
+    expect(validateTransfer(base, ctx({ holdings: [holding(A, 5, E), holding(B, 3, E)] })).ok).toBe(true); // same expiry
+    expect(codes(validateTransfer(base, ctx({ holdings: [holding(A, 5, E), holding(B, 3, "2027-06-01T00:00:00.000Z")] })))).toEqual(["toUserId:expiryMismatch"]);
+    expect(codes(validateTransfer(base, ctx({ holdings: [holding(A, 5, E), holding(B, 3)] })))).toEqual(["toUserId:expiryMismatch"]); // receiver without expiry
+    expect(codes(validateTransfer(base, ctx({ holdings: [holding(A, 5), holding(B, 3, E)] })))).toEqual(["toUserId:expiryMismatch"]); // moved slots without expiry
   });
   it("rejects same account, zero and locked quarter", () => {
     expect(codes(validateTransfer({ ...base, toUserId: A.toUpperCase() }, ctx()))).toEqual(["toUserId:same"]);
@@ -108,7 +115,8 @@ describe("account id case (lowercase everywhere)", () => {
     const toLA = "ABCDEFAC-1111-4111-8111-111111111111";
     const t2 = validateTransfer({ fromUserId: LA, toUserId: toLA, slots: "5", reason: "Merge" }, heldCtx(5));
     expect(t2.ok && t2.body.toUserId).toBe(toLA.toLowerCase());
-    expect(codes(validateTransfer({ fromUserId: UP, toUserId: B, slots: "2", reason: "Merge" }, heldCtx(5, "2027-03-01T00:00:00.000Z")))).toEqual(["slots:expiring"]);
+    // an expiring holding found through an uppercase id moves to an empty receiver (it keeps its expiry)
+    expect(validateTransfer({ fromUserId: UP, toUserId: B, slots: "2", reason: "Merge" }, heldCtx(5, "2027-03-01T00:00:00.000Z")).ok).toBe(true);
   });
   it("the unchanged guard works for an uppercase id and the body carries the lowercase id", () => {
     expect(codes(validateSetSlots({ userId: UP, slots: "5", expiresAtLocal: "", reason: "abc" }, heldCtx(5)))).toEqual(["slots:unchanged"]);

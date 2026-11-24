@@ -138,9 +138,16 @@ test.describe("06 dividend slots (current quarter)", () => {
       const unchanged = await heldBy(grantee);
       expect(unchanged.slots).toBe(5);
       expect(unchanged.expiresAt).toBe(farFuture);
-      // expiring slots cannot be transferred
-      const tr0 = await errOf(await sa.post("admin/dividend/slots/transfer", { fromUserId: grantee.id, toUserId: toU.id, slots: 1, reason: "expiring" }));
-      expect([tr0.status, tr0.code]).toEqual([409, "DIVIDEND_SLOT_INSUFFICIENT"]);
+      // expiring slots move WITH their expiry to an empty account; the source keeps its expiry for what is left
+      const expTo = await mk("slotexpto");
+      const tr0 = await ok<any>(await sa.post("admin/dividend/slots/transfer", { fromUserId: grantee.id, toUserId: expTo.id, slots: 2, reason: "expiring" }));
+      expect(tr0.legs.map((l: any) => [l.userId, l.slots, l.expiresAt])).toEqual([[grantee.id, 3, farFuture], [expTo.id, 2, farFuture]]);
+      // a receiver that already holds slots with another expiry (here: none) is refused: one holding has one expiry; nothing is stored
+      await ok(await set(toU, 1));
+      const mixed = await errOf(await sa.post("admin/dividend/slots/transfer", { fromUserId: grantee.id, toUserId: toU.id, slots: 1, reason: "mix" }));
+      expect([mixed.status, mixed.code]).toEqual([400, "DIVIDEND_INPUT_INVALID"]);
+      expect((await heldBy(grantee)).slots).toBe(3);
+      await ok(await set(toU, 0));
 
       // ---- cap: 100 allowed, 101 refused (API and UI), nothing stored by the refusal
       await ok(await set(capped, 100));

@@ -2295,10 +2295,10 @@
         "slotsAbsolute": "Slots (total)",
         "slotsAbsoluteHint": "Whole number, 0 to 1,000,000",
         "expiresAt": "Expires at (optional, Taipei time)",
-        "expiresAtHint": "After this moment the slots no longer count. It must be after the end of the quarter you set slots from (slots that expire earlier count 0 at quarter end and are refused). Expiring slots cannot be transferred.",
+        "expiresAtHint": "After this moment the slots no longer count. It must be after the end of the quarter you set slots from (slots that expire earlier count 0 at quarter end and are refused).",
         "setSubmit": "Save slots",
         "transferTitle": "Transfer slots (at {quarter})",
-        "transferNote": "Moves slots from one account to another as two linked entries in a single step. Only non-expiring slots can be moved.",
+        "transferNote": "Moves slots from one account to another as two linked entries in a single step. Slots keep their expiry when moved: the receiving account must be empty or hold slots with the same expiry.",
         "from": "From account",
         "to": "To account",
         "transferSlots": "Slots to move",
@@ -2334,7 +2334,8 @@
           "toUserId": {
             "required": "Choose an account.",
             "invalid": "The account is not valid.",
-            "same": "The two accounts must be different."
+            "same": "The two accounts must be different.",
+            "expiryMismatch": "The receiving account holds slots with a different expiry. One holding has one expiry, so slots with another expiry cannot be added to it."
           },
           "slots": {
             "required": "Enter the number of slots.",

@@ -19,8 +19,8 @@ export type SlotsContext = {
 export type SlotsFormError =
   | { field: "quarter"; code: "locked" | "future" | "invalid" }
   | { field: "userId" | "fromUserId" | "toUserId"; code: "required" | "invalid" }
-  | { field: "toUserId"; code: "same" }
-  | { field: "slots"; code: "required" | "notInteger" | "tooLow" | "tooHigh" | "unchanged" | "insufficient" | "expiring" }
+  | { field: "toUserId"; code: "same" | "expiryMismatch" }
+  | { field: "slots"; code: "required" | "notInteger" | "tooLow" | "tooHigh" | "unchanged" | "insufficient" }
   | { field: "expiresAt"; code: "invalid" | "withZero" | "beforeQuarter" }
   | { field: "reason"; code: ReasonError };
 
@@ -107,7 +107,7 @@ export function validateSetSlots(input: SetSlotsInput, ctx: SlotsContext): Resul
 
 export type TransferInput = { fromUserId: string; toUserId: string; slots: string; reason: string };
 
-/** Mirror of POST /admin/dividend/slots/transfer (two accounts, slots >= 1, enough non-expiring slots). */
+/** Mirror of POST /admin/dividend/slots/transfer (two accounts, slots >= 1, enough slots, the receiver's expiry equals the moved slots' expiry). */
 export function validateTransfer(input: TransferInput, ctx: SlotsContext): Result<TransferSlotsBody> {
   const errors: SlotsFormError[] = quarterErrors(ctx);
   const from = idError("fromUserId", input.fromUserId);
@@ -122,8 +122,14 @@ export function validateTransfer(input: TransferInput, ctx: SlotsContext): Resul
 
   if (!from && s.value !== null && !s.error) {
     const held = ctx.holdings.find((h) => h.userId.toLowerCase() === input.fromUserId.trim().toLowerCase());
-    if (held?.expiresAt) errors.push({ field: "slots", code: "expiring" });
-    else if ((held?.slots ?? 0) < s.value) errors.push({ field: "slots", code: "insufficient" });
+    if ((held?.slots ?? 0) < s.value) errors.push({ field: "slots", code: "insufficient" });
+    else if (!to) {
+      // One holding has one expiry: the moved slots keep the source's expiry, so a receiver that already holds slots must have the same one.
+      const recv = ctx.holdings.find((h) => h.userId.toLowerCase() === input.toUserId.trim().toLowerCase());
+      if (recv && recv.slots > 0 && (recv.expiresAt ?? null) !== (held?.expiresAt ?? null)) {
+        errors.push({ field: "toUserId", code: "expiryMismatch" });
+      }
+    }
   }
 
   const reason = validateReason(input.reason);
