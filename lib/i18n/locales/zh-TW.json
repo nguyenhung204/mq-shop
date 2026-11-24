@@ -4358,6 +4358,21 @@
     }
   },
   "dividendCredits": {
+    "estimate": {
+      "title": "我的名額與預估分紅",
+      "quarter": "季度",
+      "slots": "季末持有的名額",
+      "expires": "到期時間 {date}",
+      "now": "預估分紅（目前已符合資格的訂單）",
+      "final": "本季分紅",
+      "withProvisional": "若仍在 7 天退貨期內的訂單也符合資格",
+      "noSlots": "您本季沒有名額。名額由管理員指派。",
+      "expiredEarly": "您的名額在本季結束前到期，因此本季計為 0 個名額。",
+      "credited": "已入帳至您的錢包：{amount}（{points} 點）。",
+      "creditPending": "已結算，入帳中：{amount}（{points} 點）。",
+      "estimateNote": "這是預估值。季度未鎖定前會變動：管理員仍可調整名額，訂單仍可能被退回。季度鎖定並結算前不會支付任何款項。",
+      "finalNote": "本季已鎖定：這是最終金額，季度結算時入帳至您的錢包。"
+    },
     "title": "我的股利入帳",
     "intro": "已入帳至你錢包的季度股利。金額以 TWD 與錢包點數顯示。",
     "empty": "目前沒有入帳給你的股利。",

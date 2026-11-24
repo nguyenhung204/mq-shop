@@ -97,3 +97,21 @@ export const dividendCreditsApi = {
     parsePage<SettlementItem>(await api.get<unknown>("/dividend/credits", { query, withMeta: true })),
   get: (id: string) => api.get<SettlementItem>(`/dividend/credits/${seg(id)}`),
 };
+
+/** GET /dividend/my-estimate: MY slots at the end of a quarter and the expected dividend (an estimate until the quarter is locked). */
+export type MyDividendEstimate = {
+  quarter: string;
+  currentQuarter: string;
+  closed: boolean;
+  locked: boolean;
+  lockAt: string;
+  slots: number;
+  expiresAt: string | null;
+  expiredBeforeQuarterEnd: boolean;
+  estimate: { currentNtd: number; withProvisionalNtd: number | null };
+  settlement: { status: string; amountTwdCents: number; points: string; creditedAt: string | null } | null;
+};
+
+export const dividendMyEstimateApi = {
+  get: (quarter?: string) => api.get<MyDividendEstimate>("/dividend/my-estimate", { query: quarter ? { quarter } : undefined }),
+};

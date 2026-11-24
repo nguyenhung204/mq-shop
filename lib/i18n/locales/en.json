@@ -4358,6 +4358,21 @@
     }
   },
   "dividendCredits": {
+    "estimate": {
+      "title": "My slots and expected dividend",
+      "quarter": "Quarter",
+      "slots": "Slots I hold at the end of the quarter",
+      "expires": "They expire on {date}",
+      "now": "Expected dividend (orders eligible today)",
+      "final": "Dividend for this quarter",
+      "withProvisional": "If the orders still inside the 7-day return window also qualify",
+      "noSlots": "You hold no slots for this quarter. Slots are assigned by an administrator.",
+      "expiredEarly": "Your slots expire before the end of this quarter, so they count as 0 slots for it.",
+      "credited": "Credited to your wallet: {amount} ({points} points).",
+      "creditPending": "Settled, being credited: {amount} ({points} points).",
+      "estimateNote": "This is an estimate. It changes while the quarter is open: an administrator can still change slots and orders can still be returned. Nothing is paid until the quarter is locked and settled.",
+      "finalNote": "The quarter is locked: this is the final amount, credited to your wallet when the quarter is settled."
+    },
     "title": "My dividend credits",
     "intro": "Quarterly dividends credited to your wallet. Amounts are in TWD and in wallet points.",
     "empty": "No dividend has been credited to you yet.",

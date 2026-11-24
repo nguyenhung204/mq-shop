@@ -43,6 +43,7 @@ vi.mock("@/lib/queries/dividend-settlements", () => ({
   useRunSettlement: hook,
   useMyDividendCredits: hook,
   useMyDividendCredit: hook,
+  useMyDividendEstimate: hook,
 }));
 vi.mock("@/lib/queries/sub-accounts", () => ({
   useSubAccounts: hook,

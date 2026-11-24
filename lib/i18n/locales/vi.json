@@ -4358,6 +4358,21 @@
     }
   },
   "dividendCredits": {
+    "estimate": {
+      "title": "Suất và cổ tức dự kiến của tôi",
+      "quarter": "Quý",
+      "slots": "Số suất tôi giữ tại cuối quý",
+      "expires": "Hết hạn lúc {date}",
+      "now": "Cổ tức dự kiến (đơn đã đủ điều kiện đến hôm nay)",
+      "final": "Cổ tức của quý này",
+      "withProvisional": "Nếu các đơn còn trong 7 ngày đổi trả cũng đủ điều kiện",
+      "noSlots": "Bạn chưa có suất nào cho quý này. Suất do quản trị viên gán.",
+      "expiredEarly": "Suất của bạn hết hạn trước cuối quý này nên tính 0 suất cho quý.",
+      "credited": "Đã ghi có vào ví: {amount} ({points} điểm).",
+      "creditPending": "Đã chốt, đang ghi có: {amount} ({points} điểm).",
+      "estimateNote": "Đây là số dự kiến. Số này thay đổi khi quý còn mở: quản trị viên vẫn có thể đổi suất và đơn vẫn có thể bị trả. Chưa có khoản nào được trả cho đến khi quý được khóa và chốt.",
+      "finalNote": "Quý đã khóa: đây là số cuối cùng, sẽ ghi có vào ví khi quý được chốt."
+    },
     "title": "Cổ tức đã nhận",
     "intro": "Cổ tức theo quý đã ghi vào ví của bạn. Số tiền tính bằng TWD và điểm ví.",
     "empty": "Bạn chưa được ghi có cổ tức nào.",

@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { dividendCreditsApi, dividendSettlementsApi, type ItemStatus } from "@/lib/api/dividend-settlements";
+import { dividendCreditsApi, dividendMyEstimateApi, dividendSettlementsApi, type ItemStatus } from "@/lib/api/dividend-settlements";
 import { createKeyedRunners } from "@/lib/queries/idempotent-run";
 import { tt } from "@/lib/i18n/tt";
 import { getErrorMessage } from "@/lib/queries/utils";
@@ -17,6 +17,7 @@ export const settlementKeys = {
   detail: (q: string, page: number, status: string) => [...settlementKeys.all, "detail", q, page, status] as const,
   credits: (page: number) => [...settlementKeys.all, "credits", page] as const,
   credit: (id: string) => [...settlementKeys.all, "credit", id] as const,
+  myEstimate: (quarter: string) => [...settlementKeys.all, "my-estimate", quarter] as const,
 };
 
 const PAGE = 20;
@@ -67,4 +68,8 @@ export function useMyDividendCredits(page: number) {
 
 export function useMyDividendCredit(id: string) {
   return useQuery({ queryKey: settlementKeys.credit(id), queryFn: () => dividendCreditsApi.get(id), enabled: Boolean(id) });
+}
+
+export function useMyDividendEstimate(quarter: string) {
+  return useQuery({ queryKey: settlementKeys.myEstimate(quarter), queryFn: () => dividendMyEstimateApi.get(quarter), enabled: Boolean(quarter) });
 }

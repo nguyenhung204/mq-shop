@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AuthGuard } from "@/components/guards/AuthGuard";
 import { DIVIDEND_CREDIT_ROLES } from "@/lib/dividend/access";
+import { MyEstimateCard } from "@/components/dividend/MyEstimateCard";
 import { ItemsTable } from "@/components/dividend/SettlementViews";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Container, PageHero } from "@/components/ui/shared";
@@ -20,6 +21,7 @@ function Inner() {
     <>
       <PageHero title={t("dividendCredits.title")} />
       <Container className="py-8 space-y-4">
+        <MyEstimateCard />
         <p className="text-sm text-mq-text-muted">{t("dividendCredits.intro")}</p>
         {list.isLoading ? <OrderListSkeleton /> : null}
         {list.isError ? <div className="mq-alert mq-alert-error">{getErrorMessage(list.error, t("admin.common.failed"))}</div> : null}
