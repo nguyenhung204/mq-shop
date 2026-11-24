@@ -193,15 +193,24 @@ test.describe("06 dividend report", () => {
     }
   });
 
-  test("ADMIN reads the report and slots but the write forms are not shown", async ({ browser }) => {
-    const { page, context } = await pageAs(browser, { api: await apiAs("ADMIN") });
+  test("slots page: ADMIN sees the write forms (MANAGE_DIVIDEND_SLOTS), ACCOUNTANT only reads", async ({ browser }) => {
+    const admin = await pageAs(browser, { api: await apiAs("ADMIN") });
     try {
-      await page.goto("/admin/dividend/slots");
-      await expect(page.getByText("You can view this page. Only a Super Admin can make changes.")).toBeVisible();
-      await expect(page.getByRole("button", { name: "Save slots" })).toHaveCount(0);
-      await expect(page.getByRole("button", { name: "Transfer slots" })).toHaveCount(0);
+      await admin.page.goto("/admin/dividend/slots");
+      await expect(admin.page.getByText("Only an Admin or a Super Admin can set and transfer slots.")).toHaveCount(0);
+      await expect(admin.page.getByRole("button", { name: "Save slots" })).toBeVisible();
+      await expect(admin.page.getByRole("button", { name: "Transfer slots" })).toBeVisible();
     } finally {
-      await context.close();
+      await admin.context.close();
+    }
+    const acct = await pageAs(browser, { api: await apiAs("ACCOUNTANT") });
+    try {
+      await acct.page.goto("/admin/dividend/slots");
+      await expect(acct.page.getByText("You can view this page. Only an Admin or a Super Admin can set and transfer slots.")).toBeVisible();
+      await expect(acct.page.getByRole("button", { name: "Save slots" })).toHaveCount(0);
+      await expect(acct.page.getByRole("button", { name: "Transfer slots" })).toHaveCount(0);
+    } finally {
+      await acct.context.close();
     }
   });
 });

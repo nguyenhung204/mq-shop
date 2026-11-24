@@ -2270,6 +2270,7 @@
       },
       "quarter": "Quarter",
       "slots": {
+        "readOnlyNote": "You can view this page. Only an Admin or a Super Admin can set and transfer slots.",
         "title": "Dividend slots",
         "description": "Slots held by each root account, set absolutely per quarter, with optional expiry. Every change is appended to the history and never overwritten.",
         "locked": "Locked",

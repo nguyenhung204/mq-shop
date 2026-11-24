@@ -61,7 +61,7 @@ function SlotsInner() {
         {isError && <div className="mq-alert mq-alert-error">{getErrorMessage(error, t("admin.common.failed"))}</div>}
         {!canWrite ? (
           <div className="rounded-lg border border-mq-border bg-mq-surface-subtle p-3 text-sm text-mq-text-secondary">
-            {t("admin.dividend.readOnlyNote")}
+            {t("admin.dividend.slots.readOnlyNote")}
           </div>
         ) : null}
 

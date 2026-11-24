@@ -2270,6 +2270,7 @@
       },
       "quarter": "Quý",
       "slots": {
+        "readOnlyNote": "Bạn chỉ có thể xem trang này. Chỉ Admin hoặc Super Admin mới được đặt và chuyển suất.",
         "title": "Suất cổ tức",
         "description": "Số suất của từng tài khoản gốc, đặt tuyệt đối theo quý, có thể có hạn. Mỗi thay đổi được ghi thêm vào lịch sử, không ghi đè.",
         "locked": "Đã khóa",
