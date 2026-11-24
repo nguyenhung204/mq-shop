@@ -2295,7 +2295,7 @@
         "slotsAbsolute": "名額（總數）",
         "slotsAbsoluteHint": "整數，0 至 1,000,000",
         "expiresAt": "到期時間（選填，台北時間）",
-        "expiresAtHint": "此時間之後名額不再計算。有到期日的名額不可轉移。",
+        "expiresAtHint": "此時間之後名額不再計算。必須晚於所設定季度的結束時間（較早到期的名額在季末計為 0，系統會拒絕）。有到期日的名額不可轉移。",
         "setSubmit": "儲存名額",
         "transferTitle": "轉移名額（於 {quarter}）",
         "transferNote": "將名額從一個帳戶轉到另一帳戶，以兩筆相連紀錄一次完成。僅可轉移無到期日的名額。",

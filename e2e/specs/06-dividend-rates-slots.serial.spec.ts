@@ -131,12 +131,13 @@ test.describe("06 dividend slots (current quarter)", () => {
       expect(g.slots).toBe(5);
       expect(g.expiresAt).toBe(farFuture);
       expect((await heldBy(grantee)).slots).toBe(5);
-      // expiry BEFORE the quarter end: the account counts 0 for this quarter, the expiry date is kept
+      // expiry on or before the quarter end is refused: such slots would count 0 at quarter end (and slip past the cap); nothing stored
       const soon = new Date(Date.now() + 2 * 86_400_000).toISOString();
-      await ok(await set(grantee, 5, { expiresAt: soon }));
-      const expiring = await heldBy(grantee);
-      expect(expiring.slots).toBe(0);
-      expect(expiring.expiresAt).toBe(soon);
+      const early = await errOf(await set(grantee, 5, { expiresAt: soon }));
+      expect([early.status, early.code]).toEqual([400, "DIVIDEND_INPUT_INVALID"]);
+      const unchanged = await heldBy(grantee);
+      expect(unchanged.slots).toBe(5);
+      expect(unchanged.expiresAt).toBe(farFuture);
       // expiring slots cannot be transferred
       const tr0 = await errOf(await sa.post("admin/dividend/slots/transfer", { fromUserId: grantee.id, toUserId: toU.id, slots: 1, reason: "expiring" }));
       expect([tr0.status, tr0.code]).toEqual([409, "DIVIDEND_SLOT_INSUFFICIENT"]);

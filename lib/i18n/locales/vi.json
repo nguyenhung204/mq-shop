@@ -2295,7 +2295,7 @@
         "slotsAbsolute": "Số suất (tổng)",
         "slotsAbsoluteHint": "Số nguyên, từ 0 đến 1.000.000",
         "expiresAt": "Hết hạn lúc (tùy chọn, giờ Đài Bắc)",
-        "expiresAtHint": "Sau thời điểm này các suất không còn được tính. Suất có hạn không thể chuyển.",
+        "expiresAtHint": "Sau thời điểm này các suất không còn được tính. Phải sau thời điểm kết thúc của quý đang đặt (suất hết hạn sớm hơn sẽ tính 0 ở cuối quý nên hệ thống từ chối). Suất có hạn không thể chuyển.",
         "setSubmit": "Lưu số suất",
         "transferTitle": "Chuyển suất (tại {quarter})",
         "transferNote": "Chuyển suất từ tài khoản này sang tài khoản khác bằng hai bút toán liên kết trong một bước. Chỉ chuyển được suất không có hạn.",
