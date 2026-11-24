@@ -60,9 +60,9 @@ describe("dividend rates page wiring (U2)", () => {
 });
 
 describe("dividend slots page wiring (U3)", () => {
-  it("forms are SUPER_ADMIN only and receive the server lock flag", () => {
+  it("forms are for ADMIN and SUPER_ADMIN (MANAGE_DIVIDEND_SLOTS) and receive the server lock flag", () => {
     const p = src("app/admin/dividend/slots/page.tsx");
-    expect(p).toContain("const canWrite = canWriteDividend(user)");
+    expect(p).toContain("const canWrite = canWriteDividendSlots(user)");
     expect(p).toContain("{canWrite && data ? (");
     expect(p).toContain("const locked = Boolean(data?.locked)");
     expect(p).toContain("locked={locked}");

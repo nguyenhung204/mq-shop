@@ -10,7 +10,7 @@ import { AdminActions, AdminIconButton } from "@/components/admin/AdminIconButto
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { TableSkeleton } from "@/components/ui/Skeleton";
-import { canSearchUsers, canWriteDividend } from "@/lib/auth/admin-write";
+import { canSearchUsers, canWriteDividendSlots } from "@/lib/auth/admin-write";
 import { currentQuarter, quarterOptions } from "@/lib/dividend/dates";
 import { formatDateTimeGmt8 } from "@/lib/i18n/gmt8-calendar";
 import { toIntlLocale } from "@/lib/i18n/locale-format";
@@ -29,7 +29,7 @@ function shortId(id: string): string {
 function SlotsInner() {
   const { t, locale } = useLanguage();
   const { user } = useAuth();
-  const canWrite = canWriteDividend(user);
+  const canWrite = canWriteDividendSlots(user);
   // /admin/users needs VIEW_USERS (ADMIN / SUPER_ADMIN); ACCOUNTANT only gets the holders already on the page.
   const searchUsers = canSearchUsers(user);
   const intl = toIntlLocale(locale);

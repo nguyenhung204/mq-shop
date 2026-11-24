@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { AuthUser } from "@/lib/api/types";
-import { canSearchUsers, canSetPartialRefund, canWriteDividend, canWriteSettings } from "./admin-write";
+import { canSearchUsers, canSetPartialRefund, canWriteDividend, canWriteDividendSlots, canWriteSettings } from "./admin-write";
 
 const u = (...roles: string[]) => ({ roles }) as unknown as AuthUser;
 
@@ -14,6 +14,13 @@ describe("admin write gates", () => {
     expect(canWriteSettings(null)).toBe(false);
     expect(canWriteSettings(undefined)).toBe(false);
     expect(canWriteSettings({} as AuthUser)).toBe(false);
+  });
+  it("dividend slots (set / transfer) are for ADMIN and SUPER_ADMIN; rates stay SUPER_ADMIN", () => {
+    expect(canWriteDividendSlots(u("ADMIN"))).toBe(true);
+    expect(canWriteDividendSlots(u("SUPER_ADMIN"))).toBe(true);
+    for (const r of ["ACCOUNTANT", "SELLER", "BUYER", "CS", "WAREHOUSE"]) expect(canWriteDividendSlots(u(r)), r).toBe(false);
+    expect(canWriteDividendSlots(null)).toBe(false);
+    expect(canWriteDividend(u("ADMIN"))).toBe(false);
   });
   it("partial refund input is for ADMIN / SUPER_ADMIN only", () => {
     expect(canSetPartialRefund(u("ADMIN"))).toBe(true);

@@ -1,15 +1,21 @@
 import type { AuthUser } from "@/lib/api/types";
 
 /**
- * Settings and dividend writes (rates, slots) are SUPER_ADMIN only on the API
- * (CONFIG_SYS / CONFIG_MLM without an approval scope). ADMIN and ACCOUNTANT read only.
+ * Settings and dividend RATE writes are SUPER_ADMIN only on the API (CONFIG_SYS / CONFIG_MLM without an approval scope);
+ * slot writes are ADMIN and SUPER_ADMIN (MANAGE_DIVIDEND_SLOTS). ACCOUNTANT reads only.
  * Fails closed when there is no user.
  */
 export function canWriteSettings(user: AuthUser | null | undefined): boolean {
   return Boolean(user?.roles?.includes("SUPER_ADMIN"));
 }
 
+/** Dividend RATES: SUPER_ADMIN only (CONFIG_MLM without an approval scope). */
 export const canWriteDividend = canWriteSettings;
+
+/** Dividend SLOTS (set and transfer): ADMIN and SUPER_ADMIN (MANAGE_DIVIDEND_SLOTS; customer Q4 "admin nhập / chuyển suất"). */
+export function canWriteDividendSlots(user: AuthUser | null | undefined): boolean {
+  return Boolean(user?.roles?.some((r) => r === "ADMIN" || r === "SUPER_ADMIN"));
+}
 
 /** /admin/users needs VIEW_USERS: ADMIN and SUPER_ADMIN only (the account pickers fall back to known holders). */
 export function canSearchUsers(user: AuthUser | null | undefined): boolean {

@@ -206,10 +206,28 @@ test.describe("06 dividend slots (current quarter)", () => {
     }
   });
 
-  test("ADMIN cannot write slots (403)", async () => {
+  test("ADMIN sets and transfers slots (MANAGE_DIVIDEND_SLOTS); rates stay SUPER_ADMIN; ACCOUNTANT only reads", async () => {
     const admin = await apiAs("ADMIN");
-    const u = await createUser({ prefix: "slotadmin" });
-    expect((await admin.post("admin/dividend/slots", { userId: u.id, slots: 1, reason: "admin attempt" })).status()).toBe(403);
-    expect((await admin.get("admin/dividend/slots")).status()).toBe(200);
+    const acct = await apiAs("ACCOUNTANT");
+    const sa = await apiAs("SUPER_ADMIN");
+    const from = await createUser({ prefix: "slotadminfrom" });
+    const to = await createUser({ prefix: "slotadminto" });
+    const heldBy = async (u: { id: string }) => ((await ok<any>(await sa.get("admin/dividend/slots"))).items as any[]).find((h) => h.userId === u.id);
+    try {
+      expect((await acct.post("admin/dividend/slots", { userId: from.id, slots: 1, reason: "accountant attempt" })).status()).toBe(403);
+      expect((await acct.get("admin/dividend/slots")).status()).toBe(200);
+      await ok(await admin.post("admin/dividend/slots", { userId: from.id, slots: 3, reason: "admin sets slots" }));
+      expect((await heldBy(from)).slots).toBe(3);
+      await ok(await admin.post("admin/dividend/slots/transfer", { fromUserId: from.id, toUserId: to.id, slots: 1, reason: "admin transfers" }));
+      expect([(await heldBy(from)).slots, (await heldBy(to)).slots]).toEqual([2, 1]);
+      // rates are still SUPER_ADMIN only
+      const tomorrow = new Date(Date.now() + 2 * 86_400_000).toISOString().slice(0, 10);
+      expect((await admin.post("admin/dividend/rates", { ratePercent: 11, effectiveDate: tomorrow, reason: "admin attempt" })).status()).toBe(403);
+    } finally {
+      for (const u of [from, to]) {
+        const h = await heldBy(u);
+        if (h && (h.slots !== 0 || h.expiresAt)) await sa.post("admin/dividend/slots", { userId: u.id, slots: 0, reason: "e2e cleanup" });
+      }
+    }
   });
 });

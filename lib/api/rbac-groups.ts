@@ -112,6 +112,7 @@ export const RBAC_PERMISSION_GROUPS: ReadonlyArray<{
       "VIEW_MLM_TREE",
       "VIEW_MLM_COMSN",
       "CONFIG_MLM",
+      "MANAGE_DIVIDEND_SLOTS",
       "APPROVE_MLM",
     ],
   },
